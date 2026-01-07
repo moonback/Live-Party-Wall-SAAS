@@ -96,45 +96,41 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
       .maybeSingle();
     
     // Forcer la modération à toujours être activée
-    const settingsToUpdate = {
-      ...settings,
+    // Retirer l'id si présent pour éviter les conflits lors de l'upsert
+    const { id, ...settingsWithoutId } = settings;
+    
+    // Si on a un ID existant, l'utiliser pour l'update, sinon laisser Supabase générer un nouvel ID
+    const settingsToUpdate: any = {
+      ...settingsWithoutId,
       alert_text: alertText,
       content_moderation_enabled: true, // Toujours activée
       updated_at: new Date().toISOString(),
       event_id: eventId
     };
     
+    // Si on a un ID existant, l'inclure pour l'update
+    if (existingSettings?.id) {
+      settingsToUpdate.id = existingSettings.id;
+    }
+    
     logger.info('Updating settings', { 
       component: 'settingsService', 
       action: 'updateSettings', 
       eventId,
       alert_text: alertText,
-      has_alert: !!alertText
+      has_alert: !!alertText,
+      existingId: existingSettings?.id
     });
     
-    let data;
-    let error;
-    
-    if (existingSettings) {
-      // Mise à jour
-      const result = await supabase
-        .from('event_settings')
-        .update(settingsToUpdate)
-        .eq('event_id', eventId)
-        .select()
-        .single();
-      data = result.data;
-      error = result.error;
-    } else {
-      // Création
-      const result = await supabase
-        .from('event_settings')
-        .insert([settingsToUpdate])
-        .select()
-        .single();
-      data = result.data;
-      error = result.error;
-    }
+    // Utiliser upsert avec onConflict sur event_id (qui est unique)
+    const { data, error } = await supabase
+      .from('event_settings')
+      .upsert(settingsToUpdate, {
+        onConflict: 'event_id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .single();
 
     if (error) {
       logger.error('Error in updateSettings upsert', error, { component: 'settingsService', action: 'updateSettings' });

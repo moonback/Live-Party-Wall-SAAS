@@ -69,6 +69,12 @@ ALTER TABLE public.event_settings
 ALTER TABLE public.event_settings
     DROP CONSTRAINT IF EXISTS event_settings_id_key;
 
+-- Ajouter une contrainte UNIQUE sur event_id (un seul paramètre par événement)
+ALTER TABLE public.event_settings
+    DROP CONSTRAINT IF EXISTS event_settings_event_id_key;
+ALTER TABLE public.event_settings
+    ADD CONSTRAINT event_settings_event_id_key UNIQUE (event_id);
+
 CREATE INDEX IF NOT EXISTS idx_event_settings_event_id ON public.event_settings(event_id);
 
 -- Table guests
@@ -184,12 +190,7 @@ ON public.events FOR UPDATE
 TO authenticated
 USING (
     owner_id = auth.uid() OR
-    EXISTS (
-        SELECT 1 FROM public.event_organizers 
-        WHERE event_id = events.id 
-        AND user_id = auth.uid() 
-        AND role IN ('owner', 'organizer')
-    )
+    public.is_event_organizer(events.id, auth.uid())
 );
 
 -- Seuls les owners peuvent supprimer
@@ -200,24 +201,50 @@ TO authenticated
 USING (owner_id = auth.uid());
 
 -- ==========================================
+-- 6.5. FONCTION HELPER POUR VÉRIFIER LES PERMISSIONS (ÉVITE LA RÉCURSION)
+-- ==========================================
+
+-- Fonction pour vérifier si un utilisateur est owner ou organizer d'un événement
+-- Utilise SECURITY DEFINER pour contourner RLS et éviter la récursion
+CREATE OR REPLACE FUNCTION public.is_event_organizer(event_uuid UUID, user_uuid UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.events
+        WHERE events.id = event_uuid
+        AND events.owner_id = user_uuid
+    ) OR EXISTS (
+        SELECT 1 FROM public.event_organizers
+        WHERE event_organizers.event_id = event_uuid
+        AND event_organizers.user_id = user_uuid
+    );
+END;
+$$;
+
+-- ==========================================
 -- 7. POLITIQUES RLS POUR EVENT_ORGANIZERS
 -- ==========================================
 
 -- Les organisateurs peuvent lire les organisateurs de leurs événements
+-- Éviter la récursion en vérifiant directement si l'utilisateur est owner ou organisateur
 DROP POLICY IF EXISTS "Organizers Read Event Organizers" ON public.event_organizers;
 CREATE POLICY "Organizers Read Event Organizers"
 ON public.event_organizers FOR SELECT
 TO authenticated
 USING (
+    -- L'utilisateur peut lire s'il est owner de l'événement
     EXISTS (
         SELECT 1 FROM public.events
         WHERE events.id = event_organizers.event_id
-        AND (events.owner_id = auth.uid() OR EXISTS (
-            SELECT 1 FROM public.event_organizers eo
-            WHERE eo.event_id = events.id
-            AND eo.user_id = auth.uid()
-        ))
+        AND events.owner_id = auth.uid()
     )
+    OR
+    -- Ou s'il est lui-même un organisateur (lecture directe sans récursion)
+    event_organizers.user_id = auth.uid()
 );
 
 -- Les owners peuvent ajouter des organisateurs
@@ -292,19 +319,7 @@ CREATE POLICY "Organizers Delete Photos"
 ON public.photos FOR DELETE
 TO authenticated
 USING (
-    EXISTS (
-        SELECT 1 FROM public.events
-        WHERE events.id = photos.event_id
-        AND (
-            events.owner_id = auth.uid() OR
-            EXISTS (
-                SELECT 1 FROM public.event_organizers
-                WHERE event_organizers.event_id = events.id
-                AND event_organizers.user_id = auth.uid()
-                AND event_organizers.role IN ('owner', 'organizer')
-            )
-        )
-    )
+    public.is_event_organizer(photos.event_id, auth.uid())
 );
 
 -- Event Settings : Lecture publique mais filtrée par événement
@@ -324,19 +339,7 @@ ON public.event_settings FOR UPDATE
 TO authenticated
 USING (
     event_id IS NOT NULL AND
-    EXISTS (
-        SELECT 1 FROM public.events
-        WHERE events.id = event_settings.event_id
-        AND (
-            events.owner_id = auth.uid() OR
-            EXISTS (
-                SELECT 1 FROM public.event_organizers
-                WHERE event_organizers.event_id = events.id
-                AND event_organizers.user_id = auth.uid()
-                AND event_organizers.role IN ('owner', 'organizer')
-            )
-        )
-    )
+    public.is_event_organizer(event_settings.event_id, auth.uid())
 );
 
 -- Event Settings : Insertion par organisateurs
@@ -346,19 +349,7 @@ ON public.event_settings FOR INSERT
 TO authenticated
 WITH CHECK (
     event_id IS NOT NULL AND
-    EXISTS (
-        SELECT 1 FROM public.events
-        WHERE events.id = event_settings.event_id
-        AND (
-            events.owner_id = auth.uid() OR
-            EXISTS (
-                SELECT 1 FROM public.event_organizers
-                WHERE event_organizers.event_id = events.id
-                AND event_organizers.user_id = auth.uid()
-                AND event_organizers.role IN ('owner', 'organizer')
-            )
-        )
-    )
+    public.is_event_organizer(event_settings.event_id, auth.uid())
 );
 
 -- Guests : Lecture publique mais filtrée par événement
@@ -398,19 +389,7 @@ ON public.blocked_guests FOR INSERT
 TO authenticated
 WITH CHECK (
     event_id IS NOT NULL AND
-    EXISTS (
-        SELECT 1 FROM public.events
-        WHERE events.id = blocked_guests.event_id
-        AND (
-            events.owner_id = auth.uid() OR
-            EXISTS (
-                SELECT 1 FROM public.event_organizers
-                WHERE event_organizers.event_id = events.id
-                AND event_organizers.user_id = auth.uid()
-                AND event_organizers.role IN ('owner', 'organizer')
-            )
-        )
-    )
+    public.is_event_organizer(blocked_guests.event_id, auth.uid())
 );
 
 -- Photo Battles : Lecture publique mais filtrée par événement
