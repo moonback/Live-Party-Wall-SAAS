@@ -26,6 +26,7 @@ const FindMe = lazy(() => import('./components/FindMe')); // Reconnaissance faci
 const BattleResultsProjection = lazy(() => import('./components/BattleResultsProjection')); // Projection des résultats de battles
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
 const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
+const NoEventScreen = lazy(() => import('./components/NoEventScreen')); // Écran sans événement
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -256,39 +257,17 @@ const AppContent: React.FC = () => {
               </TransitionWrapper>
             )}
 
-            {/* Si pas d'événement et pas en mode admin, afficher sélection ou message */}
+            {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
             {viewMode !== 'admin' && !currentEvent && (
-              <>
-                {isAdminAuthenticated ? (
-                  <EventSelector
-                    onEventSelected={(event) => {
-                      // L'événement sera chargé automatiquement par EventContext
-                      setViewMode('landing');
-                    }}
-                    onBack={() => {
-                      setViewMode('admin');
-                    }}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center min-h-screen">
-                    <div className="text-center p-8 max-w-md">
-                      <h2 className="text-2xl font-bold mb-4">Aucun événement sélectionné</h2>
-                      <p className="text-gray-300 mb-6">Veuillez utiliser un lien valide avec le paramètre <code className="bg-black/40 px-2 py-1 rounded">?event=slug</code></p>
-                      <div className="space-y-3">
-                        <button
-                          onClick={() => setViewMode('admin')}
-                          className="w-full px-6 py-3 bg-pink-500 rounded-lg hover:bg-pink-600 transition font-medium"
-                        >
-                          Accéder à l'administration
-                        </button>
-                        <p className="text-sm text-gray-400 mt-4">
-                          Connectez-vous pour gérer vos événements
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
+              <TransitionWrapper type="fade" duration={500}>
+                <NoEventScreen
+                  onAdminClick={() => setViewMode('admin')}
+                  onEventSelected={() => {
+                    // L'événement sera chargé automatiquement par EventContext
+                    setViewMode('landing');
+                  }}
+                />
+              </TransitionWrapper>
             )}
 
             {/* Modes nécessitant un événement */}
