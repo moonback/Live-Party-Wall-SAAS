@@ -1,7 +1,7 @@
 import { 
   Camera, Sparkles, Monitor, Zap, Shield, Trophy, Palette, Video, 
   Search, Download, CheckCircle, Clock, Lock, TrendingUp, Settings, 
-  Award, Heart, Users
+  Award, Heart, Users, QrCode
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -33,21 +33,27 @@ export interface UseCase {
 export const STEPS: Step[] = [
   {
     number: 1,
-    icon: Camera,
-    title: "Partagez votre moment",
-    description: "Les invités prennent une photo, choisissent une image dans leur galerie ou créent un collage original avec des modèles prédéfinis."
+    icon: QrCode,
+    title: "Scannez le QR code",
+    description: "Les invités scannent le QR code avec leur smartphone. Accès instantané, aucune app à télécharger."
   },
   {
     number: 2,
-    icon: Sparkles,
-    title: "La magie de l'IA opère",
-    description: "Google Gemini analyse, modère, améliore la qualité, applique un cadre décoratif et génère une légende personnalisée."
+    icon: Camera,
+    title: "Capturez un moment unique",
+    description: "Prenez une photo, choisissez dans votre galerie ou créez un collage. Chaque instant devient une œuvre."
   },
   {
     number: 3,
+    icon: Sparkles,
+    title: "L'IA sublime votre photo",
+    description: "Google Gemini modère, améliore, applique un cadre et génère une légende personnalisée."
+  },
+  {
+    number: 4,
     icon: Monitor,
     title: "Affichage sur grand écran",
-    description: "En quelques secondes, la photo sublimée apparaît sur le mur interactif où tous peuvent la voir et interagir."
+    description: "Votre photo apparaît instantanément sur le mur interactif en temps réel pour tous les invités."
   }
 ];
 
