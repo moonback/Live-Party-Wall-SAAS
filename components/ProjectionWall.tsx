@@ -63,6 +63,7 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
   const arSceneManagerRef = useRef<ARSceneManagerRef>(null);
   const [photosReactions, setPhotosReactions] = useState<Map<string, ReactionCounts>>(new Map());
   const { settings } = useSettings();
+  const { currentEvent } = useEvent();
   
   // Debug: Log quand alert_text change
   useEffect(() => {
