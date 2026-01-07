@@ -48,13 +48,6 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     }, 300);
   };
 
-  const handleNavigateToPricing = () => {
-    setIsMobileMenuOpen(false);
-    setTimeout(() => {
-      onScrollToSection('pricing');
-    }, 300);
-  };
-
   const handleNavigateToHome = () => {
     window.location.href = window.location.pathname;
     setIsMobileMenuOpen(false);
@@ -64,8 +57,9 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     { id: 'features', label: 'Fonctionnalités' },
     { id: 'how-it-works', label: 'Comment ça marche' },
     { id: 'use-cases', label: "Cas d'usage" },
+    { id: 'pricing', label: 'Tarification' },
     { id: 'photobooth-comparison', label: 'Comparaison' },
-    // Pricing traité séparément
+    
   ];
 
   return (
@@ -112,13 +106,6 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                   <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                 </button>
               ))}
-              <button
-                onClick={handleNavigateToPricing}
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
-              >
-                Tarification
-                <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-              </button>
             </nav>
 
             {/* CTA Button Desktop */}
@@ -203,20 +190,13 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                   className="text-left text-2xl font-bold text-gray-300 hover:text-white hover:pl-2 transition-all py-4 border-b border-white/5 flex items-center justify-between group"
                 >
                   {link.label}
-                  <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-pink-500" />
+                  {link.id === 'pricing' ? (
+                    <Sparkles className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-yellow-500" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-pink-500" />
+                  )}
                 </motion.button>
               ))}
-              
-              <motion.button
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                onClick={handleNavigateToPricing}
-                className="text-left text-2xl font-bold text-gray-300 hover:text-white hover:pl-2 transition-all py-4 border-b border-white/5 flex items-center justify-between group"
-              >
-                Tarification
-                <Sparkles className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-yellow-500" />
-              </motion.button>
             </nav>
 
             <motion.div 
