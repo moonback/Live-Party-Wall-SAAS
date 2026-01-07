@@ -1,267 +1,312 @@
 # 🤝 Guide de Contribution - Live Party Wall
 
-Merci de votre intérêt pour contribuer à Live Party Wall ! Ce document fournit les guidelines pour contribuer efficacement au projet.
+Merci de votre intérêt pour contribuer à Live Party Wall ! Ce guide vous aidera à contribuer efficacement au projet.
 
 ---
 
-## 📋 Table des Matières
+## 📋 Table des matières
 
-- [Code de Conduite](#code-de-conduite)
-- [Comment Contribuer](#comment-contribuer)
-- [Standards de Code](#standards-de-code)
-- [Workflow Git](#workflow-git)
-- [Tests](#tests)
-- [Documentation](#documentation)
-- [Questions](#questions)
-
----
-
-## 📜 Code de Conduite
-
-### Nos Standards
-
-- ✅ Soyez respectueux et inclusif
-- ✅ Acceptez les critiques constructives avec grâce
-- ✅ Concentrez-vous sur ce qui est meilleur pour la communauté
-- ✅ Montrez de l'empathie envers les autres membres
-
-### Comportements Inacceptables
-
-- ❌ Langage ou images sexualisés
-- ❌ Attaques personnelles ou politiques
-- ❌ Harcèlement public ou privé
-- ❌ Publication d'informations privées sans permission
+- [Code de conduite](#-code-de-conduite)
+- [Comment contribuer](#-comment-contribuer)
+- [Processus de développement](#-processus-de-développement)
+- [Standards de code](#-standards-de-code)
+- [Tests](#-tests)
+- [Documentation](#-documentation)
+- [Pull Requests](#-pull-requests)
 
 ---
 
-## 🚀 Comment Contribuer
+## 📜 Code de conduite
 
-### 1. Signaler un Bug
+### Nos valeurs
 
-Si vous trouvez un bug :
+- ✅ **Respect** : Respect mutuel entre tous les contributeurs
+- ✅ **Bienveillance** : Environnement accueillant et inclusif
+- ✅ **Ouverture** : Accepter les critiques constructives
+- ✅ **Collaboration** : Travailler ensemble vers un objectif commun
 
-1. **Vérifiez** qu'il n'existe pas déjà une issue ouverte
-2. **Créez une nouvelle issue** avec :
-   - Un titre clair et descriptif
-   - Une description détaillée du problème
-   - Les étapes pour reproduire le bug
-   - Le comportement attendu vs. le comportement actuel
-   - Votre environnement (OS, navigateur, version Node.js)
-   - Des captures d'écran si applicable
+### Comportement attendu
 
-**Template d'Issue** :
-```markdown
-## Description du Bug
-[Description claire du problème]
+- Utiliser un langage accueillant et inclusif
+- Respecter les différents points de vue et expériences
+- Accepter gracieusement les critiques constructives
+- Se concentrer sur ce qui est meilleur pour la communauté
+- Faire preuve d'empathie envers les autres membres
 
-## Étapes pour Reproduire
-1. Aller à '...'
-2. Cliquer sur '...'
-3. Scroller jusqu'à '...'
-4. Voir l'erreur
+### Comportement inacceptable
 
-## Comportement Attendu
-[Ce qui devrait se passer]
+- Langage ou images sexualisés
+- Commentaires désobligeants, dégradants ou injurieux
+- Harcèlement public ou privé
+- Publication d'informations privées sans permission
+- Autre conduite jugée inappropriée
 
-## Comportement Actuel
-[Ce qui se passe réellement]
+---
 
-## Environnement
-- OS: [e.g. Windows 10, macOS 13, Linux]
-- Navigateur: [e.g. Chrome 120, Firefox 121]
-- Node.js: [e.g. 18.17.0]
+## 🚀 Comment contribuer
+
+### Signaler un bug
+
+1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/votre-repo/issues)
+2. **Créer une nouvelle issue** avec :
+   - Titre clair et descriptif
+   - Description détaillée du bug
+   - Étapes pour reproduire
+   - Comportement attendu vs comportement actuel
+   - Captures d'écran si applicable
+   - Environnement (OS, navigateur, version)
+
+### Proposer une fonctionnalité
+
+1. **Vérifier** que la fonctionnalité n'a pas déjà été proposée
+2. **Créer une nouvelle issue** avec le label `enhancement` :
+   - Titre clair
+   - Description détaillée
+   - Cas d'usage
+   - Bénéfices attendus
+   - Mockups/wireframes si applicable
+
+### Contribuer au code
+
+1. **Fork** le projet
+2. **Créer une branche** pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. **Développer** votre fonctionnalité en suivant les standards
+4. **Tester** votre code
+5. **Commit** vos changements (`git commit -m 'Add some AmazingFeature'`)
+6. **Push** vers la branche (`git push origin feature/AmazingFeature`)
+7. **Ouvrir une Pull Request**
+
+---
+
+## 💻 Processus de développement
+
+### 1. Configuration de l'environnement
+
+```bash
+# Cloner votre fork
+git clone https://github.com/votre-username/Live-Party-Wall-SAAS.git
+cd Live-Party-Wall-SAAS
+
+# Installer les dépendances
+npm install
+
+# Créer le fichier .env
+cp .env.example .env
+# Remplir les variables d'environnement
+
+# Lancer en mode développement
+npm run dev
 ```
 
-### 2. Proposer une Fonctionnalité
+### 2. Structure des branches
 
-Si vous avez une idée d'amélioration :
+- `main` : Branche principale (production)
+- `develop` : Branche de développement
+- `feature/*` : Nouvelles fonctionnalités
+- `bugfix/*` : Corrections de bugs
+- `hotfix/*` : Corrections urgentes
 
-1. **Vérifiez** la [ROADMAP.md](./ROADMAP.md) pour voir si c'est déjà planifié
-2. **Créez une issue** avec :
-   - Un titre descriptif
-   - Une explication détaillée de la fonctionnalité
-   - Le cas d'usage et la valeur ajoutée
-   - Des exemples visuels si applicable
+### 3. Workflow Git
 
-### 3. Soumettre une Pull Request
+```bash
+# 1. Mettre à jour votre fork
+git checkout main
+git pull upstream main
 
-1. **Forkez** le repository
-2. **Créez une branche** depuis `main` :
-   ```bash
-   git checkout -b feature/ma-fonctionnalite
-   # ou
-   git checkout -b fix/mon-bug
-   ```
-3. **Faites vos modifications** en suivant les [Standards de Code](#standards-de-code)
-4. **Testez** vos changements localement
-5. **Commitez** avec des messages clairs :
-   ```bash
-   git commit -m "feat: ajout de la fonctionnalité X"
-   # ou
-   git commit -m "fix: correction du bug Y"
-   ```
-6. **Pushez** vers votre fork :
-   ```bash
-   git push origin feature/ma-fonctionnalite
-   ```
-7. **Ouvrez une Pull Request** sur GitHub avec :
-   - Un titre clair
-   - Une description détaillée des changements
-   - Une référence aux issues liées (si applicable)
-   - Des captures d'écran si UI modifiée
+# 2. Créer une nouvelle branche
+git checkout -b feature/ma-fonctionnalite
+
+# 3. Développer et commit
+git add .
+git commit -m "feat: Ajouter ma fonctionnalité"
+
+# 4. Push vers votre fork
+git push origin feature/ma-fonctionnalite
+
+# 5. Ouvrir une Pull Request sur GitHub
+```
 
 ---
 
-## 📝 Standards de Code
+## 📝 Standards de code
 
 ### TypeScript
 
-- ✅ **Utilisez TypeScript** pour tout nouveau code
-- ✅ **Définissez les types** explicitement (évitez `any`)
-- ✅ **Utilisez les interfaces** pour les objets complexes
-- ✅ **Documentez** les fonctions complexes avec JSDoc
+- ✅ **Toujours utiliser TypeScript** (pas de JavaScript)
+- ✅ **Éviter `any`** : Utiliser `unknown` ou types explicites
+- ✅ **Types stricts** : Activer `strict: true` dans tsconfig.json
+- ✅ **Interfaces pour objets complexes** : Définir dans `types.ts`
 
 **Exemple** :
 ```typescript
-/**
- * Upload une photo vers Supabase Storage
- * @param base64Image - Image en base64
- * @param caption - Légende de la photo
- * @param author - Nom de l'auteur
- * @returns Promise résolue avec l'objet Photo créé
- * @throws Error si Supabase n'est pas configuré ou en cas d'erreur upload
- */
-export const addPhotoToWall = async (
-  base64Image: string,
-  caption: string,
-  author: string
-): Promise<Photo> => {
-  // ...
-};
+// ❌ Mauvais
+function processData(data: any) {
+  return data.value;
+}
+
+// ✅ Bon
+interface Data {
+  value: string;
+}
+
+function processData(data: Data): string {
+  return data.value;
+}
 ```
 
 ### React
 
-- ✅ **Utilisez des composants fonctionnels** avec Hooks
-- ✅ **Nommez les composants** en PascalCase
-- ✅ **Extrayez la logique métier** dans des services
-- ✅ **Utilisez TypeScript** pour les props
+- ✅ **Composants fonctionnels uniquement** (pas de classes)
+- ✅ **Hooks pour l'état** : `useState`, `useEffect`, `useContext`
+- ✅ **Props typées** : Toujours définir une interface pour les props
+- ✅ **Nommage PascalCase** : `GuestUpload`, `WallView`
 
 **Exemple** :
 ```typescript
-interface GuestUploadProps {
-  onPhotoUploaded: (photo: Photo) => void;
-  onBack: () => void;
+// ❌ Mauvais
+const Component = (props) => {
+  return <div>{props.name}</div>;
+};
+
+// ✅ Bon
+interface ComponentProps {
+  name: string;
+  onAction: () => void;
 }
 
-export const GuestUpload: React.FC<GuestUploadProps> = ({
-  onPhotoUploaded,
-  onBack
-}) => {
-  // ...
+const Component: React.FC<ComponentProps> = ({ name, onAction }) => {
+  return <div>{name}</div>;
 };
 ```
 
 ### Nommage
 
-- **Fichiers** : `camelCase.tsx` pour composants, `camelCase.ts` pour utilitaires
+- **Fichiers** : `camelCase.tsx` (composants), `camelCase.ts` (services)
 - **Composants** : `PascalCase`
 - **Fonctions/Variables** : `camelCase`
 - **Constantes** : `UPPER_SNAKE_CASE`
 - **Types/Interfaces** : `PascalCase`
 
+### Formatage
+
+- **Indentation** : 2 espaces
+- **Guillemets** : Simple quotes pour JS/TS, double pour JSX
+- **Point-virgule** : Oui
+- **Trailing commas** : Oui dans objets/arrays multilignes
+
+### Architecture
+
+- **Service Layer** : Toute la logique métier dans `/services`
+- **Composants "stupides"** : UI uniquement, pas de logique métier
+- **Context API** : Pour l'état global partagé
+- **Lazy Loading** : Pour les composants lourds
+
+---
+
+## 🧪 Tests
+
+### Tests à implémenter
+
+- [ ] **Tests unitaires** : Services avec mocks
+- [ ] **Tests d'intégration** : Flux complets
+- [ ] **Tests E2E** : Scénarios utilisateur
+
+### Structure de tests (future)
+
+```
+tests/
+├── unit/
+│   ├── services/
+│   └── utils/
+├── integration/
+│   └── flows/
+└── e2e/
+    └── scenarios/
+```
+
+### Bonnes pratiques
+
+- Tester les cas d'erreur
+- Mocker les appels externes (Supabase, Gemini)
+- Tester les edge cases
+- Maintenir une couverture de code > 80%
+
+---
+
+## 📚 Documentation
+
+### Code Comments
+
+- ✅ **JSDoc pour fonctions publiques** : Services, utilitaires complexes
+- ✅ **Commentaires pour "pourquoi"** : Expliquer les décisions, pas le "quoi"
+- ✅ **Éviter les commentaires évidents** : Le code doit être auto-explicatif
+
 **Exemple** :
 ```typescript
-// Fichier: photoService.ts
-export const MAX_PHOTOS = 100;
-
-interface PhotoUploadResult {
-  success: boolean;
-  photo?: Photo;
-}
-
-export const uploadPhoto = async (file: File): Promise<PhotoUploadResult> => {
+/**
+ * Upload une photo vers Supabase Storage
+ * @param file - Fichier image/vidéo à uploader
+ * @param eventId - ID de l'événement
+ * @returns Promise résolue avec l'URL publique de la photo
+ */
+export const uploadPhotoToStorage = async (
+  file: File,
+  eventId: string
+): Promise<string> => {
   // ...
 };
 ```
 
-### Formatage
+### Documentation utilisateur
 
-- ✅ **Utilisez Prettier** (configuration à venir)
-- ✅ **Indentation** : 2 espaces
-- ✅ **Guillemets** : Simple quotes pour JS/TS, double pour JSX
-- ✅ **Point-virgule** : Oui
-- ✅ **Trailing commas** : Oui dans les objets/arrays multilignes
-
-**Exemple** :
-```typescript
-const config = {
-  apiUrl: 'https://api.example.com',
-  timeout: 5000,
-  retries: 3,
-};
-```
-
-### Structure des Fichiers
-
-- ✅ **Un composant par fichier**
-- ✅ **Services dans `/services`**
-- ✅ **Utils dans `/utils`**
-- ✅ **Types partagés dans `types.ts`**
+- Mettre à jour `README.md` si nouvelle fonctionnalité utilisateur
+- Mettre à jour `ARCHITECTURE.md` si modification architecturale
+- Mettre à jour `API_DOCS.md` si nouveau service
+- Mettre à jour `DB_SCHEMA.md` si modification base de données
 
 ---
 
-## 🔀 Workflow Git
+## 🔀 Pull Requests
 
-### Convention de Nommage des Branches
+### Avant de soumettre
 
-- `feature/nom-fonctionnalite` : Nouvelle fonctionnalité
-- `fix/nom-bug` : Correction de bug
-- `docs/nom-documentation` : Amélioration de la documentation
-- `refactor/nom-refactoring` : Refactoring de code
-- `test/nom-test` : Ajout/modification de tests
+- [ ] Code suit les conventions (nommage, formatage)
+- [ ] Types TypeScript corrects (pas d'erreurs)
+- [ ] Gestion d'erreurs appropriée
+- [ ] Tests manuels effectués
+- [ ] Documentation mise à jour
+- [ ] Pas de `console.log` oubliés
+- [ ] Pas de code commenté mort
+- [ ] Pas de secrets dans le code
 
-### Messages de Commit
+### Format du commit
 
-Suivez le format [Conventional Commits](https://www.conventionalcommits.org/) :
+Utiliser [Conventional Commits](https://www.conventionalcommits.org/) :
 
 ```
-<type>(<scope>): <description>
-
-[corps optionnel]
-
-[footer optionnel]
+feat: Ajouter la fonctionnalité X
+fix: Corriger le bug Y
+docs: Mettre à jour la documentation
+style: Formatage du code
+refactor: Refactorisation du code
+test: Ajouter des tests
+chore: Tâches de maintenance
 ```
-
-**Types** :
-- `feat` : Nouvelle fonctionnalité
-- `fix` : Correction de bug
-- `docs` : Documentation
-- `style` : Formatage (pas de changement de code)
-- `refactor` : Refactoring
-- `test` : Tests
-- `chore` : Tâches de maintenance
 
 **Exemples** :
 ```bash
-feat(upload): ajout de la validation de taille de fichier
-fix(wall): correction du scroll infini qui plantait
-docs(readme): mise à jour des instructions d'installation
-refactor(services): extraction de la logique de modération
+git commit -m "feat: Ajouter le mode collage pour les photos"
+git commit -m "fix: Corriger l'upload de vidéos > 20s"
+git commit -m "docs: Mettre à jour API_DOCS.md"
 ```
 
-### Pull Request
+### Description de la PR
 
-- ✅ **Titre clair** : Résume les changements
-- ✅ **Description détaillée** : Explique le "quoi" et le "pourquoi"
-- ✅ **Référence aux issues** : `Closes #123` ou `Fixes #456`
-- ✅ **Screenshots** : Si modification UI
-- ✅ **Tests** : Mentionnez si vous avez testé manuellement
+Template à suivre :
 
-**Template** :
 ```markdown
 ## Description
-[Description des changements]
+Brève description des changements
 
 ## Type de changement
 - [ ] Bug fix
@@ -270,168 +315,63 @@ refactor(services): extraction de la logique de modération
 - [ ] Documentation
 
 ## Comment tester
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
+1. Étapes pour tester
+2. ...
 
 ## Checklist
-- [ ] Mon code suit les standards du projet
-- [ ] J'ai testé mes changements localement
-- [ ] J'ai mis à jour la documentation si nécessaire
-- [ ] Mes commits suivent la convention de nommage
+- [ ] Code testé
+- [ ] Documentation mise à jour
+- [ ] Pas de breaking changes
 ```
 
----
+### Review process
 
-## 🧪 Tests
-
-### Tests à Implémenter
-
-Actuellement, les tests ne sont pas encore en place. Voici ce qui est prévu :
-
-#### Unit Tests (Services)
-
-Testez les services isolément avec des mocks :
-
-```typescript
-// Exemple futur
-describe('photoService', () => {
-  it('should upload a photo successfully', async () => {
-    // Mock Supabase
-    const mockPhoto = { id: '123', url: '...' };
-    // Test
-    const result = await addPhotoToWall(base64, 'caption', 'author');
-    expect(result).toEqual(mockPhoto);
-  });
-});
-```
-
-#### Integration Tests
-
-Testez les flux complets :
-
-```typescript
-// Exemple futur
-describe('Photo Upload Flow', () => {
-  it('should upload, moderate, and display photo', async () => {
-    // Test du flux complet
-  });
-});
-```
-
-#### E2E Tests
-
-Utilisez Playwright ou Cypress pour tester les scénarios utilisateur.
-
-### Tests Manuels
-
-En attendant les tests automatisés, testez manuellement :
-
-1. **Upload de photo** : Vérifiez que l'upload fonctionne
-2. **Modération** : Testez avec différentes images
-3. **Realtime** : Ouvrez deux onglets et vérifiez la synchronisation
-4. **Mobile** : Testez sur un vrai appareil mobile
-5. **Admin** : Testez toutes les fonctionnalités admin
+1. **Automatique** : CI/CD vérifie le code
+2. **Manuel** : Au moins un maintainer doit approuver
+3. **Feedback** : Les commentaires seront adressés
+4. **Merge** : Une fois approuvé, la PR sera mergée
 
 ---
 
-## 📚 Documentation
+## 🐛 Signaler des problèmes
 
-### Code Comments
+### Issues
 
-- ✅ **Documentez** les fonctions complexes avec JSDoc
-- ✅ **Expliquez** le "pourquoi" pas le "quoi" (le code doit être auto-explicatif)
-- ✅ **Ajoutez des commentaires** pour les algorithmes non-triviaux
+Utiliser les templates d'issues :
+- 🐛 **Bug Report** : Pour signaler un bug
+- ✨ **Feature Request** : Pour proposer une fonctionnalité
+- 📚 **Documentation** : Pour améliorer la documentation
+- ❓ **Question** : Pour poser une question
 
-**Exemple** :
-```typescript
-/**
- * Analyse une image avec Gemini pour détecter le contenu inapproprié.
- * En cas d'erreur API, retourne des valeurs "safe" par défaut pour ne pas bloquer l'expérience.
- */
-export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> => {
-  // ...
-};
-```
+### Informations à fournir
 
-### Documentation Utilisateur
+**Pour un bug** :
+- Description claire
+- Étapes pour reproduire
+- Comportement attendu vs actuel
+- Environnement (OS, navigateur, version)
+- Captures d'écran/logs
 
-Si vous ajoutez une fonctionnalité utilisateur :
-
-1. **Mettez à jour** `README.md` si nécessaire
-2. **Ajoutez des exemples** dans la documentation
-3. **Créez un guide** si la fonctionnalité est complexe
-
-### Documentation Technique
-
-Si vous modifiez l'architecture :
-
-1. **Mettez à jour** `ARCHITECTURE.md`
-2. **Mettez à jour** `API_DOCS.md` si vous ajoutez/modifiez des services
-3. **Mettez à jour** `DB_SCHEMA.md` si vous modifiez la base de données
+**Pour une fonctionnalité** :
+- Description détaillée
+- Cas d'usage
+- Bénéfices attendus
+- Mockups/wireframes si applicable
 
 ---
 
-## 🎯 Priorités de Contribution
+## 📞 Contact
 
-### Facile (Bon pour commencer)
-
-- 🐛 Correction de bugs mineurs
-- 📝 Amélioration de la documentation
-- 🎨 Amélioration de l'UI/UX (petites modifications)
-- ♿ Accessibilité (labels, ARIA, etc.)
-
-### Moyen
-
-- ✨ Nouvelles fonctionnalités simples
-- 🔧 Refactoring de code
-- 🧪 Ajout de tests
-- 📊 Amélioration des analytics
-
-### Avancé
-
-- 🏗️ Modifications architecturales majeures
-- 🔐 Améliorations de sécurité
-- ⚡ Optimisations de performance
-- 🌐 Intégrations externes
+- **GitHub Issues** : Pour les bugs et fonctionnalités
+- **Email** : [votre-email@example.com]
+- **Discord/Slack** : [lien si applicable]
 
 ---
 
-## ❓ Questions
+## 🙏 Remerciements
 
-### Avant de Commencer
-
-Si vous n'êtes pas sûr de quelque chose :
-
-1. **Consultez** la documentation existante
-2. **Cherchez** dans les issues existantes
-3. **Ouvrez une issue** pour discuter avant de coder (pour les gros changements)
-
-### Besoin d'Aide ?
-
-- 📧 Ouvrez une issue avec le label `question`
-- 💬 Discutez dans les discussions GitHub (si activées)
-- 📖 Consultez la [documentation](./README.md)
-
----
-
-## ✅ Checklist Avant de Soumettre
-
-- [ ] Mon code suit les standards du projet
-- [ ] J'ai testé mes changements localement
-- [ ] J'ai mis à jour la documentation si nécessaire
-- [ ] Mes commits suivent la convention de nommage
-- [ ] Ma branche est à jour avec `main`
-- [ ] J'ai résolu tous les conflits
-- [ ] J'ai vérifié qu'il n'y a pas d'erreurs de lint/TypeScript
-
----
-
-## 🙏 Merci !
-
-Merci de prendre le temps de contribuer à Live Party Wall ! Chaque contribution, même petite, est appréciée et fait une différence.
+Merci à tous les contributeurs qui rendent ce projet possible !
 
 ---
 
 **Dernière mise à jour** : 2026-01-15
-

@@ -23,12 +23,22 @@ Live Party Wall est une application web React en temps réel qui permet aux invi
 
 ### Backend & Infrastructure
 - **Supabase** : BaaS (PostgreSQL, Storage, Realtime, Auth)
+  - PostgreSQL : Base de données relationnelle avec RLS
+  - Storage : Stockage de fichiers (photos, cadres, avatars)
+  - Realtime : Synchronisation temps réel via WebSockets
+  - Auth : Authentification JWT avec email/password
 - **Google Gemini 3 Flash** : IA pour modération et légendes
+  - Modération de contenu automatique
+  - Génération de légendes personnalisées
+  - Analyse de qualité d'images
 
-### Outils
-- **JSZip** : Export ZIP
-- **File Saver** : Téléchargement fichiers
-- **QRCode React** : Génération QR codes
+### Outils & Bibliothèques
+- **JSZip** : Export ZIP de photos
+- **File Saver** : Téléchargement de fichiers côté client
+- **QRCode React** : Génération de QR codes
+- **Framer Motion** : Animations fluides et performantes
+- **Face-api.js** : Reconnaissance faciale
+- **@tanstack/react-virtual** : Virtualisation pour performances
 
 ---
 
@@ -46,9 +56,11 @@ constants.ts    # Constantes globales
 
 ### Patterns Architecturaux
 - **Service Layer** : Toute la logique métier dans `/services`, les composants restent "stupides"
-- **Context API** : Pour l'état global (toasts uniquement actuellement)
-- **Lazy Loading** : Tous les composants principaux sont lazy-loaded
+- **Context API** : Pour l'état global partagé (Event, Photos, Settings, Auth, Toast)
+- **Lazy Loading** : Tous les composants principaux sont lazy-loaded avec React.lazy()
 - **Type Safety** : TypeScript strict, types définis dans `types.ts`
+- **Multi-événements** : Architecture SaaS avec table `events` et `event_id` partout
+- **RLS (Row Level Security)** : Sécurité au niveau des lignes dans Supabase
 
 ---
 
@@ -274,11 +286,13 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 
 ### Ajouter une Table Supabase
 1. **Créer le script SQL** : `supabase_nom_table_setup.sql`
-2. **Définir RLS** : Politiques SELECT, INSERT, UPDATE, DELETE
-3. **Activer Realtime** : Si nécessaire pour temps réel
-4. **Créer le service** : Fonctions CRUD dans `/services`
-5. **Mettre à jour DB_SCHEMA.md** : Documenter la nouvelle table
-6. **Tester les permissions** : Vérifier RLS fonctionne correctement
+2. **Ajouter `event_id`** : Toutes les tables doivent avoir `event_id UUID REFERENCES events(id) ON DELETE CASCADE`
+3. **Définir RLS** : Politiques SELECT, INSERT, UPDATE, DELETE avec filtres `event_id`
+4. **Créer les index** : Sur `event_id` et colonnes fréquemment requêtées
+5. **Activer Realtime** : Si nécessaire pour temps réel (Dashboard Supabase > Replication)
+6. **Créer le service** : Fonctions CRUD dans `/services/nomService.ts`
+7. **Mettre à jour DB_SCHEMA.md** : Documenter la nouvelle table
+8. **Tester les permissions** : Vérifier RLS fonctionne correctement
 
 ### Modifier l'UI
 1. **Identifier le composant** à modifier
@@ -297,11 +311,15 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 - **Overlays/Cadres** : Utiliser `/utils/imageOverlay.ts`
 - **Toasts** : Utiliser `ToastContext` pour notifications
 - **Supabase** : Utiliser `supabaseClient.ts` pour toutes les opérations DB
+- **Compression** : Utiliser `useImageCompression` hook pour optimiser les images
+- **Debounce** : Utiliser `useDebounce` hook pour limiter les appels API
+- **Logger** : Utiliser `logger` de `/utils/logger.ts` pour le logging structuré
 
 ### Bibliothèques à Éviter
 - ❌ **État global lourd** : Redux/Zustand (pas nécessaire actuellement)
 - ❌ **Formulaires complexes** : React Hook Form (pas encore nécessaire)
 - ❌ **Routing** : React Router (routing manuel actuellement)
+- ❌ **State management externe** : Context API suffit pour la taille actuelle
 
 ---
 
@@ -324,12 +342,15 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 ## 🔍 Vérifications Avant Commit
 
 - [ ] Code suit les conventions (nommage, formatage)
-- [ ] Types TypeScript corrects (pas d'erreurs)
-- [ ] Gestion d'erreurs appropriée
-- [ ] Tests manuels effectués
-- [ ] Documentation mise à jour si nécessaire
-- [ ] Pas de console.log oubliés (sauf pour debugging temporaire)
+- [ ] Types TypeScript corrects (pas d'erreurs, pas de `any`)
+- [ ] Gestion d'erreurs appropriée (try/catch, fallbacks pour IA)
+- [ ] Tests manuels effectués (upload, affichage, erreurs)
+- [ ] Documentation mise à jour si nécessaire (README, ARCHITECTURE, API_DOCS, DB_SCHEMA)
+- [ ] Pas de `console.log` oubliés (utiliser `logger` de `/utils/logger.ts`)
 - [ ] Pas de code commenté mort
+- [ ] Variables d'environnement vérifiées (pas de secrets dans le code)
+- [ ] RLS Supabase vérifié si nouvelle table
+- [ ] `event_id` ajouté si nouvelle table (architecture multi-événements)
 
 ---
 
