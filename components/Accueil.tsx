@@ -9,6 +9,7 @@ import { Advantages } from './landing/Advantages';
 import { UseCases } from './landing/UseCases';
 import { GuestMessage } from './landing/GuestMessage';
 import { Pricing } from './landing/Pricing';
+import { PhotoboothComparison } from './landing/PhotoboothComparison';
 import { FinalCTA } from './landing/FinalCTA';
 import { LandingFooter } from './landing/LandingFooter';
 
@@ -59,6 +60,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         <UseCases />
         <GuestMessage />
         <Pricing onAdminClick={onAdminClick} />
+        <PhotoboothComparison />
         <FinalCTA onAdminClick={onAdminClick} />
         <LandingFooter />
       </div>

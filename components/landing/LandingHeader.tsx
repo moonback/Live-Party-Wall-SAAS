@@ -64,6 +64,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     { id: 'features', label: 'Fonctionnalités' },
     { id: 'how-it-works', label: 'Comment ça marche' },
     { id: 'use-cases', label: "Cas d'usage" },
+    { id: 'photobooth-comparison', label: 'Comparaison' },
     // Pricing traité séparément
   ];
 

@@ -7,4 +7,5 @@ export { NavigationCards } from './NavigationCards';
 export { QRCodeFullscreenModal } from './QRCodeFullscreenModal';
 export { ActionButton } from './ActionButton';
 export { EscapeHandler } from './EscapeHandler';
+export { PhotoboothComparison } from './PhotoboothComparison';
 
