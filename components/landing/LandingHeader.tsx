@@ -26,14 +26,28 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Détecter si on est sur la page Pricing
+  const isPricingPage = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('mode') === 'pricing';
+  };
+
   const handleScrollToSection = (sectionId: string) => {
-    onScrollToSection(sectionId);
+    if (isPricingPage()) {
+      // Si on est sur la page Pricing, rediriger vers l'accueil avec le hash
+      window.location.href = `${window.location.pathname}#${sectionId}`;
+    } else {
+      // Sinon, scroller normalement
+      onScrollToSection(sectionId);
+    }
     setIsMobileMenuOpen(false);
   };
 
   const handleNavigateToPricing = () => {
-    window.location.href = `${window.location.pathname}?mode=pricing`;
-    setIsMobileMenuOpen(false);
+    if (!isPricingPage()) {
+      window.location.href = `${window.location.pathname}?mode=pricing`;
+      setIsMobileMenuOpen(false);
+    }
   };
 
   const handleNavigateToHome = () => {
@@ -86,12 +100,14 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
             >
               Cas d'usage
             </button>
-            <button
-              onClick={handleNavigateToPricing}
-              className="text-gray-300 hover:text-pink-400 transition-colors font-medium"
-            >
-              Tarification
-            </button>
+            {!isPricingPage() && (
+              <button
+                onClick={handleNavigateToPricing}
+                className="text-gray-300 hover:text-pink-400 transition-colors font-medium"
+              >
+                Tarification
+              </button>
+            )}
           </nav>
 
           {/* CTA Button Desktop */}
@@ -150,12 +166,14 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               >
                 Cas d'usage
               </button>
-              <button
-                onClick={handleNavigateToPricing}
-                className="text-left text-gray-300 hover:text-pink-400 transition-colors font-medium py-2"
-              >
-                Tarification
-              </button>
+              {!isPricingPage() && (
+                <button
+                  onClick={handleNavigateToPricing}
+                  className="text-left text-gray-300 hover:text-pink-400 transition-colors font-medium py-2"
+                >
+                  Tarification
+                </button>
+              )}
               
               <button
                 onClick={onAdminClick}

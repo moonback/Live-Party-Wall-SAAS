@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Hero from './landing/Hero';
 import { LandingBackground } from './landing/LandingBackground';
@@ -29,6 +29,17 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Gérer le hash dans l'URL au chargement
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      // Attendre que le DOM soit prêt
+      setTimeout(() => {
+        scrollToSection(hash);
+      }, 300);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fuchsia-900 via-black to-pink-900 relative overflow-hidden">
