@@ -26,7 +26,7 @@ const FindMe = lazy(() => import('./components/FindMe')); // Reconnaissance faci
 const BattleResultsProjection = lazy(() => import('./components/BattleResultsProjection')); // Projection des résultats de battles
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
 const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
-const NoEventScreen = lazy(() => import('./components/NoEventScreen')); // Écran sans événement
+const Accueil = lazy(() => import('./components/Accueil')); // Page d'accueil
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -297,7 +297,7 @@ const AppContent: React.FC = () => {
             {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
             {viewMode !== 'admin' && !currentEvent && (
               <TransitionWrapper type="fade" duration={500}>
-                <NoEventScreen
+                <Accueil
                   onAdminClick={() => setViewMode('admin')}
                   onEventSelected={() => {
                     // L'événement sera chargé automatiquement par EventContext

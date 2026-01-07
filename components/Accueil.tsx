@@ -7,7 +7,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import EventSelector from './EventSelector';
 
-interface NoEventScreenProps {
+interface AccueilProps {
   onAdminClick: () => void;
   onEventSelected?: () => void;
 }
@@ -16,7 +16,7 @@ interface NoEventScreenProps {
  * Landing page complète pour Live Party Wall SaaS
  * Page d'accueil détaillée avec présentation complète du produit
  */
-const NoEventScreen: React.FC<NoEventScreenProps> = ({ onAdminClick, onEventSelected }) => {
+const Accueil: React.FC<AccueilProps> = ({ onAdminClick, onEventSelected }) => {
   const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -637,4 +637,5 @@ const NoEventScreen: React.FC<NoEventScreenProps> = ({ onAdminClick, onEventSele
   );
 };
 
-export default NoEventScreen;
+export default Accueil;
+
