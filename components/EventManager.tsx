@@ -15,7 +15,7 @@ interface EventManagerProps {
 
 const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdated, onEventDeleted }) => {
   const { user } = useAuth();
-  const { isEventOwner, canEdit } = useEvent();
+  const { isEventOwner, canEdit, clearEvent } = useEvent();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -161,8 +161,12 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button
-              onClick={onBack}
+              onClick={() => {
+                clearEvent(); // Déconnecter l'événement
+                onBack(); // Retourner à la liste des événements
+              }}
               className="p-2 hover:bg-white/10 rounded-lg transition"
+              aria-label="Retour à la liste des événements"
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
