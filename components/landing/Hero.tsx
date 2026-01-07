@@ -881,31 +881,30 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
               <span className="text-[10px] sm:text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                Nouveau ! Le mur photo qui fait le buzz
+                Le mur photo viral
               </span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4 sm:mb-5 lg:mb-6 text-white">
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-3 sm:mb-4 lg:mb-4 text-white">
               Vos invités,<br className="hidden lg:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400">
-                la star de la soirée
+                stars de la soirée
               </span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-400 mb-6 sm:mb-7 lg:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              Offrez une animation photo fun, rapide et sans installation : <strong>vos invités envoient leurs photos prises sur le fait pendant l'événement, l'IA sublime et affiche tout instantanément sur écran géant.</strong><br />
-              Idéal pour <strong className="text-pink-400">particuliers, pros & agences événementielles</strong> : effet « wow » garanti, souvenirs partagés à tous les coups.
+            <motion.p variants={itemVariants} className="text-sm sm:text-base lg:text-lg text-gray-400 mb-4 sm:mb-5 lg:mb-6 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+              <strong>Photos prises sur le fait → IA sublime → Affichage instantané sur écran géant.</strong><br />
+              <strong className="text-pink-400">Particuliers, pros & agences.</strong> Effet « wow » garanti.
             </motion.p>
 
             {/* Feature Pills */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start mb-6 sm:mb-8 lg:mb-10">
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-2 justify-center lg:justify-start mb-4 sm:mb-5 lg:mb-6">
                 {[
-                    { icon: <Monitor size={14} />, text: "TV/PC + Téléphones" },
-                    { icon: <Smartphone size={14} />, text: "Aucune App requise" },
-                    { icon: <Zap size={14} />, text: "Affichage Temps réel" },
-                    { icon: <ShieldCheck size={14} />, text: "Modération Auto (IA)" }
+                    { icon: <Monitor size={12} />, text: "TV/PC + Téléphones" },
+                    { icon: <Zap size={12} />, text: "Temps réel" },
+                    { icon: <ShieldCheck size={12} />, text: "Modération IA" }
                 ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/5 rounded-md text-xs sm:text-sm text-gray-300 backdrop-blur-sm">
+                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 bg-white/5 border border-white/5 rounded-md text-xs text-gray-300 backdrop-blur-sm">
                         <span className="text-pink-400">{feature.icon}</span>
                         {feature.text}
                     </div>
@@ -913,37 +912,35 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             </motion.div>
 
             {/* CTA Buttons */}
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start items-center mb-6 sm:mb-8 lg:mb-10 w-full sm:w-auto">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-2.5 justify-center lg:justify-start items-center mb-4 sm:mb-5 lg:mb-6 w-full sm:w-auto">
               <button 
                 onClick={onAdminClick}
-                className="relative px-6 sm:px-8 py-3 sm:py-4 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group"
+                className="relative px-5 sm:px-6 py-2.5 sm:py-3 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Essayer gratuitement
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               
-              <button className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border border-white/20 rounded-full font-semibold text-sm sm:text-base text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
-                <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
-                Voir la démo en action
+              <button className="px-5 sm:px-6 py-2.5 sm:py-3 bg-transparent border border-white/20 rounded-full font-semibold text-xs sm:text-sm text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
+                <Play className="w-3.5 h-3.5 fill-white group-hover:scale-110 transition-transform" />
+                Voir la démo
               </button>
             </motion.div>
 
             {/* Social Proof Enhanced */}
-            <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4">
-               <div className="flex -space-x-3">
-                  {EVENT_PHOTOS.slice(0,4).map((photo, i) => (
-                    <div key={i} className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-black bg-gray-800 bg-cover bg-center" style={{backgroundImage: `url(${photo.url})`}}></div>
+            <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-2.5">
+               <div className="flex -space-x-2">
+                  {EVENT_PHOTOS.slice(0,3).map((photo, i) => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-800 bg-cover bg-center" style={{backgroundImage: `url(${photo.url})`}}></div>
                   ))}
                </div>
-               <div className="flex flex-col items-start">
-                 <div className="flex items-center gap-1">
-                     {[1,2,3,4,5].map(s => <Star key={s} size={12} className="sm:w-[14px] sm:h-[14px] text-yellow-400 fill-yellow-400" />)}
-                 </div>
-                 <span className="text-xs sm:text-sm text-gray-400"><strong className="text-white">4.9/5</strong> par +500 organisateurs (particuliers, pros & agences)</span>
+               <div className="flex items-center gap-1">
+                   {[1,2,3,4,5].map(s => <Star key={s} size={11} className="text-yellow-400 fill-yellow-400" />)}
                </div>
+               <span className="text-xs text-gray-400"><strong className="text-white">4.9/5</strong> par +500 organisateurs</span>
             </motion.div>
           </motion.div>
 

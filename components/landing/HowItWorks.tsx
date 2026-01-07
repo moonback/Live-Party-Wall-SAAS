@@ -8,7 +8,7 @@ import { StepCard } from './StepCard';
  */
 export const HowItWorks: React.FC = () => {
   return (
-    <section id="how-it-works" className="py-12 sm:py-16 md:py-20 lg:py-16 xl:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <section id="how-it-works" className="py-10 sm:py-12 md:py-16 lg:py-12 xl:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Fond décoratif animé */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-pink-500/5 to-transparent pointer-events-none" />
       
@@ -45,14 +45,14 @@ export const HowItWorks: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-10 xl:mb-12"
+          className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-8 xl:mb-10"
         >
           <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-bold text-white mb-3 sm:mb-4 lg:mb-3 xl:mb-4 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-3 lg:mb-2 xl:mb-3 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
           >
             Comment ça marche ?
           </motion.h2>
@@ -61,14 +61,14 @@ export const HowItWorks: React.FC = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl lg:text-base xl:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base md:text-lg lg:text-sm xl:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed"
           >
-            Une expérience simple en <span className="text-pink-400 font-semibold">4 étapes</span> pour transformer votre soirée en événement mémorable. Parfait pour particuliers, professionnels et agences événementielles.
+            <span className="text-pink-400 font-semibold">4 étapes</span> pour transformer votre soirée. Particuliers, pros & agences.
           </motion.p>
         </motion.div>
 
         {/* Grille responsive avec animations */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-4 xl:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-3 xl:gap-4">
           {STEPS.map((step, index) => (
             <StepCard
               key={step.number}
