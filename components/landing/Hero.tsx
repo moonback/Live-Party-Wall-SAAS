@@ -881,19 +881,20 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
               <span className="text-[10px] sm:text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                Le nouveau concept viral pour vos soirées
+                Nouveau ! Le mur photo qui fait le buzz
               </span>
             </motion.div>
             
             <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4 sm:mb-5 lg:mb-6 text-white">
-              Transformez votre soirée <br className="hidden lg:block"/>
+              Vos invités,<br className="hidden lg:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400">
-                 en expérience mémorable
+                la star de la soirée
               </span>
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-400 mb-6 sm:mb-7 lg:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              Le <strong>mur photo interactif</strong> qui remplace le photobooth traditionnel. <strong className="text-pink-400">C'est la clé :</strong> juste une TV ou vidéoprojecteur + un simple PC. Vos invités utilisent leur téléphone. Scannez un QR Code, prenez des photos, et l'IA les sublime en direct sur grand écran. <strong>Parfait pour particuliers, professionnels et agences événementielles.</strong>
+              Offrez une animation photo fun, rapide et sans installation : <strong>vos invités envoient leurs photos, l’IA sublime et affiche tout instantanément sur écran géant.</strong><br />
+              Idéal pour <strong className="text-pink-400">particuliers, pros & agences événementielles</strong> : effet « wow » garanti, souvenirs partagés à tous les coups.
             </motion.p>
 
             {/* Feature Pills */}
