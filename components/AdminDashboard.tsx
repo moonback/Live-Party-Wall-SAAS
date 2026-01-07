@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
-import { Trash2, LogOut, ArrowLeft, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu, Calendar } from 'lucide-react';
+import { Trash2, LogOut, Home, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu, Calendar } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
@@ -840,9 +840,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 <button
                   onClick={onBack}
                   className="group relative p-2 min-h-[36px] min-w-[36px] touch-manipulation rounded-lg border border-white/15 bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:from-pink-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 flex items-center justify-center shadow-md hover:shadow-pink-500/20"
-                  aria-label="Retour à l'événement en cours"
+                  aria-label="Retour à l'accueil"
                 >
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 group-hover:-translate-x-1 transition-transform duration-300" />
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 group-hover:scale-110 transition-transform duration-300" />
                   <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none"></span>
                 </button>
                 
