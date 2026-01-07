@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
-import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Smartphone, ShieldCheck, Play, Star, Monitor } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Play, Star, Monitor } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 // Photos optimisées et fiables pour éviter les erreurs de chargement
@@ -851,7 +851,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
   };
 
   return (
-    <section ref={containerRef} className="relative min-h-[100svh] flex items-center justify-center pt-20 sm:pt-24 lg:pt-16 pb-8 sm:pb-12 lg:pb-16 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-black to-pink-900">
+    <section ref={containerRef} className="relative min-h-[100svh] flex items-center justify-center pt-24 sm:pt-28 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-black to-pink-900">
       
       {/* Dynamic Background Elements */}
       <motion.div style={{ y: y1 }} className="absolute top-[-10%] left-[-10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-pink-500/20 rounded-full blur-[80px] md:blur-[120px] pointer-events-none opacity-50 mix-blend-screen" />
@@ -862,19 +862,19 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 lg:gap-8 xl:gap-12">
+        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12 lg:gap-16">
           
           {/* Text Content */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex-1 text-center lg:text-left relative z-20 pt-4 sm:pt-6 lg:pt-0"
+            className="flex-1 text-center lg:text-left relative z-20 w-full"
           >
             {/* New Badge */}
             <motion.div 
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 sm:mb-5 lg:mb-6 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 sm:mb-8 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default mx-auto lg:mx-0"
             >
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -885,26 +885,26 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               </span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
               Transformez vos invités en<br className="hidden lg:block"/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-gradient-x">
+              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-gradient-x pb-2">
                 photographes stars
               </span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-lg sm:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              L'animation photo interactive qui sublime votre événement. <br/>
-              <span className="text-white font-medium">Capturez. L'IA sublime. Le mur diffuse.</span> <br/>
+            <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+              L'animation photo interactive qui sublime votre événement. <br className="hidden sm:block" />
+              <span className="text-white font-medium">Capturez. L'IA sublime. Le mur diffuse.</span> <br className="hidden sm:block" />
               Zéro application à installer. Effet "Wow" immédiat.
             </motion.p>
 
             {/* Feature Pills */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start mb-8">
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start mb-8 sm:mb-10">
                 {[
                     { icon: <Monitor size={14} />, text: "TV/PC + Smartphones" },
                     { icon: <Zap size={14} />, text: "Mur Photo Instantané" },
                 ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm font-medium text-gray-200 backdrop-blur-md shadow-sm hover:bg-white/10 transition-colors">
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs sm:text-sm font-medium text-gray-200 backdrop-blur-md shadow-sm hover:bg-white/10 transition-colors">
                         <span className="text-pink-400">{feature.icon}</span>
                         {feature.text}
                     </div>
@@ -912,10 +912,10 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             </motion.div>
 
             {/* CTA Buttons */}
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-2.5 justify-center lg:justify-start items-center mb-4 sm:mb-5 lg:mb-6 w-full sm:w-auto">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-8 sm:mb-10 w-full sm:w-auto">
               <button 
                 onClick={onAdminClick}
-                className="relative px-5 sm:px-6 py-2.5 sm:py-3 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group"
+                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group shadow-lg"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Essayer maintenant
@@ -924,8 +924,8 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               
-              <button className="px-5 sm:px-6 py-2.5 sm:py-3 bg-transparent border border-white/20 rounded-full font-semibold text-xs sm:text-sm text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
-                <Play className="w-3.5 h-3.5 fill-white group-hover:scale-110 transition-transform" />
+              <button className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-full font-semibold text-sm sm:text-base text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
+                <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
                 Voir la démo
               </button>
             </motion.div>
@@ -933,42 +933,41 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             {/* Social Proof Enhanced */}
             <motion.div
               variants={itemVariants}
-              className="flex items-center justify-center lg:justify-start gap-4"
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6"
               aria-label="Avis clients organisateurs"
             >
-              {/* Avatars événement stylés et overlays pro */}
-              <div className="flex -space-x-3 pr-1.5">
+              {/* Avatars événement stylés */}
+              <div className="flex -space-x-3">
                 {EVENT_PHOTOS.slice(0, 4).map((photo, idx) => (
                   <div
                     key={idx}
-                    className="relative w-10 h-10 rounded-full border-2 border-white/80 ring-2 ring-pink-400/40 shadow-lg bg-gray-800 bg-cover bg-center overflow-hidden hover:scale-105 transition-transform duration-200 group"
+                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/80 ring-2 ring-pink-400/40 shadow-lg bg-gray-800 bg-cover bg-center overflow-hidden hover:scale-105 transition-transform duration-200 group"
                     style={{ backgroundImage: `url(${photo.url})` }}
                   >
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-full border-2 border-white opacity-75 group-hover:scale-125 transition-transform" />
-                    <span className="sr-only">{`Invité photo n°${idx + 1}`}</span>
                   </div>
                 ))}
               </div>
-              {/* Bloc étoilé animé */}
-              <div className="flex items-center gap-1.5 animate-[pulse_4s_ease-in-out_infinite]">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.21)]"
-                  />
-                ))}
+
+              {/* Note & preuve sociale */}
+              <div className="flex flex-col items-center sm:items-start gap-1">
+                <div className="flex items-center gap-1">
+                   {[1, 2, 3, 4, 5].map(i => (
+                    <Star
+                      key={i}
+                      size={16}
+                      className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.21)]"
+                    />
+                  ))}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-300">
+                  <strong className="text-white font-semibold">4.9/5</strong> sur <span className="text-pink-400 font-bold">+500 événements</span>
+                </div>
               </div>
-              {/* Note & preuve sociale modernisée */}
-              <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium bg-white/10 rounded-full px-3 py-1 backdrop-blur-sm border border-white/10 shadow-sm">
-                <strong className="text-white font-semibold tracking-wide text-sm">4.9/5</strong>
-                <span className="hidden sm:inline text-gray-400">sur</span>
-                <span className="text-pink-400 font-bold text-xs">+500 organisateurs</span>
-              </span>
             </motion.div>
           </motion.div>
 
-          {/* 3D Scene */}
+          {/* 3D Scene - Desktop only */}
           <div className="hidden md:flex flex-1 w-full relative h-[400px] sm:h-[500px] lg:h-[550px] xl:h-[600px] items-center justify-center mt-6 sm:mt-8 lg:mt-0">
              <SceneAnimation mode="demo" />
           </div>
