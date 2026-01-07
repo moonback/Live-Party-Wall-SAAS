@@ -4,154 +4,55 @@ import { STEPS } from './landingData';
 import { StepCard } from './StepCard';
 
 /**
- * Section "Comment ça marche" avec les 4 étapes améliorée et responsive
+ * Section "Comment ça marche" optimisée
  */
 export const HowItWorks: React.FC = () => {
   return (
-    <section id="how-it-works" className="py-10 sm:py-12 md:py-16 lg:py-12 xl:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Fond décoratif animé */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-pink-500/5 to-transparent pointer-events-none" />
-      
-      {/* Particules animées en arrière-plan */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-pink-400/20 rounded-full blur-sm"
-            animate={{
-              x: [0, Math.random() * 100 - 50, 0],
-              y: [0, Math.random() * 100 - 50, 0],
-              opacity: [0.2, 0.5, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 4 + Math.random() * 2,
-              repeat: Infinity,
-              delay: i * 0.5,
-              ease: "easeInOut",
-            }}
-            style={{
-              left: `${20 + (i * 15)}%`,
-              top: `${30 + (i * 10)}%`,
-            }}
-          />
-        ))}
-      </div>
+    <section id="how-it-works" className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-black/40">
+      {/* Fond décoratif */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* En-tête avec animation */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-8 xl:mb-10"
-        >
+        {/* En-tête */}
+        <div className="text-center mb-20">
           <motion.h2
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl font-bold text-white mb-2 sm:mb-3 lg:mb-2 xl:mb-3 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
           >
-            Comment ça marche ?
+            La magie opère en <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">4 étapes</span>
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-sm sm:text-base md:text-lg lg:text-sm xl:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed"
+            transition={{ delay: 0.1 }}
+            className="text-lg text-gray-400 max-w-2xl mx-auto"
           >
-            <span className="text-pink-400 font-semibold">4 étapes</span> pour transformer votre soirée. Particuliers, pros & agences.
+            Une expérience fluide pour l'organisateur comme pour les invités. <br/>
+            Simplicité radicale, impact maximal.
           </motion.p>
-        </motion.div>
+        </div>
 
-        {/* Grille responsive avec animations */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-3 xl:gap-4">
+        {/* Grille responsive */}
+        <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+          
+          {/* Ligne de connexion (Desktop uniquement) */}
+          <div className="hidden lg:block absolute top-12 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-pink-500/30 to-transparent z-0" />
+
           {STEPS.map((step, index) => (
             <StepCard
               key={step.number}
+              index={index}
               number={step.number}
               icon={step.icon}
               title={step.title}
               description={step.description}
-              index={index}
             />
-          ))}
-        </div>
-
-        {/* Flèches de connexion entre les étapes (desktop uniquement) - Améliorées */}
-        <div className="hidden lg:flex items-center justify-between px-8 -mt-4 mb-4">
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-              className="flex-1 flex items-center justify-center relative"
-            >
-              {/* Ligne avec effet de brillance */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.4, 0.8, 0.4]
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut"
-                }}
-                className="w-16 h-1 bg-gradient-to-r from-transparent via-pink-500/60 to-purple-500/60 rounded-full relative overflow-hidden"
-              >
-                {/* Effet de brillance qui traverse */}
-                <motion.div
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.3,
-                    ease: "linear"
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                />
-              </motion.div>
-              
-              {/* Particule animée qui suit le chemin */}
-              <motion.div
-                animate={{ 
-                  x: [0, 64, 0],
-                  opacity: [0, 1, 0]
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut"
-                }}
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-pink-400 rounded-full shadow-lg shadow-pink-400/70"
-              />
-              
-              {/* Flèche à la fin */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.6, 1, 0.6]
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3 + 0.1
-                }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[8px] border-l-pink-400 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"
-              />
-            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
 };
-

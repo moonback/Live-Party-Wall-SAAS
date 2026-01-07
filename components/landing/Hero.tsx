@@ -885,26 +885,27 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               </span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-3 sm:mb-4 lg:mb-4 text-white">
-              Vos invités,<br className="hidden lg:block"/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400">
-                stars de la soirée
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
+              Transformez vos invités en<br className="hidden lg:block"/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-gradient-x">
+                photographes stars
               </span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-sm sm:text-base lg:text-lg text-gray-400 mb-4 sm:mb-5 lg:mb-6 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              <strong>Photos prises sur le fait → IA sublime → Affichage instantané sur écran géant.</strong><br />
-              <strong className="text-pink-400">Particuliers, pros & agences.</strong> Effet « wow » garanti.
+            <motion.p variants={itemVariants} className="text-lg sm:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+              L'animation photo interactive qui sublime votre événement. <br/>
+              <span className="text-white font-medium">Capturez. L'IA sublime. Le mur diffuse.</span> <br/>
+              Zéro application à installer. Effet "Wow" immédiat.
             </motion.p>
 
             {/* Feature Pills */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-2 justify-center lg:justify-start mb-4 sm:mb-5 lg:mb-6">
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start mb-8">
                 {[
-                    { icon: <Monitor size={12} />, text: "TV/PC + Téléphones" },
-                    { icon: <Zap size={12} />, text: "Temps réel" },
-                    { icon: <ShieldCheck size={12} />, text: "Modération IA" }
+                    { icon: <Monitor size={14} />, text: "TV/PC + Smartphones" },
+                    { icon: <Zap size={14} />, text: "Live Feed Instantané" },
+                    { icon: <ShieldCheck size={14} />, text: "Modération IA 100% Sûre" }
                 ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-1 px-2.5 py-1 bg-white/5 border border-white/5 rounded-md text-xs text-gray-300 backdrop-blur-sm">
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm font-medium text-gray-200 backdrop-blur-md shadow-sm hover:bg-white/10 transition-colors">
                         <span className="text-pink-400">{feature.icon}</span>
                         {feature.text}
                     </div>
