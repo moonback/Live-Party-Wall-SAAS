@@ -786,7 +786,11 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode = 'demo' }) => {
             fill="url(#beamGradient)"
             filter="url(#neonGlow)"
             {...getAnimationProps({
-              initial: { opacity: 0 },
+              initial: { 
+                opacity: 0,
+                cx: 220 + i * 60,
+                cy: 520 - i * 25,
+              },
               animate: {
                 opacity: [0, 1, 1, 0],
                 cx: [220 + i * 60, 220 + i * 60 + 20, 220 + i * 60 + 40],
