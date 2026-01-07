@@ -30,6 +30,7 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
   
   // Gestion des organisateurs
   const [organizers, setOrganizers] = useState<EventOrganizer[]>([]);
+  const [organizerEmails, setOrganizerEmails] = useState<Map<string, string>>(new Map());
   const [loadingOrganizers, setLoadingOrganizers] = useState(false);
   const [showAddOrganizer, setShowAddOrganizer] = useState(false);
   const [newOrganizerEmail, setNewOrganizerEmail] = useState('');
@@ -45,6 +46,13 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
         setLoadingOrganizers(true);
         const orgs = await getEventOrganizers(event.id);
         setOrganizers(orgs);
+        
+        // Essayer de récupérer les emails des utilisateurs
+        // Note: Cela nécessiterait une fonction RPC dans Supabase pour accéder à auth.users
+        // Pour l'instant, on garde juste l'UUID formaté
+        const emailsMap = new Map<string, string>();
+        // TODO: Implémenter la récupération des emails via RPC Supabase
+        setOrganizerEmails(emailsMap);
       } catch (error) {
         console.error('Error loading organizers:', error);
         addToast('Erreur lors du chargement des organisateurs', 'error');
@@ -97,10 +105,14 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
       setDeleting(true);
       await deleteEvent(event.id);
       addToast('Événement supprimé avec succès', 'success');
+      
+      // Appeler onEventDeleted qui va gérer le retour à la liste
       if (onEventDeleted) {
         onEventDeleted();
+      } else {
+        // Si onEventDeleted n'est pas défini, utiliser onBack
+        onBack();
       }
-      onBack();
     } catch (error: any) {
       console.error('Error deleting event:', error);
       addToast(error.message || 'Erreur lors de la suppression', 'error');
@@ -230,15 +242,24 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
 
         {/* Organisateurs */}
         {canEdit && (
-          <div className="bg-black/40 backdrop-blur-lg rounded-2xl p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Organisateurs
-              </h2>
+          <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 mb-6 border border-white/10 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl flex items-center justify-center">
+                  <Users className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                    Organisateurs
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Gérez les permissions d'accès à l'événement
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowAddOrganizer(!showAddOrganizer)}
-                className="flex items-center gap-2 px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all duration-300 shadow-lg shadow-pink-500/25 font-medium"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Ajouter</span>
@@ -246,37 +267,55 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
             </div>
 
             {showAddOrganizer && (
-              <div className="bg-white/5 rounded-lg p-4 mb-4">
-                <div className="space-y-3">
-                  <input
-                    type="email"
-                    value={newOrganizerEmail}
-                    onChange={(e) => setNewOrganizerEmail(e.target.value)}
-                    placeholder="Email de l'utilisateur"
-                    className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none"
-                  />
-                  <select
-                    value={newOrganizerRole}
-                    onChange={(e) => setNewOrganizerRole(e.target.value as 'organizer' | 'viewer')}
-                    className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none"
-                  >
-                    <option value="organizer">Organisateur (peut modifier)</option>
-                    <option value="viewer">Visualiseur (lecture seule)</option>
-                  </select>
-                  <div className="flex gap-2">
+              <div className="bg-white/5 rounded-xl p-5 mb-6 border border-white/10 animate-fade-in">
+                <h3 className="text-sm font-medium mb-4 text-gray-300">Ajouter un organisateur</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium mb-2 text-gray-400">
+                      Email de l'utilisateur
+                    </label>
+                    <input
+                      type="email"
+                      value={newOrganizerEmail}
+                      onChange={(e) => setNewOrganizerEmail(e.target.value)}
+                      placeholder="exemple@email.com"
+                      className="w-full px-4 py-2.5 bg-white/5 rounded-xl border border-white/10 focus:border-pink-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500/20 transition-all duration-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-2 text-gray-400">
+                      Rôle
+                    </label>
+                    <select
+                      value={newOrganizerRole}
+                      onChange={(e) => setNewOrganizerRole(e.target.value as 'organizer' | 'viewer')}
+                      className="w-full px-4 py-2.5 bg-white/5 rounded-xl border border-white/10 focus:border-pink-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500/20 transition-all duration-300"
+                    >
+                      <option value="organizer">Organisateur (peut modifier)</option>
+                      <option value="viewer">Visualiseur (lecture seule)</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-3 pt-2">
                     <button
                       onClick={handleAddOrganizer}
-                      disabled={addingOrganizer}
-                      className="flex-1 px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition disabled:opacity-50"
+                      disabled={addingOrganizer || !newOrganizerEmail.trim()}
+                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-pink-500/25"
                     >
-                      Ajouter
+                      {addingOrganizer ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Ajout...
+                        </span>
+                      ) : (
+                        'Ajouter'
+                      )}
                     </button>
                     <button
                       onClick={() => {
                         setShowAddOrganizer(false);
                         setNewOrganizerEmail('');
                       }}
-                      className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+                      className="px-4 py-2.5 bg-white/5 rounded-xl hover:bg-white/10 border border-white/10 transition-all duration-300 font-medium"
                     >
                       Annuler
                     </button>
@@ -292,28 +331,68 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
             ) : organizers.length === 0 ? (
               <p className="text-gray-400 text-center py-4">Aucun organisateur</p>
             ) : (
-              <div className="space-y-2">
-                {organizers.map((org) => (
-                  <div
-                    key={org.id}
-                    className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{org.user_id}</p>
-                      <p className="text-sm text-gray-400">
-                        {org.role === 'owner' ? 'Propriétaire' : org.role === 'organizer' ? 'Organisateur' : 'Visualiseur'}
-                      </p>
+              <div className="space-y-3">
+                {organizers.map((org) => {
+                  const isOwner = org.role === 'owner';
+                  const isCurrentUser = user?.id === org.user_id;
+                  const userIdShort = org.user_id.substring(0, 8) + '...' + org.user_id.substring(org.user_id.length - 4);
+                  
+                  return (
+                    <div
+                      key={org.id}
+                      className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
+                        isOwner 
+                          ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30' 
+                          : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isOwner 
+                            ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
+                            : 'bg-slate-700'
+                        }`}>
+                          <Users className={`w-5 h-5 ${isOwner ? 'text-white' : 'text-gray-300'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-sm truncate">
+                              {organizerEmails.get(org.user_id) || userIdShort}
+                            </p>
+                            {isCurrentUser && (
+                              <span className="px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">
+                                Vous
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                              isOwner
+                                ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
+                                : org.role === 'organizer'
+                                ? 'bg-pink-500/30 text-pink-300 border border-pink-500/50'
+                                : 'bg-gray-500/30 text-gray-300 border border-gray-500/50'
+                            }`}>
+                              {isOwner ? 'Propriétaire' : org.role === 'organizer' ? 'Organisateur' : 'Visualiseur'}
+                            </span>
+                            {!organizerEmails.has(org.user_id) && (
+                              <span className="text-xs text-gray-500 font-mono">{userIdShort}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {!isOwner && isEventOwner && (
+                        <button
+                          onClick={() => handleRemoveOrganizer(org.id, org.user_id)}
+                          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors ml-2 flex-shrink-0"
+                          aria-label="Retirer l'organisateur"
+                        >
+                          <X className="w-4 h-4 text-red-400" />
+                        </button>
+                      )}
                     </div>
-                    {org.role !== 'owner' && isEventOwner && (
-                      <button
-                        onClick={() => handleRemoveOrganizer(org.id, org.user_id)}
-                        className="p-2 hover:bg-red-500/20 rounded-lg transition"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

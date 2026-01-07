@@ -143,6 +143,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     }
   }, [currentEvent, activeTab]);
 
+  // Synchroniser selectedEvent avec currentEvent seulement lors du chargement initial
+  // ou quand l'événement change, mais pas quand l'utilisateur revient explicitement à la liste
+  const prevCurrentEventId = useRef<string | null>(null);
+  useEffect(() => {
+    if (currentEvent && currentEvent.id !== prevCurrentEventId.current) {
+      // L'événement a changé, synchroniser
+      if (!selectedEvent || selectedEvent.id !== currentEvent.id) {
+        setSelectedEvent(currentEvent);
+      }
+      prevCurrentEventId.current = currentEvent.id;
+    } else if (!currentEvent) {
+      prevCurrentEventId.current = null;
+    }
+  }, [currentEvent, selectedEvent]);
+
   // Gérer la touche Échap pour fermer la modal d'aperçu
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -1299,10 +1314,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   }
                 }}
                 onEventDeleted={() => {
-                  setEvents(prev => prev.filter(e => e.id !== selectedEvent.id));
+                  const deletedEventId = selectedEvent?.id;
+                  // Retirer l'événement de la liste
+                  setEvents(prev => prev.filter(e => e.id !== deletedEventId));
+                  // Revenir à la liste des événements
                   setSelectedEvent(null);
-                  if (currentEvent?.id === selectedEvent.id) {
-                    onBack();
+                  // Si l'événement supprimé était l'événement actuel, le décharger
+                  if (currentEvent?.id === deletedEventId) {
+                    // Ne pas appeler onBack() qui fermerait le dashboard
+                    // L'utilisateur reste dans le dashboard et voit la liste des événements
                   }
                 }}
               />
