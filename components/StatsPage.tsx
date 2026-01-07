@@ -283,9 +283,18 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Construire l'URL du QR code avec le slug de l'événement
+  const uploadUrl = useMemo(() => {
+    const baseUrl = getBaseUrl();
+    if (currentEvent?.slug) {
+      return `${baseUrl}?event=${currentEvent.slug}`;
+    }
+    // Fallback vers l'ancien système si pas d'événement
+    return `${baseUrl}?mode=guest`;
+  }, [currentEvent?.slug]);
+
   // Mode écran dédié (grand écran) — NO SCROLL + auto-pagination
   if (isDisplayMode) {
-    const uploadUrl = `${getBaseUrl()}?mode=guest`;
 
     const RUNNERS_PER_PAGE = 8;
     const runners = stats.leaderboard.slice(3); // ranks 4+
@@ -447,7 +456,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
             {stats.topPhotographer && (
               <TopPhotographerCard
                 topPhotographer={stats.topPhotographer}
-                uploadUrl={`${getBaseUrl()}?mode=guest`}
+                uploadUrl={uploadUrl}
                 variant="normal"
               />
             )}

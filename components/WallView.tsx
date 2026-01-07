@@ -6,6 +6,7 @@ import { ARSceneManager, type ARSceneManagerRef } from './arEffects/ARSceneManag
 import { playVictorySound, playDefeatOrTieSound } from '../utils/soundService';
 import { getBaseUrl } from '../utils/urlUtils';
 import { logger } from '../utils/logger';
+import { useEvent } from '../context/EventContext';
 
 // Hooks
 import { useWallData } from '../hooks/wall/useWallData';
@@ -85,11 +86,22 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
 
   const { flyingReactions } = useReactionFlow();
 
+  // --- Event Context ---
+  const { currentEvent } = useEvent();
+
   // --- Derived State ---
   const showBattles = settings.battle_mode_enabled !== false;
   const displayedPhotos = photos; // useWallData gère déjà l'ordre/filtrage si besoin
   
-  const uploadUrl = `${getBaseUrl()}?mode=guest`;
+  // Construire l'URL du QR code avec le slug de l'événement
+  const uploadUrl = useMemo(() => {
+    const baseUrl = getBaseUrl();
+    if (currentEvent?.slug) {
+      return `${baseUrl}?event=${currentEvent.slug}`;
+    }
+    // Fallback vers l'ancien système si pas d'événement
+    return `${baseUrl}?mode=guest`;
+  }, [currentEvent?.slug]);
 
   // --- Effects ---
 

@@ -15,6 +15,7 @@ import { getBaseUrl } from '../utils/urlUtils';
 import { ARSceneManager, type ARSceneManagerRef } from './arEffects/ARSceneManager';
 import { AR_DEFAULT_LIKES_THRESHOLD, AR_DEFAULT_TIME_WINDOW } from '../constants';
 import { useSettings } from '../context/SettingsContext';
+import { useEvent } from '../context/EventContext';
 import { logger } from '../utils/logger';
 import { QRCodeCard } from './projection/QRCodeCard';
 import { PhotoInfoOverlay } from './projection/PhotoInfoOverlay';
@@ -96,15 +97,24 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
 
   // QR Code URLs
   const uploadUrl = useMemo(() => {
-    return `${getBaseUrl()}?mode=guest`;
-  }, []);
+    const baseUrl = getBaseUrl();
+    if (currentEvent?.slug) {
+      return `${baseUrl}?event=${currentEvent.slug}`;
+    }
+    // Fallback vers l'ancien système si pas d'événement
+    return `${baseUrl}?mode=guest`;
+  }, [currentEvent?.slug]);
 
   const downloadUrl = useMemo(() => {
     if (displayedPhotos.length === 0 || !displayedPhotos[currentIndex]) {
-      return `${getBaseUrl()}?mode=gallery`;
+      const baseUrl = getBaseUrl();
+      if (currentEvent?.slug) {
+        return `${baseUrl}?event=${currentEvent.slug}&mode=gallery`;
+      }
+      return `${baseUrl}?mode=gallery`;
     }
     return displayedPhotos[currentIndex].url;
-  }, [displayedPhotos, currentIndex]);
+  }, [displayedPhotos, currentIndex, currentEvent?.slug]);
 
   // Photo actuelle
   const currentPhoto = useMemo(() => {
