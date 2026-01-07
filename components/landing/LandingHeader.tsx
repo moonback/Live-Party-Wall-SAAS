@@ -39,30 +39,20 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     };
   }, [isMobileMenuOpen]);
 
-  // Détecter si on est sur la page Pricing
-  const isPricingPage = () => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('mode') === 'pricing';
-  };
-
   const handleScrollToSection = (sectionId: string) => {
     setIsMobileMenuOpen(false);
     
     // Petit délai pour laisser le menu se fermer proprement
     setTimeout(() => {
-      if (isPricingPage()) {
-        window.location.href = `${window.location.pathname}#${sectionId}`;
-      } else {
-        onScrollToSection(sectionId);
-      }
+      onScrollToSection(sectionId);
     }, 300);
   };
 
   const handleNavigateToPricing = () => {
-    if (!isPricingPage()) {
-      window.location.href = `${window.location.pathname}?mode=pricing`;
-      setIsMobileMenuOpen(false);
-    }
+    setIsMobileMenuOpen(false);
+    setTimeout(() => {
+      onScrollToSection('pricing');
+    }, 300);
   };
 
   const handleNavigateToHome = () => {
@@ -121,15 +111,13 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                   <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                 </button>
               ))}
-              {!isPricingPage() && (
-                <button
-                  onClick={handleNavigateToPricing}
-                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
-                >
-                  Tarification
-                  <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                </button>
-              )}
+              <button
+                onClick={handleNavigateToPricing}
+                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
+              >
+                Tarification
+                <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+              </button>
             </nav>
 
             {/* CTA Button Desktop */}
@@ -218,18 +206,16 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                 </motion.button>
               ))}
               
-              {!isPricingPage() && (
-                <motion.button
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  onClick={handleNavigateToPricing}
-                  className="text-left text-2xl font-bold text-gray-300 hover:text-white hover:pl-2 transition-all py-4 border-b border-white/5 flex items-center justify-between group"
-                >
-                  Tarification
-                  <Sparkles className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-yellow-500" />
-                </motion.button>
-              )}
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                onClick={handleNavigateToPricing}
+                className="text-left text-2xl font-bold text-gray-300 hover:text-white hover:pl-2 transition-all py-4 border-b border-white/5 flex items-center justify-between group"
+              >
+                Tarification
+                <Sparkles className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-yellow-500" />
+              </motion.button>
             </nav>
 
             <motion.div 

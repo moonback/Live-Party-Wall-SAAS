@@ -27,7 +27,6 @@ const BattleResultsProjection = lazy(() => import('./components/BattleResultsPro
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
 const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
 const Accueil = lazy(() => import('./components/Accueil')); // Page d'accueil
-const Pricing = lazy(() => import('./components/Pricing')); // Page de tarification
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -191,8 +190,6 @@ const AppContent: React.FC = () => {
         setViewMode('guest');
       }
       addToast('Le mode collage est désactivé', 'info');
-    } else if (modeParam === 'pricing') {
-      setViewMode('pricing');
     }
     // Si pas de paramètre mode, on reste sur landing (accessible sans profil)
   }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled, addToast]);
@@ -211,7 +208,6 @@ const AppContent: React.FC = () => {
       case 'help': return 'slide-left';
       case 'findme': return 'slide-right';
       case 'battle-results': return 'fade';
-      case 'pricing': return 'fade';
       default: return 'fade';
     }
   };
@@ -299,18 +295,9 @@ const AppContent: React.FC = () => {
             )}
 
             {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
-            {viewMode !== 'admin' && viewMode !== 'pricing' && !currentEvent && (
+            {viewMode !== 'admin' && !currentEvent && (
               <TransitionWrapper type="fade" duration={500}>
                 <Accueil
-                  onAdminClick={() => setViewMode('admin')}
-                />
-              </TransitionWrapper>
-            )}
-
-            {/* Page de tarification (accessible même sans événement) */}
-            {viewMode === 'pricing' && (
-              <TransitionWrapper type="fade" duration={500}>
-                <Pricing
                   onAdminClick={() => setViewMode('admin')}
                 />
               </TransitionWrapper>

@@ -8,6 +8,7 @@ import { Features } from './landing/Features';
 import { Advantages } from './landing/Advantages';
 import { UseCases } from './landing/UseCases';
 import { GuestMessage } from './landing/GuestMessage';
+import { Pricing } from './landing/Pricing';
 import { FinalCTA } from './landing/FinalCTA';
 import { LandingFooter } from './landing/LandingFooter';
 
@@ -57,6 +58,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         <Advantages />
         <UseCases />
         <GuestMessage />
+        <Pricing onAdminClick={onAdminClick} />
         <FinalCTA onAdminClick={onAdminClick} />
         <LandingFooter />
       </div>
