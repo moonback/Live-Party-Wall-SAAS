@@ -162,14 +162,15 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
       // Recharger les avatars des invités
       if (currentEvent?.id) {
         const allGuests = await getAllGuests(currentEvent.id);
-      const avatarsMap = new Map<string, string>();
-      const sortedGuests = [...allGuests].sort((a, b) => b.updatedAt - a.updatedAt);
-      sortedGuests.forEach(guest => {
-        if (!avatarsMap.has(guest.name)) {
-          avatarsMap.set(guest.name, guest.avatarUrl);
-        }
-      });
-      setGuestAvatars(avatarsMap);
+        const avatarsMap = new Map<string, string>();
+        const sortedGuests = [...allGuests].sort((a, b) => b.updatedAt - a.updatedAt);
+        sortedGuests.forEach(guest => {
+          if (!avatarsMap.has(guest.name)) {
+            avatarsMap.set(guest.name, guest.avatarUrl);
+          }
+        });
+        setGuestAvatars(avatarsMap);
+      }
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
