@@ -4,6 +4,7 @@ import { getFinishedBattles, subscribeToNewBattles } from '../services/battleSer
 import { Trophy, Users, Clock, ArrowLeft } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { useSwipe } from '../hooks/useSwipe';
+import { useEvent } from '../context/EventContext';
 
 interface BattleResultsProjectionProps {
   onBack?: () => void;
@@ -14,6 +15,7 @@ interface BattleResultsProjectionProps {
  * Optimisé pour un grand écran de projection avec design cohérent
  */
 const BattleResultsProjection: React.FC<BattleResultsProjectionProps> = ({ onBack }) => {
+  const { currentEvent } = useEvent();
   const [finishedBattles, setFinishedBattles] = useState<PhotoBattle[]>([]);
   const [currentBattleIndex, setCurrentBattleIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -23,10 +25,15 @@ const BattleResultsProjection: React.FC<BattleResultsProjectionProps> = ({ onBac
 
   // Charger les battles terminées
   useEffect(() => {
+    if (!currentEvent?.id) {
+      setIsLoading(false);
+      return;
+    }
+
     const loadFinishedBattles = async () => {
       try {
         setIsLoading(true);
-        const battles = await getFinishedBattles(50); // Récupérer les 50 dernières battles
+        const battles = await getFinishedBattles(currentEvent.id, 50); // Récupérer les 50 dernières battles
         setFinishedBattles(battles);
         if (battles.length > 0) {
           setCurrentBattleIndex(0);
@@ -53,9 +60,11 @@ const BattleResultsProjection: React.FC<BattleResultsProjectionProps> = ({ onBac
 
   // Rafraîchir les battles terminées toutes les 10 secondes
   useEffect(() => {
+    if (!currentEvent?.id) return;
+
     const interval = setInterval(async () => {
       try {
-        const battles = await getFinishedBattles(50);
+        const battles = await getFinishedBattles(currentEvent.id, 50);
         setFinishedBattles(battles);
         // Si on a dépassé l'index actuel, revenir au début
         if (currentBattleIndex >= battles.length && battles.length > 0) {
@@ -67,7 +76,7 @@ const BattleResultsProjection: React.FC<BattleResultsProjectionProps> = ({ onBac
     }, 10000); // Toutes les 10 secondes
 
     return () => clearInterval(interval);
-  }, [currentBattleIndex]);
+  }, [currentEvent?.id, currentBattleIndex]);
 
   // Navigation manuelle entre les battles
   const navigateToBattle = useCallback((direction: 'prev' | 'next') => {

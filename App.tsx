@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ViewMode } from './types';
 import Toast from './components/Toast';
 import { ToastProvider, useToast } from './context/ToastContext';
+import { EventProvider, useEvent } from './context/EventContext';
 import { PhotosProvider, usePhotos } from './context/PhotosContext';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -24,11 +25,14 @@ const MobileControl = lazy(() => import('./components/MobileControl')); // Contr
 const FindMe = lazy(() => import('./components/FindMe')); // Reconnaissance faciale
 const BattleResultsProjection = lazy(() => import('./components/BattleResultsProjection')); // Projection des résultats de battles
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
+const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
+const NoEventScreen = lazy(() => import('./components/NoEventScreen')); // Écran sans événement
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
   
   // Contexts
+  const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
   const { photos } = usePhotos();
   const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
@@ -46,10 +50,10 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const checkUserValidity = async () => {
       const userName = localStorage.getItem('party_user_name');
-      if (!userName) return;
+      if (!userName || !currentEvent) return;
 
       try {
-        const guest = await getGuestByName(userName);
+        const guest = await getGuestByName(currentEvent.id, userName);
         if (!guest) {
           // L'utilisateur n'existe plus, le déconnecter
           localStorage.removeItem('party_user_name');
@@ -72,7 +76,7 @@ const AppContent: React.FC = () => {
     checkUserValidity();
 
     return () => clearInterval(interval);
-  }, [viewMode, addToast]);
+  }, [viewMode, addToast, currentEvent]);
 
   // Fonction wrapper pour changer le viewMode avec vérification du profil
   const handleViewModeChange = (newMode: ViewMode) => {
@@ -195,12 +199,81 @@ const AppContent: React.FC = () => {
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
+        {/* Afficher un message d'erreur si l'événement n'est pas chargé ou s'il y a une erreur */}
+        {eventLoading && (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+          </div>
+        )}
+        
+        {eventError && (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center p-8">
+              <h2 className="text-2xl font-bold mb-4">Erreur de chargement de l'événement</h2>
+              <p className="text-gray-300 mb-4">{eventError.message}</p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
+              >
+                Retour à l'accueil
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!eventLoading && !eventError && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
           </div>
         }>
-          {viewMode === 'landing' && (
+          <>
+            {/* Mode admin accessible même sans événement */}
+            {viewMode === 'admin' && (
+              <TransitionWrapper type="scale" duration={600}>
+                {isAdminAuthenticated ? (
+                  <AdminDashboard 
+                    onBack={() => {
+                      if (currentEvent) {
+                        setViewMode('landing');
+                      } else {
+                        // Si pas d'événement, afficher EventSelector
+                        setViewMode('landing');
+                      }
+                    }}
+                  />
+                ) : (
+                  <AdminLogin 
+                    onLoginSuccess={() => {}}
+                    onBack={() => {
+                      if (currentEvent) {
+                        setViewMode('landing');
+                      } else {
+                        window.location.href = '/';
+                      }
+                    }}
+                  />
+                )}
+              </TransitionWrapper>
+            )}
+
+            {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
+            {viewMode !== 'admin' && !currentEvent && (
+              <TransitionWrapper type="fade" duration={500}>
+                <NoEventScreen
+                  onAdminClick={() => setViewMode('admin')}
+                  onEventSelected={() => {
+                    // L'événement sera chargé automatiquement par EventContext
+                    setViewMode('landing');
+                  }}
+                />
+              </TransitionWrapper>
+            )}
+
+            {/* Modes nécessitant un événement */}
+            {currentEvent && (
+              <>
+            {viewMode === 'landing' && (
             <TransitionWrapper type="zoom-bounce" duration={800}>
               <Landing onSelectMode={handleViewModeChange} isAdminAuthenticated={isAdminAuthenticated} />
             </TransitionWrapper>
@@ -280,20 +353,6 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
-          {viewMode === 'admin' && (
-            <TransitionWrapper type="scale" duration={600}>
-              {isAdminAuthenticated ? (
-                <AdminDashboard 
-                  onBack={() => setViewMode('landing')}
-                />
-              ) : (
-                <AdminLogin 
-                  onLoginSuccess={() => {}}
-                  onBack={() => setViewMode('landing')}
-                />
-              )}
-            </TransitionWrapper>
-          )}
 
           {viewMode === 'help' && (
             <TransitionWrapper type="slide-left" duration={600}>
@@ -367,14 +426,18 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
-          {viewMode === 'guest-profile' && (
-            <TransitionWrapper type="scale" duration={600}>
-              <GuestProfile 
-                onBack={() => setViewMode('landing')}
-              />
-            </TransitionWrapper>
-          )}
+            {viewMode === 'guest-profile' && (
+              <TransitionWrapper type="scale" duration={600}>
+                <GuestProfile 
+                  onBack={() => setViewMode('landing')}
+                />
+              </TransitionWrapper>
+            )}
+              </>
+            )}
+          </>
         </Suspense>
+        )}
       </div>
     </div>
   );
@@ -384,11 +447,13 @@ const App: React.FC = () => {
   return (
     <ToastProvider>
       <AuthProvider>
-        <SettingsProvider>
-          <PhotosProvider>
-            <AppContent />
-          </PhotosProvider>
-        </SettingsProvider>
+        <EventProvider>
+          <SettingsProvider>
+            <PhotosProvider>
+              <AppContent />
+            </PhotosProvider>
+          </SettingsProvider>
+        </EventProvider>
       </AuthProvider>
     </ToastProvider>
   );

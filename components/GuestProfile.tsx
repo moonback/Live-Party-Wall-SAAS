@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Camera, Heart, Award, Smile, ChevronRight } from 'lucide-react';
-import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
+import { X, User, Camera, Heart, Award, Smile, ChevronRight, LogOut } from 'lucide-react';
+import { getCurrentUserName, getCurrentUserAvatar, disconnectUser } from '../utils/userAvatar';
 import { getPhotosByAuthor, getPhotosReactions } from '../services/photoService';
 import { Photo, ReactionCounts } from '../types';
 import { REACTIONS } from '../constants';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useEvent } from '../context/EventContext';
+import { useToast } from '../context/ToastContext';
 
 interface GuestProfileProps {
   onBack: () => void;
@@ -15,6 +17,8 @@ interface GuestProfileProps {
  * Composant pour afficher le profil de l'invité
  */
 const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
+  const { currentEvent } = useEvent();
+  const { addToast } = useToast();
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userPhotos, setUserPhotos] = useState<Photo[]>([]);
@@ -33,7 +37,7 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     setUserName(name);
     setAvatarUrl(avatar);
 
-    if (name) {
+    if (name && currentEvent?.id) {
       // Réinitialiser l'état de chargement et recharger les données
       setLoading(true);
       setUserPhotos([]);
@@ -46,12 +50,19 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     } else {
       setLoading(false);
     }
-  }, []); // Se déclenche à chaque montage du composant (ouverture du profil)
+  }, [currentEvent?.id]); // Se déclenche à chaque montage du composant ou changement d'événement
 
   const loadUserPhotos = async (authorName: string) => {
+    // Vérifier que l'événement est chargé
+    if (!currentEvent?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const photos = await getPhotosByAuthor(authorName);
+      // Passer eventId comme premier paramètre
+      const photos = await getPhotosByAuthor(currentEvent.id, authorName);
       setUserPhotos(photos);
       
       // Calculer le total des likes
@@ -82,6 +93,16 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     }
   };
 
+  // Fonction de déconnexion
+  const handleDisconnect = () => {
+    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter de votre profil invité ?')) {
+      disconnectUser();
+      addToast('Vous avez été déconnecté de votre profil invité', 'info');
+      // Rediriger vers la landing page
+      window.location.href = '/?mode=landing';
+    }
+  };
+
   if (!userName) {
     return (
       <div className="h-screen bg-transparent flex items-center justify-center p-4 relative overflow-hidden">
@@ -92,8 +113,8 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
         }}>
           <User className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-          <h2 className="text-2xl font-bold text-white mb-2">Aucun profil trouvé</h2>
-          <p className="text-slate-400 mb-6">Vous devez créer un profil pour voir vos statistiques</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Aucun profil invité trouvé</h2>
+          <p className="text-slate-400 mb-6">Vous devez créer un profil invité pour voir vos statistiques</p>
           <button
             onClick={onBack}
             className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-xl text-white font-medium transition-all duration-300"
@@ -111,18 +132,33 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 pointer-events-none"></div>
       <div className="fixed top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,rgba(236,72,153,0.15),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(139,92,246,0.15),transparent_50%)] pointer-events-none"></div>
 
-      {/* Bouton retour */}
-      <button
-        onClick={onBack}
-        className="absolute top-4 left-4 sm:top-6 sm:left-6 z-50 relative p-2.5 sm:p-3 rounded-xl backdrop-blur-xl bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/25 text-white transition-all duration-300 hover:scale-105 active:scale-95 group shadow-lg"
-        style={{
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-        }}
-        aria-label="Retour"
-      >
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/10 group-hover:via-purple-500/10 group-hover:to-cyan-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100 blur-sm" />
-        <X className="w-5 h-5 relative z-10" />
-      </button>
+      {/* Boutons d'action */}
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2">
+        <button
+          onClick={onBack}
+          className="relative p-2.5 sm:p-3 rounded-xl backdrop-blur-xl bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/25 text-white transition-all duration-300 hover:scale-105 active:scale-95 group shadow-lg"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          }}
+          aria-label="Retour"
+        >
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/10 group-hover:via-purple-500/10 group-hover:to-cyan-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100 blur-sm" />
+          <X className="w-5 h-5 relative z-10" />
+        </button>
+        
+        <button
+          onClick={handleDisconnect}
+          className="relative p-2.5 sm:p-3 rounded-xl backdrop-blur-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 border border-red-500/30 hover:border-red-500/50 text-white transition-all duration-300 hover:scale-105 active:scale-95 group shadow-lg"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          }}
+          aria-label="Se déconnecter"
+          title="Se déconnecter du profil invité"
+        >
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/0 to-red-500/0 group-hover:from-red-500/20 group-hover:via-red-500/20 group-hover:to-red-500/20 transition-all duration-300 opacity-0 group-hover:opacity-100 blur-sm" />
+          <LogOut className="w-5 h-5 relative z-10" />
+        </button>
+      </div>
 
       {/* Contenu principal */}
       <div className="relative z-10 w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto scrollbar-hide">
@@ -131,6 +167,11 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
         }}>
           {/* Header avec avatar */}
           <div className="text-center mb-6">
+            <div className="mb-3">
+              <span className="inline-block px-3 py-1 text-xs sm:text-sm font-medium bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-full text-pink-300 backdrop-blur-sm">
+                Profil invité
+              </span>
+            </div>
             <div className="relative inline-block mb-4">
               {avatarUrl ? (
                 <img
@@ -150,7 +191,7 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
               {userName}
             </h1>
-            <p className="text-slate-400 text-sm sm:text-base">Votre profil</p>
+            <p className="text-slate-400 text-sm sm:text-base">Profil invité</p>
           </div>
 
           {/* Statistiques */}
@@ -195,7 +236,7 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
                   <Camera className="w-5 h-5 text-pink-400" />
-                  Vos photos
+                  Mes photos
                 </h2>
                 {userPhotos.length > 3 && (
                   <button
@@ -299,7 +340,7 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
               <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 flex-shrink-0">
                 <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent flex items-center gap-2">
                   <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400" />
-                  Toutes vos photos ({userPhotos.length})
+                  Toutes mes photos ({userPhotos.length})
                 </h2>
                 <button
                   onClick={() => setShowAllPhotosModal(false)}

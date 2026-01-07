@@ -274,3 +274,42 @@ export interface BlockedGuestRow {
   expires_at: string;
   created_at: string;
 }
+
+// Event Types (Multi-tenant SaaS)
+export interface Event {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface EventRow {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface EventOrganizer {
+  id: string;
+  event_id: string;
+  user_id: string;
+  role: 'owner' | 'organizer' | 'viewer';
+  created_at: string;
+}
+
+export interface EventOrganizerRow {
+  id: string;
+  event_id: string;
+  user_id: string;
+  role: 'owner' | 'organizer' | 'viewer';
+  created_at: string;
+}

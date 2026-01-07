@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
-import { Trash2, LogOut, ArrowLeft, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu } from 'lucide-react';
+import { Trash2, LogOut, ArrowLeft, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu, Calendar } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
@@ -20,19 +20,29 @@ import { logger } from '../utils/logger';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
 import { Guest } from '../types';
+import EventSelector from './EventSelector';
+import EventManager from './EventManager';
+import { useEvent } from '../context/EventContext';
+import { getUserEvents } from '../services/eventService';
+import { Event } from '../types';
+import AdminProfile from './AdminProfile';
 
 interface AdminDashboardProps {
   onBack: () => void;
 }
 
-type AdminTab = 'moderation' | 'analytics' | 'configuration' | 'aftermovie' | 'battles' | 'guests';
+type AdminTab = 'events' | 'moderation' | 'analytics' | 'configuration' | 'aftermovie' | 'battles' | 'guests';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const { addToast } = useToast();
   const { photos: allPhotos, loading: photosLoading, refresh: refreshPhotos } = usePhotos();
   const { settings: config, updateSettings, loading: settingsLoading } = useSettings();
-  const { signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<AdminTab>('moderation');
+  const { signOut, user } = useAuth();
+  const { currentEvent, loadEventBySlug } = useEvent();
+  const [activeTab, setActiveTab] = useState<AdminTab>('events');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [aftermovieStart, setAftermovieStart] = useState<string>('');
   const [aftermovieEnd, setAftermovieEnd] = useState<string>('');
@@ -361,7 +371,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
     setUploadingFrame(true);
     try {
-      const { publicUrl } = await uploadDecorativeFramePng(file);
+      if (!currentEvent) {
+        addToast("Aucun événement sélectionné", 'error');
+        return;
+      }
+      const { publicUrl } = await uploadDecorativeFramePng(currentEvent.id, file);
       setLocalConfig(prev => ({
         ...prev,
         decorative_frame_url: publicUrl,
@@ -437,9 +451,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   // Charger les battles actives
   useEffect(() => {
+    if (!currentEvent) {
+      setBattles([]);
+      return;
+    }
+
     const loadBattles = async () => {
       try {
-        const activeBattles = await getActiveBattles();
+        const activeBattles = await getActiveBattles(currentEvent.id);
         setBattles(activeBattles);
       } catch (error) {
         console.error('Error loading battles:', error);
@@ -448,8 +467,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
     loadBattles();
 
-    // S'abonner aux nouvelles battles
-    const battlesSub = subscribeToNewBattles(async (newBattle) => {
+    // S'abonner aux nouvelles battles pour cet événement
+    const battlesSub = subscribeToNewBattles(currentEvent.id, async (newBattle) => {
       setBattles(prev => {
         if (prev.some(b => b.id === newBattle.id)) {
           return prev;
@@ -461,13 +480,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     return () => {
       battlesSub.unsubscribe();
     };
-  }, []);
+  }, [currentEvent]);
 
   // Initialiser l'état des auto battles au chargement depuis la BDD
   useEffect(() => {
+    if (!currentEvent) return;
+
     const loadAutoBattlesState = async () => {
       try {
-        const settings = await getSettings();
+        const settings = await getSettings(currentEvent.id);
         setAutoBattleEnabled(settings.auto_battles_enabled ?? false);
         
         // Si activé en BDD, démarrer le service
@@ -487,7 +508,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     };
     
     loadAutoBattlesState();
-  }, []);
+  }, [currentEvent]);
 
   // Gérer le nettoyage des auto battles à la déconnexion
   useEffect(() => {
@@ -499,6 +520,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   // Fonction pour créer une battle
   const handleCreateBattle = async () => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
     if (!selectedPhoto1 || !selectedPhoto2) {
       addToast('Veuillez sélectionner deux photos différentes', 'error');
       return;
@@ -511,12 +537,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
     setIsCreatingBattle(true);
     try {
-      await createBattle(selectedPhoto1.id, selectedPhoto2.id, battleDuration);
+      await createBattle(currentEvent.id, selectedPhoto1.id, selectedPhoto2.id, battleDuration);
       addToast(`Battle créée ! Durée: ${battleDuration} minutes`, 'success');
       setSelectedPhoto1(null);
       setSelectedPhoto2(null);
       // Recharger les battles
-      const activeBattles = await getActiveBattles();
+      const activeBattles = await getActiveBattles(currentEvent.id);
       setBattles(activeBattles);
     } catch (error) {
       console.error('Error creating battle:', error);
@@ -528,11 +554,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   // Fonction pour terminer une battle manuellement
   const handleFinishBattle = async (battleId: string) => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
     try {
       await finishBattle(battleId);
       addToast('Battle terminée', 'success');
       // Recharger les battles
-      const activeBattles = await getActiveBattles();
+      const activeBattles = await getActiveBattles(currentEvent.id);
       setBattles(activeBattles);
     } catch (error) {
       console.error('Error finishing battle:', error);
@@ -562,9 +593,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   };
 
   const loadGuests = async () => {
+    if (!currentEvent) {
+      setGuests([]);
+      return;
+    }
+
     setGuestsLoading(true);
     try {
-      const allGuests = await getAllGuests();
+      const allGuests = await getAllGuests(currentEvent.id);
       setGuests(allGuests);
       
       // Charger les statistiques pour chaque invité
@@ -572,7 +608,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       
       for (const guest of allGuests) {
         try {
-          const guestPhotos = await getPhotosByAuthor(guest.name);
+          const guestPhotos = await getPhotosByAuthor(currentEvent.id, guest.name);
           const photosCount = guestPhotos.length;
           const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
           
@@ -606,9 +642,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const handleDeleteGuest = async (guest: Guest) => {
     if (!confirm(`Êtes-vous sûr de vouloir supprimer l'invité "${guest.name}" ?\n\nL'utilisateur sera déconnecté et bloqué pendant 20 minutes avant de pouvoir se réinscrire.\n\nCette action est irréversible.`)) return;
+    if (!currentEvent) {
+      addToast("Aucun événement sélectionné", 'error');
+      return;
+    }
 
     try {
-      await deleteGuest(guest.id, guest.name);
+      await deleteGuest(currentEvent.id, guest.id, guest.name);
       setGuests(prev => prev.filter(g => g.id !== guest.id));
       setGuestStats(prev => {
         const next = new Map(prev);
@@ -634,6 +674,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const handleDelete = async (photo: Photo) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette photo ?")) return;
+    if (!currentEvent) {
+      addToast("Aucun événement sélectionné", 'error');
+      return;
+    }
 
     try {
       await deletePhoto(photo.id, photo.url);
@@ -646,13 +690,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const handleDeleteAll = async () => {
     if (photos.length === 0) return;
+    if (!currentEvent) {
+      addToast("Aucun événement sélectionné", 'error');
+      return;
+    }
     
     if (!confirm("ATTENTION : Êtes-vous sûr de vouloir supprimer TOUTES les photos ?\n\n⚠️ Cette action supprimera également TOUS les invités.\n\nCette action est irréversible.")) return;
     if (!confirm("Confirmez-vous vraiment la suppression TOTALE (photos + invités) ?")) return;
 
     try {
-      // Supprimer toutes les photos
-      await deleteAllPhotos();
+      // Supprimer toutes les photos pour cet événement
+      await deleteAllPhotos(currentEvent.id);
       
       // Supprimer tous les invités (sans les bloquer)
       try {
@@ -867,19 +915,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   </div>
               )}
               
-              <button 
-                onClick={handleLogout}
-                className="flex items-center justify-center px-2.5 py-1.5 min-h-[36px] min-w-[36px] touch-manipulation bg-slate-800/80 hover:bg-slate-700/80 rounded-lg transition-all duration-300 border border-white/10 hover:border-white/20 relative group"
-                title="Déconnexion"
-                aria-label="Déconnexion"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                {/* Tooltip personnalisé */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900/95 backdrop-blur-xl text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                    Déconnexion
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
+              {/* Profil administrateur */}
+              <AdminProfile onLogout={handleLogout} />
           </div>
         </header>
 
@@ -895,6 +932,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           >
             <Menu className="w-5 h-5 flex-shrink-0" />
             <span className="text-sm font-medium">
+              {activeTab === 'events' && 'Événements'}
               {activeTab === 'moderation' && 'Modération'}
               {activeTab === 'analytics' && 'Analytics'}
               {activeTab === 'configuration' && 'Configuration'}
@@ -913,6 +951,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           {isMobileMenuOpen && (
             <div data-mobile-menu className="sm:hidden mb-4 bg-slate-900/90 backdrop-blur-xl rounded-xl border border-white/10 shadow-xl overflow-hidden animate-fade-in">
               <div className="p-2 space-y-1">
+                <button
+                  onClick={async () => {
+                    setActiveTab('events');
+                    setIsMobileMenuOpen(false);
+                    if (user && events.length === 0) {
+                      setLoadingEvents(true);
+                      try {
+                        const userEvents = await getUserEvents(user.id);
+                        setEvents(userEvents);
+                      } catch (error) {
+                        console.error('Error loading events:', error);
+                      } finally {
+                        setLoadingEvents(false);
+                      }
+                    }
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                    activeTab === 'events' 
+                      ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
+                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+                  }`}
+                >
+                  <Calendar className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base font-medium flex-1 text-left">Événements</span>
+                  <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                    activeTab === 'events' ? 'bg-pink-500/30 text-pink-200' : 'bg-slate-700 text-slate-300'
+                  }`}>{events.length}</span>
+                </button>
                 <button
                   onClick={() => {
                     setActiveTab('moderation');
@@ -1019,6 +1085,44 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           <div className="hidden sm:block">
             <div className="relative bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/10 p-1.5 shadow-xl">
               <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                <button
+                  onClick={async () => {
+                    setActiveTab('events');
+                    if (user && events.length === 0) {
+                      setLoadingEvents(true);
+                      try {
+                        const userEvents = await getUserEvents(user.id);
+                        setEvents(userEvents);
+                      } catch (error) {
+                        console.error('Error loading events:', error);
+                      } finally {
+                        setLoadingEvents(false);
+                      }
+                    }
+                  }}
+                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                    activeTab === 'events' 
+                      ? 'text-pink-300' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {activeTab === 'events' && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
+                  )}
+                  <div className="relative flex items-center gap-2">
+                    <Calendar className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'events' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                    <span className="text-sm md:text-base font-medium">Événements</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
+                      activeTab === 'events' 
+                        ? 'bg-pink-500/30 text-pink-200 shadow-md shadow-pink-900/30' 
+                        : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
+                    }`}>{events.length}</span>
+                  </div>
+                  {activeTab === 'events' && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
+                  )}
+                </button>
+                
                 <button
                   onClick={() => setActiveTab('moderation')}
                   className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
@@ -1164,6 +1268,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             </div>
           </div>
         </div>
+
+        {/* Contenu de l'onglet Événements */}
+        {activeTab === 'events' && (
+          <>
+            {selectedEvent ? (
+              <EventManager
+                event={selectedEvent}
+                onBack={() => setSelectedEvent(null)}
+                onEventUpdated={(updatedEvent) => {
+                  setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+                  setSelectedEvent(updatedEvent);
+                  if (currentEvent?.id === updatedEvent.id) {
+                    loadEventBySlug(updatedEvent.slug);
+                  }
+                }}
+                onEventDeleted={() => {
+                  setEvents(prev => prev.filter(e => e.id !== selectedEvent.id));
+                  setSelectedEvent(null);
+                  if (currentEvent?.id === selectedEvent.id) {
+                    onBack();
+                  }
+                }}
+              />
+            ) : (
+              <EventSelector
+                onEventSelected={(event) => {
+                  setSelectedEvent(event);
+                }}
+                onBack={onBack}
+              />
+            )}
+          </>
+        )}
 
         {activeTab === 'moderation' && (
           <>

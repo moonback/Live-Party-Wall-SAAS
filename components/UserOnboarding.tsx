@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, X, Check, User, Upload, ArrowRight, ChevronLeft } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useEvent } from '../context/EventContext';
 import { validateAuthorName, validateImageFile, MAX_AUTHOR_NAME_LENGTH } from '../utils/validation';
 import { useAdaptiveCameraResolution } from '../hooks/useAdaptiveCameraResolution';
 import { saveUserAvatar } from '../utils/userAvatar';
@@ -16,6 +17,7 @@ interface UserOnboardingProps {
  */
 const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) => {
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
   const [step, setStep] = useState<1 | 2>(1);
   const [userName, setUserName] = useState('');
   const [avatarPhoto, setAvatarPhoto] = useState<string | null>(null);
@@ -177,9 +179,14 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
     }
 
     // Vérifier si l'utilisateur est bloqué
-    const blocked = await isGuestBlocked(userName);
+    if (!currentEvent) {
+      addToast("Aucun événement sélectionné", 'error');
+      return;
+    }
+
+    const blocked = await isGuestBlocked(currentEvent.id, userName);
     if (blocked) {
-      const blockInfo = await getBlockedGuestInfo(userName);
+      const blockInfo = await getBlockedGuestInfo(currentEvent.id, userName);
       const remainingMinutes = blockInfo.remainingMinutes || 0;
       addToast(`Vous êtes temporairement bloqué. Réessayez dans ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`, 'error');
       return;
@@ -187,7 +194,7 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
 
     setIsRegistering(true);
     try {
-      await registerGuest(avatarPhoto, userName);
+      await registerGuest(currentEvent.id, avatarPhoto, userName);
       localStorage.setItem('party_user_name', userName);
       localStorage.setItem('party_user_avatar', avatarPhoto);
       saveUserAvatar(userName, avatarPhoto);

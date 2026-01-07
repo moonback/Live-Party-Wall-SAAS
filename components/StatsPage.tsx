@@ -5,6 +5,7 @@ import { ArrowLeft, BarChart3, RefreshCw } from 'lucide-react';
 import { getBaseUrl } from '../utils/urlUtils';
 import { getPhotoReactions, getPhotos } from '../services/photoService';
 import { usePhotos } from '../context/PhotosContext';
+import { useEvent } from '../context/EventContext';
 import { getFinishedBattles } from '../services/battleService';
 import { getAllGuests } from '../services/guestService';
 import { StatsTopBar } from './stats/StatsTopBar';
@@ -36,6 +37,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
   const [showStarPhotoModal, setShowStarPhotoModal] = useState(false);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
   const { refresh: refreshPhotos } = usePhotos();
+  const { currentEvent } = useEvent();
 
   // Mode plein écran automatique pour l'écran dédié
   useEffect(() => {
@@ -94,9 +96,15 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
 
   // Charger les battles terminées et les avatars des invités
   useEffect(() => {
+    // Ne rien faire si l'événement n'est pas chargé
+    if (!currentEvent?.id) {
+      return;
+    }
+
     const loadFinishedBattles = async () => {
       try {
-        const battles = await getFinishedBattles(10); // Les 10 dernières battles terminées
+        // Passer l'ID de l'événement et 10 comme limit
+        const battles = await getFinishedBattles(currentEvent.id, 10); // Les 10 dernières battles terminées
         setFinishedBattles(battles);
       } catch (error) {
         console.error('Error loading finished battles:', error);
@@ -105,7 +113,8 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
 
     const loadGuestAvatars = async () => {
       try {
-        const allGuests = await getAllGuests();
+        // Passer l'ID de l'événement
+        const allGuests = await getAllGuests(currentEvent.id);
         // Créer un mapping nom -> avatar_url pour les invités
         // Trier par updatedAt décroissant pour prendre le dernier avatar de chaque invité
         const avatarsMap = new Map<string, string>();
@@ -124,7 +133,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
 
     loadFinishedBattles();
     loadGuestAvatars();
-  }, []);
+  }, [currentEvent?.id]);
 
   // Fonction de rafraîchissement manuel
   const handleRefresh = useCallback(async () => {
@@ -145,19 +154,23 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
       }
       
       // Recharger les battles terminées
-      const battles = await getFinishedBattles(10);
-      setFinishedBattles(battles);
+      if (currentEvent?.id) {
+        const battles = await getFinishedBattles(currentEvent.id, 10);
+        setFinishedBattles(battles);
+      }
       
       // Recharger les avatars des invités
-      const allGuests = await getAllGuests();
-      const avatarsMap = new Map<string, string>();
-      const sortedGuests = [...allGuests].sort((a, b) => b.updatedAt - a.updatedAt);
-      sortedGuests.forEach(guest => {
-        if (!avatarsMap.has(guest.name)) {
-          avatarsMap.set(guest.name, guest.avatarUrl);
-        }
-      });
-      setGuestAvatars(avatarsMap);
+      if (currentEvent?.id) {
+        const allGuests = await getAllGuests(currentEvent.id);
+        const avatarsMap = new Map<string, string>();
+        const sortedGuests = [...allGuests].sort((a, b) => b.updatedAt - a.updatedAt);
+        sortedGuests.forEach(guest => {
+          if (!avatarsMap.has(guest.name)) {
+            avatarsMap.set(guest.name, guest.avatarUrl);
+          }
+        });
+        setGuestAvatars(avatarsMap);
+      }
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {

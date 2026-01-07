@@ -6,6 +6,7 @@ import { isImageAppropriate } from '../services/aiModerationService';
 import { Photo } from '../types';
 import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
 import { useToast } from '../context/ToastContext';
+import { useEvent } from '../context/EventContext';
 import { validateAuthorName } from '../utils/validation';
 import { Camera, X, Grid3x3, LayoutGrid, Square, RotateCcw, Upload, ArrowLeft, FlipHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { getSettings, subscribeToSettings, EventSettings, defaultSettings } from '../services/settingsService';
@@ -20,6 +21,7 @@ interface CollageModeProps {
 
 const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) => {
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<CollageTemplate>('2x2');
   const [previewCollage, setPreviewCollage] = useState<string | null>(null);
@@ -260,8 +262,13 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       setLoadingStep('Génération de la légende...');
       const caption = await generateImageCaption(previewCollage, eventSettings.event_context);
 
+      if (!currentEvent) {
+        addToast("Aucun événement sélectionné", 'error');
+        setLoading(false);
+        return;
+      }
       setLoadingStep('Upload en cours...');
-      const photo = await addPhotoToWall(previewCollage, caption, authorName);
+      const photo = await addPhotoToWall(currentEvent.id, previewCollage, caption, authorName);
 
       addToast('Collage ajouté au mur ! 🎉', 'success');
       onCollageUploaded(photo);
