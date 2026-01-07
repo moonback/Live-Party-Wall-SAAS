@@ -37,43 +37,23 @@ export const PhotoboothComparison: React.FC = () => {
     disadvantages: [
       {
         icon: DollarSign,
-        title: 'Coût élevé',
-        description: 'Entre 400€ et 900€ par événement, souvent avec frais supplémentaires (kilométrage, heures supplémentaires)'
+        title: '400-900€ par événement',
+        description: '+ frais cachés (transport, heures sup, consommables)'
       },
       {
         icon: Truck,
-        title: 'Logistique complexe',
-        description: 'Livraison, installation, désinstallation, transport du matériel lourd et encombrant'
-      },
-      {
-        icon: Clock,
-        title: 'Temps de setup',
-        description: 'Installation et configuration nécessitent 1 à 2 heures avant l\'événement'
+        title: 'Logistique lourde',
+        description: 'Livraison, installation 1-2h, désinstallation, transport'
       },
       {
         icon: Users,
         title: 'Capacité limitée',
-        description: 'Seulement quelques invités peuvent l\'utiliser simultanément, files d\'attente fréquentes'
+        description: 'Files d\'attente, seulement quelques invités à la fois'
       },
       {
         icon: AlertCircle,
         title: 'Risques techniques',
-        description: 'Pannes matérielles, problèmes d\'impression, nécessité d\'un technicien sur place'
-      },
-      {
-        icon: DollarSign,
-        title: 'Coûts cachés',
-        description: 'Papier photo, encres, maintenance, frais de déplacement, heures supplémentaires'
-      },
-      {
-        icon: Package,
-        title: 'Espace requis',
-        description: 'Nécessite un espace dédié important (minimum 3-4 m²) dans la salle'
-      },
-      {
-        icon: Clock,
-        title: 'Pas de participation à distance',
-        description: 'Les invités absents ne peuvent pas participer à l\'expérience'
+        description: 'Pannes, besoin d\'un technicien, espace 3-4m² requis'
       }
     ]
   };
@@ -88,43 +68,23 @@ export const PhotoboothComparison: React.FC = () => {
     advantages: [
       {
         icon: TrendingDown,
-        title: '4 à 9 fois moins cher',
-        description: 'De 49€ à 199€ selon l\'offre, contre 400-900€ pour un photobooth traditionnel'
+        title: '6,5x moins cher',
+        description: '99€ vs 650€ en moyenne. Tout inclus, zéro surprise.'
       },
       {
         icon: Zap,
-        title: 'Installation en 5 minutes',
-        description: 'Branchez votre TV/PC, c\'est prêt. Aucune logistique de transport ou d\'installation'
+        title: 'Prêt en 5 minutes',
+        description: 'Branchez, c\'est parti. Pas de livraison, pas d\'installation.'
       },
       {
         icon: Smartphone,
-        title: 'Participation illimitée',
-        description: 'Tous les invités participent simultanément depuis leur smartphone, pas de file d\'attente'
+        title: 'Tous vos invités participent',
+        description: 'Simultanément, sans file d\'attente. Même à distance.'
       },
       {
         icon: Sparkles,
-        title: 'Expérience enrichie',
-        description: 'Mur de photos en temps réel, aftermovie automatique, galerie HD, modération IA'
-      },
-      {
-        icon: Wifi,
-        title: 'Participation à distance',
-        description: 'Les invités absents peuvent participer via un lien dédié'
-      },
-      {
-        icon: DollarSign,
-        title: 'Pas de frais cachés',
-        description: 'Prix fixe, tout inclus : pas de frais de transport, de maintenance ou de consommables'
-      },
-      {
-        icon: Package,
-        title: 'Zéro encombrement',
-        description: 'Aucun matériel physique à transporter ou installer, juste votre équipement existant'
-      },
-      {
-        icon: Shield,
-        title: 'Fiabilité maximale',
-        description: 'Pas de risque de panne matérielle, solution cloud avec support technique inclus'
+        title: 'Expérience premium',
+        description: 'Mur temps réel + aftermovie + galerie HD + modération IA'
       }
     ]
   };
@@ -148,9 +108,9 @@ export const PhotoboothComparison: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
           >
-            Photobooth en Location vs Live Party Wall
+            Pourquoi payer <span className="text-red-400">650€</span> quand vous pouvez avoir mieux pour <span className="text-pink-400">99€</span> ?
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -159,11 +119,11 @@ export const PhotoboothComparison: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto"
           >
-            Une comparaison honnête pour vous aider à faire le meilleur choix pour votre événement
+            La comparaison qui change tout. <strong className="text-pink-400">6,5x moins cher</strong>, <strong className="text-pink-400">10x plus simple</strong>, <strong className="text-pink-400">100% plus engageant</strong>.
           </motion.p>
         </div>
 
-        {/* Cost Comparison */}
+        {/* Cost Comparison - Plus impactante */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -171,45 +131,78 @@ export const PhotoboothComparison: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
         >
           {/* Photobooth Traditionnel - Coût */}
-          <div className="bg-gradient-to-br from-red-900/30 to-orange-900/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 border-red-500/30">
-            <div className="flex items-center gap-3 mb-4">
-              <Package className="w-6 h-6 text-red-400" />
-              <h3 className="text-2xl font-bold text-white">Photobooth Traditionnel</h3>
-            </div>
-            <div className="mb-6">
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl sm:text-5xl font-bold text-red-400">
-                  {photoboothTraditional.cost.min}€ - {photoboothTraditional.cost.max}€
-                </span>
+          <div className="bg-gradient-to-br from-red-900/30 to-orange-900/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 border-red-500/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <Package className="w-5 h-5 text-red-400" />
+                <h3 className="text-xl font-bold text-white">Photobooth Traditionnel</h3>
               </div>
-              <p className="text-sm text-gray-400 italic">{photoboothTraditional.cost.description}</p>
-              <p className="text-sm text-gray-300 mt-2">
-                <strong className="text-red-400">Moyenne : {photoboothTraditional.cost.average}€</strong> + frais supplémentaires possibles
-              </p>
+              <div className="mb-4">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-5xl sm:text-6xl font-bold text-red-400">
+                    {photoboothTraditional.cost.average}€
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">Moyenne (400-900€) + frais cachés</p>
+              </div>
+              <div className="space-y-1.5 text-xs text-gray-400">
+                <div className="flex items-center gap-2">
+                  <X className="w-3 h-3 text-red-400" />
+                  <span>Livraison & installation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <X className="w-3 h-3 text-red-400" />
+                  <span>Consommables (papier, encre)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <X className="w-3 h-3 text-red-400" />
+                  <span>Heures supplémentaires</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Live Party Wall - Coût */}
-          <div className="bg-gradient-to-br from-pink-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 border-pink-500/50 shadow-lg shadow-pink-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <Sparkles className="w-6 h-6 text-pink-400" />
-              <h3 className="text-2xl font-bold text-white">Live Party Wall</h3>
-            </div>
-            <div className="mb-6">
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                  {livePartyWall.cost.min}€ - {livePartyWall.cost.max}€
-                </span>
+          <div className="bg-gradient-to-br from-pink-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 border-pink-500/50 shadow-lg shadow-pink-500/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl -mr-16 -mt-16" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-pink-400" />
+                  <h3 className="text-xl font-bold text-white">Live Party Wall</h3>
+                </div>
+                <div className="px-2 py-1 bg-green-500/20 border border-green-500/30 rounded text-xs font-bold text-green-300">
+                  BEST VALUE
+                </div>
               </div>
-              <p className="text-sm text-gray-400 italic">{livePartyWall.cost.description}</p>
-              <p className="text-sm text-gray-300 mt-2">
-                <strong className="text-pink-400">Offre populaire : {livePartyWall.cost.popular}€</strong> - Tout inclus, sans surprise
-              </p>
-            </div>
-            <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-              <p className="text-sm text-green-300 font-semibold">
-                💰 Économie de {Math.round((1 - livePartyWall.cost.popular / photoboothTraditional.cost.average) * 100)}% par rapport à la moyenne
-              </p>
+              <div className="mb-4">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+                    {livePartyWall.cost.popular}€
+                  </span>
+                </div>
+                <p className="text-xs text-gray-300">Tout inclus, zéro surprise</p>
+              </div>
+              <div className="space-y-1.5 text-xs text-gray-300">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3 h-3 text-green-400" />
+                  <span>Installation en 5 minutes</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3 h-3 text-green-400" />
+                  <span>Tous les invités participent</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3 h-3 text-green-400" />
+                  <span>Aftermovie + galerie HD inclus</span>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+                <p className="text-sm text-green-300 font-bold text-center">
+                  💰 Économisez {photoboothTraditional.cost.average - livePartyWall.cost.popular}€ par événement
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -243,42 +236,23 @@ export const PhotoboothComparison: React.FC = () => {
             </motion.div>
 
             <div className="bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
-              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <Package className="w-6 h-6 text-red-400" />
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <Package className="w-5 h-5 text-red-400" />
                 Photobooth Traditionnel
               </h3>
 
-              {/* Avantages */}
-              <div className="mb-8">
-                <h4 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
-                  <Check className="w-5 h-5" />
-                  Avantages
-                </h4>
-                <div className="space-y-4">
-                  {photoboothTraditional.advantages.map((advantage, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                      <advantage.icon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-white mb-1">{advantage.title}</p>
-                        <p className="text-xs text-gray-400">{advantage.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Inconvénients */}
+              {/* Inconvénients - Plus visibles */}
               <div>
-                <h4 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
+                <h4 className="text-base font-semibold text-red-400 mb-4 flex items-center gap-2">
                   <X className="w-5 h-5" />
-                  Inconvénients
+                  Les points bloquants
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {photoboothTraditional.disadvantages.map((disadvantage, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-                      <disadvantage.icon className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div key={index} className="flex items-start gap-2.5 p-2.5 bg-red-500/10 rounded-lg border border-red-500/20">
+                      <disadvantage.icon className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-white mb-1">{disadvantage.title}</p>
+                        <p className="text-sm font-bold text-white">{disadvantage.title}</p>
                         <p className="text-xs text-gray-400">{disadvantage.description}</p>
                       </div>
                     </div>
@@ -315,24 +289,29 @@ export const PhotoboothComparison: React.FC = () => {
             </motion.div>
 
             <div className="bg-gradient-to-br from-pink-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-6 border-2 border-pink-500/50 shadow-lg shadow-pink-500/20">
-              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                <Sparkles className="w-6 h-6 text-pink-400" />
-                Live Party Wall
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-pink-400" />
+                  Live Party Wall
+                </h3>
+                <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                  <span className="text-xs font-bold text-green-300">RECOMMANDÉ</span>
+                </div>
+              </div>
 
-              {/* Avantages */}
+              {/* Avantages - Plus impactants */}
               <div>
-                <h4 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <h4 className="text-base font-semibold text-green-400 mb-4 flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  Avantages
+                  Pourquoi choisir Live Party Wall
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {livePartyWall.advantages.map((advantage, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                      <advantage.icon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <div key={index} className="flex items-start gap-2.5 p-2.5 bg-green-500/10 rounded-lg border border-green-500/20">
+                      <advantage.icon className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-white mb-1">{advantage.title}</p>
-                        <p className="text-xs text-gray-400">{advantage.description}</p>
+                        <p className="text-sm font-bold text-white">{advantage.title}</p>
+                        <p className="text-xs text-gray-300">{advantage.description}</p>
                       </div>
                     </div>
                   ))}
@@ -342,7 +321,7 @@ export const PhotoboothComparison: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Conclusion */}
+        {/* Conclusion - Plus percutante */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -350,26 +329,39 @@ export const PhotoboothComparison: React.FC = () => {
           className="mt-12 bg-gradient-to-r from-pink-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-8 border-2 border-pink-500/50"
         >
           <div className="text-center">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-              Le Verdict
-            </h3>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6">
-              Si vous cherchez une <strong className="text-pink-400">solution moderne, économique et engageante</strong> qui maximise la participation de tous vos invités, 
-              Live Party Wall est le choix évident. Pour <strong className="text-pink-400">4 à 9 fois moins cher</strong>, vous obtenez une expérience supérieure 
-              sans les contraintes logistiques et techniques d'un photobooth traditionnel.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <div className="px-4 py-2 bg-pink-500/20 border border-pink-500/30 rounded-full text-pink-300">
-                💰 Économie significative
+            <motion.div
+              initial={{ scale: 0.9 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              className="inline-block mb-6"
+            >
+              <h3 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                Le choix est évident
+              </h3>
+              <div className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent mb-4">
+                551€ économisés
               </div>
-              <div className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300">
-                ⚡ Installation instantanée
+              <p className="text-lg text-gray-300">
+                Pour une expérience <strong className="text-pink-400">supérieure</strong> en tous points
+              </p>
+            </motion.div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+              <div className="px-4 py-3 bg-pink-500/20 border border-pink-500/30 rounded-xl">
+                <div className="text-2xl font-bold text-pink-300 mb-1">6,5x</div>
+                <div className="text-xs text-gray-300">Moins cher</div>
               </div>
-              <div className="px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full text-green-300">
-                👥 Participation illimitée
+              <div className="px-4 py-3 bg-purple-500/20 border border-purple-500/30 rounded-xl">
+                <div className="text-2xl font-bold text-purple-300 mb-1">5min</div>
+                <div className="text-xs text-gray-300">Installation</div>
               </div>
-              <div className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300">
-                🎯 Zéro contrainte logistique
+              <div className="px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-xl">
+                <div className="text-2xl font-bold text-green-300 mb-1">100%</div>
+                <div className="text-xs text-gray-300">Participation</div>
+              </div>
+              <div className="px-4 py-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                <div className="text-2xl font-bold text-blue-300 mb-1">0€</div>
+                <div className="text-xs text-gray-300">Frais cachés</div>
               </div>
             </div>
           </div>
