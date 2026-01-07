@@ -4,6 +4,7 @@ import { getPhotos, subscribeToNewPhotos, toggleLike, getUserLikes, toggleReacti
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
+import { useEvent } from '../context/EventContext';
 import { getActiveBattles, subscribeToNewBattles } from '../services/battleService';
 import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
@@ -26,6 +27,7 @@ interface GuestGalleryProps {
 const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFindMeClick }) => {
   const { addToast } = useToast();
   const { settings } = useSettings();
+  const { currentEvent } = useEvent();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedPhotoIds, setLikedPhotoIds] = useState<Set<string>>(new Set());
@@ -62,16 +64,20 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
   // Chargement des données
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !currentEvent?.id) {
+      setPhotos([]);
+      setLoading(false);
+      return;
+    }
 
     const loadData = async () => {
       try {
         setLoading(true);
         const [allPhotos, userLikes, userReactionsData, allGuests] = await Promise.all([
-          getPhotos(),
+          getPhotos(currentEvent.id),
           getUserLikes(userId),
           getUserReactions(userId),
-          getAllGuests()
+          getAllGuests(currentEvent.id)
         ]);
         
         setPhotos(allPhotos);
@@ -101,7 +107,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
     loadData();
 
-    const sub = subscribeToNewPhotos((newPhoto) => {
+    const sub = subscribeToNewPhotos(currentEvent.id, (newPhoto) => {
       setPhotos(prev => [...prev, newPhoto]);
       addToast("Nouvelle photo publiée !", 'info');
     });
@@ -119,12 +125,12 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     });
 
     const loadBattles = async () => {
-      if (settings.battle_mode_enabled === false) {
+      if (settings.battle_mode_enabled === false || !currentEvent?.id) {
         setBattles([]);
         return;
       }
       try {
-        const activeBattles = await getActiveBattles(userId);
+        const activeBattles = await getActiveBattles(currentEvent.id, userId);
         setBattles(activeBattles);
       } catch (error) {
         console.error('Error loading battles:', error);
@@ -141,8 +147,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
 
     let battlesSub: { unsubscribe: () => void } | null = null;
-    if (settings.battle_mode_enabled !== false) {
-      battlesSub = subscribeToNewBattles(async (newBattle) => {
+    if (settings.battle_mode_enabled !== false && currentEvent?.id) {
+      battlesSub = subscribeToNewBattles(currentEvent.id, async (newBattle) => {
         setBattles(prev => {
           if (prev.some(b => b.id === newBattle.id)) {
             return prev;
@@ -159,7 +165,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       battlesSub ? () => battlesSub.unsubscribe() : null,
       checkExpiredInterval ? () => clearInterval(checkExpiredInterval) : null,
     ]);
-  }, [userId, addToast, settings.battle_mode_enabled]);
+  }, [userId, addToast, settings.battle_mode_enabled, currentEvent?.id]);
 
   // Scroll handler pour le bouton "Top"
   useEffect(() => {

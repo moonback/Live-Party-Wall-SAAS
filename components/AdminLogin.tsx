@@ -10,23 +10,43 @@ interface AdminLoginProps {
 
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
   const { addToast } = useToast();
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSignUp) {
+      if (password !== confirmPassword) {
+        addToast('Les mots de passe ne correspondent pas', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        addToast('Le mot de passe doit contenir au moins 6 caractères', 'error');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
-      await signIn(email, password);
-      addToast('Connexion réussie', 'success');
-      onLoginSuccess();
+      if (isSignUp) {
+        await signUp(email, password);
+        addToast('Inscription réussie ! Vous êtes maintenant connecté.', 'success');
+        onLoginSuccess();
+      } else {
+        await signIn(email, password);
+        addToast('Connexion réussie', 'success');
+        onLoginSuccess();
+      }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Erreur de connexion';
+        error instanceof Error ? error.message : (isSignUp ? 'Erreur lors de l\'inscription' : 'Erreur de connexion');
       addToast(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -47,11 +67,17 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
           </div>
           <h2 className="text-3xl font-black">Espace Administration</h2>
           <p className="text-gray-400 mt-2 text-center text-base font-medium">
-            Accès <span className="text-pink-400 underline underline-offset-4">restreint</span> aux modérateurs
+            {isSignUp ? (
+              'Créer un compte administrateur'
+            ) : (
+              <>
+                Accès <span className="text-pink-400 underline underline-offset-4">restreint</span> aux modérateurs
+              </>
+            )}
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">
               Adresse email
@@ -80,7 +106,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                 className="w-full px-4 py-3 bg-gradient-to-br from-gray-700 to-gray-600 border-2 border-gray-700 hover:border-pink-500/80 rounded-xl focus:ring-2 focus:ring-pink-500/60 focus:border-pink-500/80 text-white outline-none transition-all shadow-sm placeholder:text-gray-400 pr-12"
                 placeholder="••••••••"
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
               />
               <button
                 type="button"
@@ -99,6 +126,24 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
             </div>
           </div>
 
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1 ml-1">
+                Confirmer le mot de passe
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gradient-to-br from-gray-700 to-gray-600 border-2 border-gray-700 hover:border-pink-500/80 rounded-xl focus:ring-2 focus:ring-pink-500/60 focus:border-pink-500/80 text-white outline-none transition-all shadow-sm placeholder:text-gray-400"
+                placeholder="••••••••"
+                required={isSignUp}
+                minLength={6}
+                autoComplete="new-password"
+              />
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -106,11 +151,11 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
             disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <span className="animate-pulse">Connexion...</span>
+              <span className="animate-pulse">{isSignUp ? 'Inscription...' : 'Connexion...'}</span>
             ) : (
               <>
                 <LogIn className="w-6 h-6" />
-                Se connecter
+                {isSignUp ? 'Créer un compte' : 'Se connecter'}
               </>
             )}
           </button>
@@ -121,6 +166,18 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
           <span className="text-gray-500 text-xs font-medium uppercase">ou</span>
           <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gray-600 to-transparent" />
         </div>
+
+        <button
+          onClick={() => {
+            setIsSignUp(!isSignUp);
+            setPassword('');
+            setConfirmPassword('');
+          }}
+          className="w-full text-gray-300 bg-gray-700/60 hover:bg-gray-700/90 rounded-xl py-2 text-base font-bold transition-all flex items-center justify-center gap-2
+            border-2 border-gray-700 hover:border-pink-400 shadow-sm hover:text-pink-400"
+        >
+          {isSignUp ? 'Déjà un compte ? Se connecter' : 'Pas encore de compte ? S\'inscrire'}
+        </button>
 
         <button
           onClick={onBack}
