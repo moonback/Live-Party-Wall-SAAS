@@ -136,6 +136,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     setPhotos(allPhotos.slice().reverse());
   }, [allPhotos]);
 
+  // Forcer l'onglet actif à être "events" si aucun événement n'est sélectionné
+  useEffect(() => {
+    if (!currentEvent && activeTab !== 'events') {
+      setActiveTab('events');
+    }
+  }, [currentEvent, activeTab]);
+
   // Gérer la touche Échap pour fermer la modal d'aperçu
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -979,104 +986,108 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     activeTab === 'events' ? 'bg-pink-500/30 text-pink-200' : 'bg-slate-700 text-slate-300'
                   }`}>{events.length}</span>
                 </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('moderation');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-              activeTab === 'moderation' 
-                ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
-                  }`}
-                >
-                  <ImageIcon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base font-medium flex-1 text-left">Modération</span>
-                  <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-              activeTab === 'moderation' ? 'bg-pink-500/30 text-pink-200' : 'bg-slate-700 text-slate-300'
-            }`}>{photos.length}</span>
-          </button>
-          <button
-                  onClick={() => {
-                    setActiveTab('analytics');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-              activeTab === 'analytics' 
-                ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
-            }`}
-          >
-                  <BarChart2 className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base font-medium flex-1 text-left">Analytics</span>
-          </button>
-          <button
-                  onClick={() => {
-                    setActiveTab('configuration');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-              activeTab === 'configuration' 
-                ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
-            }`}
-          >
-                  <Settings className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base font-medium flex-1 text-left">Configuration</span>
-          </button>
-          <button
-                  onClick={() => {
-                    setActiveTab('aftermovie');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-              activeTab === 'aftermovie'
-                ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20'
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
-            }`}
-          >
-                  <Video className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base font-medium flex-1 text-left">Aftermovie</span>
-          </button>
-          {config.battle_mode_enabled !== false && (
+                {currentEvent && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setActiveTab('moderation');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                activeTab === 'moderation' 
+                  ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
+                        : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+                    }`}
+                    >
+                      <ImageIcon className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-base font-medium flex-1 text-left">Modération</span>
+                      <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                activeTab === 'moderation' ? 'bg-pink-500/30 text-pink-200' : 'bg-slate-700 text-slate-300'
+              }`}>{photos.length}</span>
+            </button>
             <button
                     onClick={() => {
-                      setActiveTab('battles');
+                      setActiveTab('analytics');
                       setIsMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-                activeTab === 'battles'
-                  ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50 text-yellow-300 shadow-lg shadow-yellow-900/20'
+                activeTab === 'analytics' 
+                  ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
+                        : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+              }`}
+            >
+                    <BarChart2 className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base font-medium flex-1 text-left">Analytics</span>
+            </button>
+            <button
+                    onClick={() => {
+                      setActiveTab('configuration');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                activeTab === 'configuration' 
+                  ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20' 
+                        : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+              }`}
+            >
+                    <Settings className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base font-medium flex-1 text-left">Configuration</span>
+            </button>
+            <button
+                    onClick={() => {
+                      setActiveTab('aftermovie');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                activeTab === 'aftermovie'
+                  ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-900/20'
+                        : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+              }`}
+            >
+                    <Video className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base font-medium flex-1 text-left">Aftermovie</span>
+            </button>
+            {config.battle_mode_enabled !== false && (
+              <button
+                      onClick={() => {
+                        setActiveTab('battles');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                  activeTab === 'battles'
+                    ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/50 text-yellow-300 shadow-lg shadow-yellow-900/20'
+                          : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
+                      }`}
+                    >
+                      <Zap className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-base font-medium flex-1 text-left">Battles</span>
+                      <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                  activeTab === 'battles' ? 'bg-yellow-500/30 text-yellow-200' : 'bg-slate-700 text-slate-300'
+                }`}>{battles.length}</span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setActiveTab('guests');
+                      setIsMobileMenuOpen(false);
+                if (guests.length === 0) {
+                  loadGuests();
+                }
+              }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
+                activeTab === 'guests'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/50 text-cyan-300 shadow-lg shadow-cyan-900/20'
                         : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
                     }`}
                   >
-                    <Zap className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-base font-medium flex-1 text-left">Battles</span>
+                    <Users className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base font-medium flex-1 text-left">Inviter</span>
                     <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-                activeTab === 'battles' ? 'bg-yellow-500/30 text-yellow-200' : 'bg-slate-700 text-slate-300'
-              }`}>{battles.length}</span>
+                activeTab === 'guests' ? 'bg-cyan-500/30 text-cyan-200' : 'bg-slate-700 text-slate-300'
+              }`}>{guests.length}</span>
             </button>
-          )}
-          <button
-            onClick={() => {
-              setActiveTab('guests');
-                    setIsMobileMenuOpen(false);
-              if (guests.length === 0) {
-                loadGuests();
-              }
-            }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 border-2 min-h-[48px] touch-manipulation ${
-              activeTab === 'guests'
-                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/50 text-cyan-300 shadow-lg shadow-cyan-900/20'
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-white hover:bg-slate-800/80'
-                  }`}
-                >
-                  <Users className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base font-medium flex-1 text-left">Inviter</span>
-                  <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
-              activeTab === 'guests' ? 'bg-cyan-500/30 text-cyan-200' : 'bg-slate-700 text-slate-300'
-            }`}>{guests.length}</span>
-          </button>
+                  </>
+                )}
         </div>
             </div>
           )}
@@ -1123,147 +1134,151 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   )}
                 </button>
                 
-                <button
-                  onClick={() => setActiveTab('moderation')}
-                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                    activeTab === 'moderation' 
-                      ? 'text-pink-300' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {activeTab === 'moderation' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <ImageIcon className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'moderation' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm md:text-base font-medium">Modération</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
-                      activeTab === 'moderation' 
-                        ? 'bg-pink-500/30 text-pink-200 shadow-md shadow-pink-900/30' 
-                        : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
-                    }`}>{photos.length}</span>
-                  </div>
-                  {activeTab === 'moderation' && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('analytics')}
-                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                    activeTab === 'analytics' 
-                      ? 'text-pink-300' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {activeTab === 'analytics' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <BarChart2 className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'analytics' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm md:text-base font-medium">Analytics</span>
-                  </div>
-                  {activeTab === 'analytics' && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('configuration')}
-                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                    activeTab === 'configuration' 
-                      ? 'text-pink-300' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {activeTab === 'configuration' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <Settings className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'configuration' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm md:text-base font-medium">Configuration</span>
-                  </div>
-                  {activeTab === 'configuration' && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('aftermovie')}
-                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                    activeTab === 'aftermovie'
-                      ? 'text-pink-300'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {activeTab === 'aftermovie' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <Video className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'aftermovie' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm md:text-base font-medium">Aftermovie</span>
-                  </div>
-                  {activeTab === 'aftermovie' && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
-                  )}
-                </button>
-                
-                {config.battle_mode_enabled !== false && (
-                  <button
-                    onClick={() => setActiveTab('battles')}
-                    className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                      activeTab === 'battles'
-                        ? 'text-yellow-300'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {activeTab === 'battles' && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-yellow-500/20 rounded-xl border border-yellow-500/30 shadow-lg shadow-yellow-900/20"></div>
+                {currentEvent && (
+                  <>
+                    <button
+                      onClick={() => setActiveTab('moderation')}
+                      className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                        activeTab === 'moderation' 
+                          ? 'text-pink-300' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {activeTab === 'moderation' && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
+                      )}
+                      <div className="relative flex items-center gap-2">
+                        <ImageIcon className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'moderation' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm md:text-base font-medium">Modération</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
+                          activeTab === 'moderation' 
+                            ? 'bg-pink-500/30 text-pink-200 shadow-md shadow-pink-900/30' 
+                            : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
+                        }`}>{photos.length}</span>
+                      </div>
+                      {activeTab === 'moderation' && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={() => setActiveTab('analytics')}
+                      className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                        activeTab === 'analytics' 
+                          ? 'text-pink-300' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {activeTab === 'analytics' && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
+                      )}
+                      <div className="relative flex items-center gap-2">
+                        <BarChart2 className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'analytics' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm md:text-base font-medium">Analytics</span>
+                      </div>
+                      {activeTab === 'analytics' && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={() => setActiveTab('configuration')}
+                      className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                        activeTab === 'configuration' 
+                          ? 'text-pink-300' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {activeTab === 'configuration' && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
+                      )}
+                      <div className="relative flex items-center gap-2">
+                        <Settings className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'configuration' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm md:text-base font-medium">Configuration</span>
+                      </div>
+                      {activeTab === 'configuration' && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={() => setActiveTab('aftermovie')}
+                      className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                        activeTab === 'aftermovie'
+                          ? 'text-pink-300'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {activeTab === 'aftermovie' && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-pink-500/30 shadow-lg shadow-pink-900/20"></div>
+                      )}
+                      <div className="relative flex items-center gap-2">
+                        <Video className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'aftermovie' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm md:text-base font-medium">Aftermovie</span>
+                      </div>
+                      {activeTab === 'aftermovie' && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-pink-500 to-transparent rounded-full"></div>
+                      )}
+                    </button>
+                    
+                    {config.battle_mode_enabled !== false && (
+                      <button
+                        onClick={() => setActiveTab('battles')}
+                        className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                          activeTab === 'battles'
+                            ? 'text-yellow-300'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {activeTab === 'battles' && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-yellow-500/20 rounded-xl border border-yellow-500/30 shadow-lg shadow-yellow-900/20"></div>
+                        )}
+                        <div className="relative flex items-center gap-2">
+                          <Zap className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'battles' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                          <span className="text-sm md:text-base font-medium">Battles</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
+                            activeTab === 'battles' 
+                              ? 'bg-yellow-500/30 text-yellow-200 shadow-md shadow-yellow-900/30' 
+                              : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
+                          }`}>{battles.length}</span>
+                        </div>
+                        {activeTab === 'battles' && (
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent rounded-full"></div>
+                        )}
+                      </button>
                     )}
-                    <div className="relative flex items-center gap-2">
-                      <Zap className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'battles' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                      <span className="text-sm md:text-base font-medium">Battles</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
-                        activeTab === 'battles' 
-                          ? 'bg-yellow-500/30 text-yellow-200 shadow-md shadow-yellow-900/30' 
-                          : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
-                      }`}>{battles.length}</span>
-                    </div>
-                    {activeTab === 'battles' && (
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent rounded-full"></div>
-                    )}
-                  </button>
+                    
+                    <button
+                      onClick={() => {
+                        setActiveTab('guests');
+                        if (guests.length === 0) {
+                          loadGuests();
+                        }
+                      }}
+                      className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
+                        activeTab === 'guests'
+                          ? 'text-cyan-300'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {activeTab === 'guests' && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-xl border border-cyan-500/30 shadow-lg shadow-cyan-900/20"></div>
+                      )}
+                      <div className="relative flex items-center gap-2">
+                        <Users className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'guests' ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="text-sm md:text-base font-medium">Inviter</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
+                          activeTab === 'guests' 
+                            ? 'bg-cyan-500/30 text-cyan-200 shadow-md shadow-cyan-900/30' 
+                            : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
+                        }`}>{guests.length}</span>
+                      </div>
+                      {activeTab === 'guests' && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full"></div>
+                      )}
+                    </button>
+                  </>
                 )}
-                
-                <button
-                  onClick={() => {
-                    setActiveTab('guests');
-                    if (guests.length === 0) {
-                      loadGuests();
-                    }
-                  }}
-                  className={`relative flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[48px] touch-manipulation flex-shrink-0 group ${
-                    activeTab === 'guests'
-                      ? 'text-cyan-300'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {activeTab === 'guests' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-xl border border-cyan-500/30 shadow-lg shadow-cyan-900/20"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <Users className={`w-4 h-4 md:w-5 md:h-5 flex-shrink-0 transition-transform duration-300 ${activeTab === 'guests' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                    <span className="text-sm md:text-base font-medium">Inviter</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-all duration-300 ${
-                      activeTab === 'guests' 
-                        ? 'bg-cyan-500/30 text-cyan-200 shadow-md shadow-cyan-900/30' 
-                        : 'bg-slate-700/50 text-slate-300 group-hover:bg-slate-700'
-                    }`}>{guests.length}</span>
-                  </div>
-                  {activeTab === 'guests' && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full"></div>
-                  )}
-                </button>
               </div>
             </div>
           </div>
