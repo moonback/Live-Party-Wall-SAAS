@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../context/ToastContext';
 import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
+import { useEvent } from '../context/EventContext';
 import { deletePhoto, deleteAllPhotos, getPhotoReactions, getPhotosByAuthor, getPhotosReactions } from '../services/photoService';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { exportPhotosToZip } from '../services/exportService';
@@ -28,6 +29,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
   const { addToast } = useToast();
   const { photos, loading: photosLoading, refresh: refreshPhotos } = usePhotos();
   const { settings } = useSettings();
+  const { currentEvent } = useEvent();
   const [activeTab, setActiveTab] = useState<ControlTab>('overview');
 
   // Rediriger vers 'overview' si l'onglet battles est actif mais battle_mode est désactivé
@@ -110,10 +112,10 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
   // Charger les invités
   useEffect(() => {
     const loadGuests = async () => {
-      if (activeTab !== 'guests') return;
+      if (activeTab !== 'guests' || !currentEvent?.id) return;
       setGuestsLoading(true);
       try {
-        const allGuests = await getAllGuests();
+        const allGuests = await getAllGuests(currentEvent.id);
         setGuests(allGuests);
         
         // Charger les statistiques pour chaque invité
@@ -280,10 +282,15 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
   // Rafraîchir les invités
   const handleRefreshGuests = async () => {
-                  setGuestsLoading(true);
-                  try {
-                    const allGuests = await getAllGuests();
-                    setGuests(allGuests);
+    if (!currentEvent?.id) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+    
+    setGuestsLoading(true);
+    try {
+      const allGuests = await getAllGuests(currentEvent.id);
+      setGuests(allGuests);
       
                     const statsMap = new Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>();
                     for (const guest of allGuests) {
