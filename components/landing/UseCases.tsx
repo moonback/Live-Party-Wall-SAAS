@@ -11,10 +11,10 @@ export const UseCases: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            Parfait pour tous vos événements
+            Le concept qui fonctionne pour tous vos événements
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">
-            Des mariages aux événements d'entreprise, créez des souvenirs inoubliables
+            Particuliers, professionnels ou agences événementielles : découvrez le nouveau standard des soirées interactives. <strong className="text-pink-400">Matériel minimal requis :</strong> TV/PC + téléphones des invités.
           </p>
         </div>
 

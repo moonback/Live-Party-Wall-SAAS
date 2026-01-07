@@ -37,7 +37,7 @@ export const HowItWorks: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-base sm:text-lg md:text-xl lg:text-base xl:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed"
           >
-            Une expérience simple en <span className="text-pink-400 font-semibold">4 étapes</span> pour transformer votre événement
+            Une expérience simple en <span className="text-pink-400 font-semibold">4 étapes</span> pour transformer votre soirée en événement mémorable. Parfait pour particuliers, professionnels et agences événementielles.
           </motion.p>
         </motion.div>
 

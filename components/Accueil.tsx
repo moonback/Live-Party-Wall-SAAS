@@ -8,20 +8,18 @@ import { Features } from './landing/Features';
 import { Advantages } from './landing/Advantages';
 import { UseCases } from './landing/UseCases';
 import { GuestMessage } from './landing/GuestMessage';
-import { EventSelectorSection } from './landing/EventSelectorSection';
 import { FinalCTA } from './landing/FinalCTA';
 import { LandingFooter } from './landing/LandingFooter';
 
 interface AccueilProps {
   onAdminClick: () => void;
-  onEventSelected?: () => void;
 }
 
 /**
  * Landing page complète pour Live Party Wall SaaS
  * Page d'accueil détaillée avec présentation complète du produit
  */
-const Accueil: React.FC<AccueilProps> = ({ onAdminClick, onEventSelected }) => {
+const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
   const { isAuthenticated } = useAuth();
 
   // Fonction pour scroller vers une section
@@ -48,12 +46,6 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick, onEventSelected }) => {
         <Advantages />
         <UseCases />
         <GuestMessage />
-        {isAuthenticated && (
-          <EventSelectorSection 
-            onEventSelected={onEventSelected}
-            onBack={onAdminClick}
-          />
-        )}
         <FinalCTA onAdminClick={onAdminClick} />
         <LandingFooter />
       </div>

@@ -122,7 +122,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       {
         id: 'guest',
         title: 'Capturez vos meilleurs moments',
-        description: 'Capturez vos meilleurs moments',
+        description: 'Partagez vos photos instantanément sur le mur',
         icon: Camera,
         gradient: 'from-pink-500 via-rose-500 to-purple-500',
         glowColor: 'rgba(236, 72, 153, 0.4)',
@@ -131,8 +131,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       },
       {
         id: 'gallery',
-        title: 'Le mur',
-        description: 'Explorer Le mur',
+        title: 'Le mur interactif',
+        description: 'Découvrez toutes les photos de la soirée',
         icon: Images,
         gradient: 'from-indigo-500 via-blue-500 to-cyan-500',
         glowColor: 'rgba(99, 102, 241, 0.4)',
@@ -145,7 +145,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       options.push({
         id: 'findme',
         title: 'Retrouve-moi',
-        description: 'Retrouvez vos photos avec l\'IA',
+        description: 'Trouvez vos photos avec la recherche IA',
         icon: User,
         gradient: 'from-fuchsia-500 via-purple-500 to-indigo-500',
         glowColor: 'rgba(217, 70, 239, 0.4)',

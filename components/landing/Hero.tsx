@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
-import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Smartphone, ShieldCheck, Play, Star } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Smartphone, ShieldCheck, Play, Star, Monitor } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 // Photos optimisées et fiables pour éviter les erreurs de chargement
@@ -881,24 +881,25 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
               <span className="text-[10px] sm:text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                L'alternative virale au Photobooth
+                Le nouveau concept viral pour vos soirées
               </span>
             </motion.div>
             
             <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4 sm:mb-5 lg:mb-6 text-white">
-              Vos invités sont <br className="hidden lg:block"/>
+              Transformez votre soirée <br className="hidden lg:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400">
-                 vos photographes.
+                 en expérience mémorable
               </span>
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-400 mb-6 sm:mb-7 lg:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              Créez un <strong>mur photo interactif</strong> en moins de 2 minutes. Vos invités scannent un QR Code, prennent des photos, et l'IA les sublime en direct sur grand écran.
+              Le <strong>mur photo interactif</strong> qui remplace le photobooth traditionnel. <strong className="text-pink-400">C'est la clé :</strong> juste une TV ou vidéoprojecteur + un simple PC. Vos invités utilisent leur téléphone. Scannez un QR Code, prenez des photos, et l'IA les sublime en direct sur grand écran. <strong>Parfait pour particuliers, professionnels et agences événementielles.</strong>
             </motion.p>
 
             {/* Feature Pills */}
             <motion.div variants={itemVariants} className="flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start mb-6 sm:mb-8 lg:mb-10">
                 {[
+                    { icon: <Monitor size={14} />, text: "TV/PC + Téléphones" },
                     { icon: <Smartphone size={14} />, text: "Aucune App requise" },
                     { icon: <Zap size={14} />, text: "Affichage Temps réel" },
                     { icon: <ShieldCheck size={14} />, text: "Modération Auto (IA)" }
@@ -917,7 +918,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 className="relative px-6 sm:px-8 py-3 sm:py-4 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  Créer mon événement
+                  Essayer gratuitement
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -925,7 +926,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               
               <button className="px-6 sm:px-8 py-3 sm:py-4 bg-transparent border border-white/20 rounded-full font-semibold text-sm sm:text-base text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
                 <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
-                Voir la vidéo démo
+                Voir la démo en action
               </button>
             </motion.div>
 
@@ -940,7 +941,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                  <div className="flex items-center gap-1">
                      {[1,2,3,4,5].map(s => <Star key={s} size={12} className="sm:w-[14px] sm:h-[14px] text-yellow-400 fill-yellow-400" />)}
                  </div>
-                 <span className="text-xs sm:text-sm text-gray-400"><strong className="text-white">4.9/5</strong> par +500 organisateurs</span>
+                 <span className="text-xs sm:text-sm text-gray-400"><strong className="text-white">4.9/5</strong> par +500 organisateurs (particuliers, pros & agences)</span>
                </div>
             </motion.div>
           </motion.div>

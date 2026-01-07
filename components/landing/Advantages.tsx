@@ -13,6 +13,9 @@ export const Advantages: React.FC = () => {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
             Pourquoi choisir Live Party Wall ?
           </h2>
+          <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mt-4">
+            Le concept qui révolutionne vos soirées : simple, rapide et engageant pour tous vos invités. <strong className="text-pink-400">C'est la clé :</strong> juste une TV ou vidéoprojecteur + un simple PC. Vos invités utilisent leur téléphone.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -13,10 +13,10 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onAdminClick }) => {
     <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
-          Prêt à transformer votre événement ?
+          Prêt à révolutionner vos soirées ?
         </h2>
         <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          Rejoignez les organisateurs qui créent des expériences mémorables avec Live Party Wall
+          Rejoignez les particuliers, professionnels et agences événementielles qui créent des expériences mémorables avec Live Party Wall. <strong className="text-pink-400">Matériel minimal requis :</strong> TV/PC + téléphones des invités. Le nouveau concept viral pour vos événements.
         </p>
         <button
           onClick={onAdminClick}

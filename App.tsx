@@ -299,10 +299,6 @@ const AppContent: React.FC = () => {
               <TransitionWrapper type="fade" duration={500}>
                 <Accueil
                   onAdminClick={() => setViewMode('admin')}
-                  onEventSelected={() => {
-                    // L'événement sera chargé automatiquement par EventContext
-                    setViewMode('landing');
-                  }}
                 />
               </TransitionWrapper>
             )}
