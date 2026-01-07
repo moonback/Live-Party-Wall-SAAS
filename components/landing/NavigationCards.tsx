@@ -40,7 +40,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
   const handleBlur = () => setHoveredCard(null);
 
   return (
-    <div className="w-full flex flex-col items-center gap-2">
+    <div className="w-full flex flex-col lg:flex-row items-center gap-2 lg:gap-3 lg:justify-center">
       {options.map((option) => {
         const Icon = option.icon;
         const isActive = hoveredCard === option.id || activeCard === option.id;
@@ -55,7 +55,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
             onTouchEnd={handleTouchEnd}
             onFocus={() => handleFocus(option.id)}
             onBlur={handleBlur}
-            className={`group relative w-full max-w-xl h-16 sm:h-20 rounded-xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 select-none ${
+            className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-xs h-16 sm:h-20 lg:h-24 rounded-xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 select-none ${
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}
             style={{

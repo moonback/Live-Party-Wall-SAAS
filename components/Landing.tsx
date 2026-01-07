@@ -159,38 +159,23 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center bg-transparent text-white relative overflow-x-hidden overflow-y-auto"
+      className="min-h-screen w-full flex flex-col items-center justify-center bg-transparent text-white relative overflow-x-hidden overflow-y-auto lg:overflow-y-hidden lg:h-screen"
       style={{ 
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
       }}
       aria-label="Landing page Party Wall"
     >
-      {/* Background Image - Desktop */}
-      {!isMobile && (
-        <img
-          src={getStaticAssetPath('background-desktop.png')}
-          alt="Background desktop"
-          className="fixed inset-0 w-full h-full object-cover z-0"
-          style={{
-            minWidth: '100%',
-            minHeight: '100%',
-          }}
-        />
-      )}
-
-      {/* Background Image - Mobile */}
-      {isMobile && (
-        <img
-          src={getStaticAssetPath('background-mobile.png')}
-          alt="Background mobile"
-          className="fixed inset-0 w-full h-full object-cover z-0"
-          style={{
-            minWidth: '100%',
-            minHeight: '100%',
-          }}
-        />
-      )}
+      {/* Background Image - Responsive */}
+      <img
+        src={isMobile ? getStaticAssetPath('background-mobile.png') : getStaticAssetPath('background-desktop.png')}
+        alt="Background"
+        className="fixed inset-0 w-full h-full object-cover z-0"
+        style={{
+          minWidth: '100%',
+          minHeight: '100%',
+        }}
+      />
 
       {/* Overlay sombre pour améliorer la lisibilité */}
       <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
@@ -205,19 +190,91 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       />
 
       {/* Main Content */}
-      <main className="relative z-[2] w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 px-4 sm:px-6 h-full py-6 sm:py-8 lg:py-12">
+      <main className={`relative z-[2] w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-6 md:gap-6 lg:gap-4 px-3 sm:px-4 md:px-6 h-full ${
+        currentEvent 
+          ? 'py-4 sm:py-6 md:py-6 lg:py-4' 
+          : 'pt-16 sm:pt-20 md:pt-20 lg:pt-16 py-4 sm:py-6 md:py-6 lg:py-4'
+      }`}>
         
-        {/* Hero Section */}
-        <div className="flex-shrink-0 w-full">
-          <LandingHeader
-            isAuthenticated={isAdminAuthenticated}
-            onAdminClick={() => {}}
-            onScrollToSection={() => {}}
-          />
-        </div>
+        {/* Hero Section - Header uniquement si pas d'événement sélectionné */}
+        {!currentEvent && (
+          <div className="flex-shrink-0 w-full">
+            <LandingHeader
+              isAuthenticated={isAdminAuthenticated}
+              onAdminClick={() => {}}
+              onScrollToSection={() => {}}
+            />
+          </div>
+        )}
+
+        {/* Logo et titre centrés si événement sélectionné - Style cohérent avec splash screen */}
+        {currentEvent && (
+          <div className="flex-shrink-0 w-full flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-4 lg:gap-3 mb-3 sm:mb-4 md:mb-4 lg:mb-2 px-2">
+            {/* Logo Container - Style splash screen */}
+            <div className="relative mb-4 sm:mb-5 md:mb-5 lg:mb-3 animate-[fadeInScale_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]">
+              <div className="relative flex items-center justify-center">
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
+                
+                {/* Icon Wrapper avec Camera et Sparkles */}
+                <div className="relative flex items-center justify-center">
+                  {/* Camera Icon - Responsive sizes */}
+                  <svg 
+                    className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2]" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                    <circle cx="12" cy="13" r="3"/>
+                  </svg>
+                  
+                  {/* Sparkles Icon - Responsive sizes */}
+                  <svg 
+                    className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#fbcfe8] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] z-[3] animate-[sparklePulse_2s_ease-in-out_infinite]" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                    <path d="M5 3v4"/>
+                    <path d="M19 17v4"/>
+                    <path d="M3 5h4"/>
+                    <path d="M17 19h4"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Titre de l'événement - Style splash screen - Responsive */}
+            <h1 className="relative font-['Pacifico',cursive] text-[clamp(2rem,6vw,3.5rem)] sm:text-[clamp(2.5rem,7vw,4rem)] md:text-[clamp(3rem,7vw,3.8rem)] lg:text-[clamp(3.2rem,6vw,4rem)] leading-[1.1] sm:leading-[1.2] lg:leading-[1.15] text-center mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
+              <span 
+                className="bg-gradient-to-b from-white via-white/95 via-[#fef2f2] to-[#fbcfe8] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] break-words"
+              >
+                {displayTitle}
+              </span>
+              <span className="text-[#f472b6] ml-0.5 sm:ml-1 inline-block animate-[sparklePulse_2s_ease-in-out_infinite]">.</span>
+            </h1>
+            
+            {/* Sous-titre/Description de l'événement - Style splash screen - Responsive */}
+            {displaySubtitle && (
+              <p className="font-['Outfit',sans-serif] text-[clamp(0.75rem,3vw,0.95rem)] sm:text-[clamp(0.875rem,2.5vw,1rem)] md:text-[clamp(0.95rem,2vw,1rem)] lg:text-[clamp(0.95rem,1.5vw,1.05rem)] font-normal text-white/75 text-center text-shadow-[0_2px_10px_rgba(0,0,0,0.4)] max-w-2xl mx-auto leading-relaxed lg:leading-snug px-3 sm:px-4 mb-0 lg:mb-0 animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.6s_both]">
+                {displaySubtitle}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Mobile Buttons Row - Below title on mobile */}
-        <div className="flex-shrink-0 w-full flex justify-center">
+        <div className="flex-shrink-0 w-full flex justify-center px-2 sm:px-0 lg:mb-1">
           <MobileButtons
             onSelectMode={onSelectMode}
             isAdminAuthenticated={isAdminAuthenticated}
@@ -227,8 +284,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         </div>
 
-        {/* Navigation Cards - Centered and Enhanced */}
-        <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-4 sm:py-6">
+        {/* Navigation Cards - Centered and Enhanced - Responsive */}
+        <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-2 sm:py-4 md:py-3 lg:py-2 px-2 sm:px-4 min-h-0">
           <NavigationCards
             options={navigationOptions}
             mounted={mounted}
@@ -236,21 +293,21 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         </div>
 
-        {/* Footer */}
-        <div className="flex-shrink-0 mt-auto pb-4">
+        {/* Footer - Responsive - Compact sur desktop */}
+        <div className="flex-shrink-0 mt-auto pb-2 sm:pb-3 md:pb-2 lg:pb-1 px-2 sm:px-4">
           <LandingFooter />
         </div>
       </main>
 
-      {/* Floating Particles Effect */}
+      {/* Floating Particles Effect - Réduit sur mobile pour performance */}
       <div className="fixed inset-0 pointer-events-none z-[1]">
-        {[...Array(6)].map((_, i) => (
+        {[...Array(isMobile ? 3 : 6)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-2 h-2 rounded-full bg-white/10 blur-sm animate-float"
+            className={`absolute ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full bg-white/10 blur-sm animate-float`}
             style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + i * 12}%`,
+              left: `${15 + i * (isMobile ? 30 : 15)}%`,
+              top: `${20 + i * (isMobile ? 25 : 12)}%`,
               animationDelay: `${i * 0.5}s`,
               animationDuration: `${3 + i * 0.5}s`,
             }}
