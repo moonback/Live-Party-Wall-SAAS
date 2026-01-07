@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Camera, Zap, Shield, Users, Trophy, ArrowRight, QrCode, BookOpen,
   CheckCircle, Heart, Video, Search, Download, Settings, 
-  Globe, Smartphone, Monitor, TrendingUp, Award, Clock, Lock, Palette, Menu, X
+  Smartphone, Monitor, TrendingUp, Award, Clock, Lock, Palette, Menu, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import EventSelector from './EventSelector';
+import Hero from './landing/Hero';
 
 interface AccueilProps {
   onAdminClick: () => void;
@@ -203,79 +204,8 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick, onEventSelected }) => {
       </header>
 
       <div className="relative z-10 pt-16 sm:pt-20">
-        {/* Hero Section */}
-        <section className="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
-          <div className="w-full max-w-6xl text-center">
-            <div className="inline-flex items-center justify-center mb-6">
-              <div className="relative">
-                <img
-                  src="/icon.png"
-                  alt="Live Party Wall Logo"
-                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mx-auto drop-shadow-2xl animate-fade-in"
-                />
-              </div>
-            </div>
-            
-            <h1 className="relative font-handwriting text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] leading-tight mb-6">
-              <span className="bg-gradient-to-b from-white via-pink-50 to-pink-200 bg-clip-text text-transparent filter drop-shadow-sm">
-                Live Party Wall
-              </span>
-              <span className="text-pink-400 ml-1 inline-block animate-pulse">.</span>
-            </h1>
-            
-            <p className="text-xl sm:text-2xl md:text-3xl text-pink-100 font-medium mb-4 max-w-4xl mx-auto">
-              Le photowall d'événement <span className="text-pink-400 font-black">instantané</span> & interactif avec IA
-            </p>
-            
-            <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-8">
-              Transformez chaque invité en créateur de contenu. Partagez, affichez, modérez et sublimez 
-              <span className="font-semibold text-white"> toutes vos photos d'événement</span> en direct avec une expérience photobooth nouvelle génération.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <button
-                onClick={onAdminClick}
-                className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 transition-all duration-300 font-semibold rounded-xl shadow-lg hover:shadow-xl text-white text-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
-              >
-                <Users className="w-5 h-5" />
-                <span>Commencer gratuitement</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              
-              <a
-                href="https://docs.livepartywall.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group w-full sm:w-auto px-8 py-4 bg-black/40 hover:bg-black/70 transition-all duration-300 font-medium rounded-xl border border-pink-800/40 hover:border-pink-500/60 text-pink-100 hover:text-white text-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>Documentation</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-            </div>
-
-            {/* Key Features Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm sm:text-base">
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 backdrop-blur-sm bg-pink-500/10 border border-pink-500/30 rounded-full text-pink-300">
-                <Zap className="w-4 h-4" />
-                Temps réel
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 backdrop-blur-sm bg-pink-500/10 border border-pink-500/30 rounded-full text-pink-300">
-                <Shield className="w-4 h-4" />
-                Modération IA
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 backdrop-blur-sm bg-pink-500/10 border border-pink-500/30 rounded-full text-pink-300">
-                <Globe className="w-4 h-4" />
-                100% Web
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 backdrop-blur-sm bg-pink-500/10 border border-pink-500/30 rounded-full text-pink-300">
-                <CheckCircle className="w-4 h-4" />
-                Zéro installation
-              </span>
-            </div>
-          </div>
-        </section>
+        {/* Hero Section avec scène 3D complète */}
+        <Hero onAdminClick={onAdminClick} />
 
         {/* Comment ça marche - 3 étapes */}
         <section id="how-it-works" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
