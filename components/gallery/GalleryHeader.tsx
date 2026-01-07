@@ -59,7 +59,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
           <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={onBack} 
-              className="relative p-2.5 -ml-2 active:scale-95 touch-manipulation hover:bg-white/10 active:bg-white/5 rounded-xl transition-all duration-300 group border border-white/10 hover:border-pink-500/30"
+              className="relative min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 p-3 sm:p-2.5 -ml-2 active:scale-95 touch-manipulation hover:bg-white/10 active:bg-white/5 rounded-xl transition-all duration-300 group border border-white/10 hover:border-pink-500/30 flex items-center justify-center"
               aria-label="Retour"
             >
               <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 transition-all duration-300 blur-sm" />
@@ -131,14 +131,14 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
           <div className="md:hidden flex items-center gap-2">
             <button
               onClick={() => setShowMobileSearch(!showMobileSearch)}
-              className="p-2.5 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10"
+              className="min-w-[44px] min-h-[44px] p-3 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10 flex items-center justify-center"
               aria-label={showMobileSearch ? 'Masquer la recherche' : 'Afficher la recherche'}
             >
               <Search className={`w-5 h-5 ${showMobileSearch ? 'text-pink-400' : 'text-white'}`} />
             </button>
             <button
               onClick={onFiltersClick}
-              className={`p-2.5 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border ${
+              className={`min-w-[44px] min-h-[44px] p-3 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border flex items-center justify-center ${
                 isFiltersModalOpen
                   ? 'border-pink-500/50 bg-pink-500/20'
                   : 'border-white/10'
@@ -149,7 +149,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
             </button>
             <button
               onClick={onUploadClick}
-              className="p-2.5 -mr-2 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10"
+              className="min-w-[44px] min-h-[44px] p-3 -mr-2 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10 flex items-center justify-center"
               aria-label="Envoyer une photo"
             >
               <Camera className="w-5 h-5 text-white" />

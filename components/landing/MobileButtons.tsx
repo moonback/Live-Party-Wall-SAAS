@@ -31,7 +31,7 @@ export const MobileButtons: React.FC<MobileButtonsProps> = ({
           title="Mon profil"
           ariaLabel="Mon profil"
           glowColor="rgba(236, 72, 153, 0.15)"
-          className="p-2.5 rounded-xl"
+          className="rounded-xl"
         />
       )}
 
@@ -43,7 +43,7 @@ export const MobileButtons: React.FC<MobileButtonsProps> = ({
         ariaLabel="Aide"
         gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
         glowColor="rgba(99, 102, 241, 0.15)"
-        className="p-2.5 rounded-xl"
+        className="rounded-xl"
       />
 
       {/* Stats Button - Hidden on mobile */}
@@ -72,7 +72,7 @@ export const MobileButtons: React.FC<MobileButtonsProps> = ({
       {isAdminAuthenticated && (
         <button
           onClick={() => onSelectMode('mobile-control')}
-          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden"
+          className="relative min-w-[44px] min-h-[44px] p-3 rounded-xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden flex items-center justify-center"
           style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
           }}
@@ -98,7 +98,7 @@ export const MobileButtons: React.FC<MobileButtonsProps> = ({
       {battleModeEnabled && (
         <button
           onClick={() => onSelectMode('battle-results')}
-          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 active:border-yellow-500/60 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden"
+          className="relative min-w-[44px] min-h-[44px] p-3 rounded-xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 active:border-yellow-500/60 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden flex items-center justify-center"
           style={{
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
           }}
@@ -126,7 +126,7 @@ export const MobileButtons: React.FC<MobileButtonsProps> = ({
         ariaLabel="Administration"
         gradient="from-purple-500/0 via-violet-500/0 to-fuchsia-500/0"
         glowColor="rgba(139, 92, 246, 0.15)"
-        className="p-2.5 rounded-xl"
+        className="rounded-xl"
       />
     </div>
   );

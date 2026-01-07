@@ -854,27 +854,30 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
                {mediaType === 'photo' && (
                  <button 
                    onClick={handleDownload}
-                   className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-black/70 transition-all text-white touch-manipulation"
+                   className="min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-black/70 transition-all text-white touch-manipulation"
                    title="Télécharger"
+                   aria-label="Télécharger la photo"
                  >
-                   <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                   <Download className="w-5 h-5 sm:w-5 sm:h-5" />
                  </button>
                )}
                {mediaType === 'photo' && (
                  <>
                    <button 
                      onClick={() => { setShowFilters(!showFilters); setShowFrames(false); }}
-                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFilters ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
+                     className={`min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] w-11 h-11 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFilters ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
                      title="Filtres"
+                     aria-label="Afficher les filtres"
                    >
-                     <Palette className="w-4 h-4 sm:w-5 sm:h-5" />
+                     <Palette className="w-5 h-5 sm:w-5 sm:h-5" />
                    </button>
                    <button 
                      onClick={() => { setShowFrames(!showFrames); setShowFilters(false); }}
-                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFrames ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
+                     className={`min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] w-11 h-11 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFrames ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
                      title="Cadres"
+                     aria-label="Afficher les cadres"
                    >
-                     <Frame className="w-4 h-4 sm:w-5 sm:h-5" />
+                     <Frame className="w-5 h-5 sm:w-5 sm:h-5" />
                    </button>
                  </>
                )}

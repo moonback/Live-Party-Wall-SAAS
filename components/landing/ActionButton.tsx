@@ -33,7 +33,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br ${gradient} hover:from-white/15 hover:via-white/10 hover:to-white/15 active:from-white/20 active:via-white/15 active:to-white/20 border border-white/20 hover:border-white/40 active:border-white/50 text-white/80 hover:text-white active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden ${className}`}
+      className={`relative min-w-[44px] min-h-[44px] p-3 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br ${gradient} hover:from-white/15 hover:via-white/10 hover:to-white/15 active:from-white/20 active:via-white/15 active:to-white/20 border border-white/20 hover:border-white/40 active:border-white/50 text-white/80 hover:text-white active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden flex items-center justify-center ${className}`}
       style={defaultStyle}
       title={title}
       aria-label={ariaLabel}

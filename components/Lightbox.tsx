@@ -35,7 +35,7 @@ const Lightbox: React.FC<LightboxProps> = ({
           {/* Close Button - Amélioré */}
           <button
             onClick={onClose}
-            className="absolute -top-4 -right-4 md:-top-6 md:-right-6 bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 border-2 border-white/20 text-white px-5 py-2.5 rounded-2xl backdrop-blur-xl transition-all duration-300 font-bold text-sm shadow-2xl hover:scale-110 active:scale-95 z-50"
+            className="absolute -top-4 -right-4 md:-top-6 md:-right-6 bg-gradient-to-r from-white/20 to-white/10 hover:from-white/30 hover:to-white/20 border-2 border-white/20 text-white min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 px-5 py-3 sm:py-2.5 rounded-2xl backdrop-blur-xl transition-all duration-300 font-bold text-sm shadow-2xl hover:scale-110 active:scale-95 z-50 flex items-center justify-center"
             aria-label="Fermer"
           >
             <span className="flex items-center gap-2">
