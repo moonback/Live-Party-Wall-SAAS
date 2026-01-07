@@ -55,7 +55,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
             onTouchEnd={handleTouchEnd}
             onFocus={() => handleFocus(option.id)}
             onBlur={handleBlur}
-            className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[140px] h-16 sm:h-20 lg:h-auto lg:aspect-square lg:min-h-[140px] rounded-xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 lg:px-0 select-none ${
+            className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[140px] h-auto min-h-[80px] sm:min-h-[90px] lg:h-auto lg:aspect-square lg:min-h-[140px] rounded-xl sm:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 sm:px-4 lg:px-0 py-3 sm:py-4 lg:py-0 select-none ${
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}
             style={{
@@ -78,17 +78,17 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
 
             {/* Main Card Area */}
             <div
-              className="relative h-full bg-white/10 border border-white/10 rounded-xl flex items-center justify-center lg:justify-center px-2 sm:px-3 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-shadow duration-500"
+              className="relative h-full bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl flex items-center justify-between lg:justify-center px-3 sm:px-4 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-shadow duration-500"
               style={{
                 boxShadow: isActive
                   ? `0 4px 32px 0 ${option.glowColor}, 0 2px 12px rgba(0,0,0,0.14)`
                   : '0 2px 8px rgba(0,0,0,0.10)',
               }}
             >
-              {/* Icon - Centré sur desktop, avec texte sur mobile */}
-              <div className="flex-shrink-0 relative flex flex-col lg:flex-col items-center justify-center gap-2 lg:gap-3 w-full">
+              {/* Icon - À gauche sur mobile, centré sur desktop */}
+              <div className="flex-shrink-0 relative">
                 <div
-                  className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-300 group-hover:scale-110 group-active:scale-105 ${
+                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-300 group-hover:scale-110 group-active:scale-105 ${
                     isActive ? 'scale-110 ring-2 ring-white/30' : ''
                   }`}
                   style={{
@@ -96,7 +96,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
                       ? `0 4px 20px ${option.glowColor}` : undefined,
                   }}
                 >
-                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white drop-shadow" />
+                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-8 lg:h-8 text-white drop-shadow" />
                 </div>
                 {option.isPrimary && (
                   <div className="absolute -top-1.5 -right-1.5 lg:-top-2 lg:-right-2 z-20">
@@ -106,61 +106,61 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
                     </span>
                   </div>
                 )}
-                
-                {/* Titre court sous l'icône - Visible uniquement sur desktop */}
-                <div className="hidden lg:block text-center">
+              </div>
+              
+              {/* Title & Description - Visible uniquement sur mobile/tablette */}
+              <div className="flex-1 min-w-0 text-left lg:hidden ml-3 sm:ml-4">
+                <div className="flex items-center gap-2 min-w-0 mb-1">
                   <h3
-                    className={`text-sm font-semibold transition-all duration-300 ${
-                      isActive
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
-                        : 'text-white/90'
-                    }`}
+                    className={`text-base sm:text-lg font-bold transition-all duration-300
+                      ${
+                        isActive
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
+                          : 'text-white'
+                      }`}
                     style={isActive ? {
                       backgroundSize: '200% 100%',
                       animation: 'gradient-shift 6s linear infinite'
                     } : {}}
                   >
-                    {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Où suis-je' : option.title}
+                    {option.title}
                   </h3>
+                  {option.isPrimary && (
+                    <span role="img" aria-label="Recommandé" className="text-sm text-yellow-200 font-black">★</span>
+                  )}
                 </div>
-                
-                {/* Title & Description - Visible uniquement sur mobile/tablette */}
-                <div className="flex-1 min-w-0 text-center lg:hidden">
-                  <div className="flex items-center justify-center gap-2 min-w-0">
-                    <h3
-                      className={`text-sm sm:text-base font-bold transition-all duration-300
-                        ${
-                          isActive
-                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
-                            : 'text-white'
-                        }`}
-                      style={isActive ? {
-                        backgroundSize: '200% 100%',
-                        animation: 'gradient-shift 6s linear infinite'
-                      } : {}}
-                    >
-                      {option.title}
-                    </h3>
-                    {option.isPrimary && (
-                      <span role="img" aria-label="Recommandé" className="text-xs text-yellow-200 font-black">★</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-center gap-2 mt-0.5">
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300
-                        ${isActive
-                          ? `bg-gradient-to-r ${option.gradient} scale-150 shadow-lg`
-                          : 'bg-slate-400'
-                        }
-                      `}
-                    />
-                    <span className={`text-xs sm:text-sm transition-colors duration-300 ${
-                      isActive ? 'text-white/90 font-medium' : 'text-slate-300'
-                    }`}>
-                      {option.description}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300
+                      ${isActive
+                        ? `bg-gradient-to-r ${option.gradient} scale-150 shadow-lg`
+                        : 'bg-slate-400'
+                      }
+                    `}
+                  />
+                  <span className={`text-xs sm:text-sm transition-colors duration-300 ${
+                    isActive ? 'text-white/90 font-medium' : 'text-slate-300'
+                  }`}>
+                    {option.description}
+                  </span>
                 </div>
+              </div>
+              
+              {/* Titre court sous l'icône - Visible uniquement sur desktop */}
+              <div className="hidden lg:flex flex-col items-center justify-center gap-3 w-full">
+                <h3
+                  className={`text-sm font-semibold transition-all duration-300 ${
+                    isActive
+                      ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
+                      : 'text-white/90'
+                  }`}
+                  style={isActive ? {
+                    backgroundSize: '200% 100%',
+                    animation: 'gradient-shift 6s linear infinite'
+                  } : {}}
+                >
+                  {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Où suis-je' : option.title}
+                </h3>
               </div>
 
               {/* Arrow Indicator - Masqué sur desktop */}
