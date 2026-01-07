@@ -25,6 +25,7 @@ import EventManager from './EventManager';
 import { useEvent } from '../context/EventContext';
 import { getUserEvents } from '../services/eventService';
 import { Event } from '../types';
+import AdminProfile from './AdminProfile';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -914,19 +915,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   </div>
               )}
               
-              <button 
-                onClick={handleLogout}
-                className="flex items-center justify-center px-2.5 py-1.5 min-h-[36px] min-w-[36px] touch-manipulation bg-slate-800/80 hover:bg-slate-700/80 rounded-lg transition-all duration-300 border border-white/10 hover:border-white/20 relative group"
-                title="Déconnexion"
-                aria-label="Déconnexion"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" />
-                {/* Tooltip personnalisé */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900/95 backdrop-blur-xl text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                    Déconnexion
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
+              {/* Profil administrateur */}
+              <AdminProfile onLogout={handleLogout} />
           </div>
         </header>
 
