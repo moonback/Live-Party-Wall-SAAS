@@ -195,8 +195,10 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
     setIsRegistering(true);
     try {
       await registerGuest(currentEvent.id, avatarPhoto, userName);
+      // Stocker les données avec l'ID de l'événement pour la persistance
       localStorage.setItem('party_user_name', userName);
       localStorage.setItem('party_user_avatar', avatarPhoto);
+      localStorage.setItem('party_user_event_id', currentEvent.id);
       saveUserAvatar(userName, avatarPhoto);
 
       if (stream) {

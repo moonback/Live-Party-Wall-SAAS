@@ -78,6 +78,7 @@ export const getCurrentUserName = (): string | null => {
 export const disconnectUser = (): void => {
   localStorage.removeItem('party_user_name');
   localStorage.removeItem('party_user_avatar');
+  localStorage.removeItem('party_user_event_id');
   // Note: On garde party_user_id et party_user_avatars pour ne pas perdre les likes/réactions
 };
 

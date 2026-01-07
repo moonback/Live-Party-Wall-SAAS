@@ -38,42 +38,79 @@ const AppContent: React.FC = () => {
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { addToast, toasts, removeToast } = useToast();
 
-  // Fonction helper pour vérifier si l'utilisateur est inscrit
+  // Fonction helper pour vérifier si l'utilisateur est inscrit pour l'événement actuel
   const isUserRegistered = (): boolean => {
     const userName = localStorage.getItem('party_user_name');
     const userAvatar = localStorage.getItem('party_user_avatar');
-    return !!(userName && userAvatar);
+    const storedEventId = localStorage.getItem('party_user_event_id');
+    
+    // Vérifier que l'utilisateur a un nom, un avatar ET qu'il est inscrit pour l'événement actuel
+    if (!userName || !userAvatar) return false;
+    if (!currentEvent) return false;
+    if (storedEventId !== currentEvent.id) return false;
+    
+    return true;
   };
 
-  // Vérifier si l'utilisateur actuel existe toujours dans la base de données
-  // Si non, le déconnecter (son compte a été supprimé)
+  // Vérifier et restaurer la session invité depuis la BDD si nécessaire
   useEffect(() => {
-    const checkUserValidity = async () => {
+    const checkAndRestoreGuestSession = async () => {
+      if (!currentEvent) return;
+
       const userName = localStorage.getItem('party_user_name');
-      if (!userName || !currentEvent) return;
+      const storedEventId = localStorage.getItem('party_user_event_id');
 
       try {
-        const guest = await getGuestByName(currentEvent.id, userName);
-        if (!guest) {
-          // L'utilisateur n'existe plus, le déconnecter
-          localStorage.removeItem('party_user_name');
-          localStorage.removeItem('party_user_avatar');
-          // Rediriger vers landing si on est sur un mode qui nécessite un profil
-          if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
-            setViewMode('landing');
-            addToast('Votre compte a été supprimé. Veuillez vous réinscrire.', 'info');
+        // Si on a un nom mais pas d'avatar ou un mauvais event_id, essayer de récupérer depuis la BDD
+        if (userName) {
+          const guest = await getGuestByName(currentEvent.id, userName);
+          
+          if (guest) {
+            // L'invité existe en BDD pour cet événement
+            // Restaurer les données dans localStorage depuis la BDD
+            localStorage.setItem('party_user_name', guest.name);
+            localStorage.setItem('party_user_avatar', guest.avatarUrl); // URL publique depuis Supabase Storage
+            localStorage.setItem('party_user_event_id', currentEvent.id);
+          } else {
+            // L'invité n'existe pas pour cet événement
+            if (storedEventId === currentEvent.id) {
+              // L'invité était inscrit pour cet événement mais a été supprimé
+              localStorage.removeItem('party_user_name');
+              localStorage.removeItem('party_user_avatar');
+              localStorage.removeItem('party_user_event_id');
+              // Rediriger vers landing si on est sur un mode qui nécessite un profil
+              if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
+                setViewMode('landing');
+                addToast('Votre compte a été supprimé. Veuillez vous réinscrire.', 'info');
+              }
+            } else if (storedEventId && storedEventId !== currentEvent.id) {
+              // L'invité est inscrit pour un autre événement
+              // On garde ses données mais on demande une nouvelle inscription pour cet événement
+              if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
+                setViewMode('onboarding');
+                addToast('Vous devez vous inscrire pour cet événement', 'info');
+              }
+            } else {
+              // Pas d'événement stocké, l'invité doit s'inscrire
+              if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
+                setViewMode('onboarding');
+              }
+            }
           }
+        } else {
+          // Pas de nom en localStorage, vérifier si on peut récupérer depuis la BDD
+          // (Cette partie pourrait être étendue si on stocke un identifiant unique)
         }
       } catch (error) {
         // En cas d'erreur, on ne fait rien pour ne pas perturber l'utilisateur
-        console.error('Error checking user validity:', error);
+        console.error('Error checking/restoring guest session:', error);
       }
     };
 
     // Vérifier périodiquement (toutes les 30 secondes)
-    const interval = setInterval(checkUserValidity, 30000);
+    const interval = setInterval(checkAndRestoreGuestSession, 30000);
     // Vérifier immédiatement au montage
-    checkUserValidity();
+    checkAndRestoreGuestSession();
 
     return () => clearInterval(interval);
   }, [viewMode, addToast, currentEvent]);
