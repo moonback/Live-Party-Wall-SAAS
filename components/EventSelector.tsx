@@ -189,15 +189,15 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Slug (identifiant URL) *</label>
-                <input
-                  type="text"
-                  value={newEventSlug}
-                  onChange={(e) => setNewEventSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                  className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none"
-                  placeholder="mariage-sophie-marc"
-                  pattern="[a-z0-9-]+"
-                  required
-                />
+              <input
+                type="text"
+                value={newEventSlug}
+                onChange={(e) => setNewEventSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none"
+                placeholder="mariage-sophie-marc"
+                pattern="[a-z0-9\-]+"
+                required
+              />
                 <p className="text-xs text-gray-400 mt-1">Utilisé dans l'URL : ?event=mariage-sophie-marc</p>
               </div>
               <div>

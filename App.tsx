@@ -25,6 +25,7 @@ const MobileControl = lazy(() => import('./components/MobileControl')); // Contr
 const FindMe = lazy(() => import('./components/FindMe')); // Reconnaissance faciale
 const BattleResultsProjection = lazy(() => import('./components/BattleResultsProjection')); // Projection des résultats de battles
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
+const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -219,30 +220,81 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {!eventLoading && !eventError && !currentEvent && (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center p-8">
-              <h2 className="text-2xl font-bold mb-4">Aucun événement sélectionné</h2>
-              <p className="text-gray-300 mb-4">Veuillez sélectionner un événement ou utiliser un lien valide.</p>
-              {isAdminAuthenticated && (
-                <button
-                  onClick={() => setViewMode('admin')}
-                  className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
-                >
-                  Gérer les événements
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {!eventLoading && !eventError && currentEvent && (
+        {!eventLoading && !eventError && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
           </div>
         }>
-          {viewMode === 'landing' && (
+          <>
+            {/* Mode admin accessible même sans événement */}
+            {viewMode === 'admin' && (
+              <TransitionWrapper type="scale" duration={600}>
+                {isAdminAuthenticated ? (
+                  <AdminDashboard 
+                    onBack={() => {
+                      if (currentEvent) {
+                        setViewMode('landing');
+                      } else {
+                        // Si pas d'événement, afficher EventSelector
+                        setViewMode('landing');
+                      }
+                    }}
+                  />
+                ) : (
+                  <AdminLogin 
+                    onLoginSuccess={() => {}}
+                    onBack={() => {
+                      if (currentEvent) {
+                        setViewMode('landing');
+                      } else {
+                        window.location.href = '/';
+                      }
+                    }}
+                  />
+                )}
+              </TransitionWrapper>
+            )}
+
+            {/* Si pas d'événement et pas en mode admin, afficher sélection ou message */}
+            {viewMode !== 'admin' && !currentEvent && (
+              <>
+                {isAdminAuthenticated ? (
+                  <EventSelector
+                    onEventSelected={(event) => {
+                      // L'événement sera chargé automatiquement par EventContext
+                      setViewMode('landing');
+                    }}
+                    onBack={() => {
+                      setViewMode('admin');
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center min-h-screen">
+                    <div className="text-center p-8 max-w-md">
+                      <h2 className="text-2xl font-bold mb-4">Aucun événement sélectionné</h2>
+                      <p className="text-gray-300 mb-6">Veuillez utiliser un lien valide avec le paramètre <code className="bg-black/40 px-2 py-1 rounded">?event=slug</code></p>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => setViewMode('admin')}
+                          className="w-full px-6 py-3 bg-pink-500 rounded-lg hover:bg-pink-600 transition font-medium"
+                        >
+                          Accéder à l'administration
+                        </button>
+                        <p className="text-sm text-gray-400 mt-4">
+                          Connectez-vous pour gérer vos événements
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Modes nécessitant un événement */}
+            {currentEvent && (
+              <>
+            {viewMode === 'landing' && (
             <TransitionWrapper type="zoom-bounce" duration={800}>
               <Landing onSelectMode={handleViewModeChange} isAdminAuthenticated={isAdminAuthenticated} />
             </TransitionWrapper>
@@ -322,20 +374,6 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
-          {viewMode === 'admin' && (
-            <TransitionWrapper type="scale" duration={600}>
-              {isAdminAuthenticated ? (
-                <AdminDashboard 
-                  onBack={() => setViewMode('landing')}
-                />
-              ) : (
-                <AdminLogin 
-                  onLoginSuccess={() => {}}
-                  onBack={() => setViewMode('landing')}
-                />
-              )}
-            </TransitionWrapper>
-          )}
 
           {viewMode === 'help' && (
             <TransitionWrapper type="slide-left" duration={600}>
@@ -409,13 +447,16 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
-          {viewMode === 'guest-profile' && (
-            <TransitionWrapper type="scale" duration={600}>
-              <GuestProfile 
-                onBack={() => setViewMode('landing')}
-              />
-            </TransitionWrapper>
-          )}
+            {viewMode === 'guest-profile' && (
+              <TransitionWrapper type="scale" duration={600}>
+                <GuestProfile 
+                  onBack={() => setViewMode('landing')}
+                />
+              </TransitionWrapper>
+            )}
+              </>
+            )}
+          </>
         </Suspense>
         )}
       </div>

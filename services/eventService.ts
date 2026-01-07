@@ -49,19 +49,20 @@ export const createEvent = async (
     }
 
     // Créer automatiquement l'entrée dans event_organizers pour le owner
-    await supabase
-      .from('event_organizers')
-      .insert([
-        {
-          event_id: data.id,
-          user_id: ownerId,
-          role: 'owner'
-        }
-      ])
-      .catch((err) => {
-        logger.error("Error creating event organizer entry", err, { component: 'eventService', action: 'createEvent', eventId: data.id });
-        // Ne pas faire échouer la création de l'événement si l'organizer échoue
-      });
+    try {
+      await supabase
+        .from('event_organizers')
+        .insert([
+          {
+            event_id: data.id,
+            user_id: ownerId,
+            role: 'owner'
+          }
+        ]);
+    } catch (err) {
+      logger.error("Error creating event organizer entry", err, { component: 'eventService', action: 'createEvent', eventId: data.id });
+      // Ne pas faire échouer la création de l'événement si l'organizer échoue
+    }
 
     return mapEventRowToEvent(data as EventRow);
   } catch (error) {
@@ -139,14 +140,30 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
       logger.error("Error fetching owned events", ownedError, { component: 'eventService', action: 'getUserEvents', userId });
     }
 
-    // Récupérer les événements où l'utilisateur est organizer
-    const { data: organizedEvents, error: organizedError } = await supabase
+    // Récupérer les IDs des événements où l'utilisateur est organizer
+    const { data: organizerRows, error: organizedError } = await supabase
       .from('event_organizers')
-      .select('event_id, events(*)')
+      .select('event_id')
       .eq('user_id', userId);
 
     if (organizedError) {
       logger.error("Error fetching organized events", organizedError, { component: 'eventService', action: 'getUserEvents', userId });
+    }
+
+    // Récupérer les événements correspondants
+    let organizedEventsData: EventRow[] = [];
+    if (organizerRows && organizerRows.length > 0) {
+      const eventIds = organizerRows.map(row => row.event_id);
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .in('id', eventIds);
+
+      if (eventsError) {
+        logger.error("Error fetching organized events data", eventsError, { component: 'eventService', action: 'getUserEvents', userId });
+      } else if (eventsData) {
+        organizedEventsData = eventsData as EventRow[];
+      }
     }
 
     // Combiner et dédupliquer les événements
@@ -158,13 +175,11 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
       });
     }
 
-    if (organizedEvents) {
-      organizedEvents.forEach((row: { event_id: string; events: EventRow }) => {
-        if (row.events && !eventsMap.has(row.event_id)) {
-          eventsMap.set(row.event_id, mapEventRowToEvent(row.events));
-        }
-      });
-    }
+    organizedEventsData.forEach((row: EventRow) => {
+      if (!eventsMap.has(row.id)) {
+        eventsMap.set(row.id, mapEventRowToEvent(row));
+      }
+    });
 
     return Array.from(eventsMap.values()).sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
