@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
-import { getUserEvents, createEvent } from '../services/eventService';
+import { getUserEvents, createEvent, deleteEvent } from '../services/eventService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
-import { Plus, Calendar, Search, Loader2, Sparkles, Clock, ExternalLink, X } from 'lucide-react';
+import { Plus, Calendar, Search, Loader2, Sparkles, Clock, ExternalLink, X, Trash2, AlertTriangle } from 'lucide-react';
 
 interface EventSelectorProps {
   onEventSelected?: (event: Event) => void;
@@ -13,7 +13,7 @@ interface EventSelectorProps {
 
 const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }) => {
   const { user } = useAuth();
-  const { loadEventBySlug } = useEvent();
+  const { loadEventBySlug, currentEvent } = useEvent();
   const { addToast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,8 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
   const [newEventSlug, setNewEventSlug] = useState('');
   const [newEventName, setNewEventName] = useState('');
   const [newEventDescription, setNewEventDescription] = useState('');
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Charger les événements de l'utilisateur
   useEffect(() => {
@@ -67,6 +69,36 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
     } catch (error) {
       console.error('Error loading event:', error);
       addToast('Erreur lors du chargement de l\'événement', 'error');
+    }
+  };
+
+  // Supprimer un événement
+  const handleDeleteEvent = async (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêcher la sélection de l'événement
+    
+    // Empêcher la suppression de l'événement actuellement sélectionné
+    if (currentEvent?.id === event.id) {
+      addToast('Impossible de supprimer l\'événement actuellement sélectionné. Veuillez d\'abord sélectionner un autre événement.', 'error');
+      return;
+    }
+
+    // Si pas encore confirmé, afficher la confirmation
+    if (confirmDeleteId !== event.id) {
+      setConfirmDeleteId(event.id);
+      return;
+    }
+
+    try {
+      setDeletingEventId(event.id);
+      await deleteEvent(event.id);
+      setEvents(prev => prev.filter(e => e.id !== event.id));
+      addToast('Événement supprimé avec succès', 'success');
+      setConfirmDeleteId(null);
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      addToast(error.message || 'Erreur lors de la suppression', 'error');
+    } finally {
+      setDeletingEventId(null);
     }
   };
 
@@ -366,14 +398,19 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {filteredEvents.map((event) => (
-                <button
+              {filteredEvents.map((event) => {
+                const isSelected = currentEvent?.id === event.id;
+                const isDeleting = deletingEventId === event.id;
+                const showConfirm = confirmDeleteId === event.id;
+                
+                return (
+                <div
                   key={event.id}
-                  onClick={() => handleSelectEvent(event)}
                   className="group relative bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 hover:bg-slate-900/80 transition-all duration-300 text-left border border-white/10 hover:border-pink-500/50 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1"
                 >
-                  {/* Badge de statut */}
-                  <div className="absolute top-4 right-4">
+                  {/* Badge de statut et bouton de suppression */}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
+                    {/* Badge de statut */}
                     {event.is_active ? (
                       <span className="px-2.5 py-1 text-xs font-medium bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 rounded-full border border-green-500/30 flex items-center gap-1">
                         <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
@@ -384,47 +421,104 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
                         Inactif
                       </span>
                     )}
+                    
+                    {/* Bouton de suppression */}
+                    {showConfirm ? (
+                      <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 rounded-lg px-2 py-1">
+                        <button
+                          onClick={(e) => handleDeleteEvent(event, e)}
+                          disabled={isDeleting || isSelected}
+                          className="p-1 hover:bg-red-500/30 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Confirmer la suppression"
+                        >
+                          {isDeleting ? (
+                            <Loader2 className="w-4 h-4 text-red-400 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4 text-red-400" />
+                          )}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(null);
+                          }}
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                          aria-label="Annuler"
+                        >
+                          <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => handleDeleteEvent(event, e)}
+                        disabled={isSelected}
+                        className="p-2 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed group/delete"
+                        aria-label="Supprimer l'événement"
+                        title={isSelected ? 'Impossible de supprimer l\'événement sélectionné' : 'Supprimer l\'événement'}
+                      >
+                        <Trash2 className={`w-4 h-4 ${isSelected ? 'text-gray-500' : 'text-red-400 group-hover/delete:text-red-300'}`} />
+                      </button>
+                    )}
                   </div>
-
-                  {/* Icône décorative */}
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <Calendar className="w-6 h-6 text-pink-400" />
-                  </div>
-
-                  {/* Titre */}
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:to-purple-400 group-hover:bg-clip-text transition-all duration-300 pr-16">
-                    {event.name}
-                  </h3>
-
-                  {/* Description */}
-                  {event.description && (
-                    <p className="text-gray-300 text-sm mb-4 line-clamp-2 group-hover:text-gray-200 transition-colors">
-                      {event.description.length > 100 
-                        ? event.description.substring(0, 100) + '...' 
-                        : event.description}
-                    </p>
+                  
+                  {/* Message d'avertissement si sélectionné */}
+                  {isSelected && (
+                    <div className="mb-3 p-2 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+                        <p className="text-xs text-yellow-300">
+                          Événement actuellement sélectionné
+                        </p>
+                      </div>
+                    </div>
                   )}
 
-                  {/* Slug */}
-                  <div className="flex items-center gap-2 text-sm text-gray-400 mb-4 group-hover:text-pink-400 transition-colors">
-                    <ExternalLink className="w-4 h-4" />
-                    <span className="font-mono text-xs">?event={event.slug}</span>
-                  </div>
+                  {/* Contenu cliquable */}
+                  <button
+                    onClick={() => handleSelectEvent(event)}
+                    className="w-full text-left"
+                  >
+                    {/* Icône décorative */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Calendar className="w-6 h-6 text-pink-400" />
+                    </div>
 
-                  {/* Date de création */}
-                  <div className="pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-gray-500">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Créé le {new Date(event.created_at).toLocaleDateString('fr-FR', { 
-                      day: 'numeric', 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}</span>
-                  </div>
+                    {/* Titre */}
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-pink-400 group-hover:to-purple-400 group-hover:bg-clip-text transition-all duration-300 pr-16">
+                      {event.name}
+                    </h3>
+
+                    {/* Description */}
+                    {event.description && (
+                      <p className="text-gray-300 text-sm mb-4 line-clamp-2 group-hover:text-gray-200 transition-colors">
+                        {event.description.length > 100 
+                          ? event.description.substring(0, 100) + '...' 
+                          : event.description}
+                      </p>
+                    )}
+
+                    {/* Slug */}
+                    <div className="flex items-center gap-2 text-sm text-gray-400 mb-4 group-hover:text-pink-400 transition-colors">
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="font-mono text-xs">?event={event.slug}</span>
+                    </div>
+
+                    {/* Date de création */}
+                    <div className="pt-4 border-t border-white/10 flex items-center gap-2 text-xs text-gray-500">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Créé le {new Date(event.created_at).toLocaleDateString('fr-FR', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      })}</span>
+                    </div>
+                  </button>
 
                   {/* Effet hover */}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/5 group-hover:to-purple-500/5 transition-all duration-300 pointer-events-none"></div>
-                </button>
-              ))}
+                </div>
+              );
+              })}
             </div>
           )}
         </div>

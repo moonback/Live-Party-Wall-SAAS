@@ -15,7 +15,7 @@ interface EventManagerProps {
 
 const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdated, onEventDeleted }) => {
   const { user } = useAuth();
-  const { isEventOwner, canEdit, clearEvent } = useEvent();
+  const { isEventOwner, canEdit, clearEvent, currentEvent } = useEvent();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -103,10 +103,16 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
 
     try {
       setDeleting(true);
+      
+      // Si l'événement est actuellement sélectionné, le déconnecter d'abord
+      if (currentEvent?.id === event.id) {
+        clearEvent();
+      }
+      
       await deleteEvent(event.id);
       addToast('Événement supprimé avec succès', 'success');
       
-      // Appeler onEventDeleted qui va gérer le retour à la liste
+      // Revenir à la sélection des événements
       if (onEventDeleted) {
         onEventDeleted();
       } else {
@@ -427,6 +433,13 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                 <p className="text-sm text-gray-300 mb-4">
                   La suppression de l'événement est irréversible. Toutes les photos, paramètres et données associées seront supprimées.
                 </p>
+                {currentEvent?.id === event.id && (
+                  <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
+                    <p className="text-sm text-yellow-300">
+                      ⚠️ Cet événement est actuellement sélectionné. Il sera automatiquement déconnecté avant la suppression et vous reviendrez à la sélection des événements.
+                    </p>
+                  </div>
+                )}
                 {!showDeleteConfirm ? (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
