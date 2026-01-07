@@ -893,7 +893,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-400 mb-6 sm:mb-7 lg:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              Offrez une animation photo fun, rapide et sans installation : <strong>vos invités envoient leurs photos, l’IA sublime et affiche tout instantanément sur écran géant.</strong><br />
+              Offrez une animation photo fun, rapide et sans installation : <strong>vos invités envoient leurs photos prises sur le fait pendant l'événement, l'IA sublime et affiche tout instantanément sur écran géant.</strong><br />
               Idéal pour <strong className="text-pink-400">particuliers, pros & agences événementielles</strong> : effet « wow » garanti, souvenirs partagés à tous les coups.
             </motion.p>
 

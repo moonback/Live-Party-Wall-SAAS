@@ -122,7 +122,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       {
         id: 'guest',
         title: 'Capturez vos meilleurs moments',
-        description: 'Partagez vos photos instantanément sur le mur',
+        description: 'Partagez vos photos prises sur le fait instantanément',
         icon: Camera,
         gradient: 'from-pink-500 via-rose-500 to-purple-500',
         glowColor: 'rgba(236, 72, 153, 0.4)',

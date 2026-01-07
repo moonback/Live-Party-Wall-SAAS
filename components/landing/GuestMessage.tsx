@@ -22,7 +22,7 @@ export const GuestMessage: React.FC = () => {
               </h3>
               <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-6">
                 <strong className="text-white">Rejoignez le mur interactif en 2 secondes !</strong> Scannez le QR code de votre événement ou demandez le lien à votre organisateur. 
-                Partagez vos meilleurs moments et voyez-les apparaître instantanément sur grand écran, sublimés par l'IA.
+                Partagez vos photos prises sur le fait pendant l'événement et voyez-les apparaître instantanément sur grand écran, sublimées par l'IA.
               </p>
               
               {/* Avantages pour les invités */}

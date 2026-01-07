@@ -41,7 +41,7 @@ export const STEPS: Step[] = [
     number: 2,
     icon: Camera,
     title: "Capturez vos meilleurs moments",
-    description: "Prenez une photo en direct, choisissez dans votre galerie ou créez un collage. Chaque instant devient une œuvre partagée instantanément."
+    description: "Prenez vos photos sur le fait pendant l'événement, choisissez dans votre galerie ou créez un collage. Chaque instant capturé en direct devient une œuvre partagée instantanément."
   },
   {
     number: 3,
@@ -66,7 +66,7 @@ export const FEATURES: Feature[] = [
   {
     icon: Camera,
     title: "Photobooth 2.0",
-    description: "Capturez, partagez, affichez instantanément. Le nouveau standard qui remplace la cabine photo traditionnelle."
+    description: "Capturez sur le fait, partagez, affichez instantanément. Le nouveau standard qui remplace la cabine photo traditionnelle."
   },
   {
     icon: Zap,
