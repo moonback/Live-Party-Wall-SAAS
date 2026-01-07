@@ -3,6 +3,7 @@ import { ViewMode } from '../types';
 import { Images, Camera, User } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
+import { useEvent } from '../context/EventContext';
 import { LandingHeader } from './landing/LandingHeader';
 import { LandingFooter } from './landing/LandingFooter';
 import { TopRightButtons } from './landing/TopRightButtons';
@@ -18,6 +19,7 @@ interface LandingProps {
 
 const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = false }) => {
   const isMobile = useIsMobile();
+  const { currentEvent } = useEvent();
   const [uiConfig, setUiConfig] = useState({
     title: defaultSettings.event_title,
     subtitle: defaultSettings.event_subtitle,
@@ -36,9 +38,23 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     const userName = getCurrentUserName();
     const userAvatar = getCurrentUserAvatar();
     setHasUserProfile(!!(userName && userAvatar));
-    
-    // Initial Load
-    getSettings().then(settings => {
+  }, []);
+
+  useEffect(() => {
+    // Initial Load - seulement si un événement est sélectionné
+    if (!currentEvent?.id) {
+      // Réinitialiser aux valeurs par défaut si pas d'événement
+      setUiConfig({
+        title: defaultSettings.event_title,
+        subtitle: defaultSettings.event_subtitle,
+        statsEnabled: defaultSettings.stats_enabled,
+        findMeEnabled: defaultSettings.find_me_enabled,
+        battleModeEnabled: defaultSettings.battle_mode_enabled ?? false
+      });
+      return;
+    }
+
+    getSettings(currentEvent.id).then(settings => {
       setUiConfig({
         title: settings.event_title,
         subtitle: settings.event_subtitle,
@@ -49,7 +65,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     });
 
     // Realtime Subscription
-    const subscription = subscribeToSettings((newSettings) => {
+    const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
       setUiConfig({
         title: newSettings.event_title,
         subtitle: newSettings.event_subtitle,
@@ -59,6 +75,12 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       });
     });
 
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [currentEvent?.id]);
+
+  useEffect(() => {
     // Écouter les changements de localStorage pour mettre à jour le profil
     const handleStorageChange = () => {
       const userName = getCurrentUserName();
@@ -71,7 +93,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     const interval = setInterval(handleStorageChange, 1000);
 
     return () => {
-      subscription.unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
