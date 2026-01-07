@@ -259,7 +259,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               </button>
               
               <p className="text-center text-gray-500 text-sm mt-6">
-                © 2024 Live Party Wall. Tous droits réservés.
+                © 2026 Live Party Wall. Tous droits réservés.
               </p>
             </motion.div>
           </motion.div>

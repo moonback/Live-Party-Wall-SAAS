@@ -885,7 +885,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               </span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
               Transformez vos invités en<br className="hidden lg:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-gradient-x">
                 photographes stars
@@ -902,8 +902,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start mb-8">
                 {[
                     { icon: <Monitor size={14} />, text: "TV/PC + Smartphones" },
-                    { icon: <Zap size={14} />, text: "Live Feed Instantané" },
-                    { icon: <ShieldCheck size={14} />, text: "Modération IA 100% Sûre" }
+                    { icon: <Zap size={14} />, text: "Mur Photo Instantané" },
                 ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm font-medium text-gray-200 backdrop-blur-md shadow-sm hover:bg-white/10 transition-colors">
                         <span className="text-pink-400">{feature.icon}</span>
@@ -919,7 +918,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 className="relative px-5 sm:px-6 py-2.5 sm:py-3 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  Essayer gratuitement
+                  Essayer maintenant
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -932,16 +931,40 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             </motion.div>
 
             {/* Social Proof Enhanced */}
-            <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-2.5">
-               <div className="flex -space-x-2">
-                  {EVENT_PHOTOS.slice(0,3).map((photo, i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-800 bg-cover bg-center" style={{backgroundImage: `url(${photo.url})`}}></div>
-                  ))}
-               </div>
-               <div className="flex items-center gap-1">
-                   {[1,2,3,4,5].map(s => <Star key={s} size={11} className="text-yellow-400 fill-yellow-400" />)}
-               </div>
-               <span className="text-xs text-gray-400"><strong className="text-white">4.9/5</strong> par +500 organisateurs</span>
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center justify-center lg:justify-start gap-4"
+              aria-label="Avis clients organisateurs"
+            >
+              {/* Avatars événement stylés et overlays pro */}
+              <div className="flex -space-x-3 pr-1.5">
+                {EVENT_PHOTOS.slice(0, 4).map((photo, idx) => (
+                  <div
+                    key={idx}
+                    className="relative w-10 h-10 rounded-full border-2 border-white/80 ring-2 ring-pink-400/40 shadow-lg bg-gray-800 bg-cover bg-center overflow-hidden hover:scale-105 transition-transform duration-200 group"
+                    style={{ backgroundImage: `url(${photo.url})` }}
+                  >
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-full border-2 border-white opacity-75 group-hover:scale-125 transition-transform" />
+                    <span className="sr-only">{`Invité photo n°${idx + 1}`}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Bloc étoilé animé */}
+              <div className="flex items-center gap-1.5 animate-[pulse_4s_ease-in-out_infinite]">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <Star
+                    key={i}
+                    size={14}
+                    className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.21)]"
+                  />
+                ))}
+              </div>
+              {/* Note & preuve sociale modernisée */}
+              <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium bg-white/10 rounded-full px-3 py-1 backdrop-blur-sm border border-white/10 shadow-sm">
+                <strong className="text-white font-semibold tracking-wide text-sm">4.9/5</strong>
+                <span className="hidden sm:inline text-gray-400">sur</span>
+                <span className="text-pink-400 font-bold text-xs">+500 organisateurs</span>
+              </span>
             </motion.div>
           </motion.div>
 
