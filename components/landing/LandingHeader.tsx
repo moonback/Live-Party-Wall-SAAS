@@ -61,9 +61,9 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               alt="Live Party Wall"
               className="w-8 h-8 sm:w-10 sm:h-10"
             />
-            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Live Party Wall
-            </span>
+              <span className="text-xl sm:text-2xl font-bold text-white">
+                Live <span className="text-pink-400">Party</span> Wall
+              </span>
           </button>
 
           {/* Navigation Desktop */}
