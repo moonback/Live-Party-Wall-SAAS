@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Heart } from 'lucide-react';
 import { Photo, ReactionCounts } from '../../types';
 import { REACTIONS } from '../../constants';
+import { LightboxWithSwipe } from '../onboarding/LightboxWithSwipe';
 
 interface PhotoPreviewModalProps {
   photo: Photo;
@@ -11,7 +12,8 @@ interface PhotoPreviewModalProps {
 
 const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({ photo, reactions, onClose }) => {
   return (
-    <div
+    <LightboxWithSwipe
+      onClose={onClose}
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-8"
       onClick={onClose}
     >
@@ -62,7 +64,7 @@ const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({ photo, reactions,
           </div>
         </div>
       </div>
-    </div>
+    </LightboxWithSwipe>
   );
 };
 

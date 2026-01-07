@@ -11,6 +11,7 @@ import { MobileButtons } from './landing/MobileButtons';
 import { NavigationCards } from './landing/NavigationCards';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
+import { TourGuide } from './onboarding/TourGuide';
 
 interface LandingProps {
   onSelectMode: (mode: ViewMode) => void;
@@ -48,6 +49,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
   const [mounted, setMounted] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -284,6 +286,22 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         </div>
 
+        {/* Bouton Tour Guidé - Visible uniquement si événement sélectionné */}
+        {currentEvent && (
+          <div className="flex-shrink-0 w-full flex justify-center px-2 mb-2">
+            <button
+              onClick={() => setShowTour(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 hover:border-purple-500/50 text-white rounded-full text-sm font-semibold transition-all backdrop-blur-sm hover:scale-105 active:scale-95 touch-manipulation min-w-[44px] min-h-[44px]"
+              aria-label="Découvrir les fonctionnalités"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Découvrir les fonctionnalités</span>
+            </button>
+          </div>
+        )}
+
         {/* Navigation Cards - Centered and Enhanced - Responsive */}
         <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-2 sm:py-4 md:py-3 lg:py-2 px-2 sm:px-4 min-h-0">
           <NavigationCards
@@ -314,6 +332,42 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         ))}
       </div>
+
+      {/* Tour Guidé */}
+      {showTour && currentEvent && (
+        <TourGuide
+          steps={[
+            {
+              id: 'capture',
+              title: 'Capturez vos moments',
+              description: 'Cliquez sur "Capturez vos meilleurs moments" pour prendre une photo ou une vidéo qui apparaîtra instantanément sur le mur !',
+              targetSelector: '[data-tour="guest-card"]',
+              position: 'bottom',
+            },
+            {
+              id: 'gallery',
+              title: 'Explorez le mur',
+              description: 'Découvrez toutes les photos partagées par les invités dans la galerie. Vous pouvez liker, filtrer et rechercher !',
+              targetSelector: '[data-tour="gallery-card"]',
+              position: 'bottom',
+            },
+            ...(uiConfig.findMeEnabled
+              ? [
+                  {
+                    id: 'findme',
+                    title: 'Retrouvez-vous',
+                    description: 'Utilisez la reconnaissance faciale IA pour retrouver toutes vos photos sur le mur en un instant !',
+                    targetSelector: '[data-tour="findme-card"]',
+                    position: 'bottom',
+                  },
+                ]
+              : []),
+          ]}
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+          storageKey={`tour_${currentEvent.id}`}
+        />
+      )}
 
     </div>
   );

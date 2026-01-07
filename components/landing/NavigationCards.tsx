@@ -48,6 +48,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
         return (
           <button
             key={option.id}
+            data-tour={`${option.id}-card`}
             onClick={() => onSelectMode(option.id as ViewMode)}
             onMouseEnter={() => handleMouseEnter(option.id)}
             onMouseLeave={handleMouseLeave}

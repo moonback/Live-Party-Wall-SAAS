@@ -13,6 +13,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { CAMERA_VIDEO_CONSTRAINTS } from '../constants';
 import { logger } from '../utils/logger';
 import { QRCodeCanvas } from 'qrcode.react';
+import { LightboxWithSwipe } from './onboarding/LightboxWithSwipe';
 
 interface FindMeProps {
   onBack: () => void;
@@ -758,7 +759,8 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
 
       {/* Lightbox pour afficher la photo en grand avec QR code */}
       {selectedPhoto && selectedPhotoIndex !== null && (
-        <div
+        <LightboxWithSwipe
+          onClose={closeLightbox}
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center overflow-y-auto"
           onClick={closeLightbox}
           style={{
@@ -935,7 +937,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
               )}
             </div>
           </div>
-        </div>
+        </LightboxWithSwipe>
       )}
     </div>
   );

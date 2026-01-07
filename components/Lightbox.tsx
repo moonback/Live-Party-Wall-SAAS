@@ -2,6 +2,7 @@ import React from 'react';
 import { Photo } from '../types';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Heart, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { useSwipeGesture } from '../hooks/useSwipeGesture';
 
 interface LightboxProps {
   photo: Photo;
@@ -22,6 +23,15 @@ const Lightbox: React.FC<LightboxProps> = ({
   totalPhotos,
   downloadUrl
 }) => {
+  // Swipe gesture pour fermer avec swipe vers le bas
+  useSwipeGesture({
+    onSwipeDown: onClose,
+    onSwipeLeft: totalPhotos > 1 ? onNext : undefined,
+    onSwipeRight: totalPhotos > 1 ? onPrev : undefined,
+    threshold: 80, // Distance minimale plus élevée pour éviter les fermetures accidentelles
+    enabled: true,
+  });
+
   return (
     <div className="fixed inset-0 z-50 animate-fade-in">
       <div
