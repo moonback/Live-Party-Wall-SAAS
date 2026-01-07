@@ -14,7 +14,6 @@ import { drawPngOverlay, composeDataUrlWithPngOverlay } from '../utils/imageOver
 import { useAdaptiveCameraResolution } from '../hooks/useAdaptiveCameraResolution';
 import { saveUserAvatar, getCurrentUserAvatar } from '../utils/userAvatar';
 import { useImageCompression } from '../hooks/useImageCompression';
-import { ContextualTooltip } from './onboarding/ContextualTooltip';
 
 interface GuestUploadProps {
   onPhotoUploaded: (photo: Photo) => void;
@@ -41,10 +40,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const [activeFrame, setActiveFrame] = useState<FrameType>('none');
   const [showFilters, setShowFilters] = useState(false);
   const [showFrames, setShowFrames] = useState(false);
-  
-  // Refs pour les tooltips
-  const filtersButtonRef = useRef<HTMLButtonElement>(null);
-  const framesButtonRef = useRef<HTMLButtonElement>(null);
 
   // Mode photo/vidéo
   const [mediaType, setMediaType] = useState<'photo' | 'video'>('photo');
@@ -869,7 +864,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
                {mediaType === 'photo' && (
                  <>
                    <button 
-                     ref={filtersButtonRef}
                      onClick={() => { setShowFilters(!showFilters); setShowFrames(false); }}
                      className={`min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] w-11 h-11 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFilters ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
                      title="Filtres"
@@ -878,7 +872,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
                      <Palette className="w-5 h-5 sm:w-5 sm:h-5" />
                    </button>
                    <button 
-                     ref={framesButtonRef}
                      onClick={() => { setShowFrames(!showFrames); setShowFilters(false); }}
                      className={`min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] w-11 h-11 sm:w-10 sm:h-10 rounded-full backdrop-blur border flex items-center justify-center transition-all touch-manipulation ${showFrames ? 'bg-pink-500 border-pink-400 text-white' : 'bg-black/50 border-white/20 text-white hover:bg-black/70'}`}
                      title="Cadres"
@@ -1012,28 +1005,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           </div>
         )}
       </div>
-
-      {/* Tooltips contextuels pour onboarding */}
-      {preview && mediaType === 'photo' && (
-        <>
-          <ContextualTooltip
-            id="filters_tooltip"
-            message="Appliquez des filtres artistiques à vos photos pour les rendre uniques !"
-            position="left"
-            targetElement={filtersButtonRef.current}
-            autoClose={true}
-            autoCloseDelay={6000}
-          />
-          <ContextualTooltip
-            id="frames_tooltip"
-            message="Ajoutez des cadres décoratifs pour sublimer vos photos !"
-            position="left"
-            targetElement={framesButtonRef.current}
-            autoClose={true}
-            autoCloseDelay={6000}
-          />
-        </>
-      )}
 
       <input
         type="file"
