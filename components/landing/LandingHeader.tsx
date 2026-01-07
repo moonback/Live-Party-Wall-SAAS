@@ -73,15 +73,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
             >
               Cas d'usage
             </button>
-            <a
-              href="https://docs.livepartywall.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-300 hover:text-pink-400 transition-colors font-medium flex items-center gap-1"
-            >
-              <BookOpen className="w-4 h-4" />
-              Docs
-            </a>
+            
           </nav>
 
           {/* CTA Button Desktop */}
@@ -140,15 +132,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               >
                 Cas d'usage
               </button>
-              <a
-                href="https://docs.livepartywall.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-left text-gray-300 hover:text-pink-400 transition-colors font-medium py-2 flex items-center gap-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                Documentation
-              </a>
+              
               <button
                 onClick={onAdminClick}
                 className="mt-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 transition-all duration-300 font-semibold rounded-lg text-white flex items-center justify-center gap-2"
