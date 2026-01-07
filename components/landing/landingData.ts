@@ -36,7 +36,7 @@ export const STEPS: Step[] = [
     number: 1,
     icon: QrCode,
     title: "Scan & Go",
-    description: "Un simple QR code à scanner. Pas d'application à télécharger, pas de compte à créer. Vos invités rejoignent la fête en 3 secondes chrono."
+    description: "Un simple QR code. Pas d'app à installer, pas de compte – chaque invité choisit juste son prénom ou pseudo avant d'envoyer sa première photo.",
   },
   {
     number: 2,
