@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, ArrowRight, Users, Menu, X } from 'lucide-react';
+import { ArrowRight, Users, Menu, X } from 'lucide-react';
 
 interface LandingHeaderProps {
   isAuthenticated: boolean;
@@ -31,6 +31,16 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
     setIsMobileMenuOpen(false);
   };
 
+  const handleNavigateToPricing = () => {
+    window.location.href = `${window.location.pathname}?mode=pricing`;
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNavigateToHome = () => {
+    window.location.href = window.location.pathname;
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -42,7 +52,10 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <button
+            onClick={handleNavigateToHome}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <img
               src="/icon.png"
               alt="Live Party Wall"
@@ -51,7 +64,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
             <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
               Live Party Wall
             </span>
-          </div>
+          </button>
 
           {/* Navigation Desktop */}
           <nav className="hidden md:flex items-center gap-6">
@@ -73,7 +86,12 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
             >
               Cas d'usage
             </button>
-            
+            <button
+              onClick={handleNavigateToPricing}
+              className="text-gray-300 hover:text-pink-400 transition-colors font-medium"
+            >
+              Tarification
+            </button>
           </nav>
 
           {/* CTA Button Desktop */}
@@ -131,6 +149,12 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                 className="text-left text-gray-300 hover:text-pink-400 transition-colors font-medium py-2"
               >
                 Cas d'usage
+              </button>
+              <button
+                onClick={handleNavigateToPricing}
+                className="text-left text-gray-300 hover:text-pink-400 transition-colors font-medium py-2"
+              >
+                Tarification
               </button>
               
               <button

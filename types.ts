@@ -36,7 +36,7 @@ export interface Photo {
   reactions?: ReactionCounts; // Compteurs de réactions par type
 }
 
-export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile';
+export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'pricing';
 
 export interface ToastMessage {
   id: string;
