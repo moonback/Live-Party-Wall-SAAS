@@ -5,6 +5,7 @@ import { getPhotosByAuthor, getPhotosReactions } from '../services/photoService'
 import { Photo, ReactionCounts } from '../types';
 import { REACTIONS } from '../constants';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useEvent } from '../context/EventContext';
 
 interface GuestProfileProps {
   onBack: () => void;
@@ -15,6 +16,7 @@ interface GuestProfileProps {
  * Composant pour afficher le profil de l'invité
  */
 const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
+  const { currentEvent } = useEvent();
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [userPhotos, setUserPhotos] = useState<Photo[]>([]);
@@ -33,7 +35,7 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     setUserName(name);
     setAvatarUrl(avatar);
 
-    if (name) {
+    if (name && currentEvent?.id) {
       // Réinitialiser l'état de chargement et recharger les données
       setLoading(true);
       setUserPhotos([]);
@@ -46,12 +48,19 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     } else {
       setLoading(false);
     }
-  }, []); // Se déclenche à chaque montage du composant (ouverture du profil)
+  }, [currentEvent?.id]); // Se déclenche à chaque montage du composant ou changement d'événement
 
   const loadUserPhotos = async (authorName: string) => {
+    // Vérifier que l'événement est chargé
+    if (!currentEvent?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const photos = await getPhotosByAuthor(authorName);
+      // Passer eventId comme premier paramètre
+      const photos = await getPhotosByAuthor(currentEvent.id, authorName);
       setUserPhotos(photos);
       
       // Calculer le total des likes
