@@ -1,0 +1,636 @@
+import React, { useState } from 'react';
+import { 
+  HelpCircle, 
+  Camera, 
+  Images, 
+  Wand2, 
+  Grid3x3, 
+  Video, 
+  Heart, 
+  Download, 
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Shield,
+  Zap,
+  Users,
+  Smartphone,
+  Trophy,
+  User
+} from 'lucide-react';
+
+interface HelpPageProps {
+  onBack: () => void;
+}
+
+interface HelpSection {
+  id: string;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  gradient: string;
+  content: React.ReactNode;
+}
+
+const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['getting-started']));
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  const helpSections: HelpSection[] = [
+    {
+      id: 'getting-started',
+      title: 'Démarrage rapide',
+      icon: Zap,
+      gradient: 'from-yellow-500 via-orange-500 to-red-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <p className="text-base leading-relaxed">
+            Bienvenue sur <span className="text-pink-400 font-semibold">Live Party Wall</span> ! 
+            Cette application vous permet de partager vos meilleurs moments en temps réel avec tous les invités.
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">1</span>
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-1">Prenez une photo</h4>
+                <p className="text-sm">Cliquez sur "Prendre une photo" depuis la page d'accueil</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">2</span>
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-1">Personnalisez</h4>
+                <p className="text-sm">Ajoutez des filtres, des cadres et votre nom</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">3</span>
+              </div>
+              <div>
+                <h4 className="font-semibold text-white mb-1">Partagez</h4>
+                <p className="text-sm">Votre photo apparaît instantanément sur le mur et dans la galerie</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'taking-photos',
+      title: 'Prendre une photo',
+      icon: Camera,
+      gradient: 'from-pink-500 via-rose-500 to-purple-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                <Camera className="w-5 h-5 text-pink-400" />
+                Utilisation de la caméra
+              </h4>
+              <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+                <li>Autorisez l'accès à votre caméra lorsque demandé</li>
+                <li>Utilisez le bouton de capture pour prendre une photo</li>
+                <li>Un compte à rebours de 3 secondes s'affiche avant la capture</li>
+                <li>Vous pouvez basculer entre caméra avant et arrière</li>
+              </ul>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                <Video className="w-5 h-5 text-purple-400" />
+                Mode vidéo (si activé)
+              </h4>
+              <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+                <li>Basculez vers le mode vidéo avec l'icône vidéo</li>
+                <li>Appuyez sur le bouton d'enregistrement pour démarrer</li>
+                <li>La durée maximale est de 30 secondes</li>
+                <li>Un indicateur de temps s'affiche pendant l'enregistrement</li>
+              </ul>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-blue-400" />
+                Upload depuis la galerie
+              </h4>
+              <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+                <li>Cliquez sur l'icône de galerie pour sélectionner une photo existante</li>
+                <li>Les formats acceptés : JPEG, PNG, WebP</li>
+                <li>Taille maximale : 10 MB pour les photos</li>
+                <li>Les photos sont automatiquement redimensionnées si nécessaire</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'filters-frames',
+      title: 'Filtres et cadres',
+      icon: Wand2,
+      gradient: 'from-purple-500 via-indigo-500 to-blue-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-purple-400" />
+              Filtres photo
+            </h4>
+            <p className="text-sm mb-3">
+              Après avoir pris ou sélectionné une photo, vous pouvez appliquer différents filtres :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li><span className="text-white font-medium">Aucun</span> : Photo originale</li>
+              <li><span className="text-white font-medium">Vintage</span> : Effet rétro avec tons sépia</li>
+              <li><span className="text-white font-medium">Noir & Blanc</span> : Conversion en niveaux de gris</li>
+              <li><span className="text-white font-medium">Vibrant</span> : Saturation et contraste renforcés</li>
+              <li><span className="text-white font-medium">Soft</span> : Adoucissement et luminosité</li>
+              <li><span className="text-white font-medium">Dramatic</span> : Contraste élevé et ombres prononcées</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Grid3x3 className="w-5 h-5 text-indigo-400" />
+              Cadres décoratifs
+            </h4>
+            <p className="text-sm mb-3">
+              Ajoutez un cadre élégant autour de votre photo :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li><span className="text-white font-medium">Aucun</span> : Pas de cadre</li>
+              <li><span className="text-white font-medium">Classic</span> : Cadre simple et élégant</li>
+              <li><span className="text-white font-medium">Polaroid</span> : Style photo instantanée</li>
+              <li><span className="text-white font-medium">Vintage</span> : Cadre avec effet vieilli</li>
+              <li><span className="text-white font-medium">Modern</span> : Cadre minimaliste moderne</li>
+            </ul>
+            <p className="text-sm mt-3 text-slate-400">
+              💡 Astuce : Les cadres peuvent être personnalisés par l'organisateur de l'événement
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'collage-mode',
+      title: 'Mode collage',
+      icon: Grid3x3,
+      gradient: 'from-cyan-500 via-teal-500 to-green-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Grid3x3 className="w-5 h-5 text-cyan-400" />
+              Créer un collage
+            </h4>
+            <p className="text-sm mb-3">
+              Le mode collage vous permet de combiner plusieurs photos en une seule image :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Vous pouvez ajouter entre 2 et 4 photos</li>
+              <li>Prenez ou sélectionnez chaque photo une par une</li>
+              <li>Les photos sont automatiquement arrangées dans une grille</li>
+              <li>Vous pouvez réorganiser les photos par glisser-déposer</li>
+              <li>Le collage final peut être partagé comme une photo normale</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-cyan-500/10 to-teal-500/10">
+            <p className="text-sm text-cyan-300">
+              ⚠️ Note : Le mode collage peut être désactivé par l'organisateur de l'événement
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'gallery',
+      title: 'Galerie',
+      icon: Images,
+      gradient: 'from-indigo-500 via-blue-500 to-cyan-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Images className="w-5 h-5 text-indigo-400" />
+              Explorer la galerie
+            </h4>
+            <p className="text-sm mb-3">
+              La galerie affiche toutes les photos partagées par les invités :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li><span className="text-white font-medium">Tri</span> : Par date (récent) ou par popularité (likes)</li>
+              <li><span className="text-white font-medium">Recherche</span> : Recherchez par nom d'auteur</li>
+              <li><span className="text-white font-medium">Filtres</span> : Affichez uniquement photos, vidéos ou tout</li>
+              <li><span className="text-white font-medium">Likes</span> : Appuyez sur le cœur pour liker une photo</li>
+              <li><span className="text-white font-medium">Téléchargement</span> : Téléchargez vos photos préférées</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+              <Heart className="w-5 h-5 text-pink-400" />
+              Système de likes
+            </h4>
+            <p className="text-sm">
+              Montrez votre appréciation en likant les photos qui vous plaisent. 
+              Les photos les plus likées apparaissent en haut lors du tri par popularité.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'photo-battle',
+      title: 'Photo Battle',
+      icon: Trophy,
+      gradient: 'from-yellow-500 via-amber-500 to-orange-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+              Qu'est-ce qu'une Photo Battle ?
+            </h4>
+            <p className="text-sm mb-3">
+              Les Photo Battles sont des compétitions amusantes où deux photos s'affrontent. 
+              Tous les invités peuvent voter pour leur photo préférée en temps réel !
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Les battles sont créées par l'organisateur de l'événement</li>
+              <li>Deux photos sont mises en compétition côte à côte</li>
+              <li>Vous pouvez voter en cliquant sur votre photo préférée</li>
+              <li>Les votes sont mis à jour en temps réel</li>
+              <li>La photo gagnante reste affichée, la perdante disparaît</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-400" />
+              Comment voter
+            </h4>
+            <p className="text-sm mb-3">
+              Participer à une battle est très simple :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Dans la galerie, activez le filtre "Battles" pour voir les battles actives</li>
+              <li>Cliquez sur la photo que vous préférez pour voter</li>
+              <li>Vous ne pouvez voter qu'une seule fois par battle</li>
+              <li>Votre vote est indiqué par un badge "Votre vote"</li>
+              <li>Les pourcentages de votes s'affichent en temps réel</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Heart className="w-5 h-5 text-orange-400" />
+              Résultats et gagnant
+            </h4>
+            <p className="text-sm mb-3">
+              À la fin d'une battle :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>La photo avec le plus de votes remporte la battle</li>
+              <li>Un badge trophée apparaît sur la photo gagnante</li>
+              <li>La photo perdante disparaît automatiquement</li>
+              <li>Les battles ont une durée limitée (définie par l'organisateur)</li>
+              <li>Les résultats sont affichés en temps réel sur le grand écran</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-yellow-500/10 to-orange-500/10">
+            <p className="text-sm text-yellow-300">
+              💡 Astuce : Les battles sont une façon amusante d'interagir avec les autres invités et de voir quelles photos sont les plus populaires !
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'find-me',
+      title: 'Retrouve-moi',
+      icon: User,
+      gradient: 'from-fuchsia-500 via-purple-500 to-indigo-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <User className="w-5 h-5 text-fuchsia-400" />
+              Qu'est-ce que Retrouve-moi ?
+            </h4>
+            <p className="text-sm mb-3">
+              Retrouve-moi est une fonctionnalité de reconnaissance faciale qui vous permet de retrouver 
+              toutes vos photos dans l'événement en prenant simplement un selfie.
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Utilise la reconnaissance faciale locale (face-api.js)</li>
+              <li>Fonctionne entièrement sur votre appareil (pas d'envoi de données)</li>
+              <li>Recherche automatiquement toutes les photos où vous apparaissez</li>
+              <li>Affichage des résultats avec score de similarité</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Camera className="w-5 h-5 text-purple-400" />
+              Comment utiliser Retrouve-moi
+            </h4>
+            <p className="text-sm mb-3">
+              Suivez ces étapes pour retrouver vos photos :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Dans la galerie, cliquez sur le bouton "Retrouve-moi"</li>
+              <li>Autorisez l'accès à votre caméra frontale</li>
+              <li>Prenez un selfie clair avec votre visage bien visible</li>
+              <li>L'application détecte automatiquement votre visage</li>
+              <li>Les photos correspondantes s'affichent avec leur score de similarité</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Images className="w-5 h-5 text-indigo-400" />
+              Résultats de recherche
+            </h4>
+            <p className="text-sm mb-3">
+              Après la recherche, vous verrez :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Toutes les photos où votre visage a été détecté</li>
+              <li>Un score de similarité pour chaque photo trouvée</li>
+              <li>La possibilité de cliquer sur une photo pour la voir en grand</li>
+              <li>Un aperçu rapide de toutes vos photos dans l'événement</li>
+              <li>La possibilité de télécharger vos photos préférées</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-fuchsia-400" />
+              Conseils pour de meilleurs résultats
+            </h4>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Assurez-vous d'avoir un bon éclairage sur votre visage</li>
+              <li>Regardez directement la caméra</li>
+              <li>Évitez les ombres sur votre visage</li>
+              <li>Gardez une expression neutre pour de meilleurs résultats</li>
+              <li>Si aucun résultat, essayez avec une autre photo de vous</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-fuchsia-500/10 to-indigo-500/10">
+            <p className="text-sm text-fuchsia-300">
+              🔒 Confidentialité : Toute la reconnaissance faciale se fait localement sur votre appareil. 
+              Aucune image de votre visage n'est envoyée à un serveur externe.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'ai-features',
+      title: 'Fonctionnalités IA',
+      icon: Sparkles,
+      gradient: 'from-pink-500 via-rose-500 to-orange-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-pink-400" />
+              Légendes automatiques
+            </h4>
+            <p className="text-sm mb-3">
+              L'application utilise l'intelligence artificielle pour générer automatiquement des légendes 
+              amusantes et personnalisées pour vos photos :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Les légendes sont créées en quelques secondes</li>
+              <li>Elles sont adaptées au contenu de la photo</li>
+              <li>Vous pouvez les modifier avant de publier</li>
+              <li>Elles sont en français et incluent des emojis</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-orange-400" />
+              Modération automatique
+            </h4>
+            <p className="text-sm mb-3">
+              Toutes les photos sont analysées automatiquement pour garantir un contenu approprié :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Détection de contenu inapproprié</li>
+              <li>Respect des règles de l'événement</li>
+              <li>Protection de la vie privée</li>
+              <li>Les photos non conformes sont automatiquement rejetées</li>
+            </ul>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'faq',
+      title: 'Questions fréquentes',
+      icon: HelpCircle,
+      gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Puis-je supprimer ma photo après l'avoir publiée ?</h4>
+              <p className="text-sm text-slate-400">
+                Pour l'instant, les photos ne peuvent pas être supprimées par les invités. 
+                Contactez l'organisateur si nécessaire.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Mes photos sont-elles privées ?</h4>
+              <p className="text-sm text-slate-400">
+                Non, toutes les photos partagées sont visibles par tous les invités de l'événement. 
+                Ne partagez que des photos que vous êtes à l'aise de montrer publiquement.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Pourquoi ma photo n'apparaît pas ?</h4>
+              <p className="text-sm text-slate-400">
+                Plusieurs raisons possibles : la modération automatique l'a rejetée, 
+                un problème de connexion, ou le format/taille du fichier n'est pas supporté.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Puis-je utiliser l'application hors ligne ?</h4>
+              <p className="text-sm text-slate-400">
+                Non, une connexion Internet est nécessaire pour partager et voir les photos en temps réel.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Comment télécharger une photo ?</h4>
+              <p className="text-sm text-slate-400">
+                Dans la galerie, cliquez sur l'icône de téléchargement en bas à droite de chaque photo.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">L'application fonctionne-t-elle sur tous les appareils ?</h4>
+              <p className="text-sm text-slate-400">
+                Oui, l'application est compatible avec les smartphones, tablettes et ordinateurs. 
+                Pour la meilleure expérience, utilisez un navigateur récent (Chrome, Safari, Firefox, Edge).
+              </p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'tips',
+      title: 'Astuces et conseils',
+      icon: Users,
+      gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3">💡 Pour de meilleures photos</h4>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Assurez-vous d'avoir un bon éclairage</li>
+              <li>Maintenez votre appareil stable lors de la capture</li>
+              <li>Utilisez le compte à rebours pour vous préparer</li>
+              <li>Expérimentez avec les différents filtres pour trouver votre style</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3">🎨 Personnalisation</h4>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Ajoutez votre nom pour que les autres vous reconnaissent</li>
+              <li>Les cadres peuvent ajouter une touche professionnelle</li>
+              <li>Les filtres peuvent améliorer l'ambiance de vos photos</li>
+              <li>N'hésitez pas à modifier la légende générée par l'IA</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3">📱 Utilisation mobile</h4>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>L'application est optimisée pour les écrans tactiles</li>
+              <li>Vous pouvez utiliser l'application en mode paysage ou portrait</li>
+              <li>Les gestes de balayage facilitent la navigation</li>
+              <li>Activez les notifications pour ne rien manquer</li>
+            </ul>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="min-h-screen w-full bg-slate-950 text-white relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950" />
+        <div 
+          className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[100px] opacity-30 animate-blob"
+          style={{
+            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent 70%)',
+          }}
+        />
+        <div 
+          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full blur-[100px] opacity-30 animate-blob animation-delay-2000"
+          style={{
+            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent 70%)',
+          }}
+        />
+      </div>
+
+      {/* Header */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto p-4 pt-8">
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={onBack}
+            className="p-3 rounded-2xl backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white transition-all duration-300 group shadow-lg"
+            style={{
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            }}
+            aria-label="Retour"
+          >
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300">
+              Centre d'aide
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Tout ce que vous devez savoir pour utiliser Live Party Wall
+            </p>
+          </div>
+        </div>
+
+        {/* Help Sections */}
+        <div className="space-y-3 pb-8">
+          {helpSections.map((section) => {
+            const Icon = section.icon;
+            const isExpanded = expandedSections.has(section.id);
+
+            return (
+              <div
+                key={section.id}
+                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/10"
+                style={{
+                  boxShadow: isExpanded 
+                    ? '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                    : '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full p-5 flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-white/30 rounded-2xl"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div 
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center shadow-lg flex-shrink-0`}
+                    >
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white">
+                      {section.title}
+                    </h2>
+                  </div>
+                  <div className="flex-shrink-0">
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-white/70" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-white/70" />
+                    )}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="px-5 pb-5 pt-0 animate-fade-in">
+                    <div className="pt-4 border-t border-white/10">
+                      {section.content}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center py-8 text-slate-400 text-sm">
+          <p>
+            Besoin d'aide supplémentaire ? Contactez l'organisateur de l'événement.
+          </p>
+          <p className="mt-2 text-xs text-slate-500">
+            Live Party Wall © 2026
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default React.memo(HelpPage);
+

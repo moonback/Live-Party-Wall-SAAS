@@ -1,0 +1,3 @@
+# Ce fichier permet de versionner le dossier cadres/ même s'il est vide
+# Les fichiers PNG sont ignorés par git (trop lourds) mais le dossier reste présent
+

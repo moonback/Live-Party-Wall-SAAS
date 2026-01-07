@@ -1,0 +1,1006 @@
+@import "tailwindcss";
+
+@theme {
+  --font-handwriting: 'Pacifico', cursive;
+}
+
+/* Base layout */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+:root {
+  --bg-0: #020617; /* slate-950 */
+  --bg-1: #0b1220; /* deep slate */
+  --fg: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.62);
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-strong: rgba(255, 255, 255, 0.12);
+  --ring: rgba(236, 72, 153, 0.65);
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(236, 72, 153, 0.12), transparent 50%),
+              radial-gradient(1000px 700px at 80% 30%, rgba(99, 102, 241, 0.12), transparent 55%),
+              radial-gradient(800px 600px at 50% 90%, rgba(34, 211, 238, 0.08), transparent 60%),
+              linear-gradient(180deg, var(--bg-0), var(--bg-1));
+  color: var(--fg);
+  overflow-x: hidden;
+}
+
+.font-handwriting {
+  font-family: 'Pacifico', cursive;
+}
+
+/* Better tap highlight + selection */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+::selection {
+  background: rgba(236, 72, 153, 0.35);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ⚡ Smooth scroll avec momentum */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ⚡ Optimisation GPU */
+.gpu-accelerate {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ⚡ Animation bounce-in pour indicateurs */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  50% {
+    transform: translateY(0) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-bounce-in {
+  animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scale-in {
+  animation: scaleIn 0.35s ease-out forwards;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-overlay-in {
+  animation: overlayIn 0.2s ease-out forwards;
+}
+
+@keyframes flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.animate-flash {
+  animation: flash 0.5s ease-out forwards;
+}
+
+@keyframes count-pulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-count {
+  animation: count-pulse 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Toast Animation */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(12px); }
+}
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes toastLife {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+.animate-toast-life {
+  animation: toastLife 5s linear forwards;
+  transform-origin: left;
+}
+
+/* Ken Burns Effect */
+@keyframes kenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+.animate-ken-burns {
+  animation: kenBurns 20s ease-out forwards;
+}
+
+/* Pulse Slow - Pour les backgrounds animés */
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.05); }
+}
+.animate-pulse-slow {
+  animation: pulseSlow 8s ease-in-out infinite;
+}
+
+/* Gradient Animation */
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% auto;
+  animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { 
+    background-position: 0% 50%;
+    opacity: 0.2;
+  }
+  50% { 
+    background-position: 100% 50%;
+    opacity: 0.3;
+  }
+}
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+/* Letter Glow Animation - Pour l'animation lettre par lettre */
+@keyframes letterGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.5));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 24px rgba(99, 102, 241, 0.6));
+    transform: scale(1.05);
+  }
+}
+
+/* Letter Gradient Shift Animation - Pour animer le dégradé */
+@keyframes letterGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Letter Bounce Animation */
+@keyframes letterBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+/* Rainbow Wave Animation - Pour créer un effet de vague arc-en-ciel */
+@keyframes rainbowWave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Bounce Slow - Pour badges "NEW" */
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.animate-bounce-slow {
+  animation: bounceSlow 2s ease-in-out infinite;
+}
+
+/* Fade In - Pour lightbox et overlays */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Shimmer Effect - Pour les hover effects */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Advanced Animations */
+
+/* Slide In From Left */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Slide In From Right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Slide In From Bottom */
+@keyframes slideInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-in-bottom {
+  animation: slideInBottom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Rotate In */
+@keyframes rotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+.animate-rotate-in {
+  animation: rotateIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Flip In */
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateY(0deg);
+  }
+}
+.animate-flip-in {
+  animation: flipIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Zoom In with Bounce - Amélioré avec rotation via variable CSS */
+@keyframes zoomInBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  70% {
+    transform: scale(0.9) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+}
+.animate-zoom-in-bounce {
+  animation: zoomInBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* ⚡ Variante slideInFromBottom avec rotation */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+}
+.animate-slide-in-from-bottom {
+  animation: slideInFromBottom 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Fade Out */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Slide Out Left */
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+}
+.animate-slide-out-left {
+  animation: slideOutLeft 0.4s ease-in forwards;
+}
+
+/* Slide Out Right */
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+}
+.animate-slide-out-right {
+  animation: slideOutRight 0.4s ease-in forwards;
+}
+
+/* Scale Out */
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+.animate-scale-out {
+  animation: scaleOut 0.3s ease-in forwards;
+}
+
+/* Float Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Spin Slow */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite;
+}
+
+/* Pulse Glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(236, 72, 153, 0.8);
+  }
+}
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+.animate-ripple {
+  animation: ripple 0.6s ease-out forwards;
+}
+
+/* Stagger Animation Delays */
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-600 { animation-delay: 600ms; }
+.animate-delay-700 { animation-delay: 700ms; }
+.animate-delay-800 { animation-delay: 800ms; }
+
+/* Podium Animations */
+@keyframes podiumRise {
+  0% {
+    opacity: 0;
+    transform: translateY(100px) scale(0.8);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-podium-rise {
+  animation: podiumRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes podiumGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), 0 0 40px rgba(234, 179, 8, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(234, 179, 8, 0.6), 0 0 60px rgba(234, 179, 8, 0.4), 0 0 80px rgba(234, 179, 8, 0.2);
+  }
+}
+.animate-podium-glow {
+  animation: podiumGlow 2s ease-in-out infinite;
+}
+
+@keyframes trophySpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(-5deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+.animate-trophy-spin {
+  animation: trophySpin 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes confetti {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) rotate(360deg);
+  }
+}
+.animate-confetti {
+  animation: confetti 2s ease-out forwards;
+}
+
+/* Transition Presets */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-bounce {
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.transition-elastic {
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Heart Pop Animation - Pour double-clic/tap like */
+@keyframes heartPop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(-10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1) rotate(10deg) translateY(-20px);
+  }
+}
+.animate-heart-pop {
+  animation: heartPop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Smooth Scale Animation */
+@keyframes smoothScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-smooth-scale {
+  animation: smoothScale 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Shimmer Effect Enhanced */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Focus Ring Animation */
+@keyframes focusRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0);
+  }
+}
+.animate-focus-ring {
+  animation: focusRing 0.6s ease-out;
+}
+
+/* Enhanced Focus Styles for Accessibility */
+*:focus-visible {
+  outline: 2px solid rgba(236, 72, 153, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(236, 72, 153, 0.8);
+  outline-offset: 2px;
+}
+
+/* Improved Touch Targets for Mobile */
+@media (max-width: 768px) {
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Confetti Animation */
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+.animate-confetti {
+  animation: confetti linear forwards;
+}
+
+/* 🎨 Animations Dynamiques pour le Mur */
+
+/* Floating Animation - Mouvement subtil de flottement */
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0px) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  33% {
+    transform: translateY(-8px) rotate(calc((var(--rotation, 0) + 1) * 1deg));
+  }
+  66% {
+    transform: translateY(4px) rotate(calc((var(--rotation, 0) - 1) * 1deg));
+  }
+}
+.animate-floating {
+  animation: floating 6s ease-in-out infinite;
+}
+
+/* Floating Slow - Pour un mouvement plus lent */
+@keyframes floatingSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  50% {
+    transform: translateY(-12px) rotate(calc((var(--rotation, 0) + 0.5) * 1deg));
+  }
+}
+.animate-floating-slow {
+  animation: floatingSlow 8s ease-in-out infinite;
+}
+
+/* Parallax Scroll Effect */
+@keyframes parallaxScroll {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-20px) scale(1.02);
+  }
+}
+.animate-parallax {
+  animation: parallaxScroll 10s ease-in-out infinite alternate;
+}
+
+/* Gentle Pulse - Pulse subtil pour les photos */
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1) rotate(calc(var(--rotation, 0) * 1deg));
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02) rotate(calc((var(--rotation, 0) + 0.3) * 1deg));
+    opacity: 0.98;
+  }
+}
+.animate-gentle-pulse {
+  animation: gentlePulse 4s ease-in-out infinite;
+}
+
+/* Photo Glow Animation - Effet de lueur animé */
+@keyframes photoGlow {
+  0%, 100% {
+    box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4),
+                0 0 0 rgba(236, 72, 153, 0);
+  }
+  50% {
+    box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(236, 72, 153, 0.3),
+                0 0 60px rgba(99, 102, 241, 0.2);
+  }
+}
+.animate-photo-glow {
+  animation: photoGlow 3s ease-in-out infinite;
+}
+
+/* Rotate Gentle - Rotation subtile continue */
+@keyframes rotateGentle {
+  0% {
+    transform: rotate(calc(var(--rotation, 0) * 1deg));
+  }
+  50% {
+    transform: rotate(calc((var(--rotation, 0) + 1) * 1deg));
+  }
+  100% {
+    transform: rotate(calc(var(--rotation, 0) * 1deg));
+  }
+}
+.animate-rotate-gentle {
+  animation: rotateGentle 8s ease-in-out infinite;
+}
+
+/* Shimmer Enhanced - Effet de brillance amélioré */
+@keyframes shimmerEnhanced {
+  0% {
+    background-position: -200% center;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 200% center;
+    opacity: 0;
+  }
+}
+.animate-shimmer-enhanced {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmerEnhanced 3s ease-in-out infinite;
+}
+
+/* Particle Float - Pour les particules de fond */
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateY(-30px) translateX(20px) scale(1.1);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translateY(-60px) translateX(-15px) scale(0.9);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-90px) translateX(10px) scale(1);
+    opacity: 0.2;
+  }
+}
+.animate-particle-float {
+  animation: particleFloat 15s ease-in-out infinite;
+}
+
+/* Light Ray - Rayon de lumière animé */
+@keyframes lightRay {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(200%) translateY(200%) rotate(45deg);
+    opacity: 0;
+  }
+}
+.animate-light-ray {
+  animation: lightRay 4s ease-in-out infinite;
+}
+
+/* Scale Breathe - Respiration subtile */
+@keyframes scaleBreathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+.animate-scale-breathe {
+  animation: scaleBreathe 5s ease-in-out infinite;
+}
+
+/* Glow Pulse Enhanced - Pulse de lueur amélioré */
+@keyframes glowPulseEnhanced {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3),
+                0 0 40px rgba(99, 102, 241, 0.2),
+                0 0 60px rgba(34, 211, 238, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6),
+                0 0 80px rgba(99, 102, 241, 0.4),
+                0 0 120px rgba(34, 211, 238, 0.2);
+  }
+}
+.animate-glow-pulse-enhanced {
+  animation: glowPulseEnhanced 3s ease-in-out infinite;
+}
+
+/* Wave Animation - Effet de vague */
+@keyframes wave {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-10px) scaleY(1.05);
+  }
+}
+.animate-wave {
+  animation: wave 4s ease-in-out infinite;
+}
+
+/* Stagger Floating - Pour créer un effet de vague avec délais */
+.animate-floating-delay-1 {
+  animation: floating 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+.animate-floating-delay-2 {
+  animation: floating 6s ease-in-out infinite;
+  animation-delay: 1s;
+}
+.animate-floating-delay-3 {
+  animation: floating 6s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+.animate-floating-delay-4 {
+  animation: floating 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-scale-in,
+  .animate-overlay-in,
+  .animate-flash,
+  .animate-count,
+  .animate-blob,
+  .animate-slide-in,
+  .animate-fade-out,
+  .animate-toast-life,
+  .animate-ken-burns,
+  .animate-pulse-slow,
+  .animate-gradient,
+  .animate-bounce-slow,
+  .animate-fade-in,
+  .animate-shimmer,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-slide-in-bottom,
+  .animate-rotate-in,
+  .animate-flip-in,
+  .animate-zoom-in-bounce,
+  .animate-slide-out-left,
+  .animate-slide-out-right,
+  .animate-scale-out,
+  .animate-float,
+  .animate-spin-slow,
+  .animate-pulse-glow,
+  .animate-ripple,
+  .animate-heart-pop,
+  .animate-smooth-scale,
+  .animate-focus-ring,
+  .animate-floating,
+  .animate-floating-slow,
+  .animate-parallax,
+  .animate-gentle-pulse,
+  .animate-photo-glow,
+  .animate-rotate-gentle,
+  .animate-shimmer-enhanced,
+  .animate-particle-float,
+  .animate-light-ray,
+  .animate-scale-breathe,
+  .animate-glow-pulse-enhanced,
+  .animate-wave,
+  .animate-floating-delay-1,
+  .animate-floating-delay-2,
+  .animate-floating-delay-3,
+  .animate-floating-delay-4 {
+    animation: none !important;
+  }
+  
+  .transition-smooth,
+  .transition-bounce,
+  .transition-elastic {
+    transition: none !important;
+  }
+}

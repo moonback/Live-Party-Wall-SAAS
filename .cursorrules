@@ -1,0 +1,347 @@
+# Live Party Wall - Cursor Rules
+
+## 📋 Contexte du Projet
+
+Live Party Wall est une application web React en temps réel qui permet aux invités d'un événement de partager instantanément leurs photos sur grand écran. L'application utilise l'IA (Google Gemini) pour modérer, améliorer et légender automatiquement chaque photo.
+
+**Objectifs principaux** :
+- Expérience photobooth interactive pour événements
+- Affichage temps réel sur grand écran
+- Modération automatique par IA
+- Administration complète pour les organisateurs
+
+---
+
+## 🛠 Stack Technique
+
+### Frontend
+- **React 19.2** : Composants fonctionnels avec Hooks, Suspense, Lazy Loading
+- **TypeScript 5.8** : Typage strict, éviter `any`
+- **Vite 6.2** : Build tool avec HMR
+- **Tailwind CSS 4.1** : Utility-first CSS
+- **Lucide React** : Icônes
+
+### Backend & Infrastructure
+- **Supabase** : BaaS (PostgreSQL, Storage, Realtime, Auth)
+- **Google Gemini 3 Flash** : IA pour modération et légendes
+
+### Outils
+- **JSZip** : Export ZIP
+- **File Saver** : Téléchargement fichiers
+- **QRCode React** : Génération QR codes
+
+---
+
+## 📐 Architecture
+
+### Structure des Dossiers
+```
+components/     # Composants UI React (un composant par fichier)
+services/       # Logique métier et intégrations API
+utils/          # Utilitaires (validation, filtres, overlays)
+context/        # Contextes React (ToastContext)
+types.ts        # Types TypeScript partagés
+constants.ts    # Constantes globales
+```
+
+### Patterns Architecturaux
+- **Service Layer** : Toute la logique métier dans `/services`, les composants restent "stupides"
+- **Context API** : Pour l'état global (toasts uniquement actuellement)
+- **Lazy Loading** : Tous les composants principaux sont lazy-loaded
+- **Type Safety** : TypeScript strict, types définis dans `types.ts`
+
+---
+
+## 💻 Conventions de Code
+
+### TypeScript
+- ✅ **Toujours utiliser TypeScript** pour nouveau code
+- ✅ **Éviter `any`** : Utiliser `unknown` ou types explicites
+- ✅ **Interfaces pour objets complexes** : Définir dans `types.ts` si partagé
+- ✅ **JSDoc pour fonctions complexes** : Documenter les paramètres et retours
+
+**Exemple** :
+```typescript
+/**
+ * Upload une photo vers Supabase Storage
+ * @param base64Image - Image en base64
+ * @param caption - Légende de la photo
+ * @param author - Nom de l'auteur
+ * @returns Promise résolue avec l'objet Photo créé
+ */
+export const addPhotoToWall = async (
+  base64Image: string,
+  caption: string,
+  author: string
+): Promise<Photo> => {
+  // ...
+};
+```
+
+### React
+- ✅ **Composants fonctionnels uniquement** : Pas de classes
+- ✅ **Hooks pour état et effets** : `useState`, `useEffect`, `useContext`
+- ✅ **Props typées** : Toujours définir une interface pour les props
+- ✅ **Nommage PascalCase** : `GuestUpload`, `WallView`
+
+**Exemple** :
+```typescript
+interface GuestUploadProps {
+  onPhotoUploaded: (photo: Photo) => void;
+  onBack: () => void;
+}
+
+export const GuestUpload: React.FC<GuestUploadProps> = ({
+  onPhotoUploaded,
+  onBack
+}) => {
+  // ...
+};
+```
+
+### Nommage
+- **Fichiers** : `camelCase.tsx` (composants), `camelCase.ts` (services/utils)
+- **Composants** : `PascalCase`
+- **Fonctions/Variables** : `camelCase`
+- **Constantes** : `UPPER_SNAKE_CASE`
+- **Types/Interfaces** : `PascalCase`
+
+### Formatage
+- **Indentation** : 2 espaces
+- **Guillemets** : Simple quotes pour JS/TS, double pour JSX
+- **Point-virgule** : Oui
+- **Trailing commas** : Oui dans objets/arrays multilignes
+
+---
+
+## 🏗️ Patterns de Développement
+
+### Services
+- **Isolation** : Chaque service encapsule une responsabilité (photoService, geminiService, etc.)
+- **Erreurs** : Gérer les erreurs avec try/catch, retourner des fallbacks pour services IA
+- **Validation** : Valider les paramètres d'entrée avant traitement
+
+**Exemple** :
+```typescript
+export const addPhotoToWall = async (
+  base64Image: string,
+  caption: string,
+  author: string
+): Promise<Photo> => {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase n'est pas configuré");
+  }
+  
+  try {
+    // Logique métier
+  } catch (error) {
+    console.error("Error in addPhotoToWall:", error);
+    throw error instanceof Error ? error : new Error("Erreur lors de l'upload");
+  }
+};
+```
+
+### Composants
+- **Séparation des responsabilités** : UI dans composants, logique dans services
+- **Props claires** : Nommer les props de manière explicite
+- **Gestion d'état** : État local avec `useState`, Context pour état global partagé
+- **Lazy Loading** : Utiliser `React.lazy()` pour composants lourds
+
+**Exemple** :
+```typescript
+// Dans App.tsx
+const GuestUpload = lazy(() => import('./components/GuestUpload'));
+
+// Utilisation avec Suspense
+<Suspense fallback={<LoadingSpinner />}>
+  <GuestUpload onPhotoUploaded={handleUpload} onBack={handleBack} />
+</Suspense>
+```
+
+### Gestion d'Erreurs
+- **Services** : Try/catch avec logging et propagation
+- **Composants** : Afficher des toasts via `ToastContext` pour erreurs utilisateur
+- **Fallbacks** : Services IA retournent des valeurs "safe" par défaut
+
+**Exemple** :
+```typescript
+try {
+  const caption = await generateImageCaption(base64);
+  return caption;
+} catch (error) {
+  console.error("Error generating caption:", error);
+  return "Party time! 🎉"; // Fallback
+}
+```
+
+---
+
+## 🔒 Sécurité
+
+### Validation
+- ✅ **Valider tous les inputs** : Fichiers (taille, type MIME), texte (longueur, caractères)
+- ✅ **Sanitization** : Nettoyer les inputs pour prévenir XSS
+- ✅ **RLS Supabase** : Toujours vérifier que RLS est activé sur nouvelles tables
+
+**Exemple** :
+```typescript
+export const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: 'Le fichier est trop volumineux (max 10MB)' };
+  }
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { valid: false, error: 'Type de fichier non autorisé' };
+  }
+  return { valid: true };
+};
+```
+
+### Variables d'Environnement
+- ✅ **Préfixe `VITE_`** : Pour variables accessibles côté client
+- ✅ **Ne jamais commiter `.env`** : Déjà dans `.gitignore`
+- ✅ **Validation au démarrage** : Vérifier que les credentials sont présents
+
+---
+
+## 🧪 Tests (À Implémenter)
+
+### Structure Future
+- **Unit Tests** : Services avec mocks Supabase/Gemini
+- **Integration Tests** : Flux complets (upload → affichage)
+- **E2E Tests** : Scénarios utilisateur (Playwright/Cypress)
+
+### Bonnes Pratiques
+- Tester les cas d'erreur (API down, validation échouée)
+- Mocker les appels externes (Supabase, Gemini)
+- Tester les edge cases (fichiers très gros, réseau lent)
+
+---
+
+## 📚 Documentation
+
+### Code Comments
+- ✅ **JSDoc pour fonctions publiques** : Services, utilitaires complexes
+- ✅ **Commentaires pour "pourquoi"** : Expliquer les décisions, pas le "quoi"
+- ✅ **Éviter les commentaires évidents** : Le code doit être auto-explicatif
+
+### Documentation Utilisateur
+- ✅ **Mettre à jour README.md** : Si nouvelle fonctionnalité utilisateur
+- ✅ **Mettre à jour ARCHITECTURE.md** : Si modification architecturale
+- ✅ **Mettre à jour API_DOCS.md** : Si nouveau service ou endpoint
+- ✅ **Mettre à jour DB_SCHEMA.md** : Si modification base de données
+
+---
+
+## 🚫 Anti-Patterns à Éviter
+
+### ❌ À Ne Pas Faire
+- ❌ **Logique métier dans composants** : Extraire dans services
+- ❌ **Props drilling excessif** : Utiliser Context si nécessaire
+- ❌ **État global inutile** : Préférer état local quand possible
+- ❌ **Re-renders inutiles** : Utiliser `useMemo`, `useCallback` si nécessaire
+- ❌ **Appels API dans composants** : Utiliser les services
+- ❌ **Types `any`** : Toujours typer explicitement
+- ❌ **Composants trop gros** : Extraire en sous-composants
+- ❌ **Duplication de code** : Extraire en fonctions/services réutilisables
+
+### ✅ À Faire
+- ✅ **Composants petits et focalisés** : Une responsabilité par composant
+- ✅ **Services réutilisables** : Logique partagée dans services
+- ✅ **Types partagés** : Définir dans `types.ts`
+- ✅ **Constantes centralisées** : Définir dans `constants.ts`
+- ✅ **Gestion d'erreurs robuste** : Try/catch, fallbacks, logging
+
+---
+
+## 🔄 Workflows Communs
+
+### Ajouter une Nouvelle Fonctionnalité
+1. **Créer le service** dans `/services` si logique métier
+2. **Créer le composant** dans `/components` si UI
+3. **Définir les types** dans `types.ts` si nouveaux types
+4. **Ajouter les constantes** dans `constants.ts` si nécessaire
+5. **Intégrer dans App.tsx** avec lazy loading si composant principal
+6. **Tester manuellement** : Upload, affichage, erreurs
+7. **Mettre à jour la documentation** si nécessaire
+
+### Créer un Nouveau Service
+1. **Créer le fichier** dans `/services/nomService.ts`
+2. **Exporter les fonctions** avec types explicites
+3. **Gérer les erreurs** avec try/catch et fallbacks
+4. **Valider les inputs** avant traitement
+5. **Documenter avec JSDoc** si fonction complexe
+6. **Tester manuellement** avec différents cas
+
+### Ajouter une Table Supabase
+1. **Créer le script SQL** : `supabase_nom_table_setup.sql`
+2. **Définir RLS** : Politiques SELECT, INSERT, UPDATE, DELETE
+3. **Activer Realtime** : Si nécessaire pour temps réel
+4. **Créer le service** : Fonctions CRUD dans `/services`
+5. **Mettre à jour DB_SCHEMA.md** : Documenter la nouvelle table
+6. **Tester les permissions** : Vérifier RLS fonctionne correctement
+
+### Modifier l'UI
+1. **Identifier le composant** à modifier
+2. **Vérifier les props** : S'assurer que les types sont corrects
+3. **Modifier le JSX** : Utiliser Tailwind CSS pour le styling
+4. **Tester responsive** : Vérifier sur mobile et desktop
+5. **Tester les interactions** : Clics, hovers, transitions
+
+---
+
+## 📦 Dépendances à Favoriser
+
+### Pour des Tâches Communes
+- **Validation** : Utiliser les fonctions dans `/utils/validation.ts`
+- **Filtres d'image** : Utiliser `/utils/imageFilters.ts`
+- **Overlays/Cadres** : Utiliser `/utils/imageOverlay.ts`
+- **Toasts** : Utiliser `ToastContext` pour notifications
+- **Supabase** : Utiliser `supabaseClient.ts` pour toutes les opérations DB
+
+### Bibliothèques à Éviter
+- ❌ **État global lourd** : Redux/Zustand (pas nécessaire actuellement)
+- ❌ **Formulaires complexes** : React Hook Form (pas encore nécessaire)
+- ❌ **Routing** : React Router (routing manuel actuellement)
+
+---
+
+## 🎯 Objectifs de Qualité
+
+### Code Quality
+- **Lisibilité** : Code auto-explicatif, noms clairs
+- **Maintenabilité** : Structure claire, documentation
+- **Performance** : Lazy loading, optimisation des re-renders
+- **Sécurité** : Validation, sanitization, RLS
+
+### Expérience Utilisateur
+- **Feedback** : Toasts pour toutes les actions importantes
+- **Performance** : Chargement rapide, transitions fluides
+- **Accessibilité** : Labels, ARIA (à améliorer)
+- **Mobile-first** : Interface responsive et optimisée mobile
+
+---
+
+## 🔍 Vérifications Avant Commit
+
+- [ ] Code suit les conventions (nommage, formatage)
+- [ ] Types TypeScript corrects (pas d'erreurs)
+- [ ] Gestion d'erreurs appropriée
+- [ ] Tests manuels effectués
+- [ ] Documentation mise à jour si nécessaire
+- [ ] Pas de console.log oubliés (sauf pour debugging temporaire)
+- [ ] Pas de code commenté mort
+
+---
+
+## 📖 Ressources
+
+- **Documentation Supabase** : https://supabase.com/docs
+- **Documentation React** : https://react.dev
+- **Documentation Gemini** : https://ai.google.dev/docs
+- **Documentation Vite** : https://vitejs.dev
+- **Documentation Tailwind** : https://tailwindcss.com/docs
+
+---
+
+**Dernière mise à jour** : 2026-01-15
+

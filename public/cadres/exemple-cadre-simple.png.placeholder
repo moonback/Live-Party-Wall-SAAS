@@ -1,0 +1,21 @@
+# Placeholder pour les cadres PNG
+
+Ce fichier est un placeholder pour indiquer l'emplacement des cadres PNG.
+
+## Pour ajouter vos cadres:
+
+1. Créez vos fichiers PNG transparents (1920x1080px recommandé)
+2. Placez-les dans ce dossier `public/cadres/`
+3. Mettez à jour `frames-manifest.json` avec les infos de vos cadres
+4. Rechargez l'admin
+
+## Exemples de noms:
+- elegant-gold.png
+- simple-white.png
+- neon-pink.png
+- christmas.png
+- birthday-confetti.png
+
+Les fichiers PNG ne sont pas versionnés dans git (trop lourds).
+Vous devez les ajouter manuellement sur chaque environnement.
+

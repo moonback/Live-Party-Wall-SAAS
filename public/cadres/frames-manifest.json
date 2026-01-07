@@ -1,0 +1,45 @@
+[
+  {
+    "id": "elegant-gold",
+    "name": "Élégant Doré",
+    "filename": "elegant-gold.png",
+    "thumbnail": "elegant-gold.png",
+    "category": "wedding"
+  },
+  {
+    "id": "simple-white",
+    "name": "Bordure Blanche Simple",
+    "filename": "simple-white.png",
+    "thumbnail": "simple-white.png",
+    "category": "universal"
+  },
+  {
+    "id": "neon-pink",
+    "name": "Néon Rose",
+    "filename": "neon-pink.png",
+    "thumbnail": "neon-pink.png",
+    "category": "party"
+  },
+  {
+    "id": "christmas",
+    "name": "Noël Festif",
+    "filename": "christmas.png",
+    "thumbnail": "christmas.png",
+    "category": "seasonal"
+  },
+  {
+    "id": "birthday-confetti",
+    "name": "Confettis Anniversaire",
+    "filename": "birthday-confetti.png",
+    "thumbnail": "birthday-confetti.png",
+    "category": "birthday"
+  },
+  {
+    "id": "polaroid-vintage",
+    "name": "Polaroid Vintage",
+    "filename": "polaroid-vintage.png",
+    "thumbnail": "polaroid-vintage.png",
+    "category": "retro"
+  }
+]
+
