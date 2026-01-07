@@ -86,11 +86,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
 
     try {
       setCreating(true);
+      // ownerId est optionnel, le service utilisera auth.uid() automatiquement
       const newEvent = await createEvent(
         newEventSlug.trim().toLowerCase(),
         newEventName.trim(),
-        newEventDescription.trim() || null,
-        user.id
+        newEventDescription.trim() || null
       );
 
       setEvents(prev => [newEvent, ...prev]);

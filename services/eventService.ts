@@ -7,17 +7,40 @@ import { logger } from '../utils/logger';
  * @param slug - Identifiant unique pour l'URL (ex: "mariage-sophie-marc")
  * @param name - Nom de l'événement
  * @param description - Description de l'événement (optionnel)
- * @param ownerId - ID de l'utilisateur propriétaire
+ * @param ownerId - ID de l'utilisateur propriétaire (optionnel, utilise auth.uid() si non fourni)
  * @returns Promise résolue avec l'événement créé
  */
 export const createEvent = async (
   slug: string,
   name: string,
   description: string | null,
-  ownerId: string
+  ownerId?: string
 ): Promise<Event> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de créer l'événement.");
+  }
+
+  // Vérifier que l'utilisateur est authentifié
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session?.user) {
+    logger.error("User not authenticated", sessionError, { component: 'eventService', action: 'createEvent' });
+    throw new Error("Vous devez être connecté pour créer un événement.");
+  }
+
+  // Utiliser auth.uid() directement depuis la session Supabase
+  // C'est plus fiable que de se fier à ownerId passé en paramètre
+  const authenticatedUserId = session.user.id;
+  const finalOwnerId = ownerId || authenticatedUserId;
+
+  // Vérifier que ownerId correspond bien à l'utilisateur authentifié
+  if (ownerId && ownerId !== authenticatedUserId) {
+    logger.warn("OwnerId mismatch", null, { 
+      component: 'eventService', 
+      action: 'createEvent',
+      providedOwnerId: ownerId,
+      authenticatedUserId 
+    });
+    // Utiliser quand même l'ID authentifié pour éviter les erreurs RLS
   }
 
   // Valider le slug (alphanumérique, tirets, underscores uniquement)
@@ -34,7 +57,7 @@ export const createEvent = async (
           slug: slug.toLowerCase(),
           name,
           description,
-          owner_id: ownerId,
+          owner_id: authenticatedUserId, // Toujours utiliser l'ID authentifié
           is_active: true
         }
       ])
@@ -42,10 +65,27 @@ export const createEvent = async (
       .single();
 
     if (error) {
+      logger.error("Supabase error in createEvent", error, { 
+        component: 'eventService', 
+        action: 'createEvent',
+        errorCode: error.code,
+        errorMessage: error.message,
+        authenticatedUserId 
+      });
+      
       if (error.code === '23505') { // Unique violation
         throw new Error("Un événement avec ce slug existe déjà.");
       }
-      throw error;
+      
+      if (error.code === '42501') { // Insufficient privilege
+        throw new Error("Permissions insuffisantes. Vérifiez que vous êtes bien connecté et que les politiques RLS sont correctement configurées.");
+      }
+      
+      if (error.code === 'PGRST301') { // RLS policy violation
+        throw new Error("Erreur de permissions. Vérifiez que les politiques RLS permettent la création d'événements pour les utilisateurs authentifiés.");
+      }
+      
+      throw new Error(`Erreur lors de la création de l'événement: ${error.message}`);
     }
 
     // Créer automatiquement l'entrée dans event_organizers pour le owner
@@ -55,12 +95,17 @@ export const createEvent = async (
         .insert([
           {
             event_id: data.id,
-            user_id: ownerId,
+            user_id: authenticatedUserId, // Utiliser l'ID authentifié
             role: 'owner'
           }
         ]);
     } catch (err) {
-      logger.error("Error creating event organizer entry", err, { component: 'eventService', action: 'createEvent', eventId: data.id });
+      logger.error("Error creating event organizer entry", err, { 
+        component: 'eventService', 
+        action: 'createEvent', 
+        eventId: data.id,
+        authenticatedUserId 
+      });
       // Ne pas faire échouer la création de l'événement si l'organizer échoue
     }
 
