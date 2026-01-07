@@ -210,9 +210,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         {/* Hero Section */}
         <div className="flex-shrink-0 w-full">
           <LandingHeader
-            title={displayTitle}
-            subtitle={displaySubtitle}
-            mounted={mounted}
+            isAuthenticated={isAdminAuthenticated}
+            onAdminClick={() => {}}
+            onScrollToSection={() => {}}
           />
         </div>
 
@@ -238,7 +238,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
         {/* Footer */}
         <div className="flex-shrink-0 mt-auto pb-4">
-          <LandingFooter mounted={mounted} />
+          <LandingFooter />
         </div>
       </main>
 
