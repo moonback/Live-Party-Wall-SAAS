@@ -9,6 +9,7 @@ import { validateImageFile, validateAuthorName, validateVideoFile, validateVideo
 import { logger } from '../utils/logger';
 import { Download, Wand2, Frame, Palette, SwitchCamera, Video, Camera as CameraIcon, Grid3x3, ArrowLeft } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
+import { useEvent } from '../context/EventContext';
 import { drawPngOverlay, composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
 import { useAdaptiveCameraResolution } from '../hooks/useAdaptiveCameraResolution';
 import { saveUserAvatar, getCurrentUserAvatar } from '../utils/userAvatar';
@@ -25,6 +26,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const [originalImage, setOriginalImage] = useState<string | null>(null); // Image brute
   const [preview, setPreview] = useState<string | null>(null); // Image affichée (filtrée) ou URL vidéo
   const { settings: eventSettings } = useSettings();
+  const { currentEvent } = useEvent();
   
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>('');
@@ -509,9 +511,15 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         }
 
         // Upload
+        if (!currentEvent) {
+          addToast("Aucun événement sélectionné", 'error');
+          setLoading(false);
+          return;
+        }
         setLoadingStep('Envoi au mur... 🚀');
         const finalAuthorName = authorName || 'Invité VIP';
         newPhoto = await addVideoToWall(
+          currentEvent.id,
           recordedBlob,
           caption,
           finalAuthorName,
@@ -576,9 +584,15 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         const caption = eventSettings.caption_generation_enabled ? aiResult.caption : '';
 
         // 4. Upload
+        if (!currentEvent) {
+          addToast("Aucun événement sélectionné", 'error');
+          setLoading(false);
+          return;
+        }
         setLoadingStep('Envoi au mur... 🚀');
         const finalAuthorName = authorName || 'Invité VIP';
         newPhoto = await addPhotoToWall(
+          currentEvent.id,
           finalImage, 
           caption, 
           finalAuthorName

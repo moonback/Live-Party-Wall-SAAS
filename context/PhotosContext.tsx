@@ -3,6 +3,7 @@ import { Photo } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates } from '../services/photoService';
 import { supabase } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
+import { useEvent } from './EventContext';
 
 interface PhotosContextType {
   photos: Photo[];
@@ -21,13 +22,20 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { currentEvent } = useEvent();
 
-  // Load photos from Supabase
+  // Load photos from Supabase for the current event
   const refresh = useCallback(async () => {
+    if (!currentEvent) {
+      setPhotos([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const data = await getPhotos();
+      const data = await getPhotos(currentEvent.id);
       setPhotos(data);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erreur de chargement des photos');
@@ -36,7 +44,7 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentEvent]);
 
   // Add a new photo to the list
   const addPhoto = useCallback((photo: Photo) => {
@@ -68,10 +76,15 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   // Initial load and subscriptions
   useEffect(() => {
+    if (!currentEvent) {
+      setPhotos([]);
+      return;
+    }
+
     refresh();
 
-    // Subscribe to new photos
-    const newPhotosSubscription = subscribeToNewPhotos((newPhoto) => {
+    // Subscribe to new photos for this event
+    const newPhotosSubscription = subscribeToNewPhotos(currentEvent.id, (newPhoto) => {
       addPhoto(newPhoto);
     });
 
@@ -81,13 +94,15 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
 
     // Subscribe to photo deletions (via Realtime)
+    const channelId = `public:photos:deletes:${currentEvent.id}:${Math.floor(Math.random() * 1000000)}`;
     const deleteSubscription = supabase
-      .channel('public:photos:deletes')
+      .channel(channelId)
       .on(
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'photos' },
-        (payload: { old: { id: string } }) => {
-          if (payload.old?.id) {
+        (payload: { old: { id: string; event_id?: string } }) => {
+          // Filtrer par event_id côté client (RLS devrait déjà le faire)
+          if (payload.old?.id && payload.old.event_id === currentEvent.id) {
             removePhoto(payload.old.id);
           }
         }
@@ -99,7 +114,7 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       likesSubscription.unsubscribe();
       deleteSubscription.unsubscribe();
     };
-  }, [refresh, addPhoto, updatePhotoLikes, removePhoto]);
+  }, [currentEvent, refresh, addPhoto, updatePhotoLikes, removePhoto]);
 
   return (
     <PhotosContext.Provider

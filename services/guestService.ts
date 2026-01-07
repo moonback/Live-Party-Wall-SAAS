@@ -3,11 +3,12 @@ import { Guest, GuestRow, BlockedGuest, BlockedGuestRow } from '../types';
 import { logger } from '../utils/logger';
 
 /**
- * Vérifie si un invité est actuellement bloqué
+ * Vérifie si un invité est actuellement bloqué pour un événement
+ * @param eventId - ID de l'événement
  * @param guestName - Nom de l'invité à vérifier
  * @returns Promise résolue avec true si bloqué, false sinon
  */
-export const isGuestBlocked = async (guestName: string): Promise<boolean> => {
+export const isGuestBlocked = async (eventId: string, guestName: string): Promise<boolean> => {
   if (!isSupabaseConfigured()) return false;
 
   try {
@@ -19,6 +20,7 @@ export const isGuestBlocked = async (guestName: string): Promise<boolean> => {
     const { data, error } = await supabase
       .from('blocked_guests')
       .select('*')
+      .eq('event_id', eventId)
       .eq('name', guestName)
       .gt('expires_at', new Date().toISOString())
       .limit(1);
@@ -36,11 +38,12 @@ export const isGuestBlocked = async (guestName: string): Promise<boolean> => {
 };
 
 /**
- * Récupère les informations de blocage d'un invité
+ * Récupère les informations de blocage d'un invité pour un événement
+ * @param eventId - ID de l'événement
  * @param guestName - Nom de l'invité
  * @returns Promise résolue avec les informations de blocage ou null si non bloqué
  */
-export const getBlockedGuestInfo = async (guestName: string): Promise<{ isBlocked: boolean; expiresAt: number | null; remainingMinutes: number | null }> => {
+export const getBlockedGuestInfo = async (eventId: string, guestName: string): Promise<{ isBlocked: boolean; expiresAt: number | null; remainingMinutes: number | null }> => {
   if (!isSupabaseConfigured()) {
     return { isBlocked: false, expiresAt: null, remainingMinutes: null };
   }
@@ -49,11 +52,12 @@ export const getBlockedGuestInfo = async (guestName: string): Promise<{ isBlocke
     const { data, error } = await supabase
       .from('blocked_guests')
       .select('*')
+      .eq('event_id', eventId)
       .eq('name', guestName)
       .gt('expires_at', new Date().toISOString())
       .order('expires_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return { isBlocked: false, expiresAt: null, remainingMinutes: null };
@@ -75,11 +79,12 @@ export const getBlockedGuestInfo = async (guestName: string): Promise<{ isBlocke
 };
 
 /**
- * Bloque un invité pendant 20 minutes
+ * Bloque un invité pendant 20 minutes pour un événement
+ * @param eventId - ID de l'événement
  * @param guestName - Nom de l'invité à bloquer
  * @returns Promise résolue si le blocage réussit
  */
-export const blockGuest = async (guestName: string): Promise<void> => {
+export const blockGuest = async (eventId: string, guestName: string): Promise<void> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de bloquer l'invité.");
   }
@@ -88,10 +93,11 @@ export const blockGuest = async (guestName: string): Promise<void> => {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 20 * 60 * 1000); // 20 minutes
 
-    // Supprimer les anciens blocages pour ce nom (au cas où)
+    // Supprimer les anciens blocages pour ce nom et cet événement (au cas où)
     await supabase
       .from('blocked_guests')
       .delete()
+      .eq('event_id', eventId)
       .eq('name', guestName);
 
     // Créer un nouveau blocage
@@ -99,6 +105,7 @@ export const blockGuest = async (guestName: string): Promise<void> => {
       .from('blocked_guests')
       .insert([
         {
+          event_id: eventId,
           name: guestName,
           blocked_at: now.toISOString(),
           expires_at: expiresAt.toISOString()
@@ -114,11 +121,13 @@ export const blockGuest = async (guestName: string): Promise<void> => {
 
 /**
  * Upload un avatar vers Supabase Storage et enregistre l'invité en base de données
+ * @param eventId - ID de l'événement
  * @param base64Image - Image en base64 (data URL)
  * @param guestName - Nom de l'invité
  * @returns Promise résolue avec l'objet Guest créé
  */
 export const registerGuest = async (
+  eventId: string,
   base64Image: string,
   guestName: string
 ): Promise<Guest> => {
@@ -127,9 +136,9 @@ export const registerGuest = async (
   }
 
   // Vérifier si l'invité est bloqué
-  const blocked = await isGuestBlocked(guestName);
+  const blocked = await isGuestBlocked(eventId, guestName);
   if (blocked) {
-    const blockInfo = await getBlockedGuestInfo(guestName);
+    const blockInfo = await getBlockedGuestInfo(eventId, guestName);
     const remainingMinutes = blockInfo.remainingMinutes || 0;
     throw new Error(`Vous êtes temporairement bloqué. Réessayez dans ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}.`);
   }
@@ -179,6 +188,7 @@ export const registerGuest = async (
       .from('guests')
       .insert([
         {
+          event_id: eventId,
           name: guestName,
           avatar_url: publicUrl
         }
@@ -204,21 +214,23 @@ export const registerGuest = async (
 };
 
 /**
- * Récupère un invité par son nom
+ * Récupère un invité par son nom pour un événement
+ * @param eventId - ID de l'événement
  * @param guestName - Nom de l'invité
  * @returns Promise résolue avec l'invité ou null si non trouvé
  */
-export const getGuestByName = async (guestName: string): Promise<Guest | null> => {
+export const getGuestByName = async (eventId: string, guestName: string): Promise<Guest | null> => {
   if (!isSupabaseConfigured()) return null;
 
   try {
     const { data, error } = await supabase
       .from('guests')
       .select('*')
+      .eq('event_id', eventId)
       .eq('name', guestName)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error || !data) return null;
 
@@ -236,16 +248,18 @@ export const getGuestByName = async (guestName: string): Promise<Guest | null> =
 };
 
 /**
- * Récupère tous les invités
+ * Récupère tous les invités pour un événement
+ * @param eventId - ID de l'événement
  * @returns Promise résolue avec la liste des invités
  */
-export const getAllGuests = async (): Promise<Guest[]> => {
+export const getAllGuests = async (eventId: string): Promise<Guest[]> => {
   if (!isSupabaseConfigured()) return [];
 
   try {
     const { data, error } = await supabase
       .from('guests')
       .select('*')
+      .eq('event_id', eventId)
       .order('created_at', { ascending: false });
 
     if (error || !data) return [];
@@ -264,12 +278,14 @@ export const getAllGuests = async (): Promise<Guest[]> => {
 };
 
 /**
- * Met à jour l'avatar d'un invité existant
+ * Met à jour l'avatar d'un invité existant pour un événement
+ * @param eventId - ID de l'événement
  * @param guestName - Nom de l'invité
  * @param base64Image - Nouvelle image en base64
  * @returns Promise résolue avec l'invité mis à jour
  */
 export const updateGuestAvatar = async (
+  eventId: string,
   guestName: string,
   base64Image: string
 ): Promise<Guest> => {
@@ -279,10 +295,10 @@ export const updateGuestAvatar = async (
 
   try {
     // 1. Récupérer l'invité existant
-    const existingGuest = await getGuestByName(guestName);
+    const existingGuest = await getGuestByName(eventId, guestName);
     if (!existingGuest) {
       // Si l'invité n'existe pas, créer un nouvel enregistrement
-      return await registerGuest(base64Image, guestName);
+      return await registerGuest(eventId, base64Image, guestName);
     }
 
     // 2. Convert Base64 to Blob
@@ -339,22 +355,24 @@ export const updateGuestAvatar = async (
 
 /**
  * Supprime un invité de la base de données et le bloque pendant 20 minutes
+ * @param eventId - ID de l'événement
  * @param guestId - ID de l'invité à supprimer
  * @param guestName - Nom de l'invité (pour le blocage)
  * @returns Promise résolue si la suppression réussit
  */
-export const deleteGuest = async (guestId: string, guestName?: string): Promise<void> => {
+export const deleteGuest = async (eventId: string, guestId: string, guestName?: string): Promise<void> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de supprimer l'invité.");
   }
 
   try {
-    // Récupérer le nom de l'invité si non fourni
+    // Récupérer le nom et l'event_id de l'invité si non fourni
     let nameToBlock = guestName;
-    if (!nameToBlock) {
+    let eventIdToUse: string | null = null;
+    if (!nameToBlock || !eventId) {
       const { data: guestData, error: fetchError } = await supabase
         .from('guests')
-        .select('name')
+        .select('name, event_id')
         .eq('id', guestId)
         .single();
 
@@ -362,6 +380,9 @@ export const deleteGuest = async (guestId: string, guestName?: string): Promise<
         throw new Error("Impossible de récupérer les informations de l'invité");
       }
       nameToBlock = guestData.name;
+      eventIdToUse = guestData.event_id;
+    } else {
+      eventIdToUse = eventId;
     }
 
     // Supprimer l'invité
@@ -373,9 +394,9 @@ export const deleteGuest = async (guestId: string, guestName?: string): Promise<
     if (error) throw error;
 
     // Bloquer l'invité pendant 20 minutes
-    if (nameToBlock) {
+    if (nameToBlock && eventIdToUse) {
       try {
-        await blockGuest(nameToBlock);
+        await blockGuest(eventIdToUse, nameToBlock);
       } catch (blockError) {
         // Log l'erreur mais ne fait pas échouer la suppression
         logger.error("Error blocking guest after deletion", blockError, { component: 'guestService', action: 'deleteGuest', guestId, guestName: nameToBlock });

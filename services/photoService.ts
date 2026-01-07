@@ -87,8 +87,10 @@ export const enrichPhotosWithOrientation = async (photos: Photo[]): Promise<Phot
 
 /**
  * Upload a photo to Supabase Storage and insert record into DB.
+ * @param eventId - ID de l'événement
  */
 export const addPhotoToWall = async (
+  eventId: string,
   base64Image: string,
   caption: string,
   author: string
@@ -118,8 +120,8 @@ export const addPhotoToWall = async (
       throw new Error(blobValidation.error || 'Blob invalide');
     }
 
-    // 2. Generate filename
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+    // 2. Generate filename (organisé par événement)
+    const filename = `${eventId}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
 
     // 3. Upload to Storage
     const { error: uploadError } = await supabase.storage
@@ -145,7 +147,8 @@ export const addPhotoToWall = async (
           caption, 
           author,
           likes_count: 0,
-          type: 'photo'
+          type: 'photo',
+          event_id: eventId
         }
       ])
       .select()
@@ -177,8 +180,10 @@ export const addPhotoToWall = async (
 
 /**
  * Upload a video to Supabase Storage and insert record into DB.
+ * @param eventId - ID de l'événement
  */
 export const addVideoToWall = async (
+  eventId: string,
   videoBlob: Blob,
   caption: string,
   author: string,
@@ -197,9 +202,9 @@ export const addVideoToWall = async (
   }
 
   try {
-    // 1. Generate filename based on video type
+    // 1. Generate filename based on video type (organisé par événement)
     const extension = videoType.includes('webm') ? 'webm' : videoType.includes('quicktime') ? 'mov' : 'mp4';
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+    const filename = `${eventId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
 
     // 2. Upload to Storage
     const { error: uploadError } = await supabase.storage
@@ -227,7 +232,8 @@ export const addVideoToWall = async (
           author,
           likes_count: 0,
           type: 'video',
-          duration: duration
+          duration: duration,
+          event_id: eventId
         }
       ])
       .select()
@@ -254,17 +260,19 @@ export const addVideoToWall = async (
 };
 
 /**
- * Fetch all photos from the DB.
+ * Fetch all photos from the DB for a specific event.
  * Calculates likes_count from the likes table to ensure accuracy.
  * ⚡ Optimisé pour gérer 200+ photos efficacement.
+ * @param eventId - ID de l'événement
  */
-export const getPhotos = async (): Promise<Photo[]> => {
+export const getPhotos = async (eventId: string): Promise<Photo[]> => {
   if (!isSupabaseConfigured()) return [];
 
-  // ⚡ Récupérer toutes les photos (support jusqu'à 1000+ photos par défaut Supabase)
+  // ⚡ Récupérer toutes les photos de l'événement (support jusqu'à 1000+ photos par défaut Supabase)
   const { data: photosData, error: photosError } = await supabase
     .from('photos')
     .select('*')
+    .eq('event_id', eventId)
     .order('created_at', { ascending: true });
 
   if (photosError) {
@@ -321,18 +329,20 @@ export const getPhotos = async (): Promise<Photo[]> => {
 };
 
 /**
- * Récupère toutes les photos d'un auteur spécifique
+ * Récupère toutes les photos d'un auteur spécifique pour un événement
+ * @param eventId - ID de l'événement
  * @param authorName - Nom de l'auteur
  * @returns Promise résolue avec la liste des photos de l'auteur
  */
-export const getPhotosByAuthor = async (authorName: string): Promise<Photo[]> => {
-  if (!isSupabaseConfigured() || !authorName) return [];
+export const getPhotosByAuthor = async (eventId: string, authorName: string): Promise<Photo[]> => {
+  if (!isSupabaseConfigured() || !authorName || !eventId) return [];
 
   try {
-    // Récupérer toutes les photos de l'auteur
+    // Récupérer toutes les photos de l'auteur pour cet événement
     const { data: photosData, error: photosError } = await supabase
       .from('photos')
       .select('*')
+      .eq('event_id', eventId)
       .eq('author', authorName)
       .order('created_at', { ascending: false });
 
@@ -391,22 +401,27 @@ export const getPhotosByAuthor = async (authorName: string): Promise<Photo[]> =>
 };
 
 /**
- * Subscribe to new photo insertions for Realtime updates.
+ * Subscribe to new photo insertions for Realtime updates for a specific event.
+ * @param eventId - ID de l'événement
  */
-export const subscribeToNewPhotos = (onNewPhoto: (photo: Photo) => void) => {
+export const subscribeToNewPhotos = (eventId: string, onNewPhoto: (photo: Photo) => void) => {
   if (!isSupabaseConfigured()) {
     return { unsubscribe: () => {} };
   }
 
   // Utiliser un nom de canal unique
-  const channelId = `public:photos:${Math.floor(Math.random() * 1000000)}`;
+  const channelId = `public:photos:${eventId}:${Math.floor(Math.random() * 1000000)}`;
   return supabase
     .channel(channelId)
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'photos' },
       async (payload) => {
-        const p = payload.new as PhotoRow;
+        const p = payload.new as PhotoRow & { event_id?: string };
+        // Filtrer par event_id côté client (RLS devrait déjà le faire, mais on double-vérifie)
+        if (p.event_id !== eventId) {
+          return;
+        }
         const newPhoto: Photo = {
           id: p.id,
           url: p.url,
@@ -614,7 +629,7 @@ export const deletePhoto = async (photoId: string, photoUrl: string): Promise<vo
     if (dbError) throw dbError;
 
     // 2. Delete from Storage
-    // Extract filename from URL: .../party-photos/filename.jpg
+    // Extract filename from URL: .../party-photos/eventId/filename.jpg ou .../party-photos/filename.jpg (ancien format)
     const urlParts = photoUrl.split('/party-photos/');
     if (urlParts.length === 2) {
       const filename = urlParts[1];
@@ -632,17 +647,19 @@ export const deletePhoto = async (photoId: string, photoUrl: string): Promise<vo
 };
 
 /**
- * Delete ALL photos (Admin only).
+ * Delete ALL photos for a specific event (Admin only).
  * WARNING: This is destructive and cannot be undone.
+ * @param eventId - ID de l'événement
  */
-export const deleteAllPhotos = async (): Promise<void> => {
+export const deleteAllPhotos = async (eventId: string): Promise<void> => {
   if (!isSupabaseConfigured()) throw new Error("Supabase n'est pas configuré");
 
   try {
-    // 1. Fetch all photos to get filenames
+    // 1. Fetch all photos to get filenames for this event
     const { data: photos, error: fetchError } = await supabase
       .from('photos')
-      .select('url');
+      .select('url')
+      .eq('event_id', eventId);
 
     if (fetchError) throw fetchError;
     
@@ -665,7 +682,10 @@ export const deleteAllPhotos = async (): Promise<void> => {
     // However, if we know all IDs, we can use .in('id', allIds).
     
     // Actually, listing all IDs first is safer.
-    const { data: allPhotosData } = await supabase.from('photos').select('id');
+    const { data: allPhotosData } = await supabase
+      .from('photos')
+      .select('id')
+      .eq('event_id', eventId);
     const allIds = (allPhotosData || []).map((p: any) => p.id);
     
     if (allIds.length > 0) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { ViewMode } from './types';
 import Toast from './components/Toast';
 import { ToastProvider, useToast } from './context/ToastContext';
+import { EventProvider, useEvent } from './context/EventContext';
 import { PhotosProvider, usePhotos } from './context/PhotosContext';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -29,6 +30,7 @@ const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
   
   // Contexts
+  const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
   const { photos } = usePhotos();
   const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
@@ -46,10 +48,10 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     const checkUserValidity = async () => {
       const userName = localStorage.getItem('party_user_name');
-      if (!userName) return;
+      if (!userName || !currentEvent) return;
 
       try {
-        const guest = await getGuestByName(userName);
+        const guest = await getGuestByName(currentEvent.id, userName);
         if (!guest) {
           // L'utilisateur n'existe plus, le déconnecter
           localStorage.removeItem('party_user_name');
@@ -72,7 +74,7 @@ const AppContent: React.FC = () => {
     checkUserValidity();
 
     return () => clearInterval(interval);
-  }, [viewMode, addToast]);
+  }, [viewMode, addToast, currentEvent]);
 
   // Fonction wrapper pour changer le viewMode avec vérification du profil
   const handleViewModeChange = (newMode: ViewMode) => {
@@ -195,6 +197,46 @@ const AppContent: React.FC = () => {
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
+        {/* Afficher un message d'erreur si l'événement n'est pas chargé ou s'il y a une erreur */}
+        {eventLoading && (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+          </div>
+        )}
+        
+        {eventError && (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center p-8">
+              <h2 className="text-2xl font-bold mb-4">Erreur de chargement de l'événement</h2>
+              <p className="text-gray-300 mb-4">{eventError.message}</p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
+              >
+                Retour à l'accueil
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!eventLoading && !eventError && !currentEvent && (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center p-8">
+              <h2 className="text-2xl font-bold mb-4">Aucun événement sélectionné</h2>
+              <p className="text-gray-300 mb-4">Veuillez sélectionner un événement ou utiliser un lien valide.</p>
+              {isAdminAuthenticated && (
+                <button
+                  onClick={() => setViewMode('admin')}
+                  className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
+                >
+                  Gérer les événements
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!eventLoading && !eventError && currentEvent && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
@@ -375,6 +417,7 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
         </Suspense>
+        )}
       </div>
     </div>
   );
@@ -384,11 +427,13 @@ const App: React.FC = () => {
   return (
     <ToastProvider>
       <AuthProvider>
-        <SettingsProvider>
-          <PhotosProvider>
-            <AppContent />
-          </PhotosProvider>
-        </SettingsProvider>
+        <EventProvider>
+          <SettingsProvider>
+            <PhotosProvider>
+              <AppContent />
+            </PhotosProvider>
+          </SettingsProvider>
+        </EventProvider>
       </AuthProvider>
     </ToastProvider>
   );

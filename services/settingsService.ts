@@ -42,59 +42,99 @@ export const defaultSettings: EventSettings = {
   alert_text: null
 };
 
-export const getSettings = async (): Promise<EventSettings> => {
+/**
+ * Récupère les paramètres d'un événement
+ * @param eventId - ID de l'événement
+ * @returns Promise résolue avec les paramètres de l'événement
+ */
+export const getSettings = async (eventId: string): Promise<EventSettings> => {
   try {
     const { data, error } = await supabase
       .from('event_settings')
       .select('*')
+      .eq('event_id', eventId)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) {
-        logger.error('Error fetching settings', error, { component: 'settingsService', action: 'getSettings' });
+        logger.error('Error fetching settings', error, { component: 'settingsService', action: 'getSettings', eventId });
         // Fallback to defaults if table doesn't exist or empty
         return defaultSettings;
+    }
+
+    // Si pas de settings, retourner les valeurs par défaut
+    if (!data) {
+      return defaultSettings;
     }
 
     // Merge pour garantir les nouveaux champs avec des valeurs par défaut
     // Forcer la modération à toujours être activée
     return { ...defaultSettings, ...(data || {}), content_moderation_enabled: true } as EventSettings;
   } catch (error) {
-    logger.error('Unexpected error fetching settings', error, { component: 'settingsService', action: 'getSettings' });
+    logger.error('Unexpected error fetching settings', error, { component: 'settingsService', action: 'getSettings', eventId });
     return defaultSettings;
   }
 };
 
-export const updateSettings = async (settings: Partial<EventSettings>): Promise<EventSettings | null> => {
+/**
+ * Met à jour les paramètres d'un événement
+ * @param eventId - ID de l'événement
+ * @param settings - Paramètres à mettre à jour
+ * @returns Promise résolue avec les paramètres mis à jour
+ */
+export const updateSettings = async (eventId: string, settings: Partial<EventSettings>): Promise<EventSettings | null> => {
   try {
     // Normaliser alert_text (null si vide ou seulement espaces)
     const alertText = settings.alert_text && settings.alert_text.trim() ? settings.alert_text.trim() : null;
     
-    // On suppose qu'il n'y a qu'une seule ligne de config avec l'ID 1
-    // On utilise upsert pour créer si n'existe pas
+    // Vérifier si des settings existent déjà pour cet événement
+    const { data: existingSettings } = await supabase
+      .from('event_settings')
+      .select('id')
+      .eq('event_id', eventId)
+      .limit(1)
+      .maybeSingle();
+    
     // Forcer la modération à toujours être activée
     const settingsToUpdate = {
       ...settings,
       alert_text: alertText,
       content_moderation_enabled: true, // Toujours activée
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      event_id: eventId
     };
     
     logger.info('Updating settings', { 
       component: 'settingsService', 
       action: 'updateSettings', 
+      eventId,
       alert_text: alertText,
       has_alert: !!alertText
     });
     
-    const { data, error } = await supabase
-      .from('event_settings')
-      .upsert({ 
-        id: 1, 
-        ...settingsToUpdate
-      })
-      .select()
-      .single();
+    let data;
+    let error;
+    
+    if (existingSettings) {
+      // Mise à jour
+      const result = await supabase
+        .from('event_settings')
+        .update(settingsToUpdate)
+        .eq('event_id', eventId)
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+    } else {
+      // Création
+      const result = await supabase
+        .from('event_settings')
+        .insert([settingsToUpdate])
+        .select()
+        .single();
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
       logger.error('Error in updateSettings upsert', error, { component: 'settingsService', action: 'updateSettings' });
@@ -118,18 +158,30 @@ export const updateSettings = async (settings: Partial<EventSettings>): Promise<
   }
 };
 
-export const subscribeToSettings = (onUpdate: (settings: EventSettings) => void) => {
+/**
+ * S'abonne aux mises à jour des paramètres d'un événement en temps réel
+ * @param eventId - ID de l'événement
+ * @param onUpdate - Callback appelé lors des mises à jour
+ * @returns Channel de subscription
+ */
+export const subscribeToSettings = (eventId: string, onUpdate: (settings: EventSettings) => void) => {
+  const channelId = `public:event_settings:${eventId}:${Math.floor(Math.random() * 1000000)}`;
   const channel = supabase
-    .channel('public:event_settings')
+    .channel(channelId)
     .on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'event_settings' },
       (payload) => {
         if (payload.new) {
-          const newSettings = payload.new as EventSettings;
+          const newSettings = payload.new as EventSettings & { event_id?: string };
+          // Filtrer par event_id côté client (RLS devrait déjà le faire, mais on double-vérifie)
+          if (newSettings.event_id !== eventId) {
+            return;
+          }
           logger.info('Settings updated via Realtime', { 
             component: 'settingsService', 
             action: 'subscribeToSettings', 
+            eventId,
             alert_text: newSettings.alert_text,
             has_alert: !!newSettings.alert_text && newSettings.alert_text.trim().length > 0
           });
@@ -148,9 +200,9 @@ export const subscribeToSettings = (onUpdate: (settings: EventSettings) => void)
     )
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        logger.info('Subscribed to event_settings Realtime updates', { component: 'settingsService', action: 'subscribeToSettings' });
+        logger.info('Subscribed to event_settings Realtime updates', { component: 'settingsService', action: 'subscribeToSettings', eventId });
       } else if (status === 'CHANNEL_ERROR') {
-        logger.error('Error subscribing to event_settings Realtime', { component: 'settingsService', action: 'subscribeToSettings', status });
+        logger.error('Error subscribing to event_settings Realtime', { component: 'settingsService', action: 'subscribeToSettings', eventId, status });
       }
     });
   

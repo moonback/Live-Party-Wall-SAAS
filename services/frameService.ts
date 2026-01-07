@@ -6,10 +6,11 @@ export interface UploadFrameResult {
 }
 
 /**
- * Upload un cadre décoratif (PNG) dans le bucket Supabase `party-frames`.
+ * Upload un cadre décoratif (PNG) dans le bucket Supabase `party-frames` pour un événement.
  * Nécessite un utilisateur authentifié (admin).
+ * @param eventId - ID de l'événement
  */
-export async function uploadDecorativeFramePng(file: File): Promise<UploadFrameResult> {
+export async function uploadDecorativeFramePng(eventId: string, file: File): Promise<UploadFrameResult> {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré.");
   }
@@ -25,7 +26,8 @@ export async function uploadDecorativeFramePng(file: File): Promise<UploadFrameR
   }
 
   const filenameSafe = file.name.replace(/[^\w.\-]/g, '_');
-  const path = `frames/${Date.now()}-${Math.random().toString(36).slice(2)}-${filenameSafe}`;
+  // Organiser par événement : party-frames/{eventId}/frames/{filename}
+  const path = `${eventId}/frames/${Date.now()}-${Math.random().toString(36).slice(2)}-${filenameSafe}`;
 
   const { error: uploadError } = await supabase.storage
     .from('party-frames')

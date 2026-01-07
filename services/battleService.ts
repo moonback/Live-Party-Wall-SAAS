@@ -178,26 +178,39 @@ const EXPIRED_CHECK_INTERVAL = 30000; // 30 secondes
 /**
  * Termine automatiquement les battles expirées (avec throttling)
  */
-export const finishExpiredBattles = async (): Promise<void> => {
+/**
+ * Termine les battles expirées pour un événement
+ * @param eventId - ID de l'événement
+ */
+export const finishExpiredBattles = async (eventId: string): Promise<void> => {
   if (!isSupabaseConfigured()) {
     return;
   }
 
   // Throttling : ne pas vérifier plus d'une fois toutes les 30 secondes
   const now = Date.now();
-  if (now - lastExpiredCheck < EXPIRED_CHECK_INTERVAL) {
+  const lastCheckKey = `lastExpiredCheck_${eventId}`;
+  const lastCheck = (globalThis as any)[lastCheckKey] || 0;
+  if (now - lastCheck < EXPIRED_CHECK_INTERVAL) {
     return;
   }
-  lastExpiredCheck = now;
+  (globalThis as any)[lastCheckKey] = now;
 
   try {
-    // Appeler la fonction SQL pour terminer les battles expirées
-    const { error } = await supabase.rpc('finish_battle_if_expired');
+    // Mettre à jour manuellement les battles expirées pour cet événement
+    const { error } = await supabase
+      .from('photo_battles')
+      .update({
+        status: 'finished',
+        finished_at: new Date().toISOString()
+      })
+      .eq('event_id', eventId)
+      .eq('status', 'active')
+      .not('expires_at', 'is', null)
+      .lt('expires_at', new Date().toISOString());
     
     if (error) {
-      logger.warn('RPC finish_battle_if_expired failed, battles should expire via triggers:', error.message);
-      // On ne fait pas de fallback manuel ici pour éviter les requêtes répétitives
-      // Les triggers SQL devraient gérer l'expiration automatiquement
+      logger.warn('Error finishing expired battles:', error);
     }
   } catch (error) {
     logger.error('Error in finishExpiredBattles:', error);
@@ -207,16 +220,21 @@ export const finishExpiredBattles = async (): Promise<void> => {
 /**
  * Récupère les battles terminées (pour afficher les résultats)
  */
-export const getFinishedBattles = async (limit: number = 20): Promise<PhotoBattle[]> => {
+/**
+ * Récupère les battles terminées pour un événement
+ * @param eventId - ID de l'événement
+ */
+export const getFinishedBattles = async (eventId: string, limit: number = 20): Promise<PhotoBattle[]> => {
   if (!isSupabaseConfigured()) {
     return [];
   }
 
   try {
-    // Récupérer les battles terminées
+    // Récupérer les battles terminées pour cet événement
     const { data: battles, error } = await supabase
       .from('photo_battles')
       .select('*')
+      .eq('event_id', eventId)
       .eq('status', 'finished')
       .order('finished_at', { ascending: false })
       .limit(limit);
@@ -258,21 +276,23 @@ export const getFinishedBattles = async (limit: number = 20): Promise<PhotoBattl
 };
 
 /**
- * Récupère toutes les battles actives
+ * Récupère toutes les battles actives pour un événement
+ * @param eventId - ID de l'événement
  */
-export const getActiveBattles = async (userId?: string): Promise<PhotoBattle[]> => {
+export const getActiveBattles = async (eventId: string, userId?: string): Promise<PhotoBattle[]> => {
   if (!isSupabaseConfigured()) {
     return [];
   }
 
   try {
-    // D'abord, terminer les battles expirées
-    await finishExpiredBattles();
+    // D'abord, terminer les battles expirées pour cet événement
+    await finishExpiredBattles(eventId);
 
-    // Récupérer les battles actives
+    // Récupérer les battles actives pour cet événement
     const { data: battles, error } = await supabase
       .from('photo_battles')
       .select('*')
+      .eq('event_id', eventId)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(10); // Limiter à 10 battles actives
@@ -341,7 +361,12 @@ export const getActiveBattles = async (userId?: string): Promise<PhotoBattle[]> 
 /**
  * Crée une nouvelle battle entre deux photos
  */
+/**
+ * Crée une battle entre deux photos pour un événement
+ * @param eventId - ID de l'événement
+ */
 export const createBattle = async (
+  eventId: string,
   photo1Id: string,
   photo2Id: string,
   durationMinutes: number = 30
@@ -361,6 +386,7 @@ export const createBattle = async (
     const { data, error } = await supabase
       .from('photo_battles')
       .insert({
+        event_id: eventId,
         photo1_id: photo1Id,
         photo2_id: photo2Id,
         status: 'active',
@@ -416,15 +442,17 @@ const selectTwoRandomIndices = (arrayLength: number): [number, number] => {
 };
 
 /**
- * Crée une battle automatique avec deux photos aléatoires
+ * Crée une battle automatique avec deux photos aléatoires pour un événement
  * Exclut les photos déjà dans une battle active
  * 
  * Algorithme optimisé pour la performance :
  * - Limite le nombre de photos récupérées (1000 max)
  * - Utilise une requête SQL optimisée pour exclure les photos en battle
  * - Utilise Fisher-Yates shuffle pour sélection aléatoire O(k) au lieu de O(n log n)
+ * @param eventId - ID de l'événement
  */
 export const createRandomBattle = async (
+  eventId: string,
   durationMinutes: number = 30
 ): Promise<PhotoBattle | null> => {
   if (!isSupabaseConfigured()) {
@@ -432,10 +460,11 @@ export const createRandomBattle = async (
   }
 
   try {
-    // Étape 1: Récupérer les IDs des photos déjà dans une battle active (requête légère)
+    // Étape 1: Récupérer les IDs des photos déjà dans une battle active pour cet événement (requête légère)
     const { data: activeBattles, error: battlesError } = await supabase
       .from('photo_battles')
       .select('photo1_id, photo2_id')
+      .eq('event_id', eventId)
       .eq('status', 'active');
 
     if (battlesError) {
@@ -452,12 +481,13 @@ export const createRandomBattle = async (
       });
     }
 
-    // Étape 2: Récupérer un échantillon limité de photos récentes (optimisation performance)
+    // Étape 2: Récupérer un échantillon limité de photos récentes pour cet événement (optimisation performance)
     // Limiter à 1000 photos les plus récentes pour éviter de charger toute la base
     const MAX_PHOTOS_TO_FETCH = 1000;
     const { data: recentPhotos, error: photosError } = await supabase
       .from('photos')
       .select('id')
+      .eq('event_id', eventId)
       .eq('type', 'photo')
       .order('created_at', { ascending: false })
       .limit(MAX_PHOTOS_TO_FETCH);
@@ -494,7 +524,7 @@ export const createRandomBattle = async (
     const photo2Id = photosToUse[index2];
 
     // Étape 5: Créer la battle
-    return await createBattle(photo1Id, photo2Id, durationMinutes);
+    return await createBattle(eventId, photo1Id, photo2Id, durationMinutes);
   } catch (error) {
     logger.error('Error in createRandomBattle:', error);
     throw error;
@@ -779,13 +809,18 @@ export const subscribeToBattleUpdates = (
 /**
  * S'abonne aux nouvelles battles en temps réel
  */
-export const subscribeToNewBattles = (onNewBattle: (battle: PhotoBattle) => void) => {
+/**
+ * S'abonne aux nouvelles battles pour un événement
+ * @param eventId - ID de l'événement
+ */
+export const subscribeToNewBattles = (eventId: string, onNewBattle: (battle: PhotoBattle) => void) => {
   if (!isSupabaseConfigured()) {
     return { unsubscribe: () => {} };
   }
 
+  const channelId = `public:new_battles:${eventId}:${Math.floor(Math.random() * 1000000)}`;
   const channel = supabase
-    .channel('public:new_battles')
+    .channel(channelId)
     .on(
       'postgres_changes',
       {
@@ -795,8 +830,9 @@ export const subscribeToNewBattles = (onNewBattle: (battle: PhotoBattle) => void
         filter: 'status=eq.active',
       },
       async (payload) => {
-        const battleRow = payload.new as BattleRow;
-        if (!battleRow) return;
+        const battleRow = payload.new as BattleRow & { event_id?: string };
+        // Filtrer par event_id côté client (RLS devrait déjà le faire, mais on double-vérifie)
+        if (!battleRow || battleRow.event_id !== eventId) return;
 
         const [photo1, photo2] = await Promise.all([
           getPhotoById(battleRow.photo1_id),
