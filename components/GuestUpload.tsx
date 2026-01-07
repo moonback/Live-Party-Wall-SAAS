@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
-import { analyzeAndCaptionImage, isImageAppropriate } from '../services/aiService';
+import { analyzeAndCaptionImage } from '../services/aiService';
 import { applyImageFilter, enhanceImageQuality, FilterType, FrameType } from '../utils/imageFilters';
 import { addPhotoToWall, addVideoToWall } from '../services/photoService';
 import { Photo } from '../types';
-import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MAX_VIDEO_DURATION } from '../constants';
+import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, MAX_AUTHOR_NAME_LENGTH, MAX_VIDEO_DURATION } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { validateImageFile, validateAuthorName, validateVideoFile, validateVideoDuration } from '../utils/validation';
 import { logger } from '../utils/logger';
-import { Download, Wand2, Frame, Palette, SwitchCamera, Video, Camera as CameraIcon, Grid3x3, ArrowLeft } from 'lucide-react';
+import { Download, Frame, Palette, SwitchCamera, Video, Camera as CameraIcon, Grid3x3, ArrowLeft } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { drawPngOverlay, composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
@@ -66,7 +66,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const previewVideoRef = useRef<HTMLVideoElement>(null);
 
   // Hook pour la résolution adaptative
-  const cameraResolution = useAdaptiveCameraResolution(videoRef, stream, {
+  useAdaptiveCameraResolution(videoRef, stream, {
     preferredWidth: 1920,
     preferredHeight: 1080,
     fallbackWidth: 1280,
@@ -74,7 +74,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   });
 
   // Hook pour la compression d'images avec Web Worker
-  const { compressImage, isCompressing: isCompressingImage } = useImageCompression();
+  const { compressImage } = useImageCompression();
 
   // Les settings sont maintenant gérés par SettingsContext
 
@@ -114,7 +114,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       return result.dataUrl;
     } catch (error) {
       // Fallback vers l'ancienne méthode si le worker échoue
-      logger.warn('Web Worker compression failed, using fallback', error, { component: 'GuestUpload', action: 'resizeImage' });
+      logger.warn('Web Worker compression failed, using fallback', { component: 'GuestUpload', action: 'resizeImage' }, error);
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = URL.createObjectURL(file);
@@ -178,7 +178,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       }
       
       // Détecter le facingMode réel
-      if (settings.facingMode) {
+      if (settings.facingMode && (settings.facingMode === 'user' || settings.facingMode === 'environment')) {
         setFacingMode(settings.facingMode);
       }
       
@@ -225,12 +225,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
   };
 
-  const initiatePhotoCapture = () => {
-    setCountdown(3);
-  };
-
   useEffect(() => {
-    if (countdown === null) return;
+    if (countdown === null) return undefined;
 
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -239,6 +235,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       capturePhoto();
       setCountdown(null);
     }
+    return undefined;
   }, [countdown]);
 
   const capturePhoto = async () => {
@@ -269,7 +266,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           try {
             await drawPngOverlay(ctx, eventSettings.decorative_frame_url, width, height);
           } catch (e) {
-            logger.warn('Overlay frame draw failed', e, { component: 'GuestUpload', action: 'applyFilters' });
+            logger.warn('Overlay frame draw failed', { component: 'GuestUpload', action: 'applyFilters' }, e);
           }
         }
         const dataUrl = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
@@ -547,7 +544,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           try {
             imageForAnalysis = await composeDataUrlWithPngOverlay(imageForAnalysis, eventSettings.decorative_frame_url, IMAGE_QUALITY);
           } catch (e) {
-            logger.warn('Overlay composition failed', e, { component: 'GuestUpload', action: 'handleSubmit' });
+            logger.warn('Overlay composition failed', { component: 'GuestUpload', action: 'handleSubmit' }, e);
           }
         }
 
@@ -576,7 +573,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           try {
             finalImage = await enhanceImageQuality(imageForAnalysis);
           } catch (enhanceError) {
-            logger.warn("Quality enhancement failed", enhanceError, { component: 'GuestUpload', action: 'handleSubmit' });
+            logger.warn("Quality enhancement failed", { component: 'GuestUpload', action: 'handleSubmit' }, enhanceError);
           }
         }
 

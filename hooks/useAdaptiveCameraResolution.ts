@@ -18,7 +18,7 @@ interface CameraResolution {
  * Hook pour détecter et utiliser la meilleure résolution disponible pour la caméra
  */
 export const useAdaptiveCameraResolution = (
-  videoRef: RefObject<HTMLVideoElement>,
+  videoRef: RefObject<HTMLVideoElement | null>,
   stream: MediaStream | null,
   options: UseAdaptiveCameraResolutionOptions = {}
 ): CameraResolution | null => {
