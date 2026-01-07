@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserEvents, createEvent } from '../services/eventService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
-import { ArrowLeft, Plus, Calendar, Search, Loader2, Sparkles, Clock, ExternalLink, X } from 'lucide-react';
+import { Plus, Calendar, Search, Loader2, Sparkles, Clock, ExternalLink, X } from 'lucide-react';
 
 interface EventSelectorProps {
   onEventSelected?: (event: Event) => void;
@@ -223,6 +223,9 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
                     placeholder="Ex: Mariage de Sophie et Marc"
                     required
                   />
+                  <p className="text-xs text-gray-400 mt-2 text-right">
+                    {newEventName.length} caractères
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-300">
@@ -237,22 +240,42 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
                     pattern="[a-z0-9\-]+"
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3" />
-                    Utilisé dans l'URL : ?event={newEventSlug || 'mariage-sophie-marc'}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <ExternalLink className="w-3 h-3" />
+                      Utilisé dans l'URL : ?event={newEventSlug || 'mariage-sophie-marc'}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {newEventSlug.length} caractères
+                    </p>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-300">
-                    Description (optionnel)
+                    Description (optionnel, max 100 caractères)
                   </label>
                   <textarea
                     value={newEventDescription}
-                    onChange={(e) => setNewEventDescription(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 100) {
+                        setNewEventDescription(value);
+                      }
+                    }}
+                    maxLength={100}
                     className="w-full px-4 py-3 bg-white/5 rounded-xl border border-white/10 focus:border-pink-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500/20 transition-all duration-300 resize-none"
                     placeholder="Décrivez votre événement..."
                     rows={3}
                   />
+                  <p className={`text-xs mt-2 text-right ${
+                    newEventDescription.length > 100 
+                      ? 'text-red-400' 
+                      : newEventDescription.length > 80 
+                        ? 'text-yellow-400' 
+                        : 'text-gray-400'
+                  }`}>
+                    {newEventDescription.length}/100 caractères
+                  </p>
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button
@@ -376,7 +399,9 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onBack }
                   {/* Description */}
                   {event.description && (
                     <p className="text-gray-300 text-sm mb-4 line-clamp-2 group-hover:text-gray-200 transition-colors">
-                      {event.description}
+                      {event.description.length > 100 
+                        ? event.description.substring(0, 100) + '...' 
+                        : event.description}
                     </p>
                   )}
 

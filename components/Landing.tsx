@@ -28,6 +28,24 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     battleModeEnabled: defaultSettings.battle_mode_enabled ?? false
   });
 
+  // Déterminer le titre à afficher : nom de l'événement en priorité, sinon event_title
+  const displayTitle = useMemo(() => {
+    if (currentEvent?.name) {
+      return currentEvent.name;
+    }
+    return uiConfig.title;
+  }, [currentEvent?.name, uiConfig.title]);
+
+  // Déterminer le sous-titre à afficher : description de l'événement en priorité, sinon event_subtitle
+  // Limité à 100 caractères
+  const displaySubtitle = useMemo(() => {
+    if (currentEvent?.description) {
+      const description = currentEvent.description;
+      return description.length > 100 ? description.substring(0, 100) + '...' : description;
+    }
+    return uiConfig.subtitle;
+  }, [currentEvent?.description, uiConfig.subtitle]);
+
   const [mounted, setMounted] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
 
@@ -192,8 +210,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         {/* Hero Section */}
         <div className="flex-shrink-0 w-full">
           <LandingHeader
-            title={uiConfig.title}
-            subtitle={uiConfig.subtitle}
+            title={displayTitle}
+            subtitle={displaySubtitle}
             mounted={mounted}
           />
         </div>

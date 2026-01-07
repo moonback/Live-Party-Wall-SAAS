@@ -1,5 +1,6 @@
 import React from 'react';
 import { Camera, Sparkles } from 'lucide-react';
+import { splitTextIntoLines } from '../../utils/textFormatting';
 
 interface LandingHeaderProps {
   title: string;
@@ -46,12 +47,19 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
           </div>
 
           {/* Subtitle & Decorative Lines */}
-          <div className="flex items-center gap-4 sm:gap-6 mt-1">
-            <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-pink-400/60 to-transparent"></div>
-            <span className="text-xs sm:text-sm md:text-base font-medium tracking-[0.3em] text-white/90 uppercase drop-shadow-md">
-              {subtitle}
-            </span>
-            <div className="h-px w-8 sm:w-16 bg-gradient-to-l from-transparent via-cyan-400/60 to-transparent"></div>
+          <div className="flex flex-col items-center gap-1 sm:gap-1.5 mt-1 max-w-full">
+            {splitTextIntoLines(subtitle, 50).map((line, i) => (
+              <div
+                className="flex items-center gap-4 sm:gap-6 w-full"
+                key={i}
+              >
+                <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent via-pink-400/60 to-transparent"></div>
+                <span className="text-xs sm:text-sm md:text-base font-medium tracking-[0.3em] text-white/90 uppercase drop-shadow-md break-words text-center">
+                  {line}
+                </span>
+                <div className="h-px w-8 sm:w-16 bg-gradient-to-l from-transparent via-cyan-400/60 to-transparent"></div>
+              </div>
+            ))}
           </div>
 
           

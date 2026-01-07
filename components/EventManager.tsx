@@ -219,14 +219,29 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
               <p className="text-xs text-gray-400 mt-1">URL : ?event={editedSlug}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
+              <label className="block text-sm font-medium mb-2">Description (max 100 caractères)</label>
               <textarea
                 value={editedDescription}
-                onChange={(e) => setEditedDescription(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 100) {
+                    setEditedDescription(value);
+                  }
+                }}
+                maxLength={100}
                 disabled={!canEdit}
-                className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none disabled:opacity-50"
+                className="w-full px-4 py-2 bg-white/10 rounded-lg border border-white/20 focus:border-pink-500 focus:outline-none disabled:opacity-50 resize-none"
                 rows={3}
               />
+              <p className={`text-xs mt-2 text-right ${
+                editedDescription.length > 100 
+                  ? 'text-red-400' 
+                  : editedDescription.length > 80 
+                    ? 'text-yellow-400' 
+                    : 'text-gray-400'
+              }`}>
+                {editedDescription.length}/100 caractères
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <input
