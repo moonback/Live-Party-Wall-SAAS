@@ -14,6 +14,8 @@ import { GalleryHeader } from './gallery/GalleryHeader';
 import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 // Lazy load Lightbox
 const Lightbox = lazy(() => import('./Lightbox'));
@@ -47,6 +49,10 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+  
+  // Selection mode states
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -186,6 +192,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   };
 
   const handleLike = useCallback(async (photoId: string) => {
+    if (selectionMode) return;
     const isLiked = likedPhotoIds.has(photoId);
     
     setLikedPhotoIds(prev => {
@@ -214,9 +221,10 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         return next;
       });
     }
-  }, [likedPhotoIds, userId, addToast]);
+  }, [likedPhotoIds, userId, addToast, selectionMode]);
 
   const handleReaction = useCallback(async (photoId: string, reactionType: ReactionType | null) => {
+    if (selectionMode) return;
     try {
       const { reactions, userReaction } = await toggleReaction(photoId, userId, reactionType);
       
@@ -243,7 +251,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       console.error("Erreur lors de la réaction:", error);
       addToast("Erreur lors de la réaction", 'error');
     }
-  }, [userId, addToast]);
+  }, [userId, addToast, selectionMode]);
 
   const handleDownload = useCallback(async (photo: Photo) => {
     setDownloadingIds(prev => new Set(prev).add(photo.id));
@@ -281,19 +289,71 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
   }, [addToast]);
 
+  const handleBatchDownload = async () => {
+    if (selectedIds.size === 0) return;
+    
+    const zip = new JSZip();
+    addToast(`Préparation de ${selectedIds.size} fichiers...`, 'info');
+    
+    try {
+      const selectedPhotos = photos.filter(p => selectedIds.has(p.id));
+      
+      for (const photo of selectedPhotos) {
+        const response = await fetch(photo.url);
+        const blob = await response.blob();
+        const extension = photo.type === 'video' ? (photo.url.includes('.webm') ? 'webm' : 'mp4') : 'jpg';
+        const fileName = `${photo.author}-${photo.id.substring(0, 8)}.${extension}`;
+        zip.file(fileName, blob);
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `party-wall-selection.zip`);
+      addToast("Téléchargement de l'archive lancé !", 'success');
+      setSelectionMode(false);
+      setSelectedIds(new Set());
+    } catch (error) {
+      console.error("Erreur batch download:", error);
+      addToast("Erreur lors de la création de l'archive", 'error');
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedIds(new Set());
+    }
+  };
+
   // Filtrage et Tri avec debounce
   const filteredAndSortedPhotos = useMemo(() => {
-    return filterAndSortPhotos(photos, {
+    const videoEnabled = settings.video_capture_enabled !== false;
+    let basePhotos = photos;
+    
+    // Si la vidéo est désactivée, on filtre toutes les vidéos de la base
+    if (!videoEnabled) {
+      basePhotos = photos.filter(p => p.type !== 'video');
+    }
+
+    return filterAndSortPhotos(basePhotos, {
       sortBy,
       searchQuery: debouncedSearchQuery,
       mediaFilter,
       selectedAuthors,
     });
-  }, [photos, sortBy, debouncedSearchQuery, mediaFilter, selectedAuthors]);
+  }, [photos, sortBy, debouncedSearchQuery, mediaFilter, selectedAuthors, settings.video_capture_enabled]);
 
   // Navigation avec swipe
   const navigateToPhoto = useCallback((direction: 'next' | 'prev', currentIndex: number) => {
-    if (filteredAndSortedPhotos.length === 0) return;
+    if (filteredAndSortedPhotos.length === 0 || selectionMode) return;
 
     if (direction === 'next' && currentIndex < filteredAndSortedPhotos.length - 1) {
       const nextIndex = currentIndex + 1;
@@ -312,7 +372,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         }
       }, 50);
     }
-  }, [filteredAndSortedPhotos.length]);
+  }, [filteredAndSortedPhotos.length, selectionMode]);
 
   // Focus sur la recherche avec Ctrl/Cmd + K et fermeture leaderboard avec Escape
   useEffect(() => {
@@ -321,13 +381,17 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         e.preventDefault();
         searchInputRef.current?.focus();
       }
-      if (e.key === 'Escape' && showLeaderboard) {
-        setShowLeaderboard(false);
+      if (e.key === 'Escape') {
+        if (showLeaderboard) setShowLeaderboard(false);
+        if (selectionMode) {
+          setSelectionMode(false);
+          setSelectedIds(new Set());
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showLeaderboard]);
+  }, [showLeaderboard, selectionMode]);
 
   const handleBattleFinished = useCallback((battleId: string, _winnerId: string | null, winnerPhoto?: Photo) => {
     setBattles(prev => prev.filter(b => b.id !== battleId));
@@ -340,9 +404,13 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   }, [addToast]);
 
   const handlePhotoClick = useCallback((photo: Photo, index: number) => {
+    if (selectionMode) {
+      handleSelect(photo.id);
+      return;
+    }
     setLightboxIndex(index);
     setLightboxPhoto(photo);
-  }, []);
+  }, [selectionMode]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
@@ -379,11 +447,15 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         onSearchChange={setSearchQuery}
         searchInputRef={searchInputRef}
         isFiltersModalOpen={isFiltersModalOpen}
+        selectionMode={selectionMode}
+        onToggleSelectionMode={toggleSelectionMode}
+        selectedCount={selectedIds.size}
+        onBatchDownload={handleBatchDownload}
       />
 
       {/* Filters */}
-      <div className="sticky top-[120px] md:top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-3 md:py-4">
+      <div className="sticky top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
+        <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-1">
           <GalleryFilters
             sortBy={sortBy}
             onSortChange={setSortBy}
@@ -402,6 +474,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             photos={photos}
             selectedAuthors={selectedAuthors}
             onSelectedAuthorsChange={setSelectedAuthors}
+            videoEnabled={settings.video_capture_enabled !== false}
           />
               </div>
             </div>
@@ -426,14 +499,17 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             guestAvatars={guestAvatars}
             searchQuery={searchQuery}
             mediaFilter={mediaFilter}
-                    onLike={handleLike}
-                    onDownload={handleDownload}
-                    onReaction={handleReaction}
+            onLike={handleLike}
+            onDownload={handleDownload}
+            onReaction={handleReaction}
             onBattleFinished={handleBattleFinished}
             onPhotoClick={handlePhotoClick}
             onNavigatePhoto={navigateToPhoto}
             userId={userId}
-                  />
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onSelect={handleSelect}
+          />
         </div>
       </div>
 

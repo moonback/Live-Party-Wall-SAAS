@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Photo, PhotoBattle } from '../../types';
 import { GuestPhotoCard } from './GuestPhotoCard';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
@@ -6,6 +6,7 @@ import { PhotoCardSkeletons } from '../PhotoCardSkeleton';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import Leaderboard from '../Leaderboard';
 import type { ReactionType } from '../../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GalleryContentProps {
   loading: boolean;
@@ -28,6 +29,9 @@ interface GalleryContentProps {
   onPhotoClick?: (photo: Photo, index: number) => void;
   onNavigatePhoto?: (direction: 'next' | 'prev', currentIndex: number) => void;
   userId: string;
+  selectionMode?: boolean;
+  selectedIds?: Set<string>;
+  onSelect?: (id: string) => void;
 }
 
 export const GalleryContent: React.FC<GalleryContentProps> = ({
@@ -50,18 +54,31 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   onBattleFinished,
   onPhotoClick,
   onNavigatePhoto,
-  userId
+  userId,
+  selectionMode = false,
+  selectedIds = new Set(),
+  onSelect
 }) => {
   const isMobile = useIsMobile();
 
   // Trier les battles par date de création (plus récentes en premier)
-  const battlesForGrid = React.useMemo(() => {
+  const battlesForGrid = useMemo(() => {
     return [...battles].sort((a, b) => b.createdAt - a.createdAt);
   }, [battles]);
 
+  // Masonry layout logic
+  const columns = useMemo(() => {
+    if (isMobile) return [photos];
+    const cols: Photo[][] = [[], [], [], []];
+    photos.forEach((photo, i) => {
+      cols[i % 4].push(photo);
+    });
+    return cols;
+  }, [photos, isMobile]);
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <PhotoCardSkeletons count={8} columns={isMobile ? 1 : 4} />
       </div>
     );
@@ -69,88 +86,97 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (photos.length === 0) {
     return (
-      <div className="text-center py-20 md:py-32 px-6 text-slate-400 animate-fade-in-up">
-        <div className="relative mb-8">
-          <p className="relative text-6xl md:text-7xl mb-4">
-            {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
-          </p>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-24 px-6"
+      >
+        <div className="text-7xl mb-6">
+          {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
         </div>
-        <p className="text-xl md:text-2xl font-bold text-white mb-2">
+        <h3 className="text-2xl font-black text-white mb-2">
           {searchQuery || mediaFilter !== 'all' 
-            ? 'Aucun résultat trouvé' 
-            : 'Aucune photo pour le moment'}
-        </p>
-        <p className="text-sm md:text-base text-slate-500 mb-6">
+            ? 'Aucun résultat' 
+            : 'Le mur est vide'}
+        </h3>
+        <p className="text-slate-500 max-w-xs mx-auto text-sm">
           {searchQuery || mediaFilter !== 'all' 
-            ? 'Essayez avec d\'autres critères' 
-            : 'Soyez le premier à partager !'}
+            ? 'Essayez de modifier vos filtres ou votre recherche.' 
+            : 'Soyez le premier à capturer un moment magique !'}
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <>
+    <div className="space-y-8">
       {/* Leaderboard Panel */}
-      {showLeaderboard && (
-        <div className="mb-6 md:mb-10 animate-fade-in-up">
-          <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm rounded-2xl p-5 md:p-8 border border-white/10 shadow-2xl">
-            <Leaderboard photos={photos} maxEntries={10} />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showLeaderboard && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/5 shadow-2xl">
+              <Leaderboard photos={photos} maxEntries={5} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Grid de photos */}
-      <div className={`grid grid-cols-1 ${
-        isMobile 
-          ? '' 
-          : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
-      } ${isMobile ? 'space-y-3' : ''}`}>
-        {/* Photo Battles */}
-        {battleModeEnabled && showBattles && battlesForGrid.map((battle) => (
-          <div
-            key={`battle-${battle.id}`}
-            className={isMobile ? '' : 'break-inside-avoid'}
-          >
-            <PhotoBattleComponent
-              battle={battle}
-              userId={userId}
-              compact={false}
-              onBattleFinished={onBattleFinished}
-              onPhotoClick={onPhotoClick ? (photo) => {
-                const photoIndex = photos.findIndex(p => p.id === photo.id);
-                onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
-              } : undefined}
-            />
-          </div>
-        ))}
-        
-        {/* Photos normales */}
-        {photos.map((photo, index) => (
-          <div
-            key={photo.id}
-            data-photo-index={index}
-            className={isMobile ? '' : 'break-inside-avoid'}
-          >
-            <GuestPhotoCard
-              photo={photo}
-              isLiked={likedPhotoIds.has(photo.id)}
-              onLike={onLike}
-              onDownload={onDownload}
-              allPhotos={photos}
-              index={index}
-              isDownloading={downloadingIds.has(photo.id)}
-              onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', index) : undefined}
-              onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', index) : undefined}
-              userReaction={userReactions.get(photo.id) || null}
-              onReaction={onReaction}
-              reactions={photosReactions.get(photo.id) || {}}
-              guestAvatars={guestAvatars}
-            />
+      {/* Grid de photos avec Masonry Style */}
+      <div className={`flex flex-col md:flex-row gap-6`}>
+        {columns.map((colPhotos, colIdx) => (
+          <div key={colIdx} className="flex-1 flex flex-col gap-6">
+            {/* Show battles only in the first column on desktop, or top on mobile */}
+            {colIdx === 0 && battleModeEnabled && showBattles && battlesForGrid.map((battle) => (
+              <motion.div
+                key={`battle-${battle.id}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <PhotoBattleComponent
+                  battle={battle}
+                  userId={userId}
+                  compact={false}
+                  onBattleFinished={onBattleFinished}
+                  onPhotoClick={onPhotoClick ? (photo) => {
+                    const photoIndex = photos.findIndex(p => p.id === photo.id);
+                    onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
+                  } : undefined}
+                />
+              </motion.div>
+            ))}
+
+            <AnimatePresence mode="popLayout">
+              {colPhotos.map((photo, index) => (
+                <GuestPhotoCard
+                  key={photo.id}
+                  photo={photo}
+                  isLiked={likedPhotoIds.has(photo.id)}
+                  onLike={onLike}
+                  onDownload={onDownload}
+                  allPhotos={photos}
+                  index={index}
+                  isDownloading={downloadingIds.has(photo.id)}
+                  onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', index) : undefined}
+                  onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', index) : undefined}
+                  userReaction={userReactions.get(photo.id) || null}
+                  onReaction={onReaction}
+                  reactions={photosReactions.get(photo.id) || {}}
+                  guestAvatars={guestAvatars}
+                  selectionMode={selectionMode}
+                  isSelected={selectedIds.has(photo.id)}
+                  onSelect={onSelect}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

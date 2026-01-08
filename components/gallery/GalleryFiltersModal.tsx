@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { SortOption, MediaFilter, Photo } from '../../types';
-import { Clock, Sparkles, Trophy, Image, Video, Filter, X, User, XCircle } from 'lucide-react';
+import { Clock, Sparkles, Trophy, Image, Video, Filter, X, User, XCircle, Search, LayoutGrid } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GalleryFiltersModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface GalleryFiltersModalProps {
   photos: Photo[];
   selectedAuthors: string[];
   onSelectedAuthorsChange: (authors: string[]) => void;
+  videoEnabled?: boolean;
 }
 
 export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
@@ -28,15 +30,18 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
   onToggleLeaderboard,
   photos,
   selectedAuthors,
-  onSelectedAuthorsChange
+  onSelectedAuthorsChange,
+  videoEnabled = true
 }) => {
   const isMobile = useIsMobile();
+  const [authorSearch, setAuthorSearch] = React.useState('');
 
-  // Extraire la liste unique des auteurs
   const uniqueAuthors = useMemo(() => {
     const authorsSet = new Set(photos.map(p => p.author).filter(Boolean));
-    return Array.from(authorsSet).sort();
-  }, [photos]);
+    const authors = Array.from(authorsSet).sort();
+    if (!authorSearch) return authors;
+    return authors.filter(a => a.toLowerCase().includes(authorSearch.toLowerCase()));
+  }, [photos, authorSearch]);
 
   const toggleAuthor = (author: string) => {
     if (selectedAuthors.includes(author)) {
@@ -48,266 +53,162 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
 
   const clearAllFilters = () => {
     onSelectedAuthorsChange([]);
+    onMediaFilterChange('all');
+    onSortChange('recent');
   };
 
-  const hasActiveFilters = selectedAuthors.length > 0;
-
-  if (!isOpen) return null;
+  const hasActiveFilters = selectedAuthors.length > 0 || mediaFilter !== 'all' || sortBy !== 'recent';
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] animate-fade-in"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100]"
+            onClick={onClose}
+          />
 
-      {/* Modal */}
-      <div
-        className={`fixed inset-0 z-[100] flex justify-center p-4 pointer-events-none ${
-          isMobile ? 'items-start pt-[100px]' : 'items-center'
-        }`}
-      >
-        <div
-          className={`bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl border border-white/10 shadow-2xl w-full max-w-7xl pointer-events-auto animate-scale-in overflow-hidden`}
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-white/10">
-            <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-              Filtres & Options
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-lg transition-all active:scale-95 text-slate-400 hover:text-white"
-              aria-label="Fermer"
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 md:p-6 pointer-events-none">
+            <motion.div
+              initial={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
+              animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
+              exit={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className={`p-5 max-h-[80vh] overflow-y-auto`}>
-            {/* Filtres de base */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Filtres rapides</h3>
-              <div
-                className={`flex flex-wrap items-center justify-center gap-3 ${
-                  isMobile
-                    ? ''
-                    : 'gap-1 [&>button]:px-2 [&>button]:py-2 [&>button>span]:hidden'
-                }`}
-              >
-              {/* Filtre par type */}
-              <button
-                onClick={() => {
-                  onMediaFilterChange('all');
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  mediaFilter === 'all'
-                    ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white shadow-lg shadow-pink-900/20 border-2 border-pink-500/30'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label="Tous les médias"
-                aria-pressed={mediaFilter === 'all'}
-                title="Afficher tous les médias (photos et vidéos)"
-              >
-                <Filter
-                  className={`w-5 h-5 ${mediaFilter === 'all' ? 'text-pink-400' : ''}`}
-                />
-                <span>Tous</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  Afficher tous les médias
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 md:p-8 border-b border-white/5 bg-gradient-to-r from-pink-500/5 to-purple-500/5">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Filtres</h2>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Personnalisez votre vue</p>
                 </div>
-              </button>
-              <button
-                onClick={() => {
-                  onMediaFilterChange('photo');
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  mediaFilter === 'photo'
-                    ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white shadow-lg shadow-pink-900/20 border-2 border-pink-500/30'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label="Photos uniquement"
-                aria-pressed={mediaFilter === 'photo'}
-                title="Afficher uniquement les photos"
-              >
-                <Image
-                  className={`w-5 h-5 ${mediaFilter === 'photo' ? 'text-pink-400' : ''}`}
-                />
-                <span>Photos</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  Afficher uniquement les photos
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  onMediaFilterChange('video');
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  mediaFilter === 'video'
-                    ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-white shadow-lg shadow-pink-900/20 border-2 border-pink-500/30'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label="Vidéos uniquement"
-                aria-pressed={mediaFilter === 'video'}
-                title="Afficher uniquement les vidéos"
-              >
-                <Video
-                  className={`w-5 h-5 ${mediaFilter === 'video' ? 'text-pink-400' : ''}`}
-                />
-                <span>Vidéos</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  Afficher uniquement les vidéos
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
-
-              {/* Séparateur */}
-              <div className="w-px h-8 bg-white/10"></div>
-
-              {/* Tri */}
-              <button
-                onClick={() => {
-                  onSortChange('recent');
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  sortBy === 'recent'
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-900/20 border-2 border-cyan-500/30'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label="Trier par date récente"
-                aria-pressed={sortBy === 'recent'}
-                title="Trier par date (plus récentes en premier)"
-              >
-                <Clock
-                  className={`w-5 h-5 ${sortBy === 'recent' ? 'text-cyan-400' : ''}`}
-                />
-                <span>Récents</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  Trier par date (plus récentes en premier)
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  onSortChange('popular');
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  sortBy === 'popular'
-                    ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-white shadow-lg shadow-yellow-900/20 border-2 border-yellow-500/30'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label="Trier par popularité"
-                aria-pressed={sortBy === 'popular'}
-                title="Trier par popularité (plus de likes en premier)"
-              >
-                <Sparkles
-                  className={`w-5 h-5 ${sortBy === 'popular' ? 'text-yellow-400' : ''}`}
-                />
-                <span>Populaires</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  Trier par popularité (plus de likes en premier)
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
-
-              {/* Séparateur */}
-              <div className="w-px h-8 bg-white/10"></div>
-
-              {/* Classement */}
-              <button
-                onClick={() => {
-                  onToggleLeaderboard();
-                  onClose();
-                }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all touch-manipulation active:scale-95 relative group ${
-                  showLeaderboard
-                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-xl shadow-yellow-900/30 border-2 border-yellow-400/50'
-                    : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-white/10'
-                }`}
-                aria-label={showLeaderboard ? 'Masquer le classement' : 'Afficher le classement'}
-                aria-pressed={showLeaderboard}
-                title={showLeaderboard ? 'Masquer le classement des photographes' : 'Afficher le classement des photographes'}
-              >
-                <Trophy className="w-5 h-5" />
-                <span>Classement</span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-sm text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
-                  {showLeaderboard ? 'Masquer le classement' : 'Afficher le classement des photographes'}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
-                </div>
-              </button>
-              </div>
-            </div>
-
-            {/* Filtres avancés */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Filtres avancés</h3>
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="text-xs text-pink-400 hover:text-pink-300 flex items-center gap-1 transition-colors"
-                  >
-                    <XCircle className="w-3 h-3" />
-                    Réinitialiser
-                  </button>
-                )}
+                <button
+                  onClick={onClose}
+                  className="p-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl transition-all active:scale-95"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
 
-              {/* Filtre par auteur */}
-              <div className="mb-4">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-2">
-                  <User className="w-4 h-4" />
-                  Auteurs
-                </label>
-                <div className="max-h-32 overflow-y-auto bg-slate-800/50 rounded-lg p-2 border border-white/10">
-                  {uniqueAuthors.length === 0 ? (
-                    <p className="text-xs text-slate-500 text-center py-2">Aucun auteur disponible</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {uniqueAuthors.map(author => (
-                        <button
-                          key={author}
-                          onClick={() => toggleAuthor(author)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 ${
-                            selectedAuthors.includes(author)
-                              ? 'bg-gradient-to-r from-pink-500/30 to-purple-500/30 text-white border border-pink-500/50'
-                              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 border border-white/10'
-                          }`}
-                        >
-                          {author}
-                        </button>
-                      ))}
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+                {/* Media Type */}
+                <section>
+                  <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4">Contenu</h3>
+                  <div className={`grid ${videoEnabled ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
+                    {[
+                      { id: 'all', icon: LayoutGrid, label: 'Tout' },
+                      { id: 'photo', icon: Image, label: 'Photos' },
+                      ...(videoEnabled ? [{ id: 'video', icon: Video, label: 'Vidéos' }] : [])
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => onMediaFilterChange(item.id as MediaFilter)}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-3xl border transition-all ${
+                          mediaFilter === item.id 
+                            ? 'bg-pink-500/10 border-pink-500/50 text-pink-400 shadow-lg shadow-pink-500/10' 
+                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
+                        }`}
+                      >
+                        <item.icon className="w-6 h-6" />
+                        <span className="text-xs font-bold">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Sort Order */}
+                <section>
+                  <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest mb-4">Tri</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'recent', icon: Clock, label: 'Plus récents', desc: 'Dernières photos partagées' },
+                      { id: 'popular', icon: Sparkles, label: 'Plus populaires', desc: 'Photos les plus likées' }
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => onSortChange(item.id as SortOption)}
+                        className={`flex items-start gap-4 p-4 rounded-3xl border text-left transition-all ${
+                          sortBy === item.id 
+                            ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400 shadow-lg shadow-indigo-500/10' 
+                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
+                        }`}
+                      >
+                        <div className={`p-2.5 rounded-2xl ${sortBy === item.id ? 'bg-indigo-500/20' : 'bg-white/5'}`}>
+                          <item.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-tight">{item.label}</p>
+                          <p className="text-[10px] opacity-60 mt-0.5">{item.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Authors */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest">Auteurs</h3>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                      <input 
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={authorSearch}
+                        onChange={(e) => setAuthorSearch(e.target.value)}
+                        className="bg-white/5 border border-white/5 rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-pink-500/50"
+                      />
                     </div>
-                  )}
-                </div>
-                {selectedAuthors.length > 0 && (
-                  <p className="text-xs text-slate-400 mt-2">
-                    {selectedAuthors.length} auteur{selectedAuthors.length > 1 ? 's' : ''} sélectionné{selectedAuthors.length > 1 ? 's' : ''}
-                  </p>
-                )}
+                  </div>
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1 scrollbar-hide">
+                    {uniqueAuthors.map(author => (
+                      <button
+                        key={author}
+                        onClick={() => toggleAuthor(author)}
+                        className={`px-4 py-2 rounded-2xl text-xs font-bold border transition-all ${
+                          selectedAuthors.includes(author)
+                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-none shadow-lg shadow-pink-500/20'
+                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
+                        }`}
+                      >
+                        {author}
+                      </button>
+                    ))}
+                    {uniqueAuthors.length === 0 && (
+                      <p className="text-slate-600 text-xs italic py-4 w-full text-center">Aucun auteur trouvé</p>
+                    )}
+                  </div>
+                </section>
               </div>
-            </div>
+
+              {/* Footer */}
+              <div className="p-6 md:p-8 bg-slate-950/50 border-t border-white/5 flex items-center justify-between gap-4">
+                <button
+                  onClick={clearAllFilters}
+                  disabled={!hasActiveFilters}
+                  className="flex items-center gap-2 text-xs font-black text-slate-500 hover:text-pink-400 uppercase tracking-widest disabled:opacity-30 transition-colors"
+                >
+                  <XCircle className="w-5 h-5" />
+                  Réinitialiser
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-8 py-4 bg-white text-slate-900 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-pink-500 hover:text-white transition-all shadow-xl active:scale-95"
+                >
+                  Appliquer
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 

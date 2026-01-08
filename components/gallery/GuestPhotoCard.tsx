@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Image, Video, Tag } from 'lucide-react';
+import { Heart, Download, Image, Video, Tag, Share2, MoreVertical, CheckCircle, Circle } from 'lucide-react';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
@@ -9,6 +9,7 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import { useSwipe } from '../../hooks/useSwipe';
 import { getUserAvatar } from '../../utils/userAvatar';
 import { useSettings } from '../../context/SettingsContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -24,6 +25,9 @@ interface GuestPhotoCardProps {
   onReaction?: (photoId: string, reactionType: ReactionType | null) => void;
   reactions?: import('../../types').ReactionCounts;
   guestAvatars?: Map<string, string>;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 export const GuestPhotoCard = React.memo(({ 
@@ -39,13 +43,17 @@ export const GuestPhotoCard = React.memo(({
   userReaction = null,
   onReaction,
   reactions = {},
-  guestAvatars
+  guestAvatars,
+  selectionMode = false,
+  isSelected = false,
+  onSelect
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showReactionsMenu, setShowReactionsMenu] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const likeButtonRef = useRef<HTMLButtonElement>(null);
   const reactionsMenuRef = useRef<HTMLDivElement>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,8 +67,6 @@ export const GuestPhotoCard = React.memo(({
     ? (photo.orientation || 'unknown')
     : 'unknown';
   const isMobile = useIsMobile();
-  
-  const animationDelay = Math.min(index * 50, 1000);
   
   const lastClickTime = useRef<number>(0);
   const lastTapTime = useRef<number>(0);
@@ -175,6 +181,8 @@ export const GuestPhotoCard = React.memo(({
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    if (selectionMode) return;
+    
     const now = Date.now();
     
     if (now - lastClickTime.current < 300) {
@@ -184,9 +192,10 @@ export const GuestPhotoCard = React.memo(({
     }
     
     lastClickTime.current = now;
-  }, [onLike, photo.id]);
+  }, [onLike, photo.id, selectionMode]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (selectionMode) return;
     const now = Date.now();
     
     if (now - lastTapTime.current < 300) {
@@ -206,272 +215,276 @@ export const GuestPhotoCard = React.memo(({
     }
     
     lastTapTime.current = now;
-  }, [onLike, photo.id]);
+  }, [onLike, photo.id, selectionMode]);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (selectionMode && onSelect) {
+      onSelect(photo.id);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Photo de ${photo.author}`,
+          text: photo.caption,
+          url: photo.url,
+        });
+      } catch (error) {
+        console.error('Erreur de partage:', error);
+      }
+    } else {
+      // Fallback: copier le lien
+      navigator.clipboard.writeText(photo.url);
+      alert('Lien copié dans le presse-papier !');
+    }
+  };
   
   return (
-    <div 
-      className={`group bg-slate-900/80 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 shadow-xl transition-all duration-300 break-inside-avoid ${
-        isMobile 
-          ? 'mb-4 active:scale-[0.98] active:shadow-lg' 
-          : 'mb-0 hover:shadow-2xl hover:border-pink-500/40 hover:scale-[1.02]'
-      }`}
-      style={{ 
-        animation: 'slideInBottom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        animationDelay: `${animationDelay}ms`
-      }}
+    <motion.div 
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
+      className={`group relative bg-slate-900/40 backdrop-blur-md rounded-[2rem] overflow-hidden border transition-all duration-500 ${
+        isSelected 
+          ? 'border-indigo-500 ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/20' 
+          : 'border-white/5 hover:border-white/20 shadow-xl'
+      } ${selectionMode ? 'cursor-pointer' : ''}`}
       {...(isMobile && (onSwipeLeft || onSwipeRight) ? cardSwipe.handlers : {})}
     >
+      {/* Selection Overlay */}
+      {selectionMode && (
+        <div className="absolute top-4 left-4 z-40">
+          <motion.div
+            initial={false}
+            animate={{ scale: isSelected ? 1.1 : 1 }}
+            className={`p-1.5 rounded-full ${isSelected ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/20 text-white/50 border border-white/20'}`}
+          >
+            {isSelected ? <CheckCircle className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+          </motion.div>
+        </div>
+      )}
+
       {/* Header Photo */}
-      <div className={`flex items-center gap-3 bg-gradient-to-r from-slate-900/90 to-slate-800/90 border-b border-white/10 ${isMobile ? 'px-3 py-2.5' : 'px-5 py-4'}`}>
+      <div className={`flex items-center gap-3 p-4 bg-gradient-to-b from-black/20 to-transparent`}>
         <div className="relative flex-shrink-0">
           {authorAvatar ? (
             <img
               src={authorAvatar}
               alt={photo.author}
-              className={`rounded-full object-cover border-2 border-white/30 shadow-xl ring-2 ring-pink-500/30 ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}`}
+              className={`rounded-full object-cover border-2 border-white/10 shadow-lg ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}`}
             />
           ) : (
-            <div className={`rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white shadow-xl ring-2 ring-pink-500/40 ${isMobile ? 'w-10 h-10 text-base' : 'w-12 h-12 text-lg'}`}>
+            <div className={`rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg ${isMobile ? 'w-10 h-10 text-sm' : 'w-11 h-11 text-base'}`}>
               {photo.author[0]?.toUpperCase()}
-            </div>
-          )}
-          {authorHasPhotographerBadge && (
-            <div className={`absolute -bottom-1 -right-1 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center border-2 border-white shadow-xl ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`}>
-              <span className={isMobile ? 'text-[9px]' : 'text-xs'}>📸</span>
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className={`font-bold text-white truncate ${isMobile ? 'text-sm' : 'text-lg'}`}>{photo.author}</p>
-            {authorHasPhotographerBadge && (
-              <span className={`bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 flex items-center gap-1 shadow-sm ${isMobile ? 'px-1 py-0.5 text-[9px]' : 'px-2 py-0.5 text-xs'}`}>
-                <span>📸</span>
-                <span className="hidden sm:inline">Pro</span>
-              </span>
-            )}
-          </div>
-          <p className={`text-slate-400 truncate ${isMobile ? 'text-[11px]' : 'text-sm'}`}>
+          <p className={`font-bold text-white truncate ${isMobile ? 'text-sm' : 'text-base'}`}>{photo.author}</p>
+          <p className="text-slate-400 text-[10px] uppercase tracking-wider font-medium">
             {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
           </p>
         </div>
+        <button className="p-2 text-slate-400 hover:text-white transition-colors">
+          <MoreVertical className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Media */}
+      {/* Media Container */}
       <div 
-        className={`bg-black relative overflow-hidden ${
-          isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
-            ? 'min-h-[200px]' 
-            : 'aspect-auto'
-        }`}
+        className="relative overflow-hidden bg-black/40"
         onDoubleClick={handleDoubleClick}
         onTouchEnd={handleTouchEnd}
       >
-        {showHeartAnimation && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-            <div className="animate-heart-pop">
-              <Heart className="w-20 h-20 text-red-500 fill-red-500 drop-shadow-lg" />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showHeartAnimation && (
+            <motion.div 
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1.5, opacity: 1 }}
+              exit={{ scale: 2, opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none z-50"
+            >
+              <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {photo.type === 'video' ? (
           videoError ? (
-            <div className="w-full h-[250px] flex items-center justify-center bg-slate-800/50">
-              <div className="text-center text-slate-400">
-                <Video className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Erreur de chargement vidéo</p>
-              </div>
+            <div className="aspect-[4/5] flex items-center justify-center bg-slate-800/50">
+              <Video className="w-12 h-12 text-slate-600" />
             </div>
           ) : (
             <video
               src={photo.url}
-              className="w-full h-auto object-contain max-h-[50vh] md:max-h-[400px]"
-              controls
+              className="w-full h-auto object-contain max-h-[60vh] md:max-h-[500px]"
+              controls={!selectionMode}
               playsInline
               preload="metadata"
               controlsList="nodownload"
-              style={{ pointerEvents: 'auto' }}
               onError={() => setVideoError(true)}
-              onLoadedMetadata={(e) => {
-                const video = e.currentTarget;
-                if (video) {
-                  video.style.opacity = '1';
-                }
-              }}
             />
           )
-        ) : imageError ? (
-          <div className="w-full h-[250px] flex items-center justify-center bg-slate-800/50">
-            <div className="text-center text-slate-400">
-              <Image className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Erreur de chargement image</p>
-            </div>
-          </div>
         ) : (
           <img 
             src={photo.url} 
             alt={photo.caption} 
-            className={getImageClasses(imageOrientation, isMobile)}
+            className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
             loading="lazy"
-            style={{
-              maxWidth: '100%',
-              maxHeight: isMobile ? '50vh' : '400px',
-              height: 'auto',
-              objectFit: 'contain'
-            }}
+            style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
             onError={() => setImageError(true)}
           />
         )}
-        {photo.type === 'video' && (
-          <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 z-20 pointer-events-none border border-white/20 shadow-xl">
-            <Video className="w-3.5 h-3.5 text-white" />
-            {photo.duration && (
-              <span className="text-white text-xs font-semibold">
-                {Math.floor(photo.duration)}s
-              </span>
-            )}
-          </div>
-        )}
-        {photoBadge && (
-          <div className="absolute top-3 right-3 z-20 pointer-events-none">
-            <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 border border-yellow-300/50">
-              <span className="text-base">⭐</span>
-              <span className="text-xs font-bold text-white hidden sm:inline drop-shadow-lg">Star</span>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Actions & Caption */}
-      <div className={`bg-gradient-to-r from-slate-900/90 to-slate-800/90 ${isMobile ? 'px-4 py-2' : 'px-4 py-2'}`}>
-        <div className={`flex items-center gap-3 mb-2 relative`}>
-          {/* Like/reaction */}
-          <div className="relative">
-            <button
-              ref={likeButtonRef}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-              onTouchStart={handleReactionTouchStart}
-              onTouchEnd={handleReactionTouchEnd}
-              className={`group/like transition-all touch-manipulation relative ${isMobile ? 'active:scale-95 p-1' : 'hover:scale-105 p-1'} ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'}`}
-              aria-label={isLiked ? 'Retirer le like' : 'Appuyez longuement pour réagir'}
-              aria-pressed={isLiked}
-            >
-              <div className={`absolute inset-0 rounded-full transition-all ${isLiked ? 'bg-red-500/10' : 'group-hover/like:bg-red-500/5'}`} />
-              <Heart className={`transition-all relative z-10 ${isLiked ? 'fill-current drop-shadow-lg' : ''} w-6 h-6`} />
-            </button>
-            {showReactionsMenu && onReaction && (
-              <div
-                ref={reactionsMenuRef}
-                className="absolute bottom-full left-0 mb-2 bg-slate-900/95 backdrop-blur-xl rounded-2xl p-1.5 shadow-2xl border border-white/20 z-50 flex items-center gap-1 animate-fade-in-up"
-                onMouseLeave={() => setShowReactionsMenu(false)}
-              >
-                {REACTION_TYPES.map((type) => {
-                  const reaction = REACTIONS[type];
-                  const count = reactions[type] || 0;
-                  const isActive = userReaction === type;
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => {
-                        onReaction(photo.id, isActive ? null : type);
-                        setShowReactionsMenu(false);
-                      }}
-                      className={`group/reaction flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all touch-manipulation ${isMobile ? 'active:scale-95' : 'hover:scale-105'} ${isActive ? 'bg-gradient-to-r from-pink-500/25 to-purple-500/20' : 'hover:bg-slate-800/50'}`}
-                      title={reaction.label}
-                      aria-label={`${reaction.label} (${count})`}
-                    >
-                      <span className="text-base group-hover/reaction:scale-125 transition-transform">{reaction.emoji}</span>
-                      {count > 0 && (
-                        <span className={`text-[10px] font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>{count}</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          {/* Download button */}
-          <button
-            onClick={() => onDownload(photo)}
-            disabled={isDownloading}
-            className={`transition-all touch-manipulation relative ${isMobile ? 'active:scale-95 p-1' : 'hover:scale-105 p-1'} ${isDownloading ? 'text-blue-400 cursor-wait' : 'text-slate-400 hover:text-blue-400'}`}
-            title={isDownloading ? 'Téléchargement en cours...' : 'Télécharger la photo'}
-            aria-label={isDownloading ? 'Téléchargement en cours' : 'Télécharger la photo'}
-            aria-busy={isDownloading}
-          >
-            <div className="absolute inset-0 rounded-full bg-blue-500/5 group-hover:bg-blue-500/10 transition-all" />
-            {isDownloading ? (
-              <div className="border-2 border-blue-400 border-t-transparent rounded-full animate-spin relative z-10 w-6 h-6" />
-            ) : (
-              <Download className="relative z-10 w-6 h-6" />
-            )}
-          </button>
-          {/* Like/reaction counts */}
-          {(photo.likes_count > 0 || Object.keys(reactions).length > 0) && (
-            <div className="flex items-center gap-2 ml-2">
-              {photo.likes_count > 0 && (
-                <div className="flex items-center gap-0.5">
-                  <Heart className={`w-4 h-4 ${isLiked ? 'text-red-500 fill-current' : 'text-slate-400'}`} />
-                  <span className={`font-bold ${isMobile ? 'text-xs' : 'text-sm'} ${isLiked ? 'text-red-500' : 'text-white'}`}>{photo.likes_count}</span>
-                </div>
+        {/* Media Badges */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+          {photo.type === 'video' && (
+            <div className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-lg">
+              <Video className="w-3.5 h-3.5 text-white" />
+              {photo.duration && (
+                <span className="text-white text-[10px] font-bold">{Math.floor(photo.duration)}s</span>
               )}
-              {onReaction && Object.entries(reactions).map(([type, count]) => {
-                const reaction = REACTIONS[type as ReactionType];
-                if (!reaction || count === 0) return null;
-                return (
-                  <span key={type} className="flex items-center gap-0.5 font-bold text-white text-xs">
-                    <span>{reaction.emoji}</span>
-                    <span>{count}</span>
-                  </span>
-                );
-              })}
+            </div>
+          )}
+          {photoBadge && (
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1 rounded-full shadow-lg border border-yellow-300/30 flex items-center gap-1.5">
+              <span className="text-sm">⭐</span>
+              <span className="text-[10px] font-black text-white uppercase tracking-tight">Star</span>
             </div>
           )}
         </div>
-        {/* Caption/author */}
-        <div className="mb-1">
-          <span className={`font-bold text-white text-xs`}>{photo.author}</span>{' '}
-          <span className="text-slate-200 text-xs">{photo.caption}</span>
+      </div>
+
+      {/* Actions & Caption */}
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            {/* Like */}
+            <div className="relative">
+              <button
+                ref={likeButtonRef}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleReactionTouchStart}
+                onTouchEnd={handleReactionTouchEnd}
+                disabled={selectionMode}
+                className={`transition-all ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+              >
+                <Heart className={`w-7 h-7 ${isLiked ? 'fill-current' : ''}`} />
+              </button>
+              
+              <AnimatePresence>
+                {showReactionsMenu && onReaction && (
+                  <motion.div
+                    ref={reactionsMenuRef}
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute bottom-full left-0 mb-3 bg-slate-900/95 backdrop-blur-xl rounded-2xl p-2 shadow-2xl border border-white/10 z-50 flex items-center gap-1"
+                  >
+                    {REACTION_TYPES.map((type) => {
+                      const reaction = REACTIONS[type];
+                      const count = reactions[type] || 0;
+                      const isActive = userReaction === type;
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            onReaction(photo.id, isActive ? null : type);
+                            setShowReactionsMenu(false);
+                          }}
+                          className={`flex flex-col items-center gap-1 px-2.5 py-2 rounded-xl transition-all ${isActive ? 'bg-pink-500/20 text-pink-400' : 'hover:bg-white/5 text-slate-400'}`}
+                        >
+                          <span className="text-xl">{reaction.emoji}</span>
+                          {count > 0 && <span className="text-[9px] font-black">{count}</span>}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Share */}
+            <button
+              onClick={handleShare}
+              disabled={selectionMode}
+              className={`text-slate-400 hover:text-indigo-400 transition-colors ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+            >
+              <Share2 className="w-7 h-7" />
+            </button>
+
+            {/* Download */}
+            <button
+              onClick={() => onDownload(photo)}
+              disabled={isDownloading || selectionMode}
+              className={`transition-all ${isDownloading ? 'text-blue-400' : 'text-slate-400 hover:text-blue-400'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+            >
+              {isDownloading ? <div className="w-7 h-7 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : <Download className="w-7 h-7" />}
+            </button>
+          </div>
+
+          {/* Social Stats */}
+          <div className="flex -space-x-2">
+            {(photo.likes_count > 0 || Object.keys(reactions).length > 0) && (
+              <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-3 py-1 gap-1.5">
+                {photo.likes_count > 0 && (
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-white">
+                    <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                    {photo.likes_count}
+                  </span>
+                )}
+                <div className="flex gap-0.5">
+                  {onReaction && Object.entries(reactions).slice(0, 2).map(([type, count]) => {
+                    if (count === 0) return null;
+                    return <span key={type} className="text-[11px]">{REACTIONS[type as ReactionType]?.emoji}</span>;
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        {/* Tags */}
-        {settings.tags_generation_enabled !== false && photo.tags && photo.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-2 mt-2">
-            <Tag className="w-3 h-3 text-slate-400 flex-shrink-0" />
-            <div className="flex flex-wrap gap-1.5">
-              {photo.tags.slice(0, 5).map((tag, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center px-2 py-0.5 rounded-lg bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-300 text-[10px] font-medium shadow-sm hover:from-pink-500/30 hover:to-purple-500/30 transition-all"
-                  title={tag}
-                >
-                  {tag}
+
+        {/* Caption */}
+        <div className="space-y-2">
+          <p className="text-sm leading-relaxed text-slate-200">
+            <span className="font-black text-white mr-2">{photo.author}</span>
+            {photo.caption}
+          </p>
+
+          {/* Tags */}
+          {settings.tags_generation_enabled !== false && photo.tags && photo.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {photo.tags.slice(0, 3).map((tag, idx) => (
+                <span key={idx} className="text-[10px] font-bold text-pink-400/80 uppercase tracking-tight">
+                  #{tag.replace(/\s+/g, '')}
                 </span>
               ))}
-              {photo.tags.length > 5 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-800/50 border border-white/10 text-slate-400 text-[10px] font-medium">
-                  +{photo.tags.length - 5}
-                </span>
+              {photo.tags.length > 3 && (
+                <span className="text-[10px] font-bold text-slate-500">+{photo.tags.length - 3}</span>
               )}
             </div>
-          </div>
-        )}
-        {/* Timestamp */}
-        <span className={`text-slate-500 ${isMobile ? 'text-[10px]' : 'text-xs uppercase tracking-wide'}`}>
-          {isMobile 
-            ? new Date(photo.timestamp).toLocaleDateString('fr-FR', { 
-                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-              })
-            : new Date(photo.timestamp).toLocaleDateString('fr-FR', { 
-                day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
-              }).toUpperCase()
-          }
-        </span>
+          )}
+
+          {/* Time */}
+          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] pt-1">
+            {new Date(photo.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} • {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+          </p>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
+
+GuestPhotoCard.displayName = 'GuestPhotoCard';
 
 GuestPhotoCard.displayName = 'GuestPhotoCard';
 

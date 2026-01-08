@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import { ArrowLeft, Camera, Image, Search, X, Filter } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { ArrowLeft, Camera, Image, Search, X, Filter, CheckSquare, Square, Trash2, Download } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GalleryHeaderProps {
   onBack: () => void;
@@ -10,6 +11,10 @@ interface GalleryHeaderProps {
   onSearchChange: (query: string) => void;
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
   isFiltersModalOpen?: boolean;
+  selectionMode?: boolean;
+  onToggleSelectionMode?: () => void;
+  selectedCount?: number;
+  onBatchDownload?: () => void;
 }
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -19,12 +24,25 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   searchQuery,
   onSearchChange,
   searchInputRef,
-  isFiltersModalOpen = false
+  isFiltersModalOpen = false,
+  selectionMode = false,
+  onToggleSelectionMode,
+  selectedCount = 0,
+  onBatchDownload
 }) => {
   const isMobile = useIsMobile();
   const internalSearchRef = useRef<HTMLInputElement>(null);
   const searchRef = searchInputRef || internalSearchRef;
-  const [showMobileSearch, setShowMobileSearch] = React.useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Focus sur la recherche avec Ctrl/Cmd + K
   useEffect(() => {
@@ -43,145 +61,174 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchRef, isMobile]);
 
-  // Fermer la recherche mobile quand on efface le texte
-  useEffect(() => {
-    if (searchQuery === '' && showMobileSearch) {
-      // Ne pas fermer automatiquement, laisser l'utilisateur fermer manuellement
-    }
-  }, [searchQuery, showMobileSearch]);
-
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-b from-slate-900/98 via-slate-900/95 to-slate-900/98 backdrop-blur-xl border-b border-white/10 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-5">
-        {/* Top Row - Logo, Navigation, Actions */}
-        <div className="flex items-center justify-between gap-4 mb-4">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-2xl py-2' 
+        : 'bg-transparent py-4 md:py-6'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4">
           {/* Left: Back + Logo */}
           <div className="flex items-center gap-3 md:gap-4">
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onBack} 
-              className="relative p-2.5 -ml-2 active:scale-95 touch-manipulation hover:bg-white/10 active:bg-white/5 rounded-xl transition-all duration-300 group border border-white/10 hover:border-pink-500/30"
+              className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-colors group"
               aria-label="Retour"
             >
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 transition-all duration-300 blur-sm" />
-              <ArrowLeft className="relative w-5 h-5 text-white group-hover:-translate-x-0.5 transition-transform duration-300" />
-            </button>
+              <ArrowLeft className="w-5 h-5 text-white group-hover:-translate-x-1 transition-transform" />
+            </motion.button>
             
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl border border-pink-500/30 shadow-lg">
-                <Image className="w-5 h-5 md:w-6 md:h-6 text-pink-400" />
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-2xl border border-pink-500/30 shadow-lg">
+                <Image className="w-6 h-6 text-pink-400" />
               </div>
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
-                Le Mur
-              </h1>
+              <div>
+                <h1 className="text-xl md:text-2xl font-black tracking-tight text-white">
+                  Le <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-indigo-400">Mur</span>
+                </h1>
+                {!isMobile && <p className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.2em]">Live Party Wall</p>}
+              </div>
             </div>
           </div>
 
-          {/* Right: Search + Filters + Upload (Desktop) */}
-          <div className="hidden md:flex items-center gap-3 flex-1 max-w-md ml-auto">
-            {/* Barre de recherche - Enhanced */}
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder="Rechercher... (Ctrl+K)"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 bg-slate-900/60 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all shadow-inner"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => onSearchChange('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 active:scale-90 touch-manipulation text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                  aria-label="Effacer la recherche"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+          {/* Center/Right: Actions */}
+          <div className="flex items-center gap-2 md:gap-3 flex-1 justify-end">
+            {/* Search Bar (Desktop) */}
+            {!isMobile && (
+              <div className="relative max-w-xs w-full group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-pink-400 transition-colors pointer-events-none" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  placeholder="Rechercher... (Ctrl+K)"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="w-full pl-11 pr-11 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/30 transition-all shadow-inner"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => onSearchChange('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
 
-            {/* Filtres Button - Desktop */}
+            {/* Mobile Search Toggle */}
+            {isMobile && (
+              <button
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                className={`p-2.5 rounded-2xl border transition-all ${
+                  showMobileSearch ? 'bg-pink-500/20 border-pink-500/50 text-pink-400' : 'bg-white/5 border-white/10 text-white'
+                }`}
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Selection Mode Toggle */}
+            {onToggleSelectionMode && (
+              <button
+                onClick={onToggleSelectionMode}
+                className={`flex items-center gap-2 p-2.5 md:px-4 md:py-2.5 rounded-2xl border transition-all ${
+                  selectionMode 
+                    ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400' 
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                }`}
+                title="Mode sélection"
+              >
+                {selectionMode ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                <span className="hidden lg:inline font-semibold text-sm">Sélectionner</span>
+              </button>
+            )}
+
+            {/* Filters Button */}
             <button
               onClick={onFiltersClick}
-              className={`relative flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-pink-900/20 hover:scale-105 active:scale-95 ${
+              className={`p-2.5 md:px-4 md:py-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
                 isFiltersModalOpen
-                  ? 'bg-gradient-to-r from-pink-500/40 to-purple-500/40 text-pink-300 border-2 border-pink-500/70'
-                  : 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-400 hover:text-pink-300 border border-pink-500/50'
+                  ? 'bg-pink-500/20 border-pink-500/50 text-pink-400'
+                  : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
               }`}
-              aria-label={isFiltersModalOpen ? 'Fermer les filtres' : 'Ouvrir les filtres'}
-              title="Filtres & Options"
             >
               <Filter className="w-5 h-5" />
-              <span className="hidden lg:inline">Filtres</span>
+              <span className="hidden lg:inline font-semibold text-sm">Filtres</span>
             </button>
 
-            {/* Upload Button - Desktop */}
-            <button
+            {/* Upload Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={onUploadClick}
-              className="relative flex items-center gap-2.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 text-white px-5 py-3 rounded-xl font-semibold transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-pink-900/40 hover:scale-105 active:scale-95 overflow-hidden group"
-              aria-label="Envoyer une photo"
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white p-2.5 md:px-5 md:py-2.5 rounded-2xl font-bold transition-all shadow-lg shadow-pink-500/20 flex items-center gap-2"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              <Camera className="relative w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-              <span className="relative">Publier</span>
-            </button>
-          </div>
-
-          {/* Mobile: Search + Filters + Upload Buttons */}
-          <div className="md:hidden flex items-center gap-2">
-            <button
-              onClick={() => setShowMobileSearch(!showMobileSearch)}
-              className="p-2.5 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10"
-              aria-label={showMobileSearch ? 'Masquer la recherche' : 'Afficher la recherche'}
-            >
-              <Search className={`w-5 h-5 ${showMobileSearch ? 'text-pink-400' : 'text-white'}`} />
-            </button>
-            <button
-              onClick={onFiltersClick}
-              className={`p-2.5 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border ${
-                isFiltersModalOpen
-                  ? 'border-pink-500/50 bg-pink-500/20'
-                  : 'border-white/10'
-              }`}
-              aria-label={isFiltersModalOpen ? 'Fermer les filtres' : 'Ouvrir les filtres'}
-            >
-              <Filter className={`w-5 h-5 ${isFiltersModalOpen ? 'text-pink-300' : 'text-pink-400'}`} />
-            </button>
-            <button
-              onClick={onUploadClick}
-              className="p-2.5 -mr-2 active:scale-95 touch-manipulation hover:bg-white/10 rounded-xl transition-all border border-white/10"
-              aria-label="Envoyer une photo"
-            >
-              <Camera className="w-5 h-5 text-white" />
-            </button>
+              <Camera className="w-5 h-5" />
+              <span className="hidden md:inline">Publier</span>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile: Search Bar - Conditionnelle */}
-        {isMobile && showMobileSearch && (
-          <div className="relative animate-fade-in">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            <input
-              ref={searchRef}
-              type="text"
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-11 pr-11 py-3 bg-slate-900/60 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all touch-manipulation shadow-inner"
-              autoFocus
-            />
-            <button
-              onClick={() => {
-                onSearchChange('');
-                setShowMobileSearch(false);
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 active:scale-90 touch-manipulation text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-              aria-label="Fermer la recherche"
+        {/* Mobile Search Bar Expandable */}
+        <AnimatePresence>
+          {isMobile && showMobileSearch && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden mt-4"
             >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  placeholder="Rechercher une photo..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30"
+                />
+                <button
+                  onClick={() => setShowMobileSearch(false)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Batch Actions Bar */}
+        <AnimatePresence>
+          {selectionMode && selectedCount > 0 && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="mt-4 flex items-center justify-between bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-3 md:px-6"
+            >
+              <p className="text-indigo-300 font-bold text-sm">
+                {selectedCount} élément{selectedCount > 1 ? 's' : ''} sélectionné{selectedCount > 1 ? 's' : ''}
+              </p>
+              <div className="flex items-center gap-2">
+                {onBatchDownload && (
+                  <button
+                    onClick={onBatchDownload}
+                    className="p-2 hover:bg-white/10 text-white transition-colors rounded-xl flex items-center gap-2 text-sm font-medium"
+                  >
+                    <Download className="w-4 h-4 text-indigo-400" />
+                    <span className="hidden sm:inline">Télécharger</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );
