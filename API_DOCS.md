@@ -903,6 +903,144 @@ const channel = supabase
 
 ---
 
+## 🎮 Service Télécommande ESP32
+
+**Fichier** : `services/remoteControlService.ts`
+
+Permet de contrôler le mur à distance via un ESP32 connecté à Internet. L'ESP32 envoie des commandes HTTP POST vers Supabase, et l'application React les reçoit en temps réel via Supabase Realtime.
+
+### Architecture
+
+```
+ESP32 (Boutons) → HTTP POST → Supabase (table remote_commands) → Realtime → React App → Actions du Mur
+```
+
+### Types de commandes
+
+```typescript
+type RemoteCommandType = 
+  | 'TOGGLE_AUTO_SCROLL'    // Active/désactive l'auto-scroll
+  | 'TRIGGER_AR_EFFECT'     // Déclenche un effet AR (nécessite ar_scene_enabled = true)
+  | 'TOGGLE_QR_CODES'       // Affiche/masque les QR codes
+  | 'SHOW_RANDOM_PHOTO'     // Affiche une photo aléatoire en plein écran (lightbox)
+  | 'CLOSE_RANDOM_PHOTO';   // Ferme le lightbox (photo en plein écran)
+```
+
+### `subscribeToRemoteCommands`
+
+S'abonne aux nouvelles commandes distantes pour un événement.
+
+```typescript
+subscribeToRemoteCommands(
+  eventId: string,
+  onCommand: (command: RemoteCommand) => void
+): { unsubscribe: () => void }
+```
+
+**Paramètres** :
+- `eventId` : ID de l'événement concerné
+- `onCommand` : Callback appelé lorsqu'une nouvelle commande est reçue
+
+**Retour** : Objet avec méthode `unsubscribe()` pour se désabonner
+
+**Exemple d'utilisation** :
+
+```typescript
+import { subscribeToRemoteCommands } from './services/remoteControlService';
+
+useEffect(() => {
+  if (!currentEvent?.id) return;
+
+  const subscription = subscribeToRemoteCommands(currentEvent.id, (command) => {
+    switch (command.command_type) {
+      case 'TOGGLE_AUTO_SCROLL':
+        setIsPaused(!isPaused);
+        break;
+      case 'TRIGGER_AR_EFFECT':
+        arSceneManagerRef.current?.triggerRandomEffect();
+        break;
+      case 'TOGGLE_QR_CODES':
+        setShowQrCodes(!showQrCodes);
+        break;
+      case 'SHOW_RANDOM_PHOTO':
+        // Afficher une photo aléatoire en plein écran
+        if (displayedPhotos.length > 0) {
+          const randomIndex = Math.floor(Math.random() * displayedPhotos.length);
+          setLightboxIndex(randomIndex);
+        }
+        break;
+      case 'CLOSE_RANDOM_PHOTO':
+        // Fermer le lightbox
+        setLightboxIndex(null);
+        break;
+    }
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [currentEvent?.id, isPaused, showQrCodes]);
+```
+
+### Interface `RemoteCommand`
+
+```typescript
+interface RemoteCommand {
+  id: string;
+  event_id: string;
+  command_type: RemoteCommandType;
+  command_value: string | null;
+  processed: boolean;
+  created_at: string;
+}
+```
+
+### Envoi de commande depuis ESP32
+
+L'ESP32 envoie une requête HTTP POST vers Supabase :
+
+```http
+POST /rest/v1/remote_commands
+Content-Type: application/json
+apikey: VOTRE_SUPABASE_ANON_KEY
+
+{
+  "event_id": "uuid-de-l-evenement",
+  "command_type": "SHOW_RANDOM_PHOTO",
+  "command_value": null,
+  "processed": false
+}
+```
+
+**Exemple de code ESP32** : Voir `docs/esp32/esp32_remote_control.ino`
+
+### Table Supabase `remote_commands`
+
+La table stocke les commandes envoyées par l'ESP32 :
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `id` | UUID | Identifiant unique |
+| `event_id` | UUID | ID de l'événement (FK → events) |
+| `command_type` | TEXT | Type de commande (CHECK constraint) |
+| `command_value` | TEXT | Valeur optionnelle (nullable) |
+| `processed` | BOOLEAN | Indique si la commande a été traitée |
+| `created_at` | TIMESTAMPTZ | Date de création |
+
+**RLS** : INSERT public autorisé (pas d'authentification requise), filtré par `event_id`
+
+**Realtime** : Activé pour recevoir les commandes en temps réel
+
+**Migration SQL** : Voir `supabase/supabase_remote_commands_setup.sql`
+
+### Sécurité
+
+- Les commandes sont filtrées par `event_id` pour isoler les événements
+- Les commandes sont marquées comme `processed = true` après traitement pour éviter les doubles traitements
+- Pas d'authentification requise pour INSERT (comme demandé), mais isolation par `event_id`
+
+---
+
 ## ⚠️ Gestion des erreurs
 
 Tous les services suivent un pattern de gestion d'erreurs cohérent :

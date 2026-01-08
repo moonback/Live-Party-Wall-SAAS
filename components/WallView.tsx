@@ -7,6 +7,7 @@ import { playVictorySound, playDefeatOrTieSound } from '../utils/soundService';
 import { getBaseUrl } from '../utils/urlUtils';
 import { logger } from '../utils/logger';
 import { useEvent } from '../context/EventContext';
+import { subscribeToRemoteCommands, RemoteCommand } from '../services/remoteControlService';
 
 // Hooks
 import { useWallData } from '../hooks/wall/useWallData';
@@ -185,6 +186,127 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     }
   }, [winnerPhotoDisplay, tieBattleDisplay]);
 
+  // Remote Control (ESP32) - Écoute des commandes distantes
+  useEffect(() => {
+    if (!currentEvent?.id) {
+      logger.warn('No event ID, remote control disabled', {
+        component: 'WallView',
+        action: 'remoteCommand'
+      });
+      return;
+    }
+
+    logger.info('Setting up remote control subscription', {
+      component: 'WallView',
+      action: 'remoteCommand',
+      eventId: currentEvent.id
+    });
+
+    const subscription = subscribeToRemoteCommands(currentEvent.id, (command: RemoteCommand) => {
+      logger.info('Executing remote command', {
+        component: 'WallView',
+        action: 'remoteCommand',
+        commandType: command.command_type,
+        commandId: command.id,
+        eventId: currentEvent.id
+      });
+
+      switch (command.command_type) {
+        case 'TOGGLE_AUTO_SCROLL':
+          setIsPaused(!isPaused);
+          logger.info('Toggled auto-scroll via remote command', {
+            component: 'WallView',
+            action: 'remoteCommand',
+            newState: !isPaused ? 'paused' : 'playing'
+          });
+          break;
+
+        case 'TRIGGER_AR_EFFECT':
+          if (arSceneManagerRef.current) {
+            logger.info('AR Scene Manager ref is available, triggering effect', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              arEnabled: settings.ar_scene_enabled
+            });
+            arSceneManagerRef.current.triggerRandomEffect();
+            logger.info('✅ Triggered AR effect via remote command', {
+              component: 'WallView',
+              action: 'remoteCommand'
+            });
+          } else {
+            logger.warn('❌ AR Scene Manager ref is null, cannot trigger effect', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              arEnabled: settings.ar_scene_enabled
+            });
+          }
+          break;
+
+        case 'TOGGLE_QR_CODES':
+          setShowQrCodes(!showQrCodes);
+          logger.info('Toggled QR codes via remote command', {
+            component: 'WallView',
+            action: 'remoteCommand',
+            newState: !showQrCodes ? 'hidden' : 'visible'
+          });
+          break;
+
+        case 'SHOW_RANDOM_PHOTO':
+          // Afficher une photo aléatoire en plein écran (lightbox)
+          if (displayedPhotos.length > 0) {
+            const randomIndex = Math.floor(Math.random() * displayedPhotos.length);
+            setLightboxIndex(randomIndex);
+            logger.info('Showing random photo in lightbox via remote command', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              photoIndex: randomIndex,
+              totalPhotos: displayedPhotos.length,
+              photoId: displayedPhotos[randomIndex].id
+            });
+          } else {
+            logger.warn('No photos available to show in lightbox', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              totalPhotos: displayedPhotos.length
+            });
+          }
+          break;
+
+        case 'CLOSE_RANDOM_PHOTO':
+          // Fermer le lightbox (photo en plein écran)
+          if (lightboxIndex !== null) {
+            setLightboxIndex(null);
+            logger.info('Closed lightbox via remote command', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              previousPhotoIndex: lightboxIndex
+            });
+          } else {
+            logger.info('Lightbox already closed, nothing to do', {
+              component: 'WallView',
+              action: 'remoteCommand'
+            });
+          }
+          break;
+
+        default:
+          logger.warn('Unknown remote command type', {
+            component: 'WallView',
+            action: 'remoteCommand',
+            commandType: command.command_type
+          });
+      }
+    });
+
+    return () => {
+      logger.info('Unsubscribing from remote commands', {
+        component: 'WallView',
+        action: 'remoteCommand',
+        eventId: currentEvent.id
+      });
+      subscription.unsubscribe();
+    };
+  }, [currentEvent?.id, isPaused, showQrCodes, displayedPhotos, lightboxIndex]);
 
   // --- Handlers ---
   const lightboxPhoto = lightboxIndex !== null ? displayedPhotos[lightboxIndex] : null;
