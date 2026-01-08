@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Photo } from '../types';
-// MAX_VIDEO_DURATION utilisé dans VideoTimer
+import { MAX_VIDEO_DURATION } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
@@ -78,7 +78,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
   // Countdown pour la photo
   useEffect(() => {
-    if (countdown === null) return undefined;
+    if (countdown === null) return;
 
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -86,7 +86,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     } else {
       capturePhoto();
       setCountdown(null);
-      return undefined;
     }
   }, [countdown]);
 
