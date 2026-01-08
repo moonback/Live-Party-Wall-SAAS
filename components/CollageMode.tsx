@@ -211,6 +211,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             setIsBurstMode(false);
             setBurstCount(0);
             addToast('Mode rafale terminé !', 'success');
+            // La prévisualisation sera générée automatiquement via le useEffect
           }
         }
       }
@@ -286,6 +287,13 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   // Générer la prévisualisation du collage
   useEffect(() => {
+    // En mode rafale, ne pas générer la prévisualisation pendant la capture
+    // Elle sera générée automatiquement à la fin du mode rafale
+    if (isBurstMode) {
+      // Ne pas supprimer la prévisualisation existante si elle existe déjà
+      return;
+    }
+    
     if (capturedImages.length >= MIN_COLLAGE_PHOTOS) {
       const generatePreview = async () => {
         try {
@@ -301,7 +309,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       setPreviewCollage(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capturedImages, selectedTemplate]);
+  }, [capturedImages, selectedTemplate, isBurstMode]);
 
   // Mettre à jour le template selon le nombre d'images
   useEffect(() => {
@@ -507,7 +515,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             }}
           >
             {cameraError ? (
-              <div className="aspect-video flex items-center justify-center p-6 sm:p-8">
+              <div className="h-[60vh] sm:h-auto sm:aspect-video flex items-center justify-center p-6 sm:p-8">
                 <div className="text-center">
                   <Camera className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-white/30" />
                   <p className="text-sm sm:text-base text-white/60">Caméra indisponible</p>
@@ -520,7 +528,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                   autoPlay
                   playsInline
                   muted
-                  className="w-full aspect-video object-cover"
+                  className="w-full h-[60vh] sm:h-auto sm:aspect-video object-cover"
                 />
                 {flash && (
                   <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
