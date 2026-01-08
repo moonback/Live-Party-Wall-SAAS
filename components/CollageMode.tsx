@@ -8,10 +8,9 @@ import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NA
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
 import { validateAuthorName } from '../utils/validation';
-import { Camera, X, Grid3x3, LayoutGrid, Square, RotateCcw, Upload, ArrowLeft, FlipHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
+import { Camera, X, Grid3x3, LayoutGrid, Square, RotateCcw, Upload, ArrowLeft, FlipHorizontal, Zap, GripVertical, Download } from 'lucide-react';
 import { getSettings, subscribeToSettings, EventSettings, defaultSettings } from '../services/settingsService';
 import { drawPngOverlay } from '../utils/imageOverlay';
-import { useCameraZoom } from '../hooks/useCameraZoom';
 import { useAdaptiveCameraResolution } from '../hooks/useAdaptiveCameraResolution';
 
 interface CollageModeProps {
@@ -39,13 +38,12 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const { resetZoom, zoomIn, zoomOut, containerProps: zoomProps } = useCameraZoom(videoRef as React.RefObject<HTMLVideoElement>, {
-    minZoom: 1,
-    maxZoom: 3,
-    initialZoom: 1,
-    enabled: capturedImages.length < MAX_COLLAGE_PHOTOS && !cameraError
-  });
+  const [isBurstMode, setIsBurstMode] = useState(false);
+  const [burstCount, setBurstCount] = useState(0);
+  const burstModeRef = useRef(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [captureAnimation, setCaptureAnimation] = useState<number | null>(null);
 
   useAdaptiveCameraResolution(videoRef as React.RefObject<HTMLVideoElement>, stream, {
     preferredWidth: 1920,
@@ -56,24 +54,26 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   // Charger les settings
   useEffect(() => {
+    if (!currentEvent?.id) return;
+    
     setMounted(true);
     let mounted = true;
-    getSettings()
-      .then((s) => {
+    getSettings(currentEvent.id)
+      .then((s: EventSettings) => {
         if (mounted) {
           setEventSettings(s);
         }
       })
       .catch((e) => console.error(e));
 
-    const sub = subscribeToSettings((s) => {
+    const sub = subscribeToSettings(currentEvent.id, (s: EventSettings) => {
       setEventSettings(s);
     });
     return () => {
       mounted = false;
       sub.unsubscribe();
     };
-  }, []);
+  }, [currentEvent?.id]);
 
   // Démarrer la caméra
   const startCamera = async (preferredFacingMode?: 'user' | 'environment') => {
@@ -119,7 +119,11 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       addToast(`Maximum ${MAX_COLLAGE_PHOTOS} photos autorisées`, 'error');
       return;
     }
-    setCountdown(3);
+    if (isBurstMode) {
+      setCountdown(2); // Countdown de 2 secondes pour le mode rafale
+    } else {
+      setCountdown(3);
+    }
   };
 
   useEffect(() => {
@@ -133,11 +137,13 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       setCountdown(null);
       return undefined;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countdown]);
 
   // Capturer une photo
   const capturePhoto = async () => {
     setFlash(true);
+    setCaptureAnimation(capturedImages.length);
     setTimeout(() => setFlash(false), 500);
 
     if (videoRef.current && canvasRef.current) {
@@ -168,7 +174,45 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
           }
         }
         const dataUrl = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
-        setCapturedImages(prev => [...prev, dataUrl]);
+        const newImages = [...capturedImages, dataUrl];
+        const newImageCount = newImages.length;
+        setCapturedImages(newImages);
+        
+        // Mode rafale : continuer la capture
+        if (isBurstMode && burstModeRef.current) {
+          const newBurstCount = burstCount + 1;
+          setBurstCount(newBurstCount);
+          
+          // Vérifier si on peut continuer (on a capturé moins que le maximum)
+          // Utiliser newImageCount qui est la valeur locale correcte
+          if (newImageCount < MAX_COLLAGE_PHOTOS) {
+            // Continuer le mode rafale après un court délai
+            setTimeout(() => {
+              // Vérifier que le mode rafale est toujours actif via le ref
+              // et vérifier le nombre d'images actuel depuis l'état
+              setCapturedImages(currentImages => {
+                if (burstModeRef.current && currentImages.length < MAX_COLLAGE_PHOTOS) {
+                  setCountdown(2); // Countdown de 2 secondes pour la prochaine photo
+                } else {
+                  // On a atteint le maximum ou le mode rafale a été désactivé
+                  burstModeRef.current = false;
+                  setIsBurstMode(false);
+                  setBurstCount(0);
+                  if (currentImages.length >= MAX_COLLAGE_PHOTOS) {
+                    addToast('Mode rafale terminé !', 'success');
+                  }
+                }
+                return currentImages; // Ne pas modifier l'état
+              });
+            }, 600);
+          } else {
+            // On a atteint le maximum
+            burstModeRef.current = false;
+            setIsBurstMode(false);
+            setBurstCount(0);
+            addToast('Mode rafale terminé !', 'success');
+          }
+        }
       }
     }
   };
@@ -185,8 +229,60 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
     setPreviewCollage(null);
     setSelectedTemplate('2x2');
     setAuthorName('');
-    resetZoom();
+    burstModeRef.current = false;
+    setIsBurstMode(false);
+    setBurstCount(0);
   };
+
+  // Mode rafale : capture rapide de plusieurs photos
+  const startBurstMode = () => {
+    if (capturedImages.length >= MAX_COLLAGE_PHOTOS) {
+      addToast(`Maximum ${MAX_COLLAGE_PHOTOS} photos autorisées`, 'error');
+      return;
+    }
+    burstModeRef.current = true;
+    setIsBurstMode(true);
+    setBurstCount(0);
+    initiatePhotoCapture(); // Démarrer la première capture
+  };
+
+  // Réorganisation par drag & drop
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+
+    const newImages = [...capturedImages];
+    const draggedImage = newImages[draggedIndex];
+    newImages.splice(draggedIndex, 1);
+    newImages.splice(dropIndex, 0, draggedImage);
+
+    setCapturedImages(newImages);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Animation de capture
+  useEffect(() => {
+    if (captureAnimation !== null) {
+      const timer = setTimeout(() => setCaptureAnimation(null), 600);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [captureAnimation]);
 
   // Générer la prévisualisation du collage
   useEffect(() => {
@@ -425,14 +521,21 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                   playsInline
                   muted
                   className="w-full aspect-video object-cover"
-                  {...zoomProps}
                 />
                 {flash && (
                   <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
                 )}
                 {countdown !== null && countdown > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-20">
-                    <div className="text-6xl sm:text-8xl font-bold text-white animate-scale-in drop-shadow-2xl">{countdown}</div>
+                    <div className="text-center">
+                      <div className="text-6xl sm:text-8xl font-bold text-white animate-scale-in drop-shadow-2xl">{countdown}</div>
+                      {isBurstMode && (
+                        <div className="mt-4 flex items-center justify-center gap-2 text-yellow-400">
+                          <Zap className="w-5 h-5 animate-pulse" />
+                          <span className="text-sm font-bold">Mode rafale</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -449,28 +552,30 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                   >
                     <FlipHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
-                  <button
-                    onClick={zoomIn}
-                    className="p-2 sm:p-3 rounded-full backdrop-blur-xl bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/20 text-white transition-all duration-300 shadow-lg active:scale-95 touch-manipulation"
-                    style={{
-                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                    }}
-                    title="Zoomer"
-                    aria-label="Zoomer"
-                  >
-                    <ZoomIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                  <button
-                    onClick={zoomOut}
-                    className="p-2 sm:p-3 rounded-full backdrop-blur-xl bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/20 text-white transition-all duration-300 shadow-lg active:scale-95 touch-manipulation"
-                    style={{
-                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                    }}
-                    title="Dézoomer"
-                    aria-label="Dézoomer"
-                  >
-                    <ZoomOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
+                  {!isBurstMode && (
+                    <button
+                      onClick={startBurstMode}
+                      className={`p-2 sm:p-3 rounded-full backdrop-blur-xl border text-white transition-all duration-300 shadow-lg active:scale-95 touch-manipulation ${
+                        isBurstMode 
+                          ? 'bg-yellow-500/80 border-yellow-400 hover:bg-yellow-500' 
+                          : 'bg-white/10 hover:bg-white/20 active:bg-white/25 border-white/20'
+                      }`}
+                      style={{
+                        boxShadow: isBurstMode 
+                          ? '0 4px 16px rgba(234, 179, 8, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                          : '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                      }}
+                      title="Mode rafale"
+                      aria-label="Mode rafale"
+                    >
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  )}
+                  {isBurstMode && (
+                    <div className="px-3 py-1.5 rounded-full backdrop-blur-xl bg-yellow-500/80 border border-yellow-400 text-white text-xs font-bold">
+                      Rafale: {burstCount + 1}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -479,13 +584,13 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             <div className="p-3 sm:p-4">
               <button
                 onClick={initiatePhotoCapture}
-                disabled={countdown !== null || cameraError}
-                className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 touch-manipulation min-h-[48px] sm:min-h-[56px]"
+                disabled={countdown !== null || cameraError || isBurstMode}
+                className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 touch-manipulation min-h-[48px] sm:min-h-[56px] relative overflow-hidden"
                 style={{
-                  background: countdown !== null || cameraError
+                  background: countdown !== null || cameraError || isBurstMode
                     ? 'linear-gradient(135deg, rgba(107, 114, 128, 0.8), rgba(75, 85, 99, 0.8))'
                     : 'linear-gradient(135deg, rgba(236, 72, 153, 0.8), rgba(139, 92, 246, 0.8))',
-                  boxShadow: countdown !== null || cameraError
+                  boxShadow: countdown !== null || cameraError || isBurstMode
                     ? '0 4px 16px rgba(0, 0, 0, 0.2)'
                     : '0 8px 32px rgba(236, 72, 153, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                 }}
@@ -514,8 +619,17 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                   }
                 }}
               >
-                <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Capturer la photo {capturedImages.length + 1}</span>
+                {isBurstMode ? (
+                  <>
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                    <span>Mode rafale actif...</span>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>Capturer la photo {capturedImages.length + 1}</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -535,13 +649,31 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             <h3 className="text-xs sm:text-sm font-semibold text-white/80 mb-2 sm:mb-3">Photos capturées</h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {capturedImages.map((img, index) => (
-                <div key={index} className="relative group touch-manipulation">
-                  <div className="aspect-square rounded-lg sm:rounded-xl overflow-hidden border-2 border-white/10 group-hover:border-white/30 active:border-white/40 transition-all duration-300">
+                <div 
+                  key={index} 
+                  className={`relative group touch-manipulation ${
+                    draggedIndex === index ? 'opacity-50 scale-95' : ''
+                  } ${
+                    dragOverIndex === index ? 'ring-2 ring-pink-500 scale-105' : ''
+                  } ${
+                    captureAnimation === index ? 'animate-pulse scale-110' : ''
+                  } transition-all duration-300`}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                >
+                  <div className="aspect-square rounded-lg sm:rounded-xl overflow-hidden border-2 border-white/10 group-hover:border-white/30 active:border-white/40 transition-all duration-300 relative">
                     <img
                       src={img}
                       alt={`Photo ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
+                    {/* Animation de capture */}
+                    {captureAnimation === index && (
+                      <div className="absolute inset-0 bg-white/30 animate-ping" />
+                    )}
                   </div>
                   <button
                     onClick={() => removeImage(index)}
@@ -553,7 +685,8 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                   >
                     <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                   </button>
-                  <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg backdrop-blur-xl bg-black/60 border border-white/10 text-white text-[10px] sm:text-xs font-bold">
+                  <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg backdrop-blur-xl bg-black/60 border border-white/10 text-white text-[10px] sm:text-xs font-bold flex items-center gap-1">
+                    <GripVertical className="w-3 h-3 opacity-50" />
                     {index + 1}
                   </div>
                 </div>
@@ -659,10 +792,29 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             />
           </div>
 
+          {/* Download Preview Button */}
+          {previewCollage && (
+            <button
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = previewCollage;
+                link.download = `collage-${Date.now()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                addToast('Collage téléchargé !', 'success');
+              }}
+              className="w-full mb-3 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-medium text-sm text-white/80 hover:text-white transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 touch-manipulation backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20"
+            >
+              <Download className="w-4 h-4" />
+              <span>Télécharger le collage</span>
+            </button>
+          )}
+
           {/* Upload Button - Optimisé mobile */}
           <button
             onClick={handleUpload}
-            disabled={!canCreateCollage || !previewCollage || !authorName.trim() || loading}
+            disabled={!canCreateCollage || !previewCollage || !authorName.trim() || loading || isBurstMode}
             className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 touch-manipulation min-h-[48px] sm:min-h-[56px]"
             style={{
               background: loading || !canCreateCollage || !previewCollage || !authorName.trim()
