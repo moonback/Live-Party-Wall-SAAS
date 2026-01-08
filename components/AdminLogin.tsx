@@ -180,6 +180,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
         </button>
 
         <button
+          type="button"
           onClick={onBack}
           className="w-full group text-gray-300 bg-gray-700/60 hover:bg-gray-700/90 rounded-xl py-2 text-base font-bold transition-all flex items-center justify-center gap-2
             border-2 border-gray-700 hover:border-pink-400 shadow-sm hover:text-pink-400"
