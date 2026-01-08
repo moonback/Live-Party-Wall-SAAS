@@ -853,6 +853,17 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
   return (
     <section ref={containerRef} className="relative min-h-[100svh] flex items-center justify-center pt-24 sm:pt-28 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-black to-pink-900">
       
+      {/* Mobile Background Image (remplace la scène 3D sur mobile) */}
+      <div className="absolute inset-0 md:hidden pointer-events-none flex items-center justify-center overflow-hidden">
+        <img
+          src="/background.png"
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-contain object-center opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
+      </div>
+
       {/* Dynamic Background Elements */}
       <motion.div style={{ y: y1 }} className="absolute top-[-10%] left-[-10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-pink-500/20 rounded-full blur-[80px] md:blur-[120px] pointer-events-none opacity-50 mix-blend-screen" />
       <motion.div style={{ y: y2 }} className="absolute bottom-0 right-[-10%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-purple-500/15 rounded-full blur-[80px] md:blur-[120px] pointer-events-none opacity-50 mix-blend-screen" />
