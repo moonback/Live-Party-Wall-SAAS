@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
-import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Play, Star, Monitor } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Play, Star } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 // Photos optimisées et fiables pour éviter les erreurs de chargement
@@ -278,7 +278,7 @@ const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index }) => {
 // COMPOSANT SceneAnimation
 // ============================================================================
 
-const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode = 'demo' }) => {
+const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' }) => {
   const prefersReducedMotion = useReducedMotion();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -862,7 +862,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12 lg:gap-16">
+        <div className="flex flex-col lg:flex-row items-center gap-10 sm:gap-14 lg:gap-16">
           
           {/* Text Content */}
           <motion.div 
@@ -871,51 +871,43 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             animate="visible"
             className="flex-1 text-center lg:text-left relative z-20 w-full"
           >
-            {/* New Badge */}
-            <motion.div 
+            {/* Badge minimal */}
+            <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 sm:mb-8 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default mx-auto lg:mx-0"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md mx-auto lg:mx-0"
             >
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
               <span className="text-[10px] sm:text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                Le mur photo viral
+                Mur photo en temps réel
               </span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 text-white">
-              Transformez vos invités en<br className="hidden lg:block"/>
-              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 animate-gradient-x pb-2">
-                photographes stars
+            <motion.h1
+              variants={itemVariants}
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] text-white"
+            >
+              Le mur photo qui fait
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
+                participer tout le monde
               </span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-base sm:text-lg lg:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-              L'animation photo interactive qui sublime votre événement. <br className="hidden sm:block" />
-              <span className="text-white font-medium">Capturez. L'IA sublime. Le mur diffuse.</span> <br className="hidden sm:block" />
-              Zéro application à installer. Effet "Wow" immédiat.
+            <motion.p
+              variants={itemVariants}
+              className="mt-5 sm:mt-6 text-base sm:text-lg lg:text-xl text-gray-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light"
+            >
+              <span className="text-white font-medium">Vos invités capturent</span>, l’IA sublime, le mur diffuse.{' '}
+              <span className="text-white/90 font-medium">Sans app</span>.
             </motion.p>
 
-            {/* Feature Pills */}
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 justify-center lg:justify-start mb-8 sm:mb-10">
-                {[
-                    { icon: <Monitor size={14} />, text: "TV/PC + Smartphones" },
-                    { icon: <Zap size={14} />, text: "Mur Photo Instantané" },
-                ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs sm:text-sm font-medium text-gray-200 backdrop-blur-md shadow-sm hover:bg-white/10 transition-colors">
-                        <span className="text-pink-400">{feature.icon}</span>
-                        {feature.text}
-                    </div>
-                ))}
-            </motion.div>
-
             {/* CTA Buttons */}
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-8 sm:mb-10 w-full sm:w-auto">
+            <motion.div
+              variants={itemVariants}
+              className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start items-center w-full sm:w-auto"
+            >
               <button 
                 onClick={onAdminClick}
-                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all transform hover:-translate-y-1 w-full sm:w-auto overflow-hidden group shadow-lg"
+                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all transform hover:-translate-y-0.5 w-full sm:w-auto overflow-hidden group shadow-lg"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Essayer maintenant
@@ -924,8 +916,11 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               
-              <button className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-full font-semibold text-sm sm:text-base text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2 w-full sm:w-auto backdrop-blur-sm group">
-                <Play className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
+              <button
+                type="button"
+                className="px-8 py-3.5 bg-transparent text-white/90 hover:text-white transition-colors font-semibold text-sm sm:text-base flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                <Play className="w-4 h-4 fill-white/90" />
                 Voir la démo
               </button>
             </motion.div>
@@ -933,36 +928,33 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             {/* Social Proof Enhanced */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6"
+              className="mt-7 sm:mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-5"
               aria-label="Avis clients organisateurs"
             >
-              {/* Avatars événement stylés */}
-              <div className="flex -space-x-3">
-                {EVENT_PHOTOS.slice(0, 4).map((photo, idx) => (
-                  <div
-                    key={idx}
-                    className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/80 ring-2 ring-pink-400/40 shadow-lg bg-gray-800 bg-cover bg-center overflow-hidden hover:scale-105 transition-transform duration-200 group"
-                    style={{ backgroundImage: `url(${photo.url})` }}
-                  >
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-full border-2 border-white opacity-75 group-hover:scale-125 transition-transform" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Note & preuve sociale */}
-              <div className="flex flex-col items-center sm:items-start gap-1">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
-                   {[1, 2, 3, 4, 5].map(i => (
+                  {[1, 2, 3, 4, 5].map(i => (
                     <Star
                       key={i}
                       size={16}
-                      className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.21)]"
+                      className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.18)]"
                     />
                   ))}
                 </div>
                 <div className="text-xs sm:text-sm text-gray-300">
-                  <strong className="text-white font-semibold">4.9/5</strong> sur <span className="text-pink-400 font-bold">+500 événements</span>
+                  <strong className="text-white font-semibold">4.9/5</strong> ·{' '}
+                  <span className="text-pink-400 font-bold">+500 événements</span>
                 </div>
+              </div>
+              <div className="flex -space-x-2">
+                {EVENT_PHOTOS.slice(0, 3).map((photo, idx) => (
+                  <div
+                    key={idx}
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white/20 bg-gray-800 bg-cover bg-center shadow-md"
+                    style={{ backgroundImage: `url(${photo.url})` }}
+                    aria-hidden="true"
+                  />
+                ))}
               </div>
             </motion.div>
           </motion.div>
