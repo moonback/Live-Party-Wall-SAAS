@@ -53,8 +53,7 @@ export const getUserSubscription = async (userId: string): Promise<Subscription 
 
 /**
  * Initialise une session de paiement Stripe pour un plan
- * Note: Dans une vraie implémentation, cela appellerait une Edge Function Supabase
- * qui communique avec l'API Stripe.
+ * Appelle l'Edge Function Supabase 'create-checkout-session'
  */
 export const createCheckoutSession = async (
   planId: string,
@@ -64,19 +63,20 @@ export const createCheckoutSession = async (
   if (!isSupabaseConfigured()) return null;
 
   try {
-    logger.info("Creating checkout session", { planId, userId, eventId });
+    logger.info("Creating checkout session via Edge Function", { planId, userId, eventId });
     
-    // Simulation d'appel à une Edge Function Supabase
-    // const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
-    //   body: { planId, userId, eventId, successUrl: window.location.origin + '/success', cancelUrl: window.location.origin + '/cancel' }
-    // });
+    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      body: { 
+        planId, 
+        userId, 
+        eventId, 
+        successUrl: window.location.origin + '/admin?success=true', 
+        cancelUrl: window.location.origin + '/admin?canceled=true' 
+      }
+    });
     
-    // if (error) throw error;
-    // return data;
-
-    // Pour la démo, on simule une redirection
-    alert("Redirection vers Stripe Checkout simulée... (Plan ID: " + planId + ")");
-    return { url: window.location.href };
+    if (error) throw error;
+    return data;
   } catch (error) {
     logger.error("Error creating checkout session", error, { component: 'paymentService', action: 'createCheckoutSession', planId });
     throw error;

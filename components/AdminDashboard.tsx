@@ -87,8 +87,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   }, [allPhotos]);
 
   // Forcer l'onglet actif à être "events" si aucun événement n'est sélectionné
+  // On autorise toutefois l'onglet "billing" à rester actif sans événement
   useEffect(() => {
-    if (!currentEvent && activeTab !== 'events') {
+    if (!currentEvent && activeTab !== 'events' && activeTab !== 'billing') {
       setActiveTab('events');
     }
   }, [currentEvent, activeTab]);
