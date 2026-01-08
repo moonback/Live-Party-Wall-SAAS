@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Users, Menu, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StickyNavigation } from './StickyNavigation';
+import { getStaticAssetPath } from '../../utils/electronPaths';
 
 interface LandingHeaderProps {
   isAuthenticated: boolean;
@@ -85,9 +86,13 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               <div className="relative">
                 <div className="absolute inset-0 bg-pink-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity rounded-full"></div>
                 <img
-                  src="/icon.png"
+                  src={getStaticAssetPath('icon.png')}
                   alt="Live Party Wall"
                   className="relative w-8 h-8 sm:w-9 sm:h-9 z-10"
+                  onError={(e) => {
+                    // Fallback si l'image ne charge pas
+                    console.error('Failed to load icon:', e);
+                  }}
                 />
               </div>
               <span className="text-lg sm:text-xl font-bold text-white tracking-tight">
