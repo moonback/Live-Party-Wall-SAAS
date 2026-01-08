@@ -907,11 +907,11 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             
             <motion.h1
               variants={itemVariants}
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1] text-white mb-6 drop-shadow-2xl"
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] text-white"
             >
-              Le photobooth
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 animate-gradient-x pb-4">
-                 est réinventé.
+              Le mur photo qui fait
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
+                participer tout le monde
               </span>
             </motion.h1>
             
