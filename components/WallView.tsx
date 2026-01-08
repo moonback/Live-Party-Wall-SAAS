@@ -53,6 +53,9 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   // --- Hooks ---
   const { uiConfig, isKiosqueMode, settings } = useWallSettings();
   
+  // --- Event Context ---
+  const { currentEvent } = useEvent();
+  
   // Debug: Log quand alert_text change
   useEffect(() => {
     logger.info('WallView: alert_text changed', { 
@@ -75,7 +78,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     winnerPhotoDisplay, 
     tieBattleDisplay, 
     handleBattleFinished 
-  } = useWallBattles(settings.battle_mode_enabled !== false);
+  } = useWallBattles(settings.battle_mode_enabled !== false, currentEvent?.id);
 
   const { isPaused, setIsPaused } = useAutoScroll({
     enabled: true, // Auto-scroll is always enabled by default, controlled by pause
@@ -85,9 +88,6 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   });
 
   const { flyingReactions } = useReactionFlow();
-
-  // --- Event Context ---
-  const { currentEvent } = useEvent();
 
   // --- Derived State ---
   const showBattles = settings.battle_mode_enabled !== false;

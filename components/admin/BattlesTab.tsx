@@ -56,7 +56,7 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
   useEffect(() => {
     if (!currentEvent) return;
 
-    const unsubscribe = subscribeToNewBattles(currentEvent.id, (newBattle) => {
+    const battlesSub = subscribeToNewBattles(currentEvent.id, (newBattle) => {
       setBattles(prev => {
         // Vérifier si la battle existe déjà
         const exists = prev.some(b => b.id === newBattle.id);
@@ -66,7 +66,9 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
     });
 
     return () => {
-      unsubscribe();
+      if (battlesSub && typeof battlesSub.unsubscribe === 'function') {
+        battlesSub.unsubscribe();
+      }
     };
   }, [currentEvent]);
 

@@ -3,7 +3,7 @@ import { PhotoBattle, Photo } from '../../types';
 import { getActiveBattles, subscribeToNewBattles } from '../../services/battleService';
 import { combineCleanups } from '../../utils/subscriptionHelper';
 
-export const useWallBattles = (battleModeEnabled: boolean) => {
+export const useWallBattles = (battleModeEnabled: boolean, eventId?: string) => {
   const [battles, setBattles] = useState<PhotoBattle[]>([]);
   const [finishedBattles, setFinishedBattles] = useState<Map<string, number>>(new Map());
   const [winnerPhotoDisplay, setWinnerPhotoDisplay] = useState<Photo | null>(null);
@@ -11,14 +11,14 @@ export const useWallBattles = (battleModeEnabled: boolean) => {
 
   // Charger et s'abonner aux battles
   useEffect(() => {
-    if (!battleModeEnabled) {
+    if (!battleModeEnabled || !eventId) {
       setBattles([]);
       return;
     }
 
     const loadBattles = async () => {
       try {
-        const activeBattles = await getActiveBattles();
+        const activeBattles = await getActiveBattles(eventId);
         setBattles(activeBattles);
       } catch (error) {
         console.error('Error loading battles:', error);
@@ -33,7 +33,7 @@ export const useWallBattles = (battleModeEnabled: boolean) => {
     }, 30000);
 
     // Abonnement aux nouvelles battles
-    const battlesSub = subscribeToNewBattles((newBattle) => {
+    const battlesSub = subscribeToNewBattles(eventId, (newBattle) => {
       setBattles(prev => {
         if (prev.some(b => b.id === newBattle.id)) {
           return prev;
@@ -43,10 +43,14 @@ export const useWallBattles = (battleModeEnabled: boolean) => {
     });
 
     return combineCleanups([
-      () => battlesSub.unsubscribe(),
+      () => {
+        if (battlesSub && typeof battlesSub.unsubscribe === 'function') {
+          battlesSub.unsubscribe();
+        }
+      },
       () => clearInterval(checkExpiredInterval),
     ]);
-  }, [battleModeEnabled]);
+  }, [battleModeEnabled, eventId]);
 
   // Nettoyer les battles terminées après 20 secondes
   useEffect(() => {
