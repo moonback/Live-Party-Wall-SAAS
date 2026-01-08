@@ -56,16 +56,18 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
               </div>
               
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onBack}
-              className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-slate-200"
-              aria-label="Retour à l'accueil"
-            >
-              <Home className="w-5 h-5 text-green-500" />
-              <span className="text-green-500"></span>
-            </motion.button>
+            {currentEventName && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onBack}
+                className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-slate-200"
+                aria-label="Retour à l'accueil"
+              >
+                <Home className="w-5 h-5 text-green-500" />
+                <span className="text-green-500"></span>
+              </motion.button>
+            )}
           </div>
 
           {/* Section droite - Actions rapides et profil */}
