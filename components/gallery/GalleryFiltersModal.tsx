@@ -73,19 +73,27 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 md:p-6 pointer-events-none">
+          <div className={`fixed inset-0 z-[101] pointer-events-none ${
+            isMobile 
+              ? 'flex items-end justify-center p-0' 
+              : 'flex items-center justify-center p-4 md:p-6'
+          }`}>
             <motion.div
-              initial={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
-              animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
-              exit={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0 }}
+              initial={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0, y: 0 }}
+              animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1, y: 0 }}
+              exit={isMobile ? { y: '100%' } : { scale: 0.9, opacity: 0, y: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[2.5rem] shadow-2xl pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
+              className={`w-full bg-slate-900 border border-white/10 shadow-2xl pointer-events-auto overflow-hidden flex flex-col ${
+                isMobile 
+                  ? 'max-w-full rounded-t-[2.5rem] max-h-[80vh]' 
+                  : 'max-w-2xl rounded-[2.5rem] max-h-[80vh] my-auto'
+              }`}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 md:p-8 border-b border-white/5 bg-gradient-to-r from-pink-500/5 to-purple-500/5">
+              <div className="flex items-center justify-between p-4 md:p-8 border-b border-white/5 bg-gradient-to-r from-pink-500/5 to-purple-500/5 flex-shrink-0">
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-black text-white">Filtres</h2>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Personnalisez votre vue</p>
+                  <h2 className="text-xl md:text-3xl font-black text-white">Filtres</h2>
+                  <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-0.5 md:mt-1 hidden md:block">Personnalisez votre vue</p>
                 </div>
                 <button
                   onClick={onClose}
