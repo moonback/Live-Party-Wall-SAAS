@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Copy, Check } from 'lucide-react';
+import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Globe } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
@@ -35,7 +35,6 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
 }) => {
   const { currentEvent } = useEvent();
   const [showEventLink, setShowEventLink] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleCloseApp = async () => {
     if (isElectron() && window.electronAPI) {
@@ -66,18 +65,6 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
     }
   };
 
-  const handleCopyLink = async () => {
-    const eventUrl = getEventUrl();
-    if (eventUrl) {
-      try {
-        await navigator.clipboard.writeText(eventUrl);
-        setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
-      } catch (error) {
-        console.error('Erreur lors de la copie du lien:', error);
-      }
-    }
-  };
 
   return (
     <header className="mb-6">
@@ -136,14 +123,27 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 <motion.button
                   whileHover={{ scale: 1.07 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleOpenEventLink}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-green-400/30 bg-gradient-to-r from-green-800/30 to-green-700/20 hover:bg-green-600/25 transition-all duration-150 text-green-300 hover:text-green-100 group shadow"
+                  aria-label="Ouvrir l'événement dans le navigateur"
+                  title="Ouvrir l'événement dans le navigateur"
+                >
+                  <Globe className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                    Ouvrir
+                  </span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.07 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowEventLink(!showEventLink)}
                   className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-800/30 to-blue-700/20 hover:bg-blue-600/25 transition-all duration-150 text-blue-300 hover:text-blue-100 group shadow"
-                  aria-label="Afficher le lien de l'événement"
-                  title="Afficher le lien de l'événement"
+                  aria-label="Afficher le QRcode de l'événement"
+                  title="Afficher le QRcode de l'événement"
                 >
                   <ExternalLink className="w-5 h-5 transition-transform group-hover:scale-110" />
                   <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
-                    Lien
+                    Qrcode
                   </span>
                 </motion.button>
                 <motion.button
@@ -338,28 +338,6 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <p className="text-sm text-slate-400 mb-2">Partagez ce lien avec vos invités :</p>
-                <div className="flex items-center gap-2 p-3 bg-slate-950 rounded-lg border border-slate-800">
-                  <code className="flex-1 text-sm text-slate-300 break-all font-mono">
-                    {getEventUrl()}
-                  </code>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleCopyLink}
-                    className="flex-shrink-0 p-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-                    title="Copier le lien"
-                  >
-                    {linkCopied ? (
-                      <Check className="w-4 h-4 text-white" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-white" />
-                    )}
-                  </motion.button>
                 </div>
               </div>
 
