@@ -24,8 +24,8 @@ export interface EventSettings {
 }
 
 export const defaultSettings: EventSettings = {
-  event_title: 'Party Wall',
-  event_subtitle: 'Live',
+  event_title: 'Live Party Wall',
+  event_subtitle: '2026',
   scroll_speed: 'normal',
   slide_transition: 'fade',
   decorative_frame_enabled: false,
@@ -40,7 +40,7 @@ export const defaultSettings: EventSettings = {
   ar_scene_enabled: false,
   battle_mode_enabled: false,
   auto_battles_enabled: false,
-  tags_generation_enabled: true,
+  tags_generation_enabled: false,
   alert_text: null
 };
 
