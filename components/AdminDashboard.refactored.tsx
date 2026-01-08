@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
 import { useToast } from '../context/ToastContext';
@@ -34,6 +34,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('events');
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Local state for moderation (reversed photos for newest first)
@@ -316,11 +317,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const loadEvents = async () => {
     if (!user || events.length > 0) return;
+    setLoadingEvents(true);
     try {
       const userEvents = await getUserEvents(user.id);
       setEvents(userEvents);
     } catch (error) {
       console.error('Error loading events:', error);
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
