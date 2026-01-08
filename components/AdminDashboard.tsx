@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
-import { Trash2, LogOut, Home, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu, Calendar } from 'lucide-react';
+import { Trash2, Home, RefreshCw, Settings, Image as ImageIcon, Download, BarChart2, Frame, X, Save, Upload, Type, Tag, Gauge, Move, Sparkles, Shield, Info, Video, Grid3x3, ChevronUp, ChevronDown, ChevronRight, Zap, Star, Award, User, Trophy, Clock, CheckCircle2, Users, Heart, Camera, Menu, Calendar } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
@@ -26,6 +26,7 @@ import { useEvent } from '../context/EventContext';
 import { getUserEvents } from '../services/eventService';
 import { Event } from '../types';
 import AdminProfile from './AdminProfile';
+import { motion } from 'framer-motion';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -820,49 +821,46 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-900/30 rounded-full blur-[180px] animate-pulse-slow"></div>
-         <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-pink-900/30 rounded-full blur-[180px]" style={{ animationName: 'pulseSlow', animationDuration: '8s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationDelay: '2s' }}></div>
+    <div className="min-h-screen bg-black text-white font-sans relative overflow-hidden selection:bg-pink-500/30">
+      {/* Arrière-plan animé ultra-cohérent avec EventSelector */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-pink-600/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
       </div>
-      {/* Grain Texture */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
 
-      <div className="relative z-10 p-3 sm:p-4 md:p-6 lg:p-8">
-        {/* Header - Design compact amélioré */}
-        <header className="mb-4 sm:mb-5">
-          {/* Barre principale du header */}
-          <div className="bg-slate-900/60 backdrop-blur-xl rounded-xl border border-white/10 p-3 sm:p-4 shadow-xl">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 sm:gap-3">
-              {/* Section gauche - Titre et navigation */}
-              <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
-                <button
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-1">
+        {/* Header Premium - Style cohérent avec EventSelector */}
+        <header className="mb-1">
+          <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 p-6 sm:p-8 shadow-2xl">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6">
+              {/* Section gauche - Titre et badge */}
+              <div className="flex items-center gap-2 w-full lg:w-auto">
+                <motion.button
+                  whileHover={{ scale: 1.06, backgroundColor: 'rgba(255,255,255,0.08)' }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={onBack}
-                  className="group relative p-2 min-h-[36px] min-w-[36px] touch-manipulation rounded-lg border border-white/15 bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:from-pink-500/20 hover:to-purple-500/20 transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 flex items-center justify-center shadow-md hover:shadow-pink-500/20"
+                  className="p-2 bg-white/5 rounded-xl border border-white/10 transition-all text-gray-400 hover:text-white flex-shrink-0"
                   aria-label="Retour à l'accueil"
                 >
-                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/10 group-hover:to-purple-500/10 transition-all duration-300 pointer-events-none"></span>
-                </button>
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+                </motion.button>
                 
                 <div className="min-w-0 flex-1 lg:flex-none">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <div className="p-1 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-md border border-pink-500/30">
-                      <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-400" />
-                    </div>
-                    <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 truncate">
-                      Administration
-                    </h1>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    
                   </div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="text-[10px] sm:text-xs text-slate-400">Gérez votre mur en direct</p>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-white to-gray-500 bg-clip-text text-transparent mb-1">
+                    Administration
+                  </h1>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-gray-400 text-xs sm:text-sm font-medium">Gérez votre mur</p>
                     {currentEvent && (
                       <>
-                        <span className="text-slate-600">•</span>
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-md">
+                        <span className="text-gray-600 text-xs">•</span>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-full">
                           <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
-                          <span className="text-[10px] sm:text-xs font-medium text-pink-300 truncate max-w-[180px]">
+                          <span className="text-[10px] font-medium text-pink-300 truncate max-w-[120px]">
                             {currentEvent.name}
                           </span>
                         </div>
@@ -873,61 +871,67 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               </div>
               
               {/* Section droite - Actions rapides et profil */}
-              <div className="flex items-center gap-1.5 sm:gap-2 w-full lg:w-auto flex-wrap">
+              <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto flex-wrap">
                 {/* Actions rapides - Groupe de boutons */}
                 {photos.length > 0 && (
-                  <div className="flex items-center gap-1.5 p-1.5 bg-slate-800/50 rounded-lg border border-white/5">
-                    <button
+                  <div className="flex items-center gap-2 p-2 bg-white/5 rounded-2xl border border-white/10">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={handleDeleteAll}
-                      className="group relative flex items-center justify-center px-2.5 py-2 min-h-[32px] touch-manipulation bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 rounded-md transition-all duration-300 shadow-md shadow-red-900/30 hover:scale-105 active:scale-95 border border-red-500/30"
+                      className="group relative flex items-center justify-center px-3 py-2 min-h-[36px] touch-manipulation bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 rounded-xl transition-all duration-300 shadow-md shadow-red-900/30 border border-red-500/30"
                       title="Tout vider - Supprimer toutes les photos"
                       aria-label="Tout vider"
                     >
-                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 text-white" />
-                      <span className="hidden sm:inline ml-1.5 text-[10px] font-semibold text-white">Vider</span>
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-white" />
+                      <span className="hidden sm:inline ml-2 text-xs font-bold text-white">Vider</span>
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-slate-900/95 backdrop-blur-xl text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
                         Tout vider
                         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-900/95"></div>
                       </div>
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={handleExport}
                       disabled={isExporting}
-                      className="group relative flex items-center justify-center px-2.5 py-2 min-h-[32px] touch-manipulation bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-all duration-300 shadow-md shadow-pink-900/30 hover:scale-105 active:scale-95"
+                      className="group relative flex items-center justify-center px-3 py-2 min-h-[36px] touch-manipulation bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-300 shadow-md shadow-pink-900/30"
                       title={isExporting ? "Création du ZIP en cours..." : "Tout télécharger - Télécharger toutes les photos en ZIP"}
                       aria-label="Tout télécharger"
                     >
                       {isExporting ? (
-                        <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin flex-shrink-0 text-white" />
+                        <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin flex-shrink-0 text-white" />
                       ) : (
-                        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 text-white" />
+                        <Download className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-white" />
                       )}
-                      <span className="hidden sm:inline ml-1.5 text-[10px] font-semibold text-white">ZIP</span>
+                      <span className="hidden sm:inline ml-2 text-xs font-bold text-white">ZIP</span>
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-slate-900/95 backdrop-blur-xl text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
                         {isExporting ? 'Création ZIP...' : 'Tout télécharger'}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-900/95"></div>
                       </div>
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={handleExportWithMetadata}
                       disabled={isExportingWithMetadata}
-                      className="group relative flex items-center justify-center px-2.5 py-2 min-h-[32px] touch-manipulation bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-all duration-300 shadow-md shadow-cyan-900/30 hover:scale-105 active:scale-95"
+                      className="group relative flex items-center justify-center px-3 py-2 min-h-[36px] touch-manipulation bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-300 shadow-md shadow-cyan-900/30"
                       title={isExportingWithMetadata ? "Génération PNG en cours..." : "Export PNG - Télécharger toutes les photos en PNG avec métadonnées superposées"}
                       aria-label="Export PNG"
                     >
                       {isExportingWithMetadata ? (
-                        <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin flex-shrink-0 text-white" />
+                        <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin flex-shrink-0 text-white" />
                       ) : (
-                        <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 text-white" />
+                        <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 text-white" />
                       )}
                       {isExportingWithMetadata && exportProgress && (
-                        <span className="absolute -top-0.5 -right-0.5 text-[8px] font-bold bg-cyan-500 text-white rounded-full w-4 h-4 flex items-center justify-center border-2 border-slate-900">
+                        <span className="absolute -top-0.5 -right-0.5 text-[8px] font-bold bg-cyan-500 text-white rounded-full w-4 h-4 flex items-center justify-center border-2 border-black">
                           {exportProgress.processed}
                         </span>
                       )}
-                      <span className="hidden sm:inline ml-1.5 text-[10px] font-semibold text-white">PNG</span>
+                      <span className="hidden sm:inline ml-2 text-xs font-bold text-white">PNG</span>
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-slate-900/95 backdrop-blur-xl text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 border border-white/20 shadow-xl">
                         {isExportingWithMetadata ? 'Génération PNG...' : 'Export PNG'}
                         {isExportingWithMetadata && exportProgress && (
@@ -937,13 +941,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         )}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-900/95"></div>
                       </div>
-                    </button>
+                    </motion.button>
                   </div>
                 )}
 
                 {/* Indicateur de progression pour l'export PNG */}
                 {isExportingWithMetadata && exportProgress && (
-                  <div className="w-full lg:w-auto min-w-[180px] bg-slate-800/80 backdrop-blur-xl rounded-lg p-2 border border-cyan-500/30 shadow-lg">
+                  <div className="w-full lg:w-auto min-w-[180px] bg-white/5 backdrop-blur-xl rounded-2xl p-3 border border-cyan-500/30 shadow-lg">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] font-semibold text-cyan-300">
                         {exportProgress.message || 'Traitement...'}
@@ -1141,9 +1145,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             </div>
           )}
 
-          {/* Navigation horizontale pour tablette et desktop - Design moderne amélioré */}
+          {/* Navigation horizontale pour tablette et desktop - Design premium cohérent */}
           <div className="hidden sm:block">
-            <div className="relative bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/15 p-2 shadow-2xl overflow-hidden">
+            <div className="relative bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 p-3 shadow-2xl overflow-hidden">
               {/* Effet de brillance animé en arrière-plan */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-pink-500/5 to-transparent animate-shimmer pointer-events-none"></div>
               <div className="relative flex gap-1.5 overflow-x-auto scrollbar-hide">
@@ -1162,18 +1166,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                       }
                     }
                   }}
-                  className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                  className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                     activeTab === 'events' 
                       ? 'text-white' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
-                  {activeTab === 'events' && (
-                    <>
-                      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-xl animate-pulse-slow"></div>
-                    </>
-                  )}
+                      {activeTab === 'events' && (
+                        <>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-2xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl animate-pulse"></div>
+                        </>
+                      )}
                   <div className="relative flex items-center gap-2.5">
                     <div className="relative">
                       <Calendar className={`w-5 h-5 md:w-6 md:h-6 flex-shrink-0 transition-all duration-300 ${activeTab === 'events' ? 'scale-110 text-pink-300' : 'group-hover:scale-110'}`} />
@@ -1183,9 +1187,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     </div>
                     <span className="text-sm md:text-base font-semibold">Événements</span>
                     <span className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300 ${
-                      activeTab === 'events' 
+                        activeTab === 'events' 
                         ? 'bg-pink-500/40 text-pink-100 shadow-lg shadow-pink-900/40 border border-pink-400/50' 
-                        : 'bg-slate-700/60 text-slate-300 group-hover:bg-slate-700 border border-slate-600/30'
+                        : 'bg-white/5 text-gray-300 group-hover:bg-white/10 border border-white/10'
                     }`}>{events.length}</span>
                   </div>
                   {activeTab === 'events' && (
@@ -1197,16 +1201,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   <>
                     <button
                       onClick={() => setActiveTab('moderation')}
-                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                         activeTab === 'moderation' 
                           ? 'text-white' 
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {activeTab === 'moderation' && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-xl animate-pulse-slow"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-2xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl animate-pulse"></div>
                         </>
                       )}
                       <div className="relative flex items-center gap-2.5">
@@ -1220,7 +1224,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300 ${
                           activeTab === 'moderation' 
                             ? 'bg-pink-500/40 text-pink-100 shadow-lg shadow-pink-900/40 border border-pink-400/50' 
-                            : 'bg-slate-700/60 text-slate-300 group-hover:bg-slate-700 border border-slate-600/30'
+                            : 'bg-white/5 text-gray-300 group-hover:bg-white/10 border border-white/10'
                         }`}>{photos.length}</span>
                       </div>
                       {activeTab === 'moderation' && (
@@ -1230,16 +1234,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     
                     <button
                       onClick={() => setActiveTab('analytics')}
-                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                         activeTab === 'analytics' 
                           ? 'text-white' 
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {activeTab === 'analytics' && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-xl animate-pulse-slow"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-2xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl animate-pulse"></div>
                         </>
                       )}
                       <div className="relative flex items-center gap-2.5">
@@ -1258,16 +1262,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     
                     <button
                       onClick={() => setActiveTab('configuration')}
-                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                         activeTab === 'configuration' 
                           ? 'text-white' 
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {activeTab === 'configuration' && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-xl animate-pulse-slow"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-2xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl animate-pulse"></div>
                         </>
                       )}
                       <div className="relative flex items-center gap-2.5">
@@ -1286,16 +1290,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     
                     <button
                       onClick={() => setActiveTab('aftermovie')}
-                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                         activeTab === 'aftermovie'
                           ? 'text-white'
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {activeTab === 'aftermovie' && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-xl animate-pulse-slow"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/25 via-purple-500/25 to-pink-500/25 rounded-2xl border border-pink-500/40 shadow-xl shadow-pink-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl animate-pulse"></div>
                         </>
                       )}
                       <div className="relative flex items-center gap-2.5">
@@ -1315,16 +1319,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     {config.battle_mode_enabled !== false && (
                       <button
                         onClick={() => setActiveTab('battles')}
-                        className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                        className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                           activeTab === 'battles'
                             ? 'text-white'
-                            : 'text-slate-400 hover:text-white'
+                            : 'text-gray-400 hover:text-white'
                         }`}
                       >
                         {activeTab === 'battles' && (
                           <>
-                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/25 via-orange-500/25 to-yellow-500/25 rounded-xl border border-yellow-500/40 shadow-xl shadow-yellow-900/30"></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-yellow-500/10 rounded-xl animate-pulse-slow"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/25 via-orange-500/25 to-yellow-500/25 rounded-2xl border border-yellow-500/40 shadow-xl shadow-yellow-900/30"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-yellow-500/10 rounded-2xl animate-pulse"></div>
                           </>
                         )}
                         <div className="relative flex items-center gap-2.5">
@@ -1338,7 +1342,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                           <span className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300 ${
                             activeTab === 'battles' 
                               ? 'bg-yellow-500/40 text-yellow-100 shadow-lg shadow-yellow-900/40 border border-yellow-400/50' 
-                              : 'bg-slate-700/60 text-slate-300 group-hover:bg-slate-700 border border-slate-600/30'
+                              : 'bg-white/5 text-gray-300 group-hover:bg-white/10 border border-white/10'
                           }`}>{battles.length}</span>
                         </div>
                         {activeTab === 'battles' && (
@@ -1354,16 +1358,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                           loadGuests();
                         }
                       }}
-                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
+                      className={`relative flex items-center gap-2.5 px-5 md:px-6 py-3.5 rounded-2xl transition-all duration-300 whitespace-nowrap min-h-[52px] touch-manipulation flex-shrink-0 group ${
                         activeTab === 'guests'
                           ? 'text-white'
-                          : 'text-slate-400 hover:text-white'
+                          : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       {activeTab === 'guests' && (
                         <>
-                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/25 via-blue-500/25 to-cyan-500/25 rounded-xl border border-cyan-500/40 shadow-xl shadow-cyan-900/30"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 rounded-xl animate-pulse-slow"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/25 via-blue-500/25 to-cyan-500/25 rounded-2xl border border-cyan-500/40 shadow-xl shadow-cyan-900/30"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 rounded-2xl animate-pulse"></div>
                         </>
                       )}
                       <div className="relative flex items-center gap-2.5">
@@ -1377,7 +1381,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <span className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300 ${
                           activeTab === 'guests' 
                             ? 'bg-cyan-500/40 text-cyan-100 shadow-lg shadow-cyan-900/40 border border-cyan-400/50' 
-                            : 'bg-slate-700/60 text-slate-300 group-hover:bg-slate-700 border border-slate-600/30'
+                            : 'bg-white/5 text-gray-300 group-hover:bg-white/10 border border-white/10'
                         }`}>{guests.length}</span>
                       </div>
                       {activeTab === 'guests' && (
@@ -1422,6 +1426,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               <EventSelector
                 onEventSelected={(event) => {
                   setSelectedEvent(event);
+                }}
+                onSettingsClick={async (event) => {
+                  try {
+                    await loadEventBySlug(event.slug);
+                    setActiveTab('configuration');
+                    addToast(`Paramètres de l'événement "${event.name}" chargés`, 'success');
+                  } catch (error) {
+                    addToast('Erreur lors du chargement des paramètres', 'error');
+                  }
                 }}
                 onBack={onBack}
               />
@@ -1539,7 +1552,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
         {activeTab === 'configuration' && (
           <div className="max-w-7xl mx-auto">
-            <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
+            <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
               {/* Gradient decoration */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-pink-500/5 to-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -1572,7 +1585,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 {/* Section Apparence - Colonne principale */}
                 <div className="lg:col-span-7 space-y-10 md:space-y-12">
                   {/* Section Apparence */}
-                  <section className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-white/15 rounded-3xl p-7 md:p-10 shadow-2xl hover:shadow-pink-500/10 transition-all duration-300">
+                  <section className="bg-gray-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-7 md:p-10 shadow-2xl hover:shadow-pink-500/10 transition-all duration-300 relative overflow-hidden">
                     <header className="flex items-center gap-4 mb-8">
                       <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-pink-500/40 to-purple-500/40 rounded-2xl border border-pink-600/30 shadow-md shadow-pink-900/20">
                         <ImageIcon className="w-7 h-7 text-pink-300" />
@@ -1786,7 +1799,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   </section>
 
                   {/* Section Comportement */}
-                  <section className="bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-950/80 backdrop-blur-xl border border-white/15 rounded-3xl p-7 md:p-10 shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300">
+                  <section className="bg-gray-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-7 md:p-10 shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 relative overflow-hidden">
                     <header className="flex items-center gap-4 mb-8">
                       <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-cyan-500/50 via-sky-500/30 to-indigo-500/40 rounded-2xl border border-cyan-500/30 shadow-md shadow-cyan-900/20">
                         <Gauge className="w-7 h-7 text-cyan-200" />
@@ -1837,7 +1850,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
                 {/* Section IA - Sidebar */}
                 <aside className="lg:col-span-5 space-y-10 md:space-y-12">
-                  <section className="bg-gradient-to-br from-purple-950/60 via-pink-950/45 to-indigo-950/80 backdrop-blur-xl border border-purple-500/25 rounded-3xl p-7 md:p-10 shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 sticky top-4">
+                  <section className="bg-gray-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-7 md:p-10 shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 sticky top-4 relative overflow-hidden">
                     <header className="flex items-center gap-4 mb-7">
                       <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500/40 via-indigo-500/20 to-pink-500/40 rounded-2xl border border-purple-400/30 shadow-lg shadow-purple-900/10 ring-2 ring-purple-400/10 animate-pulse-slow">
                         <Sparkles className="w-7 h-7 text-purple-200 drop-shadow-glow" />
@@ -2138,7 +2151,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
         {activeTab === 'aftermovie' && (
           <div className="max-w-7xl mx-auto">
-            <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+            <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
               <div className="mb-6">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 sm:gap-3">
                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl border border-pink-500/30">
@@ -3135,7 +3148,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         {activeTab === 'battles' && config.battle_mode_enabled !== false && (
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Section Battles Automatiques */}
-            <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+            <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
               <div className="mb-6">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 sm:gap-3">
                   <div className="p-1.5 sm:p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl border border-purple-500/30">
@@ -3186,7 +3199,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
             {/* Bouton Nouvelle Battle */}
             {!showCreateBattleForm && (
-              <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+              <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
                 <button
                   onClick={() => setShowCreateBattleForm(true)}
                   className="w-full px-6 py-4 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 border border-yellow-500/30 hover:border-yellow-500/50 text-yellow-400 hover:text-yellow-300 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-3 group shadow-lg hover:shadow-xl"
@@ -3199,7 +3212,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
             {/* Section Création de Battle - Affichée seulement si showCreateBattleForm est true */}
             {showCreateBattleForm && (
-              <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+              <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 sm:gap-3">
@@ -3327,7 +3340,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               </button>
 
               {/* Liste des photos pour sélection */}
-              <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl mt-6">
+              <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl mt-6 relative overflow-hidden">
                 <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-pink-400" />
                   Sélectionner des photos ({photos.length} disponibles)
@@ -3382,7 +3395,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             )}
 
             {/* Battles Actives */}
-            <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+            <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
               <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-400" />
                 Battles Actives 
@@ -3635,7 +3648,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         {activeTab === 'guests' && (
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Header avec statistiques globales */}
-            <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+            <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 sm:gap-3 mb-2">
@@ -3706,7 +3719,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
               </div>
             ) : guests.length === 0 ? (
-              <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8 sm:p-12 border border-white/10 shadow-2xl text-center">
+              <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-8 sm:p-12 border border-white/10 shadow-2xl text-center relative overflow-hidden">
                 <Users className="w-16 h-16 mx-auto mb-4 text-slate-600" />
                 <h3 className="text-xl font-bold text-white mb-2">Aucun invité</h3>
                 <p className="text-slate-400">Aucun invité n'a encore créé de profil.</p>
@@ -3720,7 +3733,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   return (
                     <div
                       key={guest.id}
-                      className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-900/20 group"
+                      className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-900/20 group relative overflow-hidden"
                     >
                       {/* Header avec avatar et nom */}
                       <div className="flex items-start gap-4 mb-4">
