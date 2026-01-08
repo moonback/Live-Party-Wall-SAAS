@@ -894,90 +894,94 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             {/* Badge minimal */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md mx-auto lg:mx-0"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md mx-auto lg:mx-0 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:bg-white/10 transition-colors cursor-default"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-              <span className="text-[10px] sm:text-xs font-semibold text-gray-200 tracking-wide uppercase">
-                Mur photo en temps réel
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-pink-500"></span>
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold text-pink-100 tracking-wider uppercase">
+                L'animation photo nouvelle génération
               </span>
             </motion.div>
             
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] text-white"
+              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1] text-white mb-6 drop-shadow-2xl"
             >
-              Le mur photo qui fait
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
-                participer tout le monde
+              Le photobooth
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 animate-gradient-x pb-4">
+                 est réinventé.
               </span>
             </motion.h1>
             
             <motion.p
               variants={itemVariants}
-              className="mt-5 sm:mt-6 text-base sm:text-lg lg:text-xl text-gray-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light"
+              className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light"
             >
-              <span className="text-white font-medium">Vos invités capturent</span>, l’IA sublime, le mur diffuse.{' '}
-              <span className="text-white/90 font-medium">Sans app</span>.
+              Transformez chaque smartphone en appareil photo instantané. <br className="hidden sm:block" />
+              <span className="text-white font-medium">Vos invités capturent</span>, l'IA sublime, le mur diffuse en direct.
             </motion.p>
 
             {/* CTA Buttons */}
             <motion.div
               variants={itemVariants}
-              className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start items-center w-full sm:w-auto"
+              className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center lg:justify-start items-center w-full sm:w-auto"
             >
               <button 
                 onClick={onAdminClick}
-                aria-label="Essayer maintenant - Créer un événement gratuitement"
-                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all transform hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto overflow-hidden group shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                aria-label="Créer un événement maintenant"
+                className="group relative px-8 py-4 bg-white text-black rounded-2xl font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 w-full sm:w-auto overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)]"
               >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Essayer maintenant
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  Commencer gratuitement
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
-                 <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
               
               <button
                 type="button"
                 onClick={() => setShowDemo(true)}
-                aria-label="Voir la démo vidéo de Live Party Wall"
-                className="px-8 py-3.5 bg-transparent text-white/90 hover:text-white transition-colors font-semibold text-sm sm:text-base flex items-center justify-center gap-2 w-full sm:w-auto border border-white/20 hover:border-white/40 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="group px-8 py-4 bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm rounded-2xl font-semibold text-base sm:text-lg flex items-center justify-center gap-3 w-full sm:w-auto border border-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105"
               >
-                <Play className="w-4 h-4 fill-white/90" />
-                Voir la démo
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                   <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                </div>
+                <span>Voir la démo</span>
               </button>
             </motion.div>
 
             {/* Social Proof Enhanced */}
             <motion.div
               variants={itemVariants}
-              className="mt-7 sm:mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-5"
-              aria-label="Avis clients organisateurs"
+              className="mt-10 sm:mt-12 flex items-center justify-center lg:justify-start gap-6 border-t border-white/5 pt-8"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex -space-x-3">
+                {EVENT_PHOTOS.slice(0, 4).map((photo, idx) => (
+                  <div
+                    key={idx}
+                    className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 bg-cover bg-center shadow-lg transform hover:scale-110 hover:z-10 transition-transform duration-300"
+                    style={{ backgroundImage: `url(${photo.url})` }}
+                  />
+                ))}
+                <div className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br from-pink-600 to-purple-700">
+                  +2k
+                </div>
+              </div>
+              <div className="flex flex-col">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(i => (
                     <Star
                       key={i}
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(250,204,21,0.18)]"
+                      size={14}
+                      className="text-yellow-400 fill-yellow-400"
                     />
                   ))}
                 </div>
-                <div className="text-xs sm:text-sm text-gray-300">
-                  <strong className="text-white font-semibold">4.9/5</strong> ·{' '}
-                  <span className="text-pink-400 font-bold">+500 événements</span>
+                <div className="text-sm text-gray-400 mt-0.5">
+                  Adopté par <span className="text-white font-semibold">500+ organisateurs</span>
                 </div>
-              </div>
-              <div className="flex -space-x-2">
-                {EVENT_PHOTOS.slice(0, 3).map((photo, idx) => (
-                  <div
-                    key={idx}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-white/20 bg-gray-800 bg-cover bg-center shadow-md"
-                    style={{ backgroundImage: `url(${photo.url})` }}
-                    aria-hidden="true"
-                  />
-                ))}
               </div>
             </motion.div>
           </motion.div>

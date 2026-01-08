@@ -26,34 +26,39 @@ export const StepCard: React.FC<StepCardProps> = ({ number, icon: Icon, title, d
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.15 }}
       whileHover={{ y: -8 }}
-      className="relative flex flex-col items-center text-center rounded-2xl bg-gradient-to-b from-gray-900/80 to-black/80 border border-white/10 hover:border-pink-500/40 transition-all duration-300 group shadow-lg backdrop-blur-sm z-10 overflow-hidden"
+      className="relative flex flex-col items-center text-center rounded-2xl bg-black/40 border border-white/10 hover:border-pink-500/40 transition-all duration-300 group shadow-lg backdrop-blur-xl z-10 overflow-visible"
     >
-      {/* Image de fond */}
-      <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+      {/* Connector (Mobile only) */}
+      {index < 3 && (
+        <div className="lg:hidden absolute bottom-[-40px] left-1/2 -translate-x-1/2 w-0.5 h-10 bg-gradient-to-b from-pink-500/30 to-transparent z-0" />
+      )}
+
+      {/* Image de fond avec mask */}
+      <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-500">
         <img
           src={stepImages[number - 1] || stepImages[0]}
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-20 transform scale-105 group-hover:scale-100 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90" />
       </div>
 
       {/* Number Badge */}
-      <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-xl font-bold text-white shadow-lg border-4 border-black group-hover:scale-110 transition-transform duration-300 z-20">
+      <div className="absolute -top-5 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-right-4 w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-[0_0_15px_rgba(236,72,153,0.4)] border-4 border-black group-hover:scale-110 transition-transform duration-300 z-20">
         {number}
       </div>
 
       {/* Contenu */}
-      <div className="relative z-10 p-6 md:p-8 w-full">
+      <div className="relative z-10 p-6 sm:p-8 w-full">
         {/* Icon Container with animated ring */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-pink-500/20 rounded-full blur-xl group-hover:bg-pink-500/40 transition-all duration-300" />
-          <div className="w-20 h-20 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center relative z-10 group-hover:border-pink-500/50 transition-colors duration-300 mx-auto">
-            <Icon className="w-10 h-10 text-white group-hover:text-pink-400 transition-colors duration-300" strokeWidth={1.5} />
+        <div className="relative mb-6 mx-auto w-20">
+          <div className="absolute inset-0 bg-pink-500/20 rounded-full blur-xl group-hover:bg-pink-500/40 transition-all duration-300 scale-75 group-hover:scale-110" />
+          <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center relative z-10 group-hover:border-pink-500/50 transition-colors duration-300 shadow-2xl backdrop-blur-sm group-hover:-rotate-3 transform">
+            <Icon className="w-9 h-9 text-white group-hover:text-pink-400 transition-colors duration-300" strokeWidth={1.5} />
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-pink-300 transition-colors">
+        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-pink-200 transition-all">
           {title}
         </h3>
         
@@ -63,7 +68,7 @@ export const StepCard: React.FC<StepCardProps> = ({ number, icon: Icon, title, d
       </div>
 
       {/* Bottom gradient line */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent group-hover:w-full transition-all duration-500 opacity-50 z-20" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/3 h-[1px] bg-gradient-to-r from-transparent via-pink-500/50 to-transparent group-hover:w-full group-hover:via-pink-500 group-hover:h-[2px] transition-all duration-500 opacity-50 z-20" />
     </motion.div>
   );
 };

@@ -45,7 +45,7 @@ export const Features: React.FC = () => {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
           {FEATURES.map((feature, index) => (
             <FeatureCard
               key={index}
@@ -53,7 +53,7 @@ export const Features: React.FC = () => {
               icon={feature.icon}
               title={feature.title}
               description={feature.description}
-              className={feature.highlight ? "md:col-span-2 bg-gradient-to-br from-white/10 to-white/5 border-pink-500/20" : ""}
+              className={`${feature.highlight ? "lg:col-span-2 bg-gradient-to-br from-pink-900/20 to-purple-900/20 border-pink-500/30" : "bg-white/5 border-white/10"} hover:bg-white/10 transition-colors`}
             />
           ))}
         </div>

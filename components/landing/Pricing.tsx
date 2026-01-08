@@ -111,8 +111,12 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
       </section>
 
       {/* Offers Section */}
-      <section id="offers" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-black/20">
-        <div className="max-w-7xl mx-auto">
+      <section id="offers" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background blobs */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-900/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <motion.h3
               initial={{ opacity: 0, y: 20 }}
@@ -129,11 +133,11 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
               transition={{ delay: 0.1 }}
               className="text-lg text-gray-300 max-w-2xl mx-auto"
             >
-              Choisissez l'offre qui correspond à vos besoins
+              Une tarification transparente adaptée à la taille de votre événement
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16">
             {offers.map((offer, index) => (
               <motion.div
                 key={index}
@@ -141,48 +145,54 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className={`relative bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 transition-all duration-300 hover:scale-105 ${
+                className={`relative flex flex-col bg-black/40 backdrop-blur-xl rounded-3xl p-1 border transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
                   offer.popular
-                    ? 'border-pink-500 shadow-2xl shadow-pink-500/20'
-                    : 'border-gray-700/50 hover:border-pink-500/50'
+                    ? 'border-pink-500/50 shadow-[0_0_30px_rgba(236,72,153,0.15)] z-10 scale-105 md:scale-110'
+                    : 'border-white/10 hover:border-white/20'
                 }`}
               >
                 {offer.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-sm font-semibold text-white">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-xs font-bold text-white tracking-wide shadow-lg uppercase">
                     Le plus populaire
                   </div>
                 )}
                 
-                <div className="text-center mb-6">
-                  <h4 className="text-2xl font-bold text-white mb-2">{offer.name}</h4>
-                  <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-                      {offer.price} €
-                    </span>
-                    <span className="text-gray-400 text-sm">{offer.period}</span>
-                  </div>
-                  <p className="text-sm text-gray-400 italic">{offer.target}</p>
+                <div className={`h-full rounded-[20px] p-6 sm:p-8 flex flex-col ${offer.popular ? 'bg-gradient-to-b from-white/5 to-transparent' : 'bg-transparent'}`}>
+                    <div className="mb-6">
+                      <h4 className="text-xl font-bold text-white mb-2">{offer.name}</h4>
+                      <div className="flex items-baseline gap-1 mb-2">
+                        <span className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+                          {offer.price}€
+                        </span>
+                        <span className="text-gray-400 text-sm font-medium">{offer.period}</span>
+                      </div>
+                      <p className="text-sm text-gray-400 leading-snug min-h-[40px]">{offer.target}</p>
+                    </div>
+
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
+
+                    <ul className="space-y-4 mb-8 flex-grow">
+                      {offer.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start gap-3">
+                          <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${offer.popular ? 'bg-pink-500/20 text-pink-400' : 'bg-white/10 text-gray-300'}`}>
+                              <Check className="w-3 h-3" strokeWidth={3} />
+                          </div>
+                          <span className="text-gray-300 text-sm font-medium">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={onAdminClick}
+                      className={`w-full py-4 px-6 rounded-xl font-bold text-sm transition-all duration-300 shadow-lg hover:shadow-xl ${
+                        offer.popular
+                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white shadow-pink-900/20'
+                          : 'bg-white text-black hover:bg-gray-100 shadow-white/5'
+                      }`}
+                    >
+                      Choisir {offer.name}
+                    </button>
                 </div>
-
-                <ul className="space-y-3 mb-8">
-                  {offer.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-300 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={onAdminClick}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
-                    offer.popular
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white'
-                      : 'bg-gray-700/50 hover:bg-gray-700 text-white border border-gray-600'
-                  }`}
-                >
-                  Choisir {offer.name}
-                </button>
               </motion.div>
             ))}
           </div>
@@ -192,43 +202,50 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-16 bg-gradient-to-r from-purple-900/30 to-pink-900/30 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20"
+            className="mt-16 relative overflow-hidden bg-gradient-to-r from-purple-900/40 to-indigo-900/40 backdrop-blur-2xl rounded-3xl border border-purple-500/30 p-1"
           >
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full mb-4">
-                <Zap className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium text-purple-300">Abonnements Professionnels</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                Pour les professionnels et agences à usage récurrent
-              </h3>
-              <p className="text-gray-300 max-w-2xl mx-auto">
-                Transformez Live Party Wall en un outil de travail stratégique avec nos abonnements mensuels.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              {subscriptions.map((sub, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-gray-900/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/30"
-                >
-                  <div className="text-center">
-                    <h4 className="text-xl font-bold text-white mb-2">{sub.name}</h4>
-                    <div className="flex items-baseline justify-center gap-2 mb-3">
-                      <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                        {sub.price} €
-                      </span>
-                      <span className="text-gray-400">{sub.period}</span>
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+            
+            <div className="relative z-10 p-8 md:p-12">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-10 mb-10">
+                    <div className="text-center md:text-left max-w-xl">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full mb-4">
+                            <Zap className="w-3.5 h-3.5 text-purple-300" />
+                            <span className="text-xs font-bold text-purple-200 uppercase tracking-wide">Abonnements Pro & Agences</span>
+                        </div>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                            Usage récurrent ? Passez à l'illimité.
+                        </h3>
+                        <p className="text-gray-300">
+                            Transformez Live Party Wall en un outil de travail stratégique avec nos abonnements mensuels sans engagement.
+                        </p>
                     </div>
-                    <p className="text-sm text-gray-400">{sub.description}</p>
-                  </div>
-                </motion.div>
-              ))}
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        {subscriptions.map((sub, index) => (
+                            <div key={index} className="flex-1 bg-black/40 backdrop-blur-md rounded-2xl p-5 border border-purple-500/20 min-w-[200px]">
+                                <div className="text-center">
+                                    <h4 className="text-lg font-bold text-white mb-1">{sub.name}</h4>
+                                    <div className="flex items-baseline justify-center gap-1 mb-2">
+                                        <span className="text-2xl font-bold text-white">{sub.price}€</span>
+                                        <span className="text-gray-400 text-xs">{sub.period}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-400 leading-tight">{sub.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                
+                <div className="text-center">
+                     <button 
+                        onClick={onAdminClick}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-colors border border-white/10"
+                     >
+                        Contacter l'équipe commerciale
+                        <ArrowRight className="w-4 h-4" />
+                     </button>
+                </div>
             </div>
           </motion.div>
         </div>
