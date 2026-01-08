@@ -386,13 +386,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               />
             ) : (
               <EventSelector
-                onEventSelected={(event) => {
-                  setSelectedEvent(event);
+                onEventSelected={async (event) => {
+                  try {
+                    // Charger l'événement et retourner à la landing
+                    await loadEventBySlug(event.slug);
+                    addToast(`Événement "${event.name}" ouvert`, 'success');
+                    // Retourner à la landing après un court délai pour laisser le toast s'afficher
+                    setTimeout(() => {
+                      onBack();
+                    }, 300);
+                  } catch (error) {
+                    console.error('Error loading event:', error);
+                    addToast('Erreur lors du chargement de l\'événement', 'error');
+                  }
                 }}
                 onSettingsClick={async (event) => {
                   try {
                     await loadEventBySlug(event.slug);
-                    setActiveTab('configuration');
+                    setSelectedEvent(event);
                     addToast(`Paramètres de l'événement "${event.name}" chargés`, 'success');
                   } catch (error) {
                     addToast('Erreur lors du chargement des paramètres', 'error');
