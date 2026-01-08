@@ -10,6 +10,7 @@ interface BattlesTabProps {
   photos: Photo[];
   battles: PhotoBattle[];
   isLoading: boolean;
+  eventId: string;
   onRefresh: () => Promise<void>;
   onBattleFinished: () => Promise<void>;
 }
@@ -18,6 +19,7 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
   photos,
   battles,
   isLoading,
+  eventId,
   onRefresh,
   onBattleFinished,
 }) => {
@@ -34,9 +36,13 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
       addToast('Il faut au moins 2 photos pour créer une battle', 'error');
       return;
     }
+    if (!eventId) {
+      addToast('Erreur : événement non trouvé', 'error');
+      return;
+    }
     setIsCreating(true);
     try {
-      const battle = await createRandomBattle(battleDuration);
+      const battle = await createRandomBattle(eventId, battleDuration);
       if (battle) {
         addToast('Battle créée avec succès !', 'success');
         setShowCreateForm(false);
@@ -59,9 +65,13 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
       addToast('Les deux photos doivent être différentes', 'error');
       return;
     }
+    if (!eventId) {
+      addToast('Erreur : événement non trouvé', 'error');
+      return;
+    }
     setIsCreating(true);
     try {
-      const battle = await createBattle(selectedPhoto1.id, selectedPhoto2.id, battleDuration);
+      const battle = await createBattle(eventId, selectedPhoto1.id, selectedPhoto2.id, battleDuration);
       if (battle) {
         addToast('Battle créée avec succès !', 'success');
         setShowCreateForm(false);

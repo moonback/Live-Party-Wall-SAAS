@@ -11,18 +11,25 @@ let autoBattleInterval: NodeJS.Timeout | null = null;
 let isAutoBattleEnabled = false;
 let battleDurationMinutes = 30;
 let intervalMinutes = 30;
+let currentEventId: string | null = null; // ID de l'événement actuel
 let nextBattleTimestamp: number | null = null; // Timestamp du prochain déclenchement
 
 /**
  * Charge l'état des battles automatiques depuis la base de données
+ * @param eventId - ID de l'événement (requis)
  */
-export const loadAutoBattlesFromDB = async (): Promise<void> => {
+export const loadAutoBattlesFromDB = async (eventId: string): Promise<void> => {
+  if (!eventId) {
+    logger.error('loadAutoBattlesFromDB: eventId is required');
+    return;
+  }
+
   try {
-    const settings = await getSettings();
+    const settings = await getSettings(eventId);
     if (settings.auto_battles_enabled) {
       // Si activé en BDD mais pas actif localement, démarrer
       if (!isAutoBattleActive()) {
-        startAutoBattles(intervalMinutes, battleDurationMinutes);
+        startAutoBattles(eventId, intervalMinutes, battleDurationMinutes);
       }
     } else {
       // Si désactivé en BDD mais actif localement, arrêter
@@ -37,23 +44,31 @@ export const loadAutoBattlesFromDB = async (): Promise<void> => {
 
 /**
  * Démarre le système de battles automatiques
+ * @param eventId - ID de l'événement (requis)
  * @param intervalMinutes - Intervalle entre chaque battle (en minutes, défaut: 30)
  * @param durationMinutes - Durée de chaque battle (en minutes, défaut: 30)
  */
 export const startAutoBattles = (
+  eventId: string,
   intervalMinutesParam: number = 30,
   durationMinutes: number = 30
 ): void => {
+  if (!eventId) {
+    logger.error('startAutoBattles: eventId is required');
+    return;
+  }
+
   if (autoBattleInterval) {
     stopAutoBattles();
   }
 
   isAutoBattleEnabled = true;
+  currentEventId = eventId;
   battleDurationMinutes = durationMinutes;
   intervalMinutes = intervalMinutesParam;
 
   // Sauvegarder dans la BDD (non-bloquant)
-  updateSettings({ auto_battles_enabled: true }).catch(error => {
+  updateSettings(eventId, { auto_battles_enabled: true }).catch(error => {
     logger.error('Error saving auto battles state to DB:', error);
   });
 
@@ -64,17 +79,17 @@ export const startAutoBattles = (
   nextBattleTimestamp = Date.now() + intervalMs;
 
   // Créer une battle immédiatement au démarrage
-  createRandomBattle(battleDurationMinutes).catch(error => {
+  createRandomBattle(eventId, battleDurationMinutes).catch(error => {
     logger.error('Error creating initial auto battle:', error);
   });
 
   // Puis créer une battle toutes les X minutes
   autoBattleInterval = setInterval(() => {
-    if (isAutoBattleEnabled) {
+    if (isAutoBattleEnabled && currentEventId) {
       // Mettre à jour le timestamp du prochain déclenchement
       nextBattleTimestamp = Date.now() + intervalMs;
       
-      createRandomBattle(battleDurationMinutes)
+      createRandomBattle(currentEventId, battleDurationMinutes)
         .then(battle => {
           if (battle) {
             logger.info(`Auto battle créée: ${battle.id}`);
@@ -100,12 +115,15 @@ export const stopAutoBattles = (): void => {
     autoBattleInterval = null;
   }
   isAutoBattleEnabled = false;
+  currentEventId = null;
   nextBattleTimestamp = null;
   
   // Sauvegarder dans la BDD
-  updateSettings({ auto_battles_enabled: false }).catch(error => {
-    logger.error('Error saving auto battles state to DB:', error);
-  });
+  if (currentEventId) {
+    updateSettings(currentEventId, { auto_battles_enabled: false }).catch(error => {
+      logger.error('Error saving auto battles state to DB:', error);
+    });
+  }
   
   logger.info('Auto battles arrêtées');
 };

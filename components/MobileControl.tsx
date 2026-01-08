@@ -79,25 +79,37 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
   // Charger les battles actives
   useEffect(() => {
+    if (!currentEvent?.id) {
+      setBattles([]);
+      return;
+    }
+
     const loadBattles = async () => {
-      if (activeTab !== 'battles') return;
       setBattlesLoading(true);
       try {
-        const activeBattles = await getActiveBattles();
+        const activeBattles = await getActiveBattles(currentEvent.id);
         setBattles(activeBattles);
       } catch (error) {
         logger.error('Error loading battles', error, { component: 'MobileControl', action: 'loadBattles' });
-        addToast('Erreur lors du chargement des battles', 'error');
+        if (activeTab === 'battles') {
+          addToast('Erreur lors du chargement des battles', 'error');
+        }
       } finally {
         setBattlesLoading(false);
       }
     };
 
+    // Charger immédiatement
     loadBattles();
 
-    // S'abonner aux nouvelles battles
-    const subscription = subscribeToNewBattles(() => {
-      loadBattles();
+    // S'abonner aux nouvelles battles (toujours actif pour recevoir les mises à jour)
+    const subscription = subscribeToNewBattles(currentEvent.id, (newBattle) => {
+      setBattles(prev => {
+        // Vérifier si la battle existe déjà
+        const exists = prev.some(b => b.id === newBattle.id);
+        if (exists) return prev;
+        return [newBattle, ...prev];
+      });
     });
 
     // Rafraîchir toutes les 10 secondes
@@ -107,7 +119,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [activeTab, addToast]);
+  }, [currentEvent?.id, activeTab, addToast]);
 
   // Charger les invités
   useEffect(() => {
@@ -268,16 +280,20 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
   // Rafraîchir les battles
   const handleRefreshBattles = async () => {
-                    setBattlesLoading(true);
-                    try {
-                      const activeBattles = await getActiveBattles();
-                      setBattles(activeBattles);
-                      addToast('Battles actualisées', 'success');
-                    } catch (error) {
-                      addToast('Erreur lors de l\'actualisation', 'error');
-                    } finally {
-                      setBattlesLoading(false);
-                    }
+    if (!currentEvent?.id) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+    setBattlesLoading(true);
+    try {
+      const activeBattles = await getActiveBattles(currentEvent.id);
+      setBattles(activeBattles);
+      addToast('Battles actualisées', 'success');
+    } catch (error) {
+      addToast('Erreur lors de l\'actualisation', 'error');
+    } finally {
+      setBattlesLoading(false);
+    }
   };
 
   // Rafraîchir les invités
@@ -400,11 +416,12 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         )}
 
         {/* Battles */}
-        {activeTab === 'battles' && (
+        {activeTab === 'battles' && currentEvent && (
           <BattlesTab
             photos={photos}
             battles={battles}
             isLoading={battlesLoading}
+            eventId={currentEvent.id}
             onRefresh={handleRefreshBattles}
             onBattleFinished={handleRefreshBattles}
           />
