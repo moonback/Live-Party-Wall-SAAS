@@ -475,10 +475,10 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-100">
-                    Intelligence Artificielle
+                    Modules supplémentaires
                   </h3>
                   <p className="text-sm text-slate-400">
-                    Modération, légendes & améliorations auto
+                    Modération, légendes & améliorations automatiques 
                   </p>
                 </div>
               </header>
