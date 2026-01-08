@@ -27,6 +27,7 @@ const BattleResultsProjection = lazy(() => import('./components/BattleResultsPro
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
 const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
 const Accueil = lazy(() => import('./components/Accueil')); // Page d'accueil
+const SellerDetailsPage = lazy(() => import('./components/SellerDetailsPage')); // Page détails vendeur
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -265,6 +266,16 @@ const AppContent: React.FC = () => {
           </div>
         }>
           <>
+            {/* Mode seller-details accessible même sans événement */}
+            {viewMode === 'seller-details' && (
+              <TransitionWrapper type="fade" duration={500}>
+                <SellerDetailsPage
+                  onSignUp={() => setViewMode('admin')}
+                  onBack={() => setViewMode('landing')}
+                />
+              </TransitionWrapper>
+            )}
+
             {/* Mode admin accessible même sans événement */}
             {viewMode === 'admin' && (
               <TransitionWrapper type="scale" duration={600}>
@@ -296,11 +307,12 @@ const AppContent: React.FC = () => {
               </TransitionWrapper>
             )}
 
-            {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
-            {viewMode !== 'admin' && !currentEvent && (
+            {/* Si pas d'événement et pas en mode admin/seller-details, afficher l'écran sans événement */}
+            {viewMode !== 'admin' && viewMode !== 'seller-details' && !currentEvent && (
               <TransitionWrapper type="fade" duration={500}>
                 <Accueil
                   onAdminClick={() => setViewMode('admin')}
+                  onSellerDetailsClick={() => setViewMode('seller-details')}
                 />
               </TransitionWrapper>
             )}

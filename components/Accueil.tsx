@@ -19,13 +19,14 @@ import { SkipLinks } from './landing/SkipLinks';
 
 interface AccueilProps {
   onAdminClick: () => void;
+  onSellerDetailsClick?: () => void;
 }
 
 /**
  * Landing page complète pour Live Party Wall SaaS
  * Page d'accueil détaillée avec présentation complète du produit
  */
-const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
+const Accueil: React.FC<AccueilProps> = ({ onAdminClick, onSellerDetailsClick }) => {
   const { isAuthenticated } = useAuth();
 
   // Fonction pour scroller vers une section
@@ -51,7 +52,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
       <LandingBackground />
       <LandingHeader 
         isAuthenticated={isAuthenticated}
-        onAdminClick={onAdminClick}
+        onAdminClick={onSellerDetailsClick || onAdminClick}
         onScrollToSection={scrollToSection}
       />
 
