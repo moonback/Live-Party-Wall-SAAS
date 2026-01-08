@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Image, Video, Tag, Share2, MoreVertical, CheckCircle, Circle } from 'lucide-react';
+import { Heart, Download, Image, Video, Tag, Share2, MoreVertical, CheckCircle, Circle, Pencil } from 'lucide-react';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
@@ -28,6 +28,7 @@ interface GuestPhotoCardProps {
   selectionMode?: boolean;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
+  onEdit?: (photo: Photo) => void;
 }
 
 export const GuestPhotoCard = React.memo(({ 
@@ -46,7 +47,8 @@ export const GuestPhotoCard = React.memo(({
   guestAvatars,
   selectionMode = false,
   isSelected = false,
-  onSelect
+  onSelect,
+  onEdit
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const [imageError, setImageError] = useState(false);
@@ -67,6 +69,9 @@ export const GuestPhotoCard = React.memo(({
     ? (photo.orientation || 'unknown')
     : 'unknown';
   const isMobile = useIsMobile();
+  
+  const currentUserName = localStorage.getItem('party_user_name');
+  const isAuthor = photo.author === currentUserName;
   
   const lastClickTime = useRef<number>(0);
   const lastTapTime = useRef<number>(0);
@@ -421,6 +426,18 @@ export const GuestPhotoCard = React.memo(({
             >
               <Share2 className="w-7 h-7" />
             </button>
+
+            {/* Edit (Author only, and only for photos) */}
+            {isAuthor && photo.type === 'photo' && onEdit && (
+              <button
+                onClick={() => onEdit(photo)}
+                disabled={selectionMode}
+                className={`text-slate-400 hover:text-emerald-400 transition-colors ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+                title="Modifier cette photo"
+              >
+                <Pencil className="w-7 h-7" />
+              </button>
+            )}
 
             {/* Download */}
             <button

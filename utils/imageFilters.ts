@@ -2,7 +2,7 @@
  * Utilitaires pour appliquer des filtres esthétiques aux images
  */
 
-export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
+export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'sepia' | 'warm' | 'cool';
 export type FrameType = 'none' | 'polaroid' | 'neon' | 'gold' | 'simple';
 
 /**
@@ -64,6 +64,9 @@ export const applyImageFilter = (
           break;
         case 'blackwhite':
           ctx.filter = 'grayscale(100%)';
+          break;
+        case 'sepia':
+          ctx.filter = 'sepia(100%)';
           break;
         case 'warm':
           ctx.filter = 'sepia(0.3) saturate(1.2) brightness(1.05)';

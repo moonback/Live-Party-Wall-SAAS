@@ -14,6 +14,8 @@ import { GalleryHeader } from './gallery/GalleryHeader';
 import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
+import { PhotoEditor } from './gallery/PhotoEditor';
+import { AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -53,6 +55,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   // Selection mode states
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -115,7 +118,13 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     loadData();
 
     const sub = subscribeToNewPhotos(currentEvent.id, (newPhoto) => {
-      setPhotos(prev => [...prev, newPhoto]);
+      setPhotos(prev => {
+        // Éviter les doublons en vérifiant si la photo existe déjà
+        if (prev.some(p => p.id === newPhoto.id)) {
+          return prev;
+        }
+        return [...prev, newPhoto];
+      });
       addToast("Nouvelle photo publiée !", 'info');
     });
 
@@ -412,6 +421,33 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     setLightboxPhoto(photo);
   }, [selectionMode]);
 
+  const handleSaveEditedPhoto = async (editedDataUrl: string) => {
+    if (!editingPhoto || !currentEvent) return;
+    
+    try {
+      setLoading(true);
+      addToast("Enregistrement de la photo modifiée...", 'info');
+      
+      const { addPhotoToWall } = await import('../services/photoService');
+      
+      // L'abonnement Realtime ajoutera automatiquement la photo à la liste
+      await addPhotoToWall(
+        currentEvent.id,
+        editedDataUrl,
+        `${editingPhoto.caption} (Modifié ✨)`,
+        editingPhoto.author
+      );
+      
+      setEditingPhoto(null);
+      addToast("Photo modifiée enregistrée !", 'success');
+    } catch (error) {
+      console.error("Erreur save edited photo:", error);
+      addToast("Erreur lors de l'enregistrement", 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
       {/* Background Decor */}
@@ -505,6 +541,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onBattleFinished={handleBattleFinished}
             onPhotoClick={handlePhotoClick}
             onNavigatePhoto={navigateToPhoto}
+            onEdit={(photo) => setEditingPhoto(photo)}
             userId={userId}
             selectionMode={selectionMode}
             selectedIds={selectedIds}
@@ -555,6 +592,17 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
           />
         </Suspense>
       )}
+
+      {/* Photo Editor */}
+      <AnimatePresence>
+        {editingPhoto && (
+          <PhotoEditor
+            photo={editingPhoto}
+            onClose={() => setEditingPhoto(null)}
+            onSave={handleSaveEditedPhoto}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

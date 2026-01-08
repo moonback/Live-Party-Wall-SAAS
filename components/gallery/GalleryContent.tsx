@@ -28,6 +28,7 @@ interface GalleryContentProps {
   onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
   onPhotoClick?: (photo: Photo, index: number) => void;
   onNavigatePhoto?: (direction: 'next' | 'prev', currentIndex: number) => void;
+  onEdit?: (photo: Photo) => void;
   userId: string;
   selectionMode?: boolean;
   selectedIds?: Set<string>;
@@ -54,6 +55,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   onBattleFinished,
   onPhotoClick,
   onNavigatePhoto,
+  onEdit,
   userId,
   selectionMode = false,
   selectedIds = new Set(),
@@ -170,6 +172,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
                   selectionMode={selectionMode}
                   isSelected={selectedIds.has(photo.id)}
                   onSelect={onSelect}
+                  onEdit={onEdit}
                 />
               ))}
             </AnimatePresence>
