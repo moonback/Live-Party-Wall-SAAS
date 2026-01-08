@@ -283,10 +283,12 @@ const AppContent: React.FC = () => {
                   <AdminLogin 
                     onLoginSuccess={() => {}}
                     onBack={() => {
-                      if (currentEvent) {
+                      // Retourner à l'accueil : si pas d'événement, afficher Accueil, sinon Landing
+                      if (!currentEvent) {
+                        // Mettre un mode qui n'est pas 'admin' pour déclencher l'affichage de Accueil
                         setViewMode('landing');
                       } else {
-                        window.location.href = '/';
+                        setViewMode('landing');
                       }
                     }}
                   />
