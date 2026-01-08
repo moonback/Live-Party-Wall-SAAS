@@ -120,7 +120,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
             className="overflow-hidden"
           >
             <div className="bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/5 shadow-2xl">
-              <Leaderboard photos={photos} maxEntries={5} />
+              <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} />
             </div>
           </motion.div>
         )}

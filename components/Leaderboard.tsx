@@ -7,9 +7,10 @@ import { getUserAvatar } from '../utils/userAvatar';
 interface LeaderboardProps {
   photos: Photo[];
   maxEntries?: number;
+  guestAvatars?: Map<string, string>;
 }
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10 }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10, guestAvatars }) => {
   const leaderboard = useMemo(() => {
     return generateLeaderboard(photos).slice(0, maxEntries);
   }, [photos, maxEntries]);
@@ -55,9 +56,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10 }) =>
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
                 {/* Avatar ou Initiale */}
-                {getUserAvatar(entry.author) ? (
+                {(guestAvatars?.get(entry.author) || getUserAvatar(entry.author)) ? (
                   <img
-                    src={getUserAvatar(entry.author)!}
+                    src={guestAvatars?.get(entry.author) || getUserAvatar(entry.author)!}
                     alt={entry.author}
                     className="w-12 h-12 rounded-full object-cover border-2 border-gray-700 shadow-lg"
                   />
