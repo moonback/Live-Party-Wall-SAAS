@@ -1,0 +1,687 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Video, Zap, Star, Award, Sparkles, Settings, ChevronDown, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, Move, X } from 'lucide-react';
+import { usePhotos } from '../../context/PhotosContext';
+import { useSettings } from '../../context/SettingsContext';
+import { useToast } from '../../context/ToastContext';
+import { generateTimelapseAftermovie } from '../../services/aftermovieService';
+import { 
+  AFTERMOVIE_PRESETS, 
+  AFTERMOVIE_DEFAULT_TARGET_SECONDS, 
+  AFTERMOVIE_MIN_MS_PER_PHOTO, 
+  AFTERMOVIE_MAX_MS_PER_PHOTO,
+  AFTERMOVIE_DEFAULT_TRANSITION_DURATION,
+  AFTERMOVIE_MIN_TRANSITION_DURATION,
+  AFTERMOVIE_MAX_TRANSITION_DURATION
+} from '../../constants';
+import { Photo, TransitionType, AftermovieProgress } from '../../types';
+
+interface AftermovieTabProps {
+  // Props si nécessaire
+}
+
+const toDatetimeLocal = (timestamp: number): string => {
+  const d = new Date(timestamp);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+};
+
+export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
+  const { photos: allPhotos, loading: photosLoading } = usePhotos();
+  const { settings: config } = useSettings();
+  const { addToast } = useToast();
+  
+  const [aftermovieStart, setAftermovieStart] = useState<string>('');
+  const [aftermovieEnd, setAftermovieEnd] = useState<string>('');
+  const [aftermoviePreset, setAftermoviePreset] = useState<keyof typeof AFTERMOVIE_PRESETS>('1080p');
+  const [aftermovieFps, setAftermovieFps] = useState<number>(AFTERMOVIE_PRESETS['1080p'].fps);
+  const [aftermovieBitrateMbps, setAftermovieBitrateMbps] = useState<number>(Math.round(AFTERMOVIE_PRESETS['1080p'].videoBitsPerSecond / 1_000_000));
+  const [aftermovieMsPerPhoto, setAftermovieMsPerPhoto] = useState<number>(3500);
+  const [aftermovieIncludeTitle, setAftermovieIncludeTitle] = useState<boolean>(true);
+  const [aftermovieIncludeFrame, setAftermovieIncludeFrame] = useState<boolean>(true);
+  const [aftermovieEnableKenBurns, setAftermovieEnableKenBurns] = useState<boolean>(true);
+  const [aftermovieEnableSmartDuration, setAftermovieEnableSmartDuration] = useState<boolean>(true);
+  const [aftermovieEnableIntroOutro, setAftermovieEnableIntroOutro] = useState<boolean>(true);
+  const [aftermovieEnableComicsStyle, setAftermovieEnableComicsStyle] = useState<boolean>(false);
+  const [aftermovieAudioFile, setAftermovieAudioFile] = useState<File | null>(null);
+  const [aftermovieAudioLoop, setAftermovieAudioLoop] = useState<boolean>(true);
+  const [aftermovieAudioVolume, setAftermovieAudioVolume] = useState<number>(0.8);
+  const [aftermovieProgress, setAftermovieProgress] = useState<AftermovieProgress | null>(null);
+  const [isGeneratingAftermovie, setIsGeneratingAftermovie] = useState(false);
+  const aftermovieAbortRef = useRef<AbortController | null>(null);
+  const photoClickTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [aftermovieSelectedPhotoIds, setAftermovieSelectedPhotoIds] = useState<Set<string>>(new Set());
+  const [aftermoviePhotoOrder, setAftermoviePhotoOrder] = useState<string[]>([]);
+  const [aftermovieTransitionType, setAftermovieTransitionType] = useState<TransitionType>('fade');
+  const [aftermovieTransitionDuration, setAftermovieTransitionDuration] = useState<number>(AFTERMOVIE_DEFAULT_TRANSITION_DURATION);
+  const [aftermovieRandomTransitions, setAftermovieRandomTransitions] = useState<boolean>(true);
+  const [aftermoviePresetMode, setAftermoviePresetMode] = useState<'rapide' | 'standard' | 'qualite'>('standard');
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+  const [showTransitionsOptions, setShowTransitionsOptions] = useState<boolean>(false);
+  const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
+
+  // Initialiser la plage Aftermovie
+  useEffect(() => {
+    if (allPhotos.length === 0) return;
+    const sorted = [...allPhotos].sort((a, b) => a.timestamp - b.timestamp);
+    const first = sorted[0].timestamp;
+    const last = sorted[sorted.length - 1].timestamp;
+    if (!aftermovieStart) setAftermovieStart(toDatetimeLocal(first));
+    if (!aftermovieEnd) setAftermovieEnd(toDatetimeLocal(last));
+  }, [allPhotos, aftermovieStart, aftermovieEnd]);
+
+  const aftermovieRangePhotos = useMemo(() => {
+    const startMs = aftermovieStart ? new Date(aftermovieStart).getTime() : NaN;
+    const endMs = aftermovieEnd ? new Date(aftermovieEnd).getTime() : NaN;
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) return [];
+    return allPhotos
+      .filter((p) => p.timestamp >= startMs && p.timestamp <= endMs)
+      .slice()
+      .sort((a, b) => a.timestamp - b.timestamp);
+  }, [allPhotos, aftermovieStart, aftermovieEnd]);
+
+  useEffect(() => {
+    setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)));
+  }, [aftermovieRangePhotos]);
+
+  const aftermovieSelectedPhotos = useMemo(() => {
+    if (aftermovieSelectedPhotoIds.size === 0) return [];
+    const selected = aftermovieRangePhotos.filter((p) => aftermovieSelectedPhotoIds.has(p.id));
+    if (aftermoviePhotoOrder.length > 0 && aftermoviePhotoOrder.length === selected.length) {
+      const orderMap = new Map(aftermoviePhotoOrder.map((id, idx) => [id, idx]));
+      const allInOrder = selected.every(p => orderMap.has(p.id));
+      if (allInOrder) {
+        return [...selected].sort((a, b) => {
+          const idxA = orderMap.get(a.id) ?? Infinity;
+          const idxB = orderMap.get(b.id) ?? Infinity;
+          return (idxA as number) - (idxB as number);
+        });
+      }
+    }
+    return selected;
+  }, [aftermovieRangePhotos, aftermovieSelectedPhotoIds, aftermoviePhotoOrder]);
+
+  // Preset -> fps/bitrate
+  useEffect(() => {
+    const preset = AFTERMOVIE_PRESETS[aftermoviePreset];
+    setAftermovieFps(preset.fps);
+    setAftermovieBitrateMbps(Math.round(preset.videoBitsPerSecond / 1_000_000));
+  }, [aftermoviePreset]);
+
+  // Appliquer les presets simplifiés
+  useEffect(() => {
+    if (isGeneratingAftermovie) return;
+    switch (aftermoviePresetMode) {
+      case 'rapide':
+        setAftermoviePreset('720p');
+        setAftermovieFps(24);
+        setAftermovieBitrateMbps(4);
+        setAftermovieMsPerPhoto(2000);
+        setAftermovieEnableKenBurns(false);
+        setAftermovieEnableSmartDuration(false);
+        setAftermovieEnableIntroOutro(false);
+        setAftermovieRandomTransitions(true);
+        setAftermovieTransitionDuration(300);
+        break;
+      case 'standard':
+        setAftermoviePreset('1080p');
+        setAftermovieFps(30);
+        setAftermovieBitrateMbps(12);
+        setAftermovieMsPerPhoto(3500);
+        setAftermovieEnableKenBurns(true);
+        setAftermovieEnableSmartDuration(true);
+        setAftermovieEnableIntroOutro(true);
+        setAftermovieRandomTransitions(true);
+        setAftermovieTransitionDuration(500);
+        break;
+      case 'qualite':
+        setAftermoviePreset('1080p');
+        setAftermovieFps(30);
+        setAftermovieBitrateMbps(20);
+        setAftermovieMsPerPhoto(4000);
+        setAftermovieEnableKenBurns(true);
+        setAftermovieEnableSmartDuration(true);
+        setAftermovieEnableIntroOutro(true);
+        setAftermovieRandomTransitions(true);
+        setAftermovieTransitionDuration(600);
+        break;
+    }
+  }, [aftermoviePresetMode, isGeneratingAftermovie]);
+
+  const handleGenerate = async () => {
+    if (isGeneratingAftermovie) return;
+
+    const startMs = aftermovieStart ? new Date(aftermovieStart).getTime() : NaN;
+    const endMs = aftermovieEnd ? new Date(aftermovieEnd).getTime() : NaN;
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) {
+      addToast('Plage start/end invalide', 'error');
+      return;
+    }
+
+    if (aftermovieRangePhotos.length === 0) {
+      addToast('Aucune photo dans la plage sélectionnée', 'info');
+      return;
+    }
+
+    if (aftermovieSelectedPhotos.length === 0) {
+      addToast('Aucune photo sélectionnée (coche au moins 1 photo)', 'info');
+      return;
+    }
+
+    const preset = AFTERMOVIE_PRESETS[aftermoviePreset];
+    const abort = new AbortController();
+    aftermovieAbortRef.current = abort;
+
+    setIsGeneratingAftermovie(true);
+    setAftermovieProgress({ stage: 'idle', processed: 0, total: aftermovieSelectedPhotos.length, message: 'Démarrage…' });
+    addToast('Génération de la vidéo en cours… (ne pas fermer l\'onglet)', 'info');
+
+    try {
+      const result = await generateTimelapseAftermovie(
+        aftermovieSelectedPhotos,
+        {
+          width: preset.width,
+          height: preset.height,
+          fps: aftermovieFps,
+          msPerPhoto: Math.min(AFTERMOVIE_MAX_MS_PER_PHOTO, Math.max(AFTERMOVIE_MIN_MS_PER_PHOTO, aftermovieMsPerPhoto)),
+          videoBitsPerSecond: Math.max(1, Math.round(aftermovieBitrateMbps * 1_000_000)),
+          includeTitle: aftermovieIncludeTitle,
+          titleText: config.event_title || 'Aftermovie',
+          includeDecorativeFrame: aftermovieIncludeFrame && !!(config.decorative_frame_enabled && config.decorative_frame_url),
+          decorativeFrameUrl: config.decorative_frame_url,
+          backgroundColor: '#000000',
+          enableKenBurns: aftermovieEnableKenBurns,
+          enableSmartDuration: aftermovieEnableSmartDuration,
+          enableIntroOutro: aftermovieEnableIntroOutro,
+          enableComicsStyle: aftermovieEnableComicsStyle,
+          transitionType: aftermovieRandomTransitions ? undefined : aftermovieTransitionType,
+          transitionDuration: (aftermovieTransitionType !== 'none' || aftermovieRandomTransitions) ? Math.min(AFTERMOVIE_MAX_TRANSITION_DURATION, Math.max(AFTERMOVIE_MIN_TRANSITION_DURATION, aftermovieTransitionDuration)) : undefined,
+          randomTransitions: aftermovieRandomTransitions
+        },
+        aftermovieAudioFile
+          ? {
+              file: aftermovieAudioFile,
+              loop: aftermovieAudioLoop,
+              volume: aftermovieAudioVolume
+            }
+          : undefined,
+        (p) => setAftermovieProgress(p),
+        abort.signal
+      );
+
+      const url = URL.createObjectURL(result.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      addToast('Aftermovie prêt — téléchargement lancé', 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('AbortError') || msg.toLowerCase().includes('annul')) {
+        addToast('Génération annulée', 'info');
+      } else {
+        addToast(`Erreur aftermovie: ${msg}`, 'error');
+      }
+    } finally {
+      setIsGeneratingAftermovie(false);
+      aftermovieAbortRef.current = null;
+    }
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+        <div className="mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
+            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+              <Video className="w-5 h-5 text-indigo-400" />
+            </div>
+            Génération Aftermovie (Timelapse)
+          </h2>
+          <p className="text-sm text-slate-400">
+            Génère une vidéo WebM depuis les photos de la plage sélectionnée (100% navigateur).
+          </p>
+        </div>
+
+        {/* Presets simplifiés */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-slate-300 mb-3">Mode de génération</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setAftermoviePresetMode('rapide')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                aftermoviePresetMode === 'rapide'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              }`}
+              disabled={isGeneratingAftermovie}
+            >
+              <Zap className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'rapide' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <div className="text-sm font-semibold text-slate-100">Rapide</div>
+              <div className="text-xs text-slate-400 mt-1">720p • 24 FPS • 4 Mbps</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAftermoviePresetMode('standard')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                aftermoviePresetMode === 'standard'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              }`}
+              disabled={isGeneratingAftermovie}
+            >
+              <Star className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'standard' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <div className="text-sm font-semibold text-slate-100">Standard</div>
+              <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 12 Mbps</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAftermoviePresetMode('qualite')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                aftermoviePresetMode === 'qualite'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              }`}
+              disabled={isGeneratingAftermovie}
+            >
+              <Award className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <div className="text-sm font-semibold text-slate-100">Qualité</div>
+              <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Début</label>
+                <input
+                  type="datetime-local"
+                  value={aftermovieStart}
+                  onChange={(e) => setAftermovieStart(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                  disabled={isGeneratingAftermovie}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Fin</label>
+                <input
+                  type="datetime-local"
+                  value={aftermovieEnd}
+                  onChange={(e) => setAftermovieEnd(e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                  disabled={isGeneratingAftermovie}
+                />
+              </div>
+            </div>
+
+            {/* Sélection manuelle des photos */}
+            <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-100">Photos dans la plage</div>
+                  <div className="text-xs text-slate-400">
+                    Sélectionnées: <span className="font-semibold text-slate-100">{aftermovieSelectedPhotoIds.size}</span> / {aftermovieRangePhotos.length}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)))}
+                    className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+                    disabled={isGeneratingAftermovie || aftermovieRangePhotos.length === 0}
+                  >
+                    Tout
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAftermovieSelectedPhotoIds(new Set())}
+                    className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+                    disabled={isGeneratingAftermovie || aftermovieRangePhotos.length === 0}
+                  >
+                    Aucun
+                  </button>
+                </div>
+              </div>
+
+              {aftermovieRangePhotos.length === 0 ? (
+                <div className="text-sm text-slate-500">Aucune photo dans la plage (ou plage invalide).</div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {aftermovieRangePhotos.map((p) => {
+                      const selected = aftermovieSelectedPhotoIds.has(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onDoubleClick={(e) => {
+                            e.preventDefault();
+                            setAftermovieSelectedPhotoIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(p.id)) next.delete(p.id);
+                              else next.add(p.id);
+                              return next;
+                            });
+                          }}
+                          className={`relative w-full rounded-lg overflow-hidden border transition-all aspect-square ${
+                            selected
+                              ? 'border-indigo-500/60'
+                              : 'border-slate-800 hover:border-slate-700'
+                          }`}
+                          disabled={isGeneratingAftermovie}
+                        >
+                          <img
+                            src={p.url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          {selected && (
+                            <div className="absolute top-1 left-1">
+                              <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black bg-indigo-500 text-white border border-indigo-400">
+                                ✓
+                              </div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Options principales */}
+            <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4 space-y-4">
+              <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                Options principales
+              </h3>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieIncludeTitle}
+                  onChange={(e) => setAftermovieIncludeTitle(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Titre en bas</div>
+                  <div className="text-xs text-slate-400">Affiche le titre de l'événement sur la vidéo.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieIncludeFrame}
+                  onChange={(e) => setAftermovieIncludeFrame(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Cadre décoratif</div>
+                  <div className="text-xs text-slate-400">Incruste le cadre actif (si configuré).</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieEnableKenBurns}
+                  onChange={(e) => setAftermovieEnableKenBurns(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Effet Ken Burns</div>
+                  <div className="text-xs text-slate-400">Ajoute un zoom/pan progressif sur chaque photo.</div>
+                </div>
+              </label>
+
+              {/* Durée par photo */}
+              <div className="pt-2 border-t border-slate-800">
+                <label className="block text-sm font-medium text-slate-300 mb-3">
+                  Durée par photo
+                </label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min={AFTERMOVIE_MIN_MS_PER_PHOTO}
+                      max={AFTERMOVIE_MAX_MS_PER_PHOTO}
+                      step={100}
+                      value={aftermovieMsPerPhoto}
+                      onChange={(e) => setAftermovieMsPerPhoto(Number(e.target.value))}
+                      className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      disabled={isGeneratingAftermovie}
+                    />
+                    <div className="flex items-center gap-2 min-w-[100px]">
+                      <input
+                        type="number"
+                        min={AFTERMOVIE_MIN_MS_PER_PHOTO}
+                        max={AFTERMOVIE_MAX_MS_PER_PHOTO}
+                        step={100}
+                        value={aftermovieMsPerPhoto}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          const clamped = Math.min(AFTERMOVIE_MAX_MS_PER_PHOTO, Math.max(AFTERMOVIE_MIN_MS_PER_PHOTO, val));
+                          setAftermovieMsPerPhoto(clamped);
+                        }}
+                        className="w-20 bg-slate-900/50 border border-slate-800 rounded-lg px-2 py-1.5 text-white text-sm focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                        disabled={isGeneratingAftermovie}
+                      />
+                      <span className="text-xs text-slate-400">ms</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieEnableSmartDuration}
+                  onChange={(e) => setAftermovieEnableSmartDuration(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Durée intelligente</div>
+                  <div className="text-xs text-slate-400">Affiche plus longtemps les photos populaires (+500ms/like).</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieEnableIntroOutro}
+                  onChange={(e) => setAftermovieEnableIntroOutro(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Intro & Outro Cinéma</div>
+                  <div className="text-xs text-slate-400">Ajoute des séquences de titre animées au début et à la fin.</div>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aftermovieEnableComicsStyle}
+                  onChange={(e) => setAftermovieEnableComicsStyle(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                  disabled={isGeneratingAftermovie}
+                />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-slate-100">Légendes BD (Comics)</div>
+                  <div className="text-xs text-slate-400">Affiche les légendes dans des bulles style bande dessinée.</div>
+                </div>
+              </label>
+
+              {/* Section Transitions */}
+              <div className="pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowTransitionsOptions(!showTransitionsOptions)}
+                  className="w-full flex items-center justify-between p-2 hover:bg-slate-900/50 rounded-lg transition-all"
+                  disabled={isGeneratingAftermovie}
+                >
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-indigo-400" />
+                    <span className="text-sm font-medium text-slate-100">Transitions</span>
+                  </div>
+                  {showTransitionsOptions ? (
+                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  )}
+                </button>
+                
+                {showTransitionsOptions && (
+                  <div className="mt-3 space-y-3 pl-6">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={aftermovieRandomTransitions}
+                        onChange={(e) => setAftermovieRandomTransitions(e.target.checked)}
+                        className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+                        disabled={isGeneratingAftermovie}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-slate-100">Transitions aléatoires</div>
+                        <div className="text-xs text-slate-400">Utilise une transition différente et aléatoire entre chaque photo.</div>
+                      </div>
+                    </label>
+                    
+                    {!aftermovieRandomTransitions && (
+                      <>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Type de transition</label>
+                        <select
+                          value={aftermovieTransitionType}
+                          onChange={(e) => setAftermovieTransitionType(e.target.value as TransitionType)}
+                          className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
+                          disabled={isGeneratingAftermovie}
+                        >
+                          <option value="none">Aucune</option>
+                          <option value="fade">Fondu (Fade)</option>
+                          <option value="slide-left">Glissement gauche</option>
+                          <option value="slide-right">Glissement droite</option>
+                          <option value="slide-up">Glissement haut</option>
+                          <option value="slide-down">Glissement bas</option>
+                        </select>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Musique */}
+              <div className="pt-2 border-t border-slate-800">
+                <label className="block text-sm font-medium text-slate-300 mb-2">Musique (optionnel)</label>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => setAftermovieAudioFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-slate-800 file:text-white hover:file:bg-slate-700"
+                  disabled={isGeneratingAftermovie}
+                />
+                {aftermovieAudioFile && (
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <label className="flex items-center gap-2 text-xs text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={aftermovieAudioLoop}
+                        onChange={(e) => setAftermovieAudioLoop(e.target.checked)}
+                        className="h-4 w-4 accent-indigo-500"
+                        disabled={isGeneratingAftermovie}
+                      />
+                      Boucler
+                    </label>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Volume</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={aftermovieAudioVolume}
+                        onChange={(e) => setAftermovieAudioVolume(Number(e.target.value))}
+                        className="w-full"
+                        disabled={isGeneratingAftermovie}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progression */}
+            <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-slate-100 mb-2">Progression</h3>
+              {aftermovieProgress ? (
+                <div className="space-y-2">
+                  <div className="text-sm text-slate-300">
+                    {aftermovieProgress.message || aftermovieProgress.stage}
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div
+                      className="h-full bg-indigo-500"
+                      style={{
+                        width: `${aftermovieProgress.total > 0 ? (aftermovieProgress.processed / aftermovieProgress.total) * 100 : 0}%`
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {aftermovieProgress.processed} / {aftermovieProgress.total}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-slate-500">En attente…</div>
+              )}
+            </div>
+
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleGenerate}
+                className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                disabled={isGeneratingAftermovie || photosLoading}
+              >
+                {isGeneratingAftermovie ? 'Génération…' : 'Générer & Télécharger'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (aftermovieAbortRef.current) {
+                    aftermovieAbortRef.current.abort();
+                  }
+                }}
+                className="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!isGeneratingAftermovie}
+              >
+                Annuler
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-500">
+              Note: export en <span className="font-mono text-slate-300">.webm</span> (MediaRecorder). La qualité dépend du navigateur et de la machine.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+

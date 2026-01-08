@@ -15,6 +15,9 @@ import { AdminDashboardHeader } from './admin/AdminDashboardHeader';
 import { AdminTabsNavigation } from './admin/AdminTabsNavigation';
 import { ModerationTab } from './admin/ModerationTab';
 import { GuestsTab } from './admin/GuestsTab';
+import { ConfigurationTab } from './admin/ConfigurationTab';
+import { AftermovieTab } from './admin/AftermovieTab';
+import { BattlesTab } from './admin/BattlesTab';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
@@ -423,30 +426,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         )}
 
         {activeTab === 'configuration' && (
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-              <h2 className="text-xl font-semibold text-slate-100 mb-4">Configuration</h2>
-              <p className="text-sm text-slate-400">La configuration complète sera disponible dans un composant dédié.</p>
-            </div>
-          </div>
+          <ConfigurationTab />
         )}
 
         {activeTab === 'aftermovie' && (
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-              <h2 className="text-xl font-semibold text-slate-100 mb-4">Aftermovie</h2>
-              <p className="text-sm text-slate-400">La génération d'aftermovie sera disponible dans un composant dédié.</p>
-            </div>
-          </div>
+          <AftermovieTab />
         )}
 
         {activeTab === 'battles' && config.battle_mode_enabled !== false && (
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-              <h2 className="text-xl font-semibold text-slate-100 mb-4">Battles</h2>
-              <p className="text-sm text-slate-400">La gestion des battles sera disponible dans un composant dédié.</p>
-            </div>
-          </div>
+          <BattlesTab />
         )}
 
         {activeTab === 'guests' && (
