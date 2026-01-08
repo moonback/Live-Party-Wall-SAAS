@@ -18,6 +18,7 @@ import { GuestsTab } from './admin/GuestsTab';
 import { ConfigurationTab } from './admin/ConfigurationTab';
 import { AftermovieTab } from './admin/AftermovieTab';
 import { BattlesTab } from './admin/BattlesTab';
+import { SubscriptionManagement } from './admin/SubscriptionManagement';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
@@ -445,6 +446,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             onRefresh={loadGuests}
             onDelete={handleDeleteGuest}
           />
+        )}
+
+        {activeTab === 'subscriptions' && (
+          <SubscriptionManagement />
         )}
       </div>
     </div>

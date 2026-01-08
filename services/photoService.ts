@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Photo, MediaType, PhotoRow, LikeRow, ReactionType, ReactionCounts, ReactionRow } from '../types';
 import { debounce } from '../utils/debounce';
 import { logger } from '../utils/logger';
+import { canUploadPhoto } from './subscriptionService';
 
 /**
  * ⚡ Précalcule l'orientation d'une image pour éviter les recalculs à chaque render
@@ -111,6 +112,42 @@ export const addPhotoToWall = async (
     throw new Error(validation.error || 'Image invalide');
   }
 
+  // Vérifier les limites d'abonnement avant l'upload
+  try {
+    // Compter les photos existantes pour cet événement
+    const { count, error: countError } = await supabase
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+
+    if (countError) {
+      logger.error("Error counting photos", countError, { 
+        component: 'photoService', 
+        action: 'addPhotoToWall', 
+        eventId 
+      });
+      // Continuer même en cas d'erreur de comptage
+    }
+
+    const currentPhotoCount = count || 0;
+    const canUpload = await canUploadPhoto(eventId, currentPhotoCount);
+    
+    if (!canUpload.can) {
+      throw new Error(canUpload.reason || "Limite de photos atteinte. Veuillez upgrader votre abonnement.");
+    }
+  } catch (error) {
+    // Si c'est déjà une erreur de limite, la propager
+    if (error instanceof Error && error.message.includes('Limite')) {
+      throw error;
+    }
+    // Sinon, logger et continuer (ne pas bloquer si erreur de vérification)
+    logger.error("Error checking photo limits", error, { 
+      component: 'photoService', 
+      action: 'addPhotoToWall', 
+      eventId 
+    });
+  }
+
   try {
     // 1. Convert Base64 to Blob - Optimisé
     const base64Data = base64Image.split(',')[1];
@@ -206,6 +243,42 @@ export const addVideoToWall = async (
   const validation = validateVideoBlob(videoBlob, videoType);
   if (!validation.valid) {
     throw new Error(validation.error || 'Vidéo invalide');
+  }
+
+  // Vérifier les limites d'abonnement avant l'upload
+  try {
+    // Compter les photos/vidéos existantes pour cet événement
+    const { count, error: countError } = await supabase
+      .from('photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+
+    if (countError) {
+      logger.error("Error counting photos", countError, { 
+        component: 'photoService', 
+        action: 'addVideoToWall', 
+        eventId 
+      });
+      // Continuer même en cas d'erreur de comptage
+    }
+
+    const currentPhotoCount = count || 0;
+    const canUpload = await canUploadPhoto(eventId, currentPhotoCount);
+    
+    if (!canUpload.can) {
+      throw new Error(canUpload.reason || "Limite de photos atteinte. Veuillez upgrader votre abonnement.");
+    }
+  } catch (error) {
+    // Si c'est déjà une erreur de limite, la propager
+    if (error instanceof Error && error.message.includes('Limite')) {
+      throw error;
+    }
+    // Sinon, logger et continuer (ne pas bloquer si erreur de vérification)
+    logger.error("Error checking photo limits", error, { 
+      component: 'photoService', 
+      action: 'addVideoToWall', 
+      eventId 
+    });
   }
 
   try {

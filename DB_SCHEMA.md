@@ -41,6 +41,7 @@ Table centrale pour le système multi-événements SaaS.
 | `name` | TEXT | Nom de l'événement | NOT NULL |
 | `description` | TEXT | Description de l'événement | NULL |
 | `owner_id` | UUID | Propriétaire (organisateur principal) | FK → auth.users, ON DELETE CASCADE |
+| `subscription_id` | UUID | Abonnement utilisé pour créer cet événement | FK → subscriptions, ON DELETE SET NULL, NULL |
 | `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now() |
 | `updated_at` | TIMESTAMPTZ | Date de mise à jour | DEFAULT now() |
 | `is_active` | BOOLEAN | Événement actif ou non | DEFAULT true |
@@ -190,6 +191,75 @@ Table pour bloquer temporairement des invités.
 | `name` | TEXT | Nom de l'invité bloqué | NOT NULL |
 | `blocked_at` | TIMESTAMPTZ | Date de blocage | DEFAULT now(), NOT NULL |
 | `expires_at` | TIMESTAMPTZ | Date d'expiration du blocage | NOT NULL |
+
+---
+
+### `subscriptions` - Abonnements
+
+Table pour gérer les abonnements des organisateurs (mensuels, événements ponctuels, packs volume).
+
+| Colonne | Type | Description | Contraintes |
+|---------|------|-------------|-------------|
+| `id` | UUID | Identifiant unique | PRIMARY KEY, DEFAULT gen_random_uuid() |
+| `user_id` | UUID | Utilisateur propriétaire | FK → auth.users, ON DELETE CASCADE, NOT NULL |
+| `plan_type` | TEXT | Type de plan | NOT NULL, CHECK (plan_type IN ('monthly_pro', 'monthly_studio', 'event_starter', 'event_pro', 'event_premium', 'volume_10', 'volume_50')) |
+| `status` | TEXT | Statut de l'abonnement | NOT NULL, DEFAULT 'pending_activation', CHECK (status IN ('active', 'expired', 'cancelled', 'pending_activation')) |
+| `start_date` | TIMESTAMPTZ | Date de début | DEFAULT now(), NOT NULL |
+| `end_date` | TIMESTAMPTZ | Date de fin | NULL (nullable pour abonnements mensuels récurrents) |
+| `events_limit` | INTEGER | Nombre d'événements autorisés | NULL (null = illimité pour abonnements mensuels) |
+| `photos_per_event_limit` | INTEGER | Limite de photos par événement | NULL (null = illimité) |
+| `features` | JSONB | Fonctionnalités activées selon le plan | DEFAULT '{}'::jsonb |
+| `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now(), NOT NULL |
+| `updated_at` | TIMESTAMPTZ | Date de mise à jour | DEFAULT now(), NOT NULL |
+
+**Types de plans** :
+- `monthly_pro` : Abonnement mensuel Pro (29€/mois)
+- `monthly_studio` : Abonnement mensuel Studio (99€/mois)
+- `event_starter` : Pack événement Starter (49€)
+- `event_pro` : Pack événement Pro (99€)
+- `event_premium` : Pack événement Premium (199€)
+- `volume_10` : Pack volume 10 événements (290€/événement)
+- `volume_50` : Pack volume 50 événements (198€/événement)
+
+**Statuts** :
+- `active` : Abonnement actif et utilisable
+- `expired` : Abonnement expiré
+- `cancelled` : Abonnement annulé
+- `pending_activation` : En attente d'activation par un admin (après paiement manuel)
+
+**Exemple** :
+```sql
+INSERT INTO subscriptions (user_id, plan_type, status, events_limit, photos_per_event_limit, features)
+VALUES (
+  'user-uuid',
+  'event_premium',
+  'pending_activation',
+  1,
+  NULL, -- Illimité
+  '{"frames_enabled": true, "aftermovie_enabled": true, "branding_enabled": true}'::jsonb
+);
+```
+
+---
+
+### `subscription_events` - Liens abonnements-événements
+
+Table pour tracker les événements utilisés dans les packs volume.
+
+| Colonne | Type | Description | Contraintes |
+|---------|------|-------------|-------------|
+| `id` | UUID | Identifiant unique | PRIMARY KEY, DEFAULT gen_random_uuid() |
+| `subscription_id` | UUID | Abonnement utilisé | FK → subscriptions, ON DELETE CASCADE, NOT NULL |
+| `event_id` | UUID | Événement créé | FK → events, ON DELETE CASCADE, NOT NULL |
+| `used_at` | TIMESTAMPTZ | Date d'utilisation | DEFAULT now(), NOT NULL |
+
+**Contrainte unique** : `UNIQUE(subscription_id, event_id)` - Un événement ne peut être lié qu'une fois à un abonnement.
+
+**Exemple** :
+```sql
+INSERT INTO subscription_events (subscription_id, event_id)
+VALUES ('subscription-uuid', 'event-uuid');
+```
 | `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now(), NOT NULL |
 
 ---

@@ -285,6 +285,7 @@ export interface Event {
   name: string;
   description: string | null;
   owner_id: string;
+  subscription_id: string | null; // Lien vers l'abonnement utilisé pour créer cet événement
   created_at: string;
   updated_at: string;
   is_active: boolean;
@@ -296,6 +297,7 @@ export interface EventRow {
   name: string;
   description: string | null;
   owner_id: string;
+  subscription_id: string | null;
   created_at: string;
   updated_at: string;
   is_active: boolean;
@@ -315,4 +317,75 @@ export interface EventOrganizerRow {
   user_id: string;
   role: 'owner' | 'organizer' | 'viewer';
   created_at: string;
+}
+
+// Subscription Types
+export type SubscriptionPlanType = 
+  | 'monthly_pro' 
+  | 'monthly_studio' 
+  | 'event_starter' 
+  | 'event_pro' 
+  | 'event_premium' 
+  | 'volume_10' 
+  | 'volume_50';
+
+export type SubscriptionStatus = 
+  | 'active' 
+  | 'expired' 
+  | 'cancelled' 
+  | 'pending_activation';
+
+export interface SubscriptionFeatures {
+  frames_enabled?: boolean;
+  aftermovie_enabled?: boolean;
+  branding_enabled?: boolean;
+  advanced_stats_enabled?: boolean;
+  white_label_enabled?: boolean;
+  api_access_enabled?: boolean;
+  multi_screen_enabled?: boolean;
+  custom_frames_enabled?: boolean;
+  priority_support_enabled?: boolean;
+  [key: string]: boolean | undefined;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan_type: SubscriptionPlanType;
+  status: SubscriptionStatus;
+  start_date: string;
+  end_date: string | null;
+  events_limit: number | null; // null = illimité pour abonnements mensuels
+  photos_per_event_limit: number | null; // null = illimité
+  features: SubscriptionFeatures;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionRow {
+  id: string;
+  user_id: string;
+  plan_type: SubscriptionPlanType;
+  status: SubscriptionStatus;
+  start_date: string;
+  end_date: string | null;
+  events_limit: number | null;
+  photos_per_event_limit: number | null;
+  features: SubscriptionFeatures;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionEvent {
+  id: string;
+  subscription_id: string;
+  event_id: string;
+  used_at: string;
+}
+
+export interface SubscriptionEventRow {
+  id: string;
+  subscription_id: string;
+  event_id: string;
+  used_at: string;
 }

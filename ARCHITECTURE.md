@@ -318,6 +318,23 @@ event_organizers (Organisateurs)
 ├── event_id (UUID, FK → events)
 ├── user_id (UUID, FK → auth.users)
 └── role (TEXT) -- 'owner' | 'organizer' | 'viewer'
+
+subscriptions (Abonnements)
+├── id (UUID, PK)
+├── user_id (UUID, FK → auth.users)
+├── plan_type (TEXT) -- Type de plan (monthly_pro, event_starter, etc.)
+├── status (TEXT) -- 'active' | 'expired' | 'cancelled' | 'pending_activation'
+├── start_date (TIMESTAMPTZ)
+├── end_date (TIMESTAMPTZ) -- NULL pour abonnements mensuels
+├── events_limit (INTEGER) -- NULL = illimité
+├── photos_per_event_limit (INTEGER) -- NULL = illimité
+└── features (JSONB) -- Fonctionnalités activées
+
+subscription_events (Liens abonnements-événements)
+├── id (UUID, PK)
+├── subscription_id (UUID, FK → subscriptions)
+├── event_id (UUID, FK → events)
+└── used_at (TIMESTAMPTZ)
 ```
 
 ### Relations
@@ -327,6 +344,9 @@ event_organizers (Organisateurs)
 - **events** → **event_settings** : 1-1 (un événement a un seul paramètre)
 - **photos** → **likes** : 1-N (une photo a plusieurs likes)
 - **events** → **event_organizers** : 1-N (un événement a plusieurs organisateurs)
+- **auth.users** → **subscriptions** : 1-N (un utilisateur peut avoir plusieurs abonnements)
+- **subscriptions** → **subscription_events** : 1-N (un abonnement peut être utilisé pour plusieurs événements)
+- **events** → **subscriptions** : N-1 (un événement est lié à un abonnement via subscription_id)
 
 ### Indexes
 
@@ -343,32 +363,68 @@ CREATE INDEX idx_events_slug ON events(slug);
 
 ## 🔄 Flux de données
 
-### Upload d'une photo
+### Création d'un événement avec vérification d'abonnement
+
+```
+1. Organisateur clique sur "Créer un événement"
+   ↓
+2. Service eventService.createEvent() :
+   - Vérifie l'authentification
+   - Valide le slug
+   ↓
+3. Service subscriptionService.canCreateEvent() :
+   - Récupère l'abonnement actif de l'utilisateur
+   - Vérifie les limites (nombre d'événements pour packs volume)
+   - Retourne { can: boolean, reason?: string, subscriptionId?: string }
+   ↓
+4. Si can = false :
+   - Lance une erreur avec le message explicatif
+   - L'utilisateur voit un message d'upgrade
+   ↓
+5. Si can = true :
+   - Crée l'événement avec subscription_id
+   - Pour packs volume : consomme un événement via subscriptionService.useSubscriptionEvent()
+   - Crée l'entrée dans event_organizers
+```
+
+### Upload d'une photo avec vérification de limites
 
 ```
 1. Invité prend/choisit une photo
    ↓
 2. Composant GuestUpload valide le fichier
    ↓
-3. Service photoService.uploadPhoto() :
+3. Service photoService.addPhotoToWall() :
+   - Compte les photos existantes pour l'événement
+   ↓
+4. Service subscriptionService.canUploadPhoto() :
+   - Récupère l'abonnement lié à l'événement (ou actif de l'owner)
+   - Vérifie la limite photos_per_event_limit
+   - Retourne { can: boolean, reason?: string, limit?: number, remaining?: number }
+   ↓
+5. Si can = false :
+   - Lance une erreur avec le message explicatif
+   - L'utilisateur voit un message d'upgrade
+   ↓
+6. Si can = true :
    - Compresse l'image
    - Upload vers Supabase Storage
    - Génère une URL publique
    ↓
-4. Service geminiService :
+7. Service geminiService :
    - Modère le contenu (isAppropriate)
    - Génère une légende (generateCaption)
    - Analyse la qualité
    ↓
-5. Service photoService.addPhotoToWall() :
+8. Service photoService.addPhotoToWall() :
    - Insère dans la table photos
    - Met à jour les statistiques
    ↓
-6. Supabase Realtime :
+9. Supabase Realtime :
    - Émet un événement INSERT
    - Tous les clients connectés reçoivent la nouvelle photo
    ↓
-7. Composants WallView et ProjectionWall :
+10. Composants WallView et ProjectionWall :
    - Reçoivent la nouvelle photo via subscription
    - Affichent en temps réel
 ```
@@ -424,6 +480,56 @@ USING (event_id IN (
 
 - **Préfixe `VITE_`** : Variables exposées au client (URL Supabase, clé anon)
 - **Sans préfixe** : Variables serveur uniquement (clé Gemini côté serveur idéalement)
+
+---
+
+## 💳 Système d'Abonnements
+
+### Vue d'ensemble
+
+Le système d'abonnements permet de gérer les plans des organisateurs et de limiter l'utilisation selon le type d'abonnement souscrit.
+
+### Types d'abonnements
+
+1. **Abonnements mensuels** :
+   - `monthly_pro` : 29€/mois, événements illimités, photos illimitées
+   - `monthly_studio` : 99€/mois, événements illimités, toutes fonctionnalités
+
+2. **Packs événements ponctuels** :
+   - `event_starter` : 49€, 1 événement, 100 photos max
+   - `event_pro` : 99€, 1 événement, photos illimitées
+   - `event_premium` : 199€, 1 événement, toutes fonctionnalités
+
+3. **Packs volume** :
+   - `volume_10` : 290€/événement, 10 événements, photos illimitées
+   - `volume_50` : 198€/événement, 50 événements, photos illimitées
+
+### Service subscriptionService
+
+**Fonctions principales** :
+
+- `getUserActiveSubscription(userId)` : Récupère l'abonnement actif d'un utilisateur
+- `canCreateEvent(userId)` : Vérifie si l'utilisateur peut créer un événement
+- `canUploadPhoto(eventId, currentPhotoCount)` : Vérifie si on peut uploader une photo
+- `useSubscriptionEvent(subscriptionId, eventId)` : Consomme un événement d'un pack volume
+- `getRemainingEvents(subscriptionId)` : Nombre d'événements restants
+- `activateSubscription(subscriptionId)` : Active un abonnement (admin)
+
+### Vérification des limites
+
+Les limites sont vérifiées automatiquement :
+
+1. **Création d'événement** : `eventService.createEvent()` appelle `canCreateEvent()` avant création
+2. **Upload de photo** : `photoService.addPhotoToWall()` appelle `canUploadPhoto()` avant upload
+3. **Messages d'erreur** : Messages clairs avec proposition d'upgrade si limite atteinte
+
+### Panneau admin
+
+Le composant `SubscriptionManagement` permet aux admins de :
+- Voir tous les abonnements
+- Activer les abonnements après paiement manuel
+- Modifier le statut des abonnements
+- Voir les événements restants pour les packs volume
 
 ---
 

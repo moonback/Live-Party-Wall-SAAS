@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Event, EventRow, EventOrganizer, EventOrganizerRow } from '../types';
 import { logger } from '../utils/logger';
+import { canCreateEvent, useSubscriptionEvent } from './subscriptionService';
 
 /**
  * Crée un nouvel événement
@@ -49,6 +50,12 @@ export const createEvent = async (
     throw new Error("Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores.");
   }
 
+  // Vérifier les limites d'abonnement avant de créer l'événement
+  const canCreate = await canCreateEvent(authenticatedUserId);
+  if (!canCreate.can) {
+    throw new Error(canCreate.reason || "Impossible de créer un événement. Vérifiez votre abonnement.");
+  }
+
   try {
     const { data, error } = await supabase
       .from('events')
@@ -58,6 +65,7 @@ export const createEvent = async (
           name,
           description,
           owner_id: authenticatedUserId, // Toujours utiliser l'ID authentifié
+          subscription_id: canCreate.subscriptionId || null, // Lier à l'abonnement utilisé
           is_active: true
         }
       ])
@@ -107,6 +115,21 @@ export const createEvent = async (
         authenticatedUserId 
       });
       // Ne pas faire échouer la création de l'événement si l'organizer échoue
+    }
+
+    // Si un abonnement a été utilisé, consommer un événement du pack volume
+    if (canCreate.subscriptionId) {
+      try {
+        await useSubscriptionEvent(canCreate.subscriptionId, data.id);
+      } catch (err) {
+        logger.error("Error linking event to subscription", err, { 
+          component: 'eventService', 
+          action: 'createEvent', 
+          eventId: data.id,
+          subscriptionId: canCreate.subscriptionId 
+        });
+        // Ne pas faire échouer la création si le lien échoue
+      }
     }
 
     return mapEventRowToEvent(data as EventRow);
@@ -492,6 +515,7 @@ const mapEventRowToEvent = (row: EventRow): Event => ({
   name: row.name,
   description: row.description,
   owner_id: row.owner_id,
+  subscription_id: row.subscription_id || null,
   created_at: row.created_at,
   updated_at: row.updated_at,
   is_active: row.is_active
