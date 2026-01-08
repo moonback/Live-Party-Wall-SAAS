@@ -32,15 +32,13 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
     }
   };
 
-  // Gérer le hash dans l'URL au chargement
+  // Toujours démarrer en haut de page (évite de "revenir" sur une ancienne section au refresh)
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash) {
-      // Attendre que le DOM soit prêt
-      setTimeout(() => {
-        scrollToSection(hash);
-      }, 300);
+    // Nettoyer le hash si présent (ex: #how-it-works) pour éviter un auto-scroll au rechargement
+    if (window.location.hash) {
+      window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, []);
 
   return (
