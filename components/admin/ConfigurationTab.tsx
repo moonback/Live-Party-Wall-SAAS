@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Settings, Type, Tag, Sparkles, Frame, Upload, X, Save, RefreshCw, 
   Image as ImageIcon, Gauge, Move, Shield, Video, Grid3x3, BarChart2, 
@@ -12,6 +12,8 @@ import { uploadDecorativeFramePng } from '../../services/frameService';
 import { getLocalFrames, getLocalFrameUrl, getLocalFrameThumbnailUrl, frameCategories, LocalFrame } from '../../services/localFramesService';
 import { generateEventContextSuggestion } from '../../services/eventContextService';
 import { EventSettings } from '../../services/settingsService';
+import { uploadBackgroundImage } from '../../services/backgroundService';
+import { Monitor, Smartphone } from 'lucide-react';
 
 interface ConfigurationTabProps {
   // Props si nécessaire
@@ -31,6 +33,10 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isGeneratingContextSuggestion, setIsGeneratingContextSuggestion] = useState(false);
   const [contextSuggestion, setContextSuggestion] = useState<string | null>(null);
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
+  const desktopInputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   // Synchroniser localConfig avec config du Context
   useEffect(() => {
@@ -148,6 +154,65 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
     }));
     setShowFrameGallery(false);
     addToast(`Cadre "${frame.name}" sélectionné. N'oubliez pas de sauvegarder.`, 'success');
+  };
+
+  const handleBackgroundUpload = async (file: File, type: 'desktop' | 'mobile') => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    const setUploading = type === 'desktop' ? setUploadingDesktop : setUploadingMobile;
+    setUploading(true);
+
+    try {
+      const { publicUrl } = await uploadBackgroundImage(currentEvent.id, file, type);
+      const fieldName = type === 'desktop' ? 'background_desktop_url' : 'background_mobile_url';
+      setLocalConfig(prev => ({
+        ...prev,
+        [fieldName]: publicUrl
+      }));
+      addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} uploadée. N'oubliez pas de sauvegarder.`, 'success');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
+        addToast('❌ Policies Supabase manquantes. Vérifiez la configuration du bucket party-backgrounds', 'error');
+      } else {
+        addToast(`Erreur: ${errorMsg}`, 'error');
+      }
+    } finally {
+      setUploading(false);
+      // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+      if (type === 'desktop' && desktopInputRef.current) {
+        desktopInputRef.current.value = '';
+      }
+      if (type === 'mobile' && mobileInputRef.current) {
+        mobileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDesktopBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleBackgroundUpload(file, 'desktop');
+    }
+  };
+
+  const handleMobileBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleBackgroundUpload(file, 'mobile');
+    }
+  };
+
+  const clearBackground = (type: 'desktop' | 'mobile') => {
+    const fieldName = type === 'desktop' ? 'background_desktop_url' : 'background_mobile_url';
+    setLocalConfig(prev => ({
+      ...prev,
+      [fieldName]: null
+    }));
+    addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} supprimée. N'oubliez pas de sauvegarder.`, 'info');
   };
 
   const filteredFrames = selectedCategory === 'all' 
@@ -428,6 +493,125 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                       <span className="break-words">Aucun cadre sélectionné. Choisissez-en un dans la galerie ou uploadez un PNG.</span>
                     </div>
                   )}
+                </div>
+
+                {/* Images de fond */}
+                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
+                  <label className="block text-sm font-medium text-slate-200 mb-4 flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-indigo-400" />
+                    Images de fond
+                  </label>
+                  <div className="space-y-4">
+                    {/* Desktop Background */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-slate-300 mb-2 flex items-center gap-2">
+                        <Monitor className="w-3 h-3 text-indigo-400" />
+                        Fond Desktop
+                      </label>
+                      {localConfig.background_desktop_url ? (
+                        <div className="relative">
+                          <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+                            <img
+                              src={localConfig.background_desktop_url}
+                              alt="Fond desktop"
+                              className="w-full h-32 object-cover"
+                            />
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <label className="inline-flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                              <input
+                                ref={desktopInputRef}
+                                type="file"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                onChange={handleDesktopBackgroundChange}
+                                className="hidden"
+                                disabled={uploadingDesktop}
+                              />
+                              <Upload className="w-4 h-4 text-indigo-400" />
+                              <span className="text-indigo-300">{uploadingDesktop ? 'Remplacement...' : 'Remplacer'}</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => clearBackground('desktop')}
+                              className="px-3 py-2 bg-slate-800 border border-red-500/30 rounded-lg hover:border-red-500/50 hover:text-red-400 text-xs text-slate-200 transition-colors"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                          <input
+                            ref={desktopInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleDesktopBackgroundChange}
+                            className="hidden"
+                            disabled={uploadingDesktop}
+                          />
+                          <Upload className="w-4 h-4 text-indigo-400" />
+                          <span className="text-indigo-300">{uploadingDesktop ? 'Upload...' : 'Uploader une image'}</span>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Mobile Background */}
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-slate-300 mb-2 flex items-center gap-2">
+                        <Smartphone className="w-3 h-3 text-indigo-400" />
+                        Fond Mobile
+                      </label>
+                      {localConfig.background_mobile_url ? (
+                        <div className="relative">
+                          <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden">
+                            <img
+                              src={localConfig.background_mobile_url}
+                              alt="Fond mobile"
+                              className="w-full h-32 object-cover"
+                            />
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <label className="inline-flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                              <input
+                                ref={mobileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                onChange={handleMobileBackgroundChange}
+                                className="hidden"
+                                disabled={uploadingMobile}
+                              />
+                              <Upload className="w-4 h-4 text-indigo-400" />
+                              <span className="text-indigo-300">{uploadingMobile ? 'Remplacement...' : 'Remplacer'}</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => clearBackground('mobile')}
+                              className="px-3 py-2 bg-slate-800 border border-red-500/30 rounded-lg hover:border-red-500/50 hover:text-red-400 text-xs text-slate-200 transition-colors"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                          <input
+                            ref={mobileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleMobileBackgroundChange}
+                            className="hidden"
+                            disabled={uploadingMobile}
+                          />
+                          <Upload className="w-4 h-4 text-indigo-400" />
+                          <span className="text-indigo-300">{uploadingMobile ? 'Upload...' : 'Uploader une image'}</span>
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+                    <Info className="w-3 h-3 text-slate-500" />
+                    Images de fond personnalisées pour la page d'accueil (desktop et mobile)
+                  </p>
                 </div>
               </div>
             </section>
