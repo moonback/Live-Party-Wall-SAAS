@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { networkInterfaces } from 'os';
 
 /**
@@ -54,6 +54,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: () => {
     return true;
   },
+  
+  // Fermer l'application
+  closeApp: () => {
+    return ipcRenderer.invoke('app:close');
+  },
 });
 
 // Types pour TypeScript (sera utilisé dans l'application React)
@@ -62,6 +67,7 @@ export type ElectronAPI = {
   getPlatform: () => NodeJS.Platform;
   getLocalIP: () => string | null;
   isElectron: () => boolean;
+  closeApp: () => Promise<void>;
 };
 
 // Déclaration globale pour TypeScript

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, protocol } from 'electron';
+import { app, BrowserWindow, Menu, protocol, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
@@ -250,6 +250,11 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
+  });
+
+  // Gérer la fermeture de l'application depuis le renderer
+  ipcMain.handle('app:close', () => {
+    app.quit();
   });
 });
 

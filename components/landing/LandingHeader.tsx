@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Users, Menu, X, Sparkles } from 'lucide-react';
+import { ArrowRight, Users, Menu, X, Sparkles, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StickyNavigation } from './StickyNavigation';
-import { getStaticAssetPath } from '../../utils/electronPaths';
+import { getStaticAssetPath, isElectron } from '../../utils/electronPaths';
 
 interface LandingHeaderProps {
   isAuthenticated: boolean;
@@ -53,6 +53,16 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
   const handleNavigateToHome = () => {
     window.location.href = window.location.pathname;
     setIsMobileMenuOpen(false);
+  };
+
+  const handleCloseApp = async () => {
+    if (isElectron() && window.electronAPI) {
+      try {
+        await window.electronAPI.closeApp();
+      } catch (error) {
+        console.error('Erreur lors de la fermeture de l\'application:', error);
+      }
+    }
   };
 
   const navLinks = [
@@ -108,6 +118,16 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
 
             {/* CTA Button Desktop */}
             <div className="hidden md:flex items-center gap-4">
+              {isElectron() && (
+                <button
+                  onClick={handleCloseApp}
+                  className="group relative px-4 py-2.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 hover:text-red-200 font-semibold rounded-full text-sm flex items-center gap-2 border border-red-500/30 transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:-translate-y-0.5"
+                  title="Fermer l'application"
+                >
+                  <Power className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                  <span>Fermer</span>
+                </button>
+              )}
               <button
                 onClick={onAdminClick}
                 className="group relative px-5 py-2.5 bg-white text-black font-semibold rounded-full text-sm flex items-center gap-2 overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:-translate-y-0.5"
@@ -203,6 +223,18 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               transition={{ delay: 0.5 }}
               className="mt-auto mb-10"
             >
+              {isElectron() && (
+                <button
+                  onClick={() => {
+                    handleCloseApp();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 transition-all font-bold rounded-xl text-red-300 hover:text-red-200 text-lg flex items-center justify-center gap-3 shadow-lg shadow-red-900/20 mb-4"
+                >
+                  <Power className="w-5 h-5" />
+                  <span>Fermer l'application</span>
+                </button>
+              )}
               <button
                 onClick={() => {
                   onAdminClick();

@@ -22,6 +22,11 @@ export interface ElectronAPI {
    * Vérifie si on est dans Electron
    */
   isElectron: () => boolean;
+  
+  /**
+   * Ferme l'application Electron
+   */
+  closeApp: () => Promise<void>;
 }
 
 declare global {

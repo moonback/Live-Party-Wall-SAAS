@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Trash2, Download, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power } from 'lucide-react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
+import { isElectron } from '../../utils/electronPaths';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -29,6 +30,16 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   exportProgress,
   currentEventName
 }) => {
+  const handleCloseApp = async () => {
+    if (isElectron() && window.electronAPI) {
+      try {
+        await window.electronAPI.closeApp();
+      } catch (error) {
+        console.error('Erreur lors de la fermeture de l\'application:', error);
+      }
+    }
+  };
+
   return (
     <header className="mb-6">
       <div className="bg-gradient-to-r from-slate-950/80 via-slate-900/80 to-slate-800/90 backdrop-blur-2xl rounded-2xl px-8 py-6 border border-slate-800 shadow-xl">
@@ -77,6 +88,21 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 <Home className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
                   Application
+                </span>
+              </motion.button>
+            )}
+            {isElectron() && (
+              <motion.button
+                whileHover={{ scale: 1.07 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCloseApp}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400/30 bg-gradient-to-r from-red-800/30 to-red-700/20 hover:bg-red-600/25 transition-all duration-150 text-red-300 hover:text-red-100 group shadow"
+                aria-label="Fermer l'application"
+                title="Fermer l'application"
+              >
+                <Power className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                  Fermer
                 </span>
               </motion.button>
             )}
