@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Play, Star } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useInView } from '../../hooks/useInView';
 import { DemoModal } from './DemoModal';
 
 // Photos optimisées et fiables pour éviter les erreurs de chargement
@@ -132,13 +133,14 @@ interface SceneAnimationProps {
 interface PhotoGridItemProps {
   photo: typeof EVENT_PHOTOS[0];
   index: number;
+  isInView: boolean;
 }
 
 // ============================================================================
 // COMPOSANT PhotoGridItem
 // ============================================================================
 
-const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index }) => {
+const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index, isInView }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [likeCount, setLikeCount] = useState(12 + index * 4);
 
@@ -207,8 +209,8 @@ const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index }) => {
             </motion.span>
          </motion.div>
 
-         {/* Animations de cœurs - Intermittentes (réduire GPU) */}
-         {[...Array(1)].map((_, i) => (
+         {/* Animations de cœurs - Réduites et optimisées */}
+         {isInView && [...Array(1)].map((_, i) => (
            <motion.div
              key={`heart-${i}`}
              initial={{ 
@@ -239,8 +241,8 @@ const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index }) => {
            </motion.div>
          ))}
 
-         {/* Étoiles de réaction - Intermittentes */}
-         {[...Array(1)].map((_, i) => (
+         {/* Étoiles de réaction - Réduites et optimisées */}
+         {isInView && [...Array(1)].map((_, i) => (
            <motion.div
              key={`star-${i}`}
              initial={{ 
@@ -281,6 +283,7 @@ const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index }) => {
 
 const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' }) => {
   const prefersReducedMotion = useReducedMotion();
+  const { ref: sceneRef, isInView } = useInView({ threshold: 0.1, triggerOnce: false });
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -320,10 +323,14 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
   };
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center" style={{ perspective: '2500px' }}>
+    <div 
+      ref={sceneRef}
+      className="relative w-full h-full flex items-center justify-center" 
+      style={{ perspective: '2500px' }}
+    >
       
-      {/* Particules de poussière lumineuse - Animations intermittentes pour réduire GPU */}
-      {!prefersReducedMotion && [...Array(4)].map((_, i) => (
+      {/* Particules de poussière lumineuse - Réduites et optimisées */}
+      {!prefersReducedMotion && isInView && [...Array(2)].map((_, i) => (
         <motion.div
           key={`dust-${i}`}
           className="absolute w-1 h-1 bg-pink-500/30 rounded-full blur-[1px] z-0"
@@ -360,15 +367,15 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
         }}
         className="absolute top-[30%] -translate-y-1/2 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0 w-[85%] sm:w-[480px] md:w-[560px] lg:w-[650px] xl:w-[760px] min-h-[400px] h-auto max-h-[600px] sm:max-h-[700px] md:max-h-[800px] bg-[#0b0b0b] rounded-2xl border-[6px] border-[#202027] shadow-[0_40px_100px_-12px_rgba(0,0,0,0.7),0_10px_40px_-10px_rgba(139,92,246,0.3)] z-10 overflow-hidden transform-gpu blur-[0.5px] opacity-90"
       >
-        {/* Balayage de reflet Premium - Intermittent */}
-        {!prefersReducedMotion && (
+        {/* Balayage de reflet Premium - Optimisé */}
+        {!prefersReducedMotion && isInView && (
           <motion.div 
             {...getAnimationProps({
               animate: { x: ['-100%', '200%'] },
               transition: { 
                 duration: 4, 
                 repeat: Infinity, 
-                repeatDelay: 8, // Plus espacé
+                repeatDelay: 10, // Plus espacé pour réduire charge
                 ease: "linear" 
               },
             })}
@@ -392,7 +399,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
         {/* PhotoGrid */}
         <div className="absolute inset-0 pt-12 sm:pt-14 pb-3 px-2 bg-black/90 flex flex-wrap content-start gap-1 sm:gap-1.5 overflow-y-auto overflow-x-hidden">
           {EVENT_PHOTOS.map((photo, i) => (
-            <PhotoGridItem key={i} photo={photo} index={i} />
+            <PhotoGridItem key={i} photo={photo} index={i} isInView={isInView} />
           ))}
           
           {/* IncomingPhoto */}
@@ -419,7 +426,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
             <img src={HERO_PHOTO} className="w-full h-full object-cover" alt="Live Photo" />
             
             {/* Flash d'arrivée - Synchronisé */}
-            {!prefersReducedMotion && (
+            {!prefersReducedMotion && isInView && (
               <motion.div
                 {...getAnimationProps({
                   animate: { opacity: [0, 1, 0] },
@@ -434,8 +441,8 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
               />
             )}
             
-            {/* Particules de succès - Réduites (moins de GPU) */}
-            {!prefersReducedMotion && [...Array(3)].map((_, i) => (
+            {/* Particules de succès - Réduites pour performance */}
+            {!prefersReducedMotion && isInView && [...Array(2)].map((_, i) => (
               <motion.div
                 key={`success-particle-${i}`}
                 {...getAnimationProps({
@@ -476,8 +483,8 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
               <span className="text-[7px] sm:text-[9px] text-white font-bold">0</span>
             </motion.div>
 
-            {/* Explosion de cœurs - Réduite (éviter "too much") */}
-            {!prefersReducedMotion && [...Array(6)].map((_, i) => (
+            {/* Explosion de cœurs - Réduite pour performance */}
+            {!prefersReducedMotion && isInView && [...Array(4)].map((_, i) => (
               <motion.div
                 key={`explosion-heart-${i}`}
                 {...getAnimationProps({
@@ -512,8 +519,8 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
             ))}
           </motion.div>
           
-          {/* Réactions flottantes - Intermittentes */}
-          {!prefersReducedMotion && [...Array(2)].map((_, i) => (
+          {/* Réactions flottantes - Optimisées */}
+          {!prefersReducedMotion && isInView && [...Array(1)].map((_, i) => (
             <motion.div
               key={`floating-reaction-${i}`}
               {...getAnimationProps({
@@ -696,7 +703,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
               <img src={HERO_PHOTO} className="w-full h-full object-cover rounded-lg shadow-inner" alt="Photo envoyée" />
               
               {/* Effet de brillance - Synchronisé */}
-              {!prefersReducedMotion && (
+              {!prefersReducedMotion && isInView && (
                 <motion.div
                   {...getAnimationProps({
                     animate: { opacity: [0, 0.5, 0] },
@@ -711,8 +718,8 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
                 />
               )}
               
-              {/* Particules autour de la photo - Réduites */}
-              {!prefersReducedMotion && [...Array(2)].map((_, i) => (
+              {/* Particules autour de la photo - Réduites pour performance */}
+              {!prefersReducedMotion && isInView && [...Array(1)].map((_, i) => (
                 <motion.div
                   key={`photo-particle-${i}`}
                   {...getAnimationProps({
@@ -779,8 +786,8 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
           })}
         />
         
-        {/* Particules le long du beam - Réduites */}
-        {!prefersReducedMotion && [...Array(5)].map((_, i) => (
+        {/* Particules le long du beam - Réduites pour performance */}
+        {!prefersReducedMotion && isInView && [...Array(3)].map((_, i) => (
           <motion.circle
             key={`beam-particle-${i}`}
             r="3"

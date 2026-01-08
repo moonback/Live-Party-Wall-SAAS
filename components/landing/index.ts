@@ -13,4 +13,5 @@ export { Testimonials } from './Testimonials';
 export { TrustBadges } from './TrustBadges';
 export { DemoModal } from './DemoModal';
 export { StickyNavigation } from './StickyNavigation';
+export { SkipLinks } from './SkipLinks';
 

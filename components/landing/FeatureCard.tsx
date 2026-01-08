@@ -59,7 +59,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, des
           {title}
         </h3>
         
-        <p className="text-sm text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">
+        <p className="text-sm text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors">
           {description}
         </p>
       </div>

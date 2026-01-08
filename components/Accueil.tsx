@@ -15,6 +15,7 @@ import { LandingFooter } from './landing/LandingFooter';
 import { Testimonials } from './landing/Testimonials';
 import { TrustBadges } from './landing/TrustBadges';
 import { ScrollToTop } from './landing/ScrollToTop';
+import { SkipLinks } from './landing/SkipLinks';
 
 interface AccueilProps {
   onAdminClick: () => void;
@@ -46,6 +47,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fuchsia-900 via-black to-pink-900 relative overflow-hidden">
+      <SkipLinks />
       <LandingBackground />
       <LandingHeader 
         isAuthenticated={isAuthenticated}
@@ -53,7 +55,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         onScrollToSection={scrollToSection}
       />
 
-      <div className="relative z-10 pt-16 sm:pt-20">
+      <main id="main-content" className="relative z-10 pt-16 sm:pt-20">
         <Hero onAdminClick={onAdminClick} />
         <HowItWorks />
         <Features />
@@ -66,7 +68,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         <FinalCTA onAdminClick={onAdminClick} />
         <TrustBadges />
         <LandingFooter />
-      </div>
+      </main>
 
       <ScrollToTop />
     </div>

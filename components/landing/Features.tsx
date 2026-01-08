@@ -39,7 +39,7 @@ export const Features: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-gray-400 max-w-2xl mx-auto"
+            className="text-lg text-gray-300 max-w-2xl mx-auto"
           >
             Une suite complète d'outils pour transformer n'importe quel rassemblement en une expérience interactive et virale.
           </motion.p>

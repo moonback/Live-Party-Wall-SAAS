@@ -28,7 +28,7 @@ export const HowItWorks: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-lg text-gray-400 max-w-2xl mx-auto"
+            className="text-lg text-gray-300 max-w-2xl mx-auto"
           >
             Une expérience fluide pour l'organisateur comme pour les invités. <br/>
             Simplicité radicale, impact maximal.
