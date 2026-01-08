@@ -13,9 +13,17 @@ export const isGuestBlocked = async (eventId: string, guestName: string): Promis
 
   try {
     // Nettoyer d'abord les blocages expirés
-    await supabase.rpc('cleanup_expired_blocks').catch(() => {
-      // Si la fonction n'existe pas encore, on continue quand même
-    });
+    // Si la fonction n'existe pas encore, on continue quand même
+    try {
+      const { error: rpcError } = await supabase.rpc('cleanup_expired_blocks');
+      if (rpcError) {
+        // Fonction peut ne pas exister, on ignore l'erreur
+        logger.debug("cleanup_expired_blocks RPC not available or failed", rpcError, { component: 'guestService', action: 'isGuestBlocked' });
+      }
+    } catch (rpcError) {
+      // Ignorer les erreurs de RPC (fonction peut ne pas exister)
+      logger.debug("cleanup_expired_blocks RPC error", rpcError, { component: 'guestService', action: 'isGuestBlocked' });
+    }
 
     const { data, error } = await supabase
       .from('blocked_guests')

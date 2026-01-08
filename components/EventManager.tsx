@@ -293,40 +293,7 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Statut de l'événement
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className="relative">
-                      <input
-                        type="checkbox"
-                        checked={editedIsActive}
-                        onChange={(e) => setEditedIsActive(e.target.checked)}
-                        disabled={!canEdit}
-                        className="sr-only"
-                      />
-                      <motion.div 
-                        className={`w-11 h-6 rounded-full transition-colors ${editedIsActive ? 'bg-indigo-600' : 'bg-slate-700'}`}
-                        animate={{ backgroundColor: editedIsActive ? '#4f46e5' : '#334155' }}
-                      >
-                        <motion.div 
-                          className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm"
-                          animate={{ x: editedIsActive ? 20 : 0 }}
-                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                        />
-                      </motion.div>
-                    </div>
-                    <div>
-                      <span className={`text-sm font-medium ${editedIsActive ? 'text-slate-100' : 'text-slate-400'}`}>
-                        {editedIsActive ? 'Événement actif' : 'Événement archivé'}
-                      </span>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {editedIsActive ? 'Visible et accessible' : 'Masqué et inaccessible'}
-                      </p>
-                    </div>
-                  </label>
-                </div>
+                
               </div>
             </motion.div>
 

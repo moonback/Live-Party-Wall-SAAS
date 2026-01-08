@@ -249,6 +249,27 @@ export const updateEvent = async (
     throw new Error("Supabase n'est pas configuré. Impossible de mettre à jour l'événement.");
   }
 
+  // Vérifier que l'utilisateur est authentifié
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session?.user) {
+    logger.error("User not authenticated", sessionError, { component: 'eventService', action: 'updateEvent', eventId });
+    throw new Error("Vous devez être connecté pour modifier un événement.");
+  }
+
+  const authenticatedUserId = session.user.id;
+
+  // Vérifier que l'utilisateur a les permissions pour modifier l'événement
+  const hasPermission = await canEditEvent(eventId, authenticatedUserId);
+  if (!hasPermission) {
+    logger.error("User does not have permission to update event", null, { 
+      component: 'eventService', 
+      action: 'updateEvent', 
+      eventId, 
+      authenticatedUserId 
+    });
+    throw new Error("Vous n'avez pas les permissions pour modifier cet événement.");
+  }
+
   // Valider le slug si fourni
   if (updates.slug) {
     const slugRegex = /^[a-z0-9-_]+$/;
@@ -275,6 +296,15 @@ export const updateEvent = async (
       if (error.code === '23505') { // Unique violation
         throw new Error("Un événement avec ce slug existe déjà.");
       }
+      
+      if (error.code === '42501') { // Insufficient privilege
+        throw new Error("Permissions insuffisantes. Vérifiez que vous êtes bien connecté et que les politiques RLS sont correctement configurées.");
+      }
+      
+      if (error.code === 'PGRST301') { // RLS policy violation
+        throw new Error("Erreur de permissions. Vérifiez que les politiques RLS permettent la modification d'événements pour les organisateurs.");
+      }
+      
       throw error;
     }
 
