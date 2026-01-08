@@ -6,11 +6,10 @@ import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Calendar, Search, Loader2, Sparkles, Clock, 
+  Plus, Calendar, Search, Loader2, Clock, 
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
   Check, Filter, SortAsc, SortDesc,
-  ArrowRight, LayoutDashboard, Settings as SettingsIcon,
-  Type, Tag, Globe, Info
+  ArrowRight, LayoutDashboard, Settings as SettingsIcon
 } from 'lucide-react';
 
 interface EventSelectorProps {
@@ -202,29 +201,25 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Arrière-plan décoratif */}
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pink-600/10 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full"></div>
-        
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-gray-900/60 backdrop-blur-2xl rounded-[2.5rem] p-10 max-w-md w-full text-center border border-white/10 shadow-2xl relative z-10"
+          className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-10 max-w-md w-full text-center border border-slate-800 relative z-10"
         >
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg transform rotate-12">
-            <Calendar className="w-10 h-10 text-white -rotate-12" />
+          <div className="w-16 h-16 mx-auto mb-6 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
+            <Calendar className="w-8 h-8 text-slate-400" />
           </div>
-          <h2 className="text-3xl font-black mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-3 text-slate-100">
             Connexion requise
           </h2>
-          <p className="text-gray-400 mb-8 font-medium">Vous devez être connecté pour accéder à votre tableau de bord d'événements.</p>
+          <p className="text-slate-400 mb-8 text-sm">Vous devez être connecté pour accéder à votre tableau de bord d'événements.</p>
           {onBack && (
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={onBack}
-              className="w-full px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl shadow-lg shadow-pink-500/20 font-bold text-lg"
+              className="w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium text-sm text-white transition-colors"
             >
               Retour à l'accueil
             </motion.button>
@@ -235,119 +230,116 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   }
 
   return (
-    <div className="min-h-screen bg-black p-4 md:p-8 lg:p-1 relative overflow-hidden text-white">
-      {/* Arrière-plan animé */}
-      <div className="absolute inset-0 z-0 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600/20 blur-[150px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 blur-[150px] rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="min-h-screen bg-slate-950 p-4 md:p-8 lg:p-12 relative text-slate-100">
+      {/* Arrière-plan sobre */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/3 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/3 blur-[120px] rounded-full"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-1">
-            <div className="flex-1"></div>
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl shadow-xl shadow-pink-500/20 hover:shadow-pink-500/40 transition-all font-bold text-lg group"
-            >
-              <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-              <span>Nouvel événement</span>
-            </motion.button>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-100 mb-1">Mes événements</h1>
+            <p className="text-sm text-slate-400">Gérez vos Party Walls</p>
           </div>
+          <motion.button
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium text-sm text-white transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nouvel événement</span>
+          </motion.button>
+        </div>
 
         {/* Create Form Section */}
         <AnimatePresence>
           {showCreateForm && (
             <motion.div 
-              initial={{ opacity: 0, y: -20, height: 0 }}
+              initial={{ opacity: 0, y: -10, height: 0 }}
               animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -20, height: 0 }}
-              className="overflow-hidden mb-12"
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              className="overflow-hidden mb-8"
             >
-              <div className="bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
-                {/* Gradient decoration */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-pink-500/5 to-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                
-                <div className="relative flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="p-2 sm:p-3 bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-2xl border border-pink-500/40 shadow-lg shadow-pink-900/20 flex-shrink-0">
-                      <Plus className="w-6 h-6 sm:w-7 sm:h-7 text-pink-300" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 mb-1">
-                        Configuration de l'événement
-                      </h2>
-                      <p className="text-xs sm:text-sm text-slate-400">
-                        Créez un nouvel événement pour votre Party Wall
-                      </p>
-                    </div>
+              <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-800">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-100 mb-1">
+                      Créer un nouvel événement
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      Configurez votre Party Wall
+                    </p>
                   </div>
-                  <button onClick={() => setShowCreateForm(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                    <X className="w-6 h-6 text-gray-400" />
+                  <button 
+                    onClick={() => setShowCreateForm(false)} 
+                    className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <form onSubmit={handleCreateEvent} className="relative grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-700/30 shadow-inner flex flex-col gap-1">
-                      <label className="block text-base font-semibold text-white mb-2 flex items-center gap-2">
-                        <Type className="w-5 h-5 text-pink-400" />
+                <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
                         Nom public
                       </label>
                       <input
                         type="text"
                         value={newEventName}
                         onChange={(e) => setNewEventName(e.target.value)}
-                        className="w-full bg-slate-900/50 border border-pink-400/10 rounded-xl px-4 py-3 text-base text-white font-medium placeholder:text-slate-500 outline-none focus:border-pink-500/30 focus:ring-2 focus:ring-pink-600/15 transition-all"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                         placeholder="Ex: Mariage de Sophie & Marc"
                         required
                       />
-                      <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
-                        <Info className="w-4 h-4 text-slate-500" />
+                      <p className="text-xs text-slate-500">
                         Nom affiché sur le mur et dans les exports
                       </p>
                     </div>
-                    <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-700/30 shadow-inner flex flex-col gap-1">
-                      <label className="block text-base font-semibold text-white mb-2 flex items-center gap-2">
-                        <Globe className="w-5 h-5 text-pink-400" />
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
                         URL personnalisée
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-mono text-sm">/</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">/</span>
                         <input
                           type="text"
                           value={newEventSlug}
                           onChange={(e) => setNewEventSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                          className="w-full pl-8 pr-4 bg-slate-900/50 border border-pink-400/10 rounded-xl px-4 py-3 text-base text-white font-medium placeholder:text-slate-500 outline-none focus:border-pink-500/30 focus:ring-2 focus:ring-pink-600/15 transition-all font-mono"
+                          className="w-full pl-8 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                           placeholder="mariage-sophie-marc"
                           required
                         />
                       </div>
-                      <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1.5">
-                        <Info className="w-4 h-4 text-slate-500" />
+                      <p className="text-xs text-slate-500">
                         L'URL sera : party-wall.com/?event={newEventSlug || '...'}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="space-y-6 flex flex-col justify-between">
-                    <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-700/30 shadow-inner flex flex-col gap-1">
-                      <label className="block text-base font-semibold text-white mb-2 flex items-center gap-2">
-                        <Tag className="w-5 h-5 text-pink-400" />
+                  <div className="space-y-4 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-300">
                         Description courte
                       </label>
                       <textarea
                         value={newEventDescription}
                         onChange={(e) => setNewEventDescription(e.target.value.substring(0, 100))}
-                        className="w-full bg-slate-900/50 border border-pink-400/10 rounded-xl px-4 py-3 text-base text-white font-normal placeholder:text-slate-500 focus:border-pink-500/20 focus:ring-2 focus:ring-pink-600/10 outline-none transition-all resize-none h-[124px]"
+                        rows={3}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
                         placeholder="Un petit mot pour vos invités..."
                       />
-                      <p className="text-xs text-slate-400 mt-1.5 text-right">{newEventDescription.length}/100</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-slate-500">Description optionnelle</p>
+                        <p className="text-xs text-slate-500">{newEventDescription.length}/100</p>
+                      </div>
                     </div>
                     
                     <motion.button
@@ -355,10 +347,10 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       whileTap={{ scale: 0.98 }}
                       type="submit"
                       disabled={creating}
-                      className="w-full bg-white text-black font-black py-4 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 text-lg disabled:opacity-50"
+                      className="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
                     >
-                      {creating ? <Loader2 className="w-6 h-6 animate-spin" /> : <Sparkles className="w-6 h-6" />}
-                      {creating ? 'Création en cours...' : 'Lancer mon Party Wall'}
+                      {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                      {creating ? 'Création...' : 'Créer l\'événement'}
                     </motion.button>
                   </div>
                 </form>
@@ -368,76 +360,73 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
         </AnimatePresence>
 
         {/* Filters and Search */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-pink-500 transition-colors" />
+        <div className="flex flex-col md:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher parmi vos événements..."
-              className="w-full pl-16 pr-6 py-4 bg-slate-900/50 border border-pink-400/10 rounded-xl focus:border-pink-500/30 focus:ring-2 focus:ring-pink-600/15 text-white outline-none transition-all placeholder:text-slate-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm text-slate-100 outline-none transition-all placeholder:text-slate-500"
             />
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex gap-2">
             <button 
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-6 py-4 bg-slate-900/50 border border-pink-400/10 rounded-xl hover:border-pink-500/30 transition-all flex items-center gap-2"
+              className="px-3 py-2.5 bg-slate-900/50 border border-slate-800 rounded-lg hover:bg-slate-800/50 transition-colors flex items-center gap-2 text-sm text-slate-300"
               title="Changer l'ordre de tri"
             >
-              {sortOrder === 'desc' ? <SortDesc className="w-5 h-5 text-pink-400" /> : <SortAsc className="w-5 h-5 text-pink-400" />}
-              <span className="hidden sm:inline font-semibold text-sm">{sortOrder === 'desc' ? 'Plus récents' : 'Plus anciens'}</span>
+              {sortOrder === 'desc' ? <SortDesc className="w-4 h-4" /> : <SortAsc className="w-4 h-4" />}
+              <span className="hidden sm:inline">{sortOrder === 'desc' ? 'Plus récents' : 'Plus anciens'}</span>
             </button>
             
-            <div className="relative group/sort">
+            <div className="relative">
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'created_at' | 'name')}
-                className="appearance-none pl-6 pr-12 py-4 bg-slate-900/50 border border-pink-400/10 rounded-xl hover:border-pink-500/30 transition-all outline-none font-semibold text-sm cursor-pointer"
+                className="appearance-none pl-3 pr-10 py-2.5 bg-slate-900/50 border border-slate-800 rounded-lg hover:bg-slate-800/50 transition-colors outline-none text-sm text-slate-300 cursor-pointer focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               >
                 <option value="created_at" className="bg-slate-900">Par date</option>
                 <option value="name" className="bg-slate-900">Par nom</option>
               </select>
-              <Filter className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Events Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 border-4 border-pink-500/20 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p className="text-gray-500 font-bold uppercase tracking-[0.2em] animate-pulse">Chargement de votre collection...</p>
+          <div className="flex flex-col items-center justify-center py-24 space-y-4">
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            <p className="text-slate-500 text-sm">Chargement de vos événements...</p>
           </div>
         ) : filteredAndSortedEvents.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-gray-900/40 backdrop-blur-xl rounded-[3rem] p-20 text-center border border-white/5 shadow-2xl"
+            className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-12 text-center border border-slate-800"
           >
-            <div className="w-24 h-24 mx-auto mb-8 bg-gray-800 rounded-full flex items-center justify-center">
-              <Calendar className="w-10 h-10 text-gray-600" />
+            <div className="w-16 h-16 mx-auto mb-6 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
+              <Calendar className="w-8 h-8 text-slate-500" />
             </div>
-            <h3 className="text-3xl font-black mb-4">Aucun résultat trouvé</h3>
-            <p className="text-gray-500 max-w-md mx-auto mb-10 text-lg">
-              {searchQuery ? `Nous n'avons trouvé aucun événement correspondant à "${searchQuery}"` : "Commencez l'aventure en créant votre premier événement."}
+            <h3 className="text-xl font-semibold mb-2 text-slate-100">Aucun résultat trouvé</h3>
+            <p className="text-slate-400 max-w-md mx-auto mb-8 text-sm">
+              {searchQuery ? `Aucun événement correspondant à "${searchQuery}"` : "Commencez en créant votre premier événement."}
             </p>
             {!searchQuery && (
               <button 
                 onClick={() => setShowCreateForm(true)}
-                className="px-10 py-5 bg-white text-black font-black rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-colors"
               >
-                Créer un événement maintenant
+                Créer un événement
               </button>
             )}
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12">
             <AnimatePresence mode="popLayout">
               {filteredAndSortedEvents.map((event, index) => {
                 const isSelected = currentEvent?.id === event.id;
@@ -449,47 +438,43 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                   <motion.div
                     layout
                     key={event.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`group relative bg-gray-900/40 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-8 border transition-all duration-500 flex flex-col shadow-2xl ${
-                      isSelected ? 'border-pink-500/50 shadow-[0_0_40px_rgba(236,72,153,0.15)]' : 'border-white/10 hover:border-pink-500/30'
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={`group relative bg-slate-900/50 backdrop-blur-sm rounded-xl p-5 border transition-all flex flex-col ${
+                      isSelected ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/10' : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
                     {/* Event Status & Actions */}
-                    <div className="flex justify-between items-start mb-8">
-                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
-                        event.is_active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 ${
+                        event.is_active ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'
                       }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${event.is_active ? 'bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-gray-400'}`}></div>
-                        {event.is_active ? 'Direct' : 'Archivé'}
+                        <div className={`w-1.5 h-1.5 rounded-full ${event.is_active ? 'bg-teal-400' : 'bg-slate-500'}`}></div>
+                        {event.is_active ? 'Actif' : 'Archivé'}
                       </div>
                       
-                      <div className="flex items-center gap-2">
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                      <div className="flex items-center gap-1.5">
+                        <button 
                           onClick={(e) => copyEventLink(event.slug, event.id, e)}
-                          className={`p-2 rounded-xl transition-colors ${isCopied ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400 hover:text-white'}`}
+                          className={`p-1.5 rounded-lg transition-colors ${isCopied ? 'bg-teal-500/20 text-teal-400' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
                           title="Copier le lien"
                         >
-                          {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </motion.button>
+                          {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
                         
                         {!isSelected && (
-                          <motion.button 
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                          <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               setConfirmDeleteId(showConfirm ? null : event.id);
                             }}
-                            className={`p-2 rounded-xl transition-colors ${showConfirm ? 'bg-red-500 text-white shadow-lg shadow-red-500/40' : 'bg-white/5 text-gray-400 hover:text-red-400'}`}
+                            className={`p-1.5 rounded-lg transition-colors ${showConfirm ? 'bg-red-500 text-white' : 'bg-slate-800 text-slate-400 hover:text-red-400'}`}
                             title="Supprimer"
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </motion.button>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         )}
                       </div>
                     </div>
@@ -501,26 +486,26 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="absolute inset-0 z-20 bg-gray-950/90 backdrop-blur-md rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-center"
+                          className="absolute inset-0 z-20 bg-slate-950/95 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-6 text-center"
                         >
-                          <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mb-4">
-                            <AlertTriangle className="w-8 h-8 text-red-500" />
+                          <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center mb-4 border border-red-500/20">
+                            <AlertTriangle className="w-6 h-6 text-red-500" />
                           </div>
-                          <h4 className="text-xl font-black mb-2 text-white">Supprimer l'événement ?</h4>
-                          <p className="text-gray-400 text-sm mb-6">Cette action est irréversible et supprimera toutes les photos associées.</p>
-                          <div className="flex gap-4 w-full">
+                          <h4 className="text-base font-semibold mb-2 text-slate-100">Supprimer l'événement ?</h4>
+                          <p className="text-slate-400 text-sm mb-6">Cette action est irréversible et supprimera toutes les photos associées.</p>
+                          <div className="flex gap-3 w-full">
                             <button 
                               onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
-                              className="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all border border-white/10"
+                              className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium text-sm text-slate-300 transition-colors border border-slate-700"
                             >
                               Annuler
                             </button>
                             <button 
                               onClick={(e) => handleDeleteEvent(event, e)}
                               disabled={isDeleting}
-                              className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl font-black text-white transition-all flex items-center justify-center"
+                              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 rounded-lg font-medium text-sm text-white transition-colors flex items-center justify-center gap-2"
                             >
-                              {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Supprimer'}
+                              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Supprimer'}
                             </button>
                           </div>
                         </motion.div>
@@ -528,64 +513,62 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                     </AnimatePresence>
 
                     {/* Event Content */}
-                    <div className="flex-1">
-                      <h3 className={`text-2xl font-black mb-3 tracking-tight transition-colors ${isSelected ? 'text-white' : 'text-gray-100 group-hover:text-white'}`}>
+                    <div className="flex-1 mb-4">
+                      <h3 className={`text-lg font-semibold mb-2 transition-colors ${isSelected ? 'text-slate-100' : 'text-slate-200'}`}>
                         {event.name}
                       </h3>
-                      <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-6 font-medium">
+                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-4">
                         {event.description || "Aucune description fournie pour cet événement."}
                       </p>
                       
-                      <div className="flex items-center gap-3 text-gray-500 text-xs font-mono bg-white/5 py-3 px-4 rounded-2xl border border-white/5 w-fit">
-                        <ExternalLink className="w-3.5 h-3.5 text-pink-500" />
+                      <div className="flex items-center gap-2 text-slate-500 text-xs font-mono bg-slate-950/50 py-2 px-3 rounded-lg border border-slate-800 w-fit">
+                        <ExternalLink className="w-3 h-3 text-slate-400" />
                         <span>?event={event.slug}</span>
                       </div>
                     </div>
 
                     {/* Footer Info & Select Button */}
-                    <div className="mt-8 pt-8 border-t border-white/10 flex flex-col gap-4">
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-400">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
+                    <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
                           <span>{new Date(event.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
                         {isSelected && (
-                          <div className="flex items-center gap-2 text-pink-400">
-                            <LayoutDashboard className="w-4 h-4" />
-                            <span>Sélectionné</span>
+                          <div className="flex items-center gap-1.5 text-indigo-400">
+                            <LayoutDashboard className="w-3.5 h-3.5" />
+                            <span className="text-xs font-medium">Sélectionné</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
                           onClick={() => handleSelectEvent(event)}
-                          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
+                          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-sm transition-colors ${
                             isSelected 
-                              ? 'bg-pink-500/10 text-pink-400 border border-pink-500/30 cursor-default' 
-                              : 'bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700'
+                              ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 cursor-default' 
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                           }`}
                         >
                           {isSelected ? 'Tableau de bord' : 'Ouvrir'}
-                          {!isSelected && <ArrowRight className="w-4 h-4" />}
+                          {!isSelected && <ArrowRight className="w-3.5 h-3.5" />}
                         </motion.button>
                         
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             if (onSettingsClick) {
                               onSettingsClick(event);
                             }
                           }}
-                          className="p-3 bg-slate-900/50 hover:bg-slate-800/50 rounded-xl border border-white/10 hover:border-pink-500/30 transition-colors"
+                          className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
                           title="Paramètres de l'événement"
                         >
-                          <SettingsIcon className="w-5 h-5 text-slate-400 hover:text-pink-400" />
-                        </motion.button>
+                          <SettingsIcon className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -595,19 +578,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.1; }
-          50% { opacity: 0.3; }
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 };

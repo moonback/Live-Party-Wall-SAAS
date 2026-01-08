@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
 import { useToast } from '../context/ToastContext';
@@ -15,9 +15,6 @@ import { AdminDashboardHeader } from './admin/AdminDashboardHeader';
 import { AdminTabsNavigation } from './admin/AdminTabsNavigation';
 import { ModerationTab } from './admin/ModerationTab';
 import { GuestsTab } from './admin/GuestsTab';
-import { ConfigurationTab } from './admin/ConfigurationTab';
-import { AftermovieTab } from './admin/AftermovieTab';
-import { BattlesTab } from './admin/BattlesTab';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
@@ -37,6 +34,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<AdminTab>('events');
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Local state for moderation (reversed photos for newest first)
@@ -319,11 +317,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const loadEvents = async () => {
     if (!user || events.length > 0) return;
+    setLoadingEvents(true);
     try {
       const userEvents = await getUserEvents(user.id);
       setEvents(userEvents);
     } catch (error) {
       console.error('Error loading events:', error);
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
@@ -426,15 +427,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         )}
 
         {activeTab === 'configuration' && (
-          <ConfigurationTab />
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+              <h2 className="text-xl font-semibold text-slate-100 mb-4">Configuration</h2>
+              <p className="text-sm text-slate-400">La configuration complète sera disponible dans un composant dédié.</p>
+            </div>
+          </div>
         )}
 
         {activeTab === 'aftermovie' && (
-          <AftermovieTab />
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+              <h2 className="text-xl font-semibold text-slate-100 mb-4">Aftermovie</h2>
+              <p className="text-sm text-slate-400">La génération d'aftermovie sera disponible dans un composant dédié.</p>
+            </div>
+          </div>
         )}
 
         {activeTab === 'battles' && config.battle_mode_enabled !== false && (
-          <BattlesTab />
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+              <h2 className="text-xl font-semibold text-slate-100 mb-4">Battles</h2>
+              <p className="text-sm text-slate-400">La gestion des battles sera disponible dans un composant dédié.</p>
+            </div>
+          </div>
         )}
 
         {activeTab === 'guests' && (
