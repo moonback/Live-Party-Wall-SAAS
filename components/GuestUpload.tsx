@@ -291,7 +291,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     setVideoDuration(0);
     setActiveFilter('none');
     setActiveFrame('none');
-    setAuthorName('');
+    // Ne pas réinitialiser le nom pour que l'utilisateur puisse le conserver
   };
 
   // Gérer l'enregistrement vidéo
