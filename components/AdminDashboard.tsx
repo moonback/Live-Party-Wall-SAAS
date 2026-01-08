@@ -18,7 +18,9 @@ import { GuestsTab } from './admin/GuestsTab';
 import { ConfigurationTab } from './admin/ConfigurationTab';
 import { AftermovieTab } from './admin/AftermovieTab';
 import { BattlesTab } from './admin/BattlesTab';
+import { BillingView } from './admin/BillingView';
 import { AdminTab } from './admin/types';
+import { hasFeatureAccess } from '../services/paymentService';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
 import { Guest } from '../types';
@@ -50,6 +52,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [guestStats, setGuestStats] = useState<Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>>(new Map());
+  const [allowedFeatures, setAllowedFeatures] = useState<Set<string>>(new Set());
+
+  // Update allowed features when currentEvent changes
+  useEffect(() => {
+    const checkFeatures = async () => {
+      if (!currentEvent) {
+        setAllowedFeatures(new Set());
+        return;
+      }
+      
+      const features = [
+        "Statistiques avancées",
+        "Aftermovie automatique",
+        "Export ZIP HD",
+        "Cadres personnalisés",
+        "Modération automatique par IA"
+      ];
+      
+      const allowed = new Set<string>();
+      for (const f of features) {
+        if (await hasFeatureAccess(currentEvent.id, f)) {
+          allowed.add(f);
+        }
+      }
+      setAllowedFeatures(allowed);
+    };
+    checkFeatures();
+  }, [currentEvent]);
 
   // Update photos when allPhotos changes
   useEffect(() => {
@@ -234,7 +264,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     addToast("Préparation de l'archive ZIP...", 'info');
     
     try {
-        await exportPhotosToZip(photos, config.event_title);
+        await exportPhotosToZip(photos, config.event_title, currentEvent?.id);
         addToast("Téléchargement lancé !", 'success');
     } catch (error) {
         console.error(error);
@@ -362,6 +392,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           onLoadGuests={loadGuests}
           onLoadEvents={loadEvents}
+          allowedFeatures={allowedFeatures}
         />
 
         {/* Contenu de l'onglet Événements */}
@@ -445,6 +476,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             onRefresh={loadGuests}
             onDelete={handleDeleteGuest}
           />
+        )}
+
+        {activeTab === 'billing' && (
+          <BillingView />
         )}
       </div>
     </div>

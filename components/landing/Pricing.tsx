@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, ArrowRight, Users, Zap, TrendingUp, Target, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getPlans, createCheckoutSession } from '../../services/paymentService';
+import { useAuth } from '../../context/AuthContext';
+import { Plan } from '../../types';
 
 interface PricingProps {
   onAdminClick: () => void;
@@ -10,70 +13,63 @@ interface PricingProps {
  * Section de tarification intégrée à la landing page
  */
 export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
-  const offers = [
-    {
-      name: 'Starter',
-      price: '49',
-      period: 'par événement',
-      target: 'Soirées privées, anniversaires, tests.',
-      features: [
-        'Mur de photos en temps réel',
-        'Upload illimité de photos',
-        'Galerie HD complète',
-        'Modération automatique par IA',
-        'Support par email',
-      ],
-      gradient: 'from-pink-500 to-rose-500',
-      popular: false,
-    },
-    {
-      name: 'Pro',
-      price: '99',
-      period: 'par événement',
-      target: 'Cœur de gamme : mariages, événements d\'entreprise.',
-      features: [
-        'Tout Starter inclus',
-        'Aftermovie automatique',
-        'Branding personnalisé',
-        'Statistiques avancées',
-        'Support prioritaire',
-        'Export ZIP HD',
-      ],
-      gradient: 'from-purple-500 to-pink-500',
-      popular: true,
-    },
-    {
-      name: 'Premium',
-      price: '199',
-      period: 'par événement',
-      target: 'Grands événements, entreprises avec besoin de branding.',
-      features: [
-        'Tout Pro inclus',
-        'Cadres personnalisés',
-        'API et intégrations',
-        'Gestion multi-événements',
-        'Support dédié 24/7',
-        'Formation personnalisée',
-      ],
-      gradient: 'from-indigo-500 to-purple-500',
-      popular: false,
-    },
-  ];
+  const { user, isAuthenticated } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const subscriptions = [
-    {
-      name: 'Pro',
-      price: '29',
-      period: '/mois',
-      description: 'Pour professionnels et agences à usage récurrent',
-    },
-    {
-      name: 'Studio',
-      price: '99',
-      period: '/mois',
-      description: 'Solution complète pour agences événementielles',
-    },
-  ];
+  useEffect(() => {
+    const loadPlans = async () => {
+      try {
+        const fetchedPlans = await getPlans();
+        setPlans(fetchedPlans);
+      } catch (error) {
+        console.error("Error loading plans:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPlans();
+  }, []);
+
+  const handlePlanSelection = async (plan: Plan) => {
+    if (!isAuthenticated) {
+      onAdminClick(); // Rediriger vers login si non authentifié
+      return;
+    }
+
+    try {
+      if (user) {
+        const session = await createCheckoutSession(plan.id, user.id);
+        if (session?.url) {
+          window.location.href = session.url;
+        }
+      }
+    } catch (error) {
+      console.error("Error selecting plan:", error);
+    }
+  };
+
+  const offers = plans.filter(p => p.interval === 'event').map(p => ({
+    id: p.id,
+    name: p.name,
+    price: (p.price_cents / 100).toString(),
+    period: 'par événement',
+    target: p.type === 'starter' ? 'Soirées privées, anniversaires, tests.' : 
+            p.type === 'pro' ? 'Cœur de gamme : mariages, événements d\'entreprise.' : 
+            'Grands événements, entreprises avec besoin de branding.',
+    features: p.features,
+    popular: p.type === 'pro',
+    plan: p
+  }));
+
+  const subscriptions = plans.filter(p => p.interval === 'month').map(p => ({
+    id: p.id,
+    name: p.name,
+    price: (p.price_cents / 100).toString(),
+    period: '/mois',
+    description: p.type === 'pro' ? 'Pour professionnels et agences à usage récurrent' : 'Solution complète pour agences événementielles',
+    plan: p
+  }));
 
   return (
     <>
@@ -174,7 +170,7 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
                 </ul>
 
                 <button
-                  onClick={onAdminClick}
+                  onClick={() => handlePlanSelection(offer.plan)}
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300 ${
                     offer.popular
                       ? 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white'
@@ -215,7 +211,8 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-gray-900/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/30"
+                  onClick={() => handlePlanSelection(sub.plan)}
+                  className="bg-gray-900/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/30 cursor-pointer hover:border-pink-500/50 transition-all"
                 >
                   <div className="text-center">
                     <h4 className="text-xl font-bold text-white mb-2">{sub.name}</h4>

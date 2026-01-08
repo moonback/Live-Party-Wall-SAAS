@@ -316,3 +316,50 @@ export interface EventOrganizerRow {
   role: 'owner' | 'organizer' | 'viewer';
   created_at: string;
 }
+
+// Monetization Types
+export type PlanType = 'starter' | 'pro' | 'premium' | 'studio';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'incomplete';
+
+export interface Plan {
+  id: string;
+  name: string;
+  type: PlanType;
+  price_cents: number;
+  interval: 'event' | 'month' | 'year';
+  features: string[];
+  stripe_price_id?: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: SubscriptionStatus;
+  current_period_end: string;
+  stripe_subscription_id: string;
+}
+
+export interface EventPayment {
+  id: string;
+  event_id: string;
+  amount_cents: number;
+  status: PaymentStatus;
+  stripe_payment_intent_id: string;
+  created_at: string;
+}
+
+// Mise à jour de l'interface Event pour inclure la monétisation
+export interface Event {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  owner_id: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  plan_id?: string;
+  payment_status?: PaymentStatus;
+}

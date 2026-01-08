@@ -1,2 +1,2 @@
-export type AdminTab = 'events' | 'moderation' | 'analytics' | 'configuration' | 'aftermovie' | 'battles' | 'guests';
+export type AdminTab = 'events' | 'moderation' | 'analytics' | 'configuration' | 'aftermovie' | 'battles' | 'guests' | 'billing';
 

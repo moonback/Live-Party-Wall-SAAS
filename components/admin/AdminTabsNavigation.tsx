@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu 
+  Zap, Users, Menu, CreditCard 
 } from 'lucide-react';
 import { AdminTab } from './types';
 
@@ -19,6 +19,7 @@ interface AdminTabsNavigationProps {
   onMobileMenuToggle: () => void;
   onLoadGuests?: () => void;
   onLoadEvents?: () => void;
+  allowedFeatures?: Set<string>;
 }
 
 export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
@@ -33,22 +34,25 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   isMobileMenuOpen,
   onMobileMenuToggle,
   onLoadGuests,
-  onLoadEvents
+  onLoadEvents,
+  allowedFeatures = new Set()
 }) => {
   const tabs = [
     { id: 'events' as AdminTab, label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
     { id: 'moderation' as AdminTab, label: 'Modération', icon: ImageIcon, count: photosCount, requiresEvent: true },
-    { id: 'analytics' as AdminTab, label: 'Analytics', icon: BarChart2, requiresEvent: true },
+    { id: 'analytics' as AdminTab, label: 'Analytics', icon: BarChart2, requiresEvent: true, feature: "Statistiques avancées" },
     { id: 'configuration' as AdminTab, label: 'Configuration', icon: Settings, requiresEvent: true },
-    { id: 'aftermovie' as AdminTab, label: 'Aftermovie', icon: Video, requiresEvent: true },
+    { id: 'aftermovie' as AdminTab, label: 'Aftermovie', icon: Video, requiresEvent: true, feature: "Aftermovie automatique" },
     { id: 'battles' as AdminTab, label: 'Battles', icon: Zap, count: battlesCount, requiresEvent: true, requiresBattleMode: true },
     { id: 'guests' as AdminTab, label: 'Inviter', icon: Users, count: guestsCount, requiresEvent: true },
+    { id: 'billing' as AdminTab, label: 'Facturation', icon: CreditCard, alwaysVisible: true },
   ];
 
   const visibleTabs = tabs.filter(tab => {
     if (tab.alwaysVisible) return true;
     if (!currentEvent && tab.requiresEvent) return false;
     if (tab.requiresBattleMode && !battleModeEnabled) return false;
+    if (tab.feature && !allowedFeatures.has(tab.feature)) return false;
     return true;
   });
 

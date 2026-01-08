@@ -7,6 +7,7 @@ import {
   TransitionType,
 } from '../types';
 import { drawPngOverlay } from '../utils/imageOverlay';
+import { hasFeatureAccess } from './paymentService';
 
 function assertNotAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
@@ -857,11 +858,18 @@ async function createAudioTrackFromFile(
 export async function generateTimelapseAftermovie(
   photos: Photo[],
   options: AftermovieOptions,
+  eventId: string,
   audio?: AftermovieAudioOptions,
   onProgress?: (p: AftermovieProgress) => void,
   signal?: AbortSignal
 ): Promise<AftermovieResult> {
   if (photos.length === 0) throw new Error('Aucune photo sélectionnée');
+  
+  // Vérification de l'accès à la fonctionnalité Aftermovie
+  const hasAccess = await hasFeatureAccess(eventId, "Aftermovie automatique");
+  if (!hasAccess) {
+    throw new Error("La génération d'Aftermovie est réservée aux plans Pro et Premium.");
+  }
   
   if (options.width <= 0 || options.height <= 0) throw new Error('Résolution invalide');
   if (options.fps <= 0 || options.fps > 60) throw new Error('FPS invalide');

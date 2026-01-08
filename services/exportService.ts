@@ -1,8 +1,17 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Photo, ReactionCounts } from '../types';
+import { hasFeatureAccess } from './paymentService';
 
-export const exportPhotosToZip = async (photos: Photo[], eventTitle: string) => {
+export const exportPhotosToZip = async (photos: Photo[], eventTitle: string, eventId?: string) => {
+  // Check access if eventId is provided
+  if (eventId) {
+    const hasAccess = await hasFeatureAccess(eventId, "Export ZIP HD");
+    if (!hasAccess) {
+      throw new Error("L'export ZIP HD est réservé aux plans Pro et Premium.");
+    }
+  }
+
   const zip = new JSZip();
   const folderName = `${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_photos`;
   const folder = zip.folder(folderName);
