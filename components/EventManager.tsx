@@ -178,31 +178,50 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
         <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  clearEvent();
-                  onBack();
-                }}
-                className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-slate-200"
-                aria-label="Retour"
-              >
-                <X className="w-5 h-5 text-red-500" />
-              </motion.button>
+              
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-slate-800/50 border border-slate-700">
                   <Settings className="w-5 h-5 text-slate-400" />
                 </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-semibold text-slate-100">
-                    {event.name}
+                <div className="flex flex-col">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 flex items-center gap-2">
+                    <span className="truncate max-w-[320px] sm:max-w-[420px]">{event.name}</span>
+                    <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/80 text-white/90">
+                      Event ID: {event.slug}
+                    </span>
                   </h1>
-                  <p className="text-sm text-slate-400">
-                    Configuration de l'événement
+                  <p className="text-sm text-slate-400 mt-1 flex items-center gap-2">
+                    <span>Configuration de l’événement</span>
+                    {event.is_active ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-600/20 text-green-400 text-xs font-semibold">
+                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                        Actif
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-400 text-xs">
+                        <span className="h-2 w-2 rounded-full bg-slate-500" />
+                        Inactif
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
+              <motion.button
+                whileHover={{ scale: 1.07, boxShadow: '0 2px 20px #ef444433' }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  clearEvent();
+                  onBack();
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-800 bg-gradient-to-r from-slate-900/70 to-slate-900/30 hover:from-slate-800/60 hover:to-slate-800/20 transition-all duration-200 text-slate-200 hover:text-white font-semibold shadow-sm hover:shadow-[0_2px_16px_rgba(239,68,68,0.13)] focus:outline-none focus:ring-2 focus:ring-red-400/40 active:scale-95"
+                aria-label="Retour aux événements"
+              >
+                <span className="flex items-center justify-center w-6 h-6 bg-red-500/10 rounded-full mr-1">
+                  <X className="w-4 h-4 text-red-400" />
+                </span>
+                <span className="hidden sm:inline">Retour aux événements</span>
+                <span className="inline sm:hidden">Mes Événements</span>
+              </motion.button>
             </div>
 
             {canEdit && (
