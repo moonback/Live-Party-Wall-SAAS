@@ -315,6 +315,20 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 - **Debounce** : Utiliser `useDebounce` hook pour limiter les appels API
 - **Logger** : Utiliser `logger` de `/utils/logger.ts` pour le logging structuré
 
+### Services Disponibles
+- **photoService.ts** : CRUD photos, likes, réactions, upload
+- **eventService.ts** : Gestion événements, organisateurs
+- **guestService.ts** : Gestion invités, blocage
+- **geminiService.ts** : Modération IA, légendes, analyse qualité
+- **settingsService.ts** : Paramètres d'événement
+- **battleService.ts** : Battles photos
+- **exportService.ts** : Export ZIP
+- **aftermovieService.ts** : Génération vidéos timelapse
+- **photoboothService.ts** : Upload photobooth avec traitement complet
+- **faceRecognitionService.ts** : Reconnaissance faciale
+- **frameService.ts** : Gestion cadres décoratifs
+- **gamificationService.ts** : Badges, classements
+
 ### Bibliothèques à Éviter
 - ❌ **État global lourd** : Redux/Zustand (pas nécessaire actuellement)
 - ❌ **Formulaires complexes** : React Hook Form (pas encore nécessaire)

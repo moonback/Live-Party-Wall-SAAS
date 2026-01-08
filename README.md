@@ -131,54 +131,96 @@ npm install
 Créez un fichier `.env` à la racine du projet :
 
 ```bash
-cp .env.example .env  # Si un fichier exemple existe
-# Sinon, créez manuellement le fichier .env
+# Créez le fichier .env manuellement
+touch .env
 ```
 
 Remplissez les variables d'environnement (voir section [Variables d'environnement](#-variables-denvironnement)).
 
 ### 4. Initialiser la base de données Supabase
 
+#### Option A : Setup complet (recommandé)
+
 1. Connectez-vous à votre [Dashboard Supabase](https://app.supabase.com)
 2. Ouvrez l'**éditeur SQL** de votre projet
-3. Exécutez les scripts SQL dans l'ordre suivant :
+3. Exécutez le script de setup complet :
 
 ```sql
--- 1. Setup de base
+-- Exécutez ce fichier dans l'éditeur SQL Supabase
+-- Il regroupe tous les scripts nécessaires
+supabase/supabase_complete_setup.sql
+```
+
+#### Option B : Setup manuel (si vous avez besoin de plus de contrôle)
+
+Exécutez les scripts SQL dans l'ordre suivant :
+
+```sql
+-- 1. Setup de base (tables principales)
 supabase/supabase_setup.sql
 
--- 2. Configuration admin
+-- 2. Configuration admin et authentification
 supabase/supabase_admin_setup.sql
 
 -- 3. Système de likes
 supabase/supabase_likes_setup.sql
 
--- 4. Paramètres d'événement
+-- 4. Système de réactions
+supabase/supabase_reactions_setup.sql
+
+-- 5. Paramètres d'événement
 supabase/supabase_settings_setup.sql
 
--- 5. Migration multi-événements
+-- 6. Migration multi-événements (SaaS)
 supabase/supabase_events_migration.sql
 
--- 6. Setup complet (optionnel, regroupe tout)
-supabase/supabase_complete_setup.sql
+-- 7. Système de battles photos
+supabase/supabase_photo_battles_setup.sql
+
+-- 8. Gestion des invités bloqués
+supabase/supabase_blocked_guests_migration.sql
+
+-- 9. Support vidéo
+supabase/supabase_videos_migration.sql
+
+-- 10. Tags IA
+supabase/supabase_photos_tags_migration.sql
 ```
 
-4. **Activer Realtime** :
-   - Allez dans **Database > Replication**
-   - Activez la réplication pour les tables : `photos`, `likes`, `event_settings`, `guests`
+#### Configuration post-installation
 
-5. **Créer un compte administrateur** :
+1. **Activer Realtime** :
+   - Allez dans **Database > Replication**
+   - Activez la réplication pour les tables suivantes :
+     - `photos` : Nouvelles photos en temps réel
+     - `likes` : Mises à jour de likes
+     - `reactions` : Réactions émojis
+     - `event_settings` : Changements de paramètres
+     - `guests` : Nouveaux invités
+     - `photo_battles` : Battles photos
+
+2. **Créer un compte administrateur** :
    - Allez dans **Authentication > Users**
    - Cliquez sur **"Add user"** ou **"Invite user"**
    - Créez un compte avec email et mot de passe
+   - Notez l'email et le mot de passe pour vous connecter à l'admin
+
+3. **Configurer les buckets Storage** :
+   - Les buckets sont créés automatiquement par les scripts SQL
+   - Vérifiez dans **Storage** que les buckets suivants existent :
+     - `party-photos` : Public, pour les photos
+     - `party-frames` : Public, pour les cadres décoratifs
+     - `party-avatars` : Public, pour les avatars
 
 ### 5. Télécharger les modèles Face API (optionnel)
 
-Si vous utilisez la fonctionnalité de reconnaissance faciale :
+Si vous utilisez la fonctionnalité de reconnaissance faciale "Retrouve-moi" :
 
 ```bash
 npm run download:face-models
 ```
+
+Les modèles seront téléchargés dans `public/models/face-api/`.
 
 ---
 
@@ -232,7 +274,11 @@ npm run dev
 
 L'application sera accessible sur `http://localhost:3000`
 
+**Note** : Le serveur de développement écoute sur toutes les interfaces (`0.0.0.0`), vous pouvez donc y accéder depuis d'autres appareils sur le même réseau local.
+
 ### Mode développement (Electron)
+
+Pour lancer l'application en mode desktop :
 
 ```bash
 npm run electron:dev
@@ -240,22 +286,49 @@ npm run electron:dev
 
 ### Build de production
 
-```bash
-# Build web
-npm run build
+#### Build web (SPA)
 
-# Build Electron
+```bash
+npm run build
+```
+
+Les fichiers de production seront générés dans le dossier `dist/`.
+
+#### Build Electron
+
+```bash
+# Build uniquement (sans packager)
 npm run electron:build
 
-# Package Electron (créer les installateurs)
+# Build + Package (créer les installateurs)
 npm run electron:pack
 ```
 
+Les installateurs seront générés dans le dossier `release/` :
+- **Windows** : `Live Party Wall Setup X.X.X.exe`
+- **macOS** : `Live Party Wall-X.X.X.dmg`
+- **Linux** : `Live Party Wall-X.X.X.AppImage` et `.deb`
+
 ### Prévisualisation du build
+
+Pour tester le build de production localement :
 
 ```bash
 npm run preview
 ```
+
+### Scripts disponibles
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Lance le serveur de développement web |
+| `npm run build` | Build de production web |
+| `npm run preview` | Prévisualise le build de production |
+| `npm run electron:dev` | Lance Electron en mode développement |
+| `npm run electron:build` | Build Electron |
+| `npm run electron:pack` | Build + Package Electron |
+| `npm run generate:icons` | Génère les icônes pour Electron |
+| `npm run download:face-models` | Télécharge les modèles Face API |
 
 ---
 
@@ -264,11 +337,16 @@ npm run preview
 ```
 Live-Party-Wall-SAAS/
 ├── components/              # Composants React
-│   ├── landing/            # Composants de la landing page
-│   ├── gallery/            # Composants de galerie
-│   ├── projection/         # Composants de projection
-│   ├── wall/               # Composants du mur
-│   ├── stats/              # Composants de statistiques
+│   ├── landing/            # Landing page SaaS
+│   ├── gallery/            # Galerie de photos
+│   ├── projection/         # Mode projection grand écran
+│   ├── wall/               # Mur interactif
+│   ├── stats/              # Statistiques et analytics
+│   ├── admin/              # Dashboard administrateur
+│   ├── photobooth/         # Composants photobooth
+│   ├── arEffects/          # Effets AR (réalité augmentée)
+│   ├── mobileControl/      # Contrôle mobile
+│   ├── kiosk/              # Mode kiosque
 │   └── ...
 ├── context/                # Contextes React (état global)
 │   ├── AuthContext.tsx     # Authentification
@@ -276,40 +354,82 @@ Live-Party-Wall-SAAS/
 │   ├── PhotosContext.tsx   # Gestion des photos
 │   ├── SettingsContext.tsx # Paramètres d'événement
 │   └── ToastContext.tsx    # Notifications toast
-├── services/               # Services métier
-│   ├── supabaseClient.ts   # Client Supabase
-│   ├── photoService.ts     # Gestion des photos
-│   ├── geminiService.ts    # Intégration Google Gemini
-│   ├── eventService.ts     # Gestion des événements
+├── services/               # Services métier (logique isolée)
+│   ├── supabaseClient.ts   # Client Supabase configuré
+│   ├── photoService.ts     # CRUD photos
+│   ├── eventService.ts     # Gestion événements
+│   ├── guestService.ts     # Gestion invités
+│   ├── geminiService.ts    # Intégration Google Gemini (IA)
+│   ├── settingsService.ts  # Paramètres événement
+│   ├── battleService.ts    # Battles photos
+│   ├── exportService.ts    # Export ZIP
+│   ├── aftermovieService.ts # Génération aftermovie
+│   ├── faceRecognitionService.ts # Reconnaissance faciale
 │   └── ...
-├── utils/                  # Utilitaires
+├── utils/                  # Utilitaires réutilisables
 │   ├── validation.ts       # Validation de données
 │   ├── imageFilters.ts     # Filtres d'image
 │   ├── imageOverlay.ts     # Overlays et cadres
+│   ├── logger.ts           # Logging structuré
 │   └── ...
 ├── hooks/                  # Hooks React personnalisés
 │   ├── useIsMobile.ts      # Détection mobile
 │   ├── useImageCompression.ts # Compression d'images
+│   ├── useDebounce.ts      # Debounce pour recherche
+│   ├── useCamera.ts        # Gestion caméra
 │   └── ...
 ├── supabase/               # Scripts SQL Supabase
 │   ├── supabase_setup.sql  # Setup de base
-│   ├── supabase_complete_setup.sql # Setup complet
-│   └── ...
+│   ├── supabase_complete_setup.sql # Setup complet (recommandé)
+│   ├── supabase_events_migration.sql # Migration multi-événements
+│   └── ...                 # Autres migrations
 ├── electron/               # Code Electron (desktop)
 │   ├── main.ts            # Processus principal
-│   └── preload.ts         # Script preload
+│   ├── preload.ts         # Script preload
+│   └── types.d.ts         # Types Electron
+├── workers/                # Web Workers
+│   └── imageCompression.worker.ts # Compression d'images
+├── public/                 # Assets statiques
+│   ├── cadres/            # Cadres décoratifs
+│   ├── models/            # Modèles IA (face-api)
+│   └── sounds/            # Sons et effets
+├── scripts/                # Scripts utilitaires
+│   ├── generate-icons.js  # Génération d'icônes
+│   └── download-face-api-models.js # Téléchargement modèles
 ├── types.ts                # Types TypeScript partagés
 ├── constants.ts            # Constantes globales
-├── App.tsx                 # Composant racine
-├── index.tsx               # Point d'entrée
+├── App.tsx                 # Composant racine (routing)
+├── index.tsx               # Point d'entrée React
 ├── vite.config.ts          # Configuration Vite
 ├── tsconfig.json           # Configuration TypeScript
 └── package.json            # Dépendances et scripts
 ```
 
+### Organisation des fichiers
+
+- **`components/`** : Un composant par fichier, organisés par fonctionnalité
+- **`services/`** : Toute la logique métier isolée, pas de logique dans les composants
+- **`context/`** : État global partagé via Context API
+- **`utils/`** : Fonctions utilitaires pures, réutilisables
+- **`hooks/`** : Hooks React personnalisés pour logique réutilisable
+- **`supabase/`** : Scripts SQL pour migrations et setup
+
 ---
 
 ## 🔐 Variables d'environnement
+
+Créez un fichier `.env` à la racine du projet avec les variables suivantes :
+
+```env
+# Supabase Configuration (requis)
+VITE_SUPABASE_URL=https://votre-projet.supabase.co
+VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+
+# Google Gemini API (requis)
+GEMINI_API_KEY=votre_cle_api_gemini
+```
+
+### Tableau des variables
 
 | Variable | Description | Requis | Exemple |
 |----------|-------------|--------|---------|
@@ -317,7 +437,28 @@ Live-Party-Wall-SAAS/
 | `VITE_SUPABASE_ANON_KEY` | Clé anonyme (publique) Supabase | ✅ Oui | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
 | `GEMINI_API_KEY` | Clé API Google Gemini | ✅ Oui | `AIzaSy...` |
 
-**⚠️ Important** : Le fichier `.env` ne doit jamais être versionné dans Git. Il est déjà dans `.gitignore`.
+### Où trouver ces valeurs ?
+
+#### Supabase
+
+1. Allez sur [app.supabase.com](https://app.supabase.com)
+2. Sélectionnez votre projet
+3. Allez dans **Settings > API**
+4. Copiez :
+   - **Project URL** → `VITE_SUPABASE_URL`
+   - **anon/public key** → `VITE_SUPABASE_ANON_KEY`
+
+#### Google Gemini
+
+1. Allez sur [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Connectez-vous avec votre compte Google
+3. Cliquez sur **"Create API Key"**
+4. Copiez la clé générée → `GEMINI_API_KEY`
+
+**⚠️ Important** : 
+- Le fichier `.env` ne doit **jamais** être versionné dans Git (déjà dans `.gitignore`)
+- Ne partagez jamais vos clés API publiquement
+- Pour la production, utilisez les variables d'environnement de votre plateforme de déploiement
 
 ---
 
@@ -355,7 +496,55 @@ Les contributions sont les bienvenues ! Veuillez lire le [guide de contribution]
 
 ## 📄 License
 
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](./LICENSE) pour plus de détails.
+Ce projet est sous licence MIT. Voir le fichier [LICENSE.md](./LICENSE.md) pour plus de détails.
+
+---
+
+## 🆘 Support & Aide
+
+### Documentation complète
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** : Architecture détaillée du système
+- **[API_DOCS.md](./API_DOCS.md)** : Documentation complète des services et API
+- **[DB_SCHEMA.md](./DB_SCHEMA.md)** : Schéma de la base de données Supabase
+- **[ROADMAP.md](./ROADMAP.md)** : Feuille de route et fonctionnalités futures
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** : Guide de contribution au projet
+
+### Problèmes courants
+
+#### L'application ne se connecte pas à Supabase
+
+1. Vérifiez que les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont correctement définies dans `.env`
+2. Vérifiez que le fichier `.env` est à la racine du projet
+3. Redémarrez le serveur de développement après modification de `.env`
+
+#### Les photos ne s'affichent pas en temps réel
+
+1. Vérifiez que Realtime est activé dans Supabase (Database > Replication)
+2. Vérifiez que les tables `photos`, `likes`, `reactions` ont la réplication activée
+3. Vérifiez les politiques RLS dans Supabase
+
+#### Erreur "Gemini API key missing"
+
+1. Vérifiez que `GEMINI_API_KEY` est défini dans `.env`
+2. Vérifiez que la clé API est valide sur [Google AI Studio](https://makersuite.google.com/app/apikey)
+3. Redémarrez le serveur de développement
+
+### Signaler un bug
+
+Ouvrez une [issue sur GitHub](https://github.com/votre-repo/issues) avec :
+- Description du problème
+- Étapes pour reproduire
+- Comportement attendu vs comportement actuel
+- Environnement (OS, navigateur, version Node.js)
+- Captures d'écran si applicable
+
+### Proposer une fonctionnalité
+
+Ouvrez une [issue sur GitHub](https://github.com/votre-repo/issues) avec le label `enhancement` :
+- Description de la fonctionnalité
+- Cas d'usage
+- Bénéfices attendus
 
 ---
 

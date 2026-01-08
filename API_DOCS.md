@@ -617,6 +617,218 @@ saveAs(zipBlob, `photos-${eventId}.zip`);
 
 ---
 
+## 🎬 Service Aftermovie
+
+**Fichier** : `services/aftermovieService.ts`
+
+Génère des vidéos timelapse (aftermovie) à partir des photos d'un événement.
+
+### `generateAftermovie`
+
+Génère une vidéo aftermovie avec les options spécifiées.
+
+```typescript
+generateAftermovie(
+  photos: Photo[],
+  options: AftermovieOptions
+): Promise<AftermovieResult>
+```
+
+**Paramètres** :
+- `photos` : Liste des photos à inclure dans l'aftermovie
+- `options` : Options de génération (résolution, FPS, transitions, etc.)
+
+**Retour** : Objet avec le blob vidéo, le MIME type, le nom de fichier et la durée
+
+---
+
+## 📸 Service Photobooth
+
+**Fichier** : `services/photoboothService.ts`
+
+Gère l'upload de photos depuis le photobooth avec traitement IA complet.
+
+### `submitPhoto`
+
+Soumet une photo depuis le photobooth avec modération IA, génération de légende, et application de cadres.
+
+```typescript
+submitPhoto(params: SubmitPhotoParams): Promise<Photo>
+```
+
+**Paramètres** :
+- `imageDataUrl` : Image en base64
+- `authorName` : Nom de l'auteur
+- `eventId` : ID de l'événement
+- `eventSettings` : Paramètres de l'événement
+- `activeFilter` : Filtre actif
+- `activeFrame` : Cadre décoratif actif
+
+**Retour** : Photo créée avec légende IA et modération
+
+### `submitVideo`
+
+Soumet une vidéo depuis le photobooth.
+
+```typescript
+submitVideo(params: SubmitVideoParams): Promise<Photo>
+```
+
+**Paramètres** :
+- `videoBlob` : Blob de la vidéo
+- `eventId` : ID de l'événement
+- `videoDuration` : Durée en secondes
+- `eventSettings` : Paramètres de l'événement
+
+---
+
+## 🤖 Service IA (AI Service)
+
+**Fichier** : `services/aiService.ts`
+
+Service unifié pour toutes les opérations IA (modération, légendes, tags).
+
+### `analyzeAndCaptionImage`
+
+Analyse une image et génère une légende avec modération.
+
+```typescript
+analyzeAndCaptionImage(
+  base64Image: string,
+  eventContext?: string | null
+): Promise<{ caption: string; analysis: ImageAnalysis; tags?: string[] }>
+```
+
+**Retour** : Légende générée, analyse (modération + qualité), et tags optionnels
+
+---
+
+## 🎨 Service Cadres
+
+**Fichier** : `services/frameService.ts`
+
+Gère les cadres décoratifs pour les photos.
+
+### `getFrames`
+
+Récupère tous les cadres disponibles.
+
+```typescript
+getFrames(): Promise<Frame[]>
+```
+
+### `uploadFrame`
+
+Upload un nouveau cadre (admin uniquement).
+
+```typescript
+uploadFrame(file: File, name: string): Promise<Frame>
+```
+
+---
+
+## 🎮 Service Gamification
+
+**Fichier** : `services/gamificationService.ts`
+
+Gère les badges, classements et statistiques de gamification.
+
+### `calculateAuthorStats`
+
+Calcule les statistiques d'un auteur (nombre de photos, likes, badges).
+
+```typescript
+calculateAuthorStats(
+  author: string,
+  photos: Photo[]
+): AuthorStats
+```
+
+### `getLeaderboard`
+
+Génère le classement des auteurs.
+
+```typescript
+getLeaderboard(photos: Photo[]): LeaderboardEntry[]
+```
+
+---
+
+## 👤 Service Reconnaissance Faciale
+
+**Fichier** : `services/faceRecognitionService.ts`
+
+Gère la reconnaissance faciale pour la fonctionnalité "Retrouve-moi".
+
+### `detectFaces`
+
+Détecte les visages dans une image.
+
+```typescript
+detectFaces(imageUrl: string): Promise<FaceDetection[]>
+```
+
+### `findPhotosWithFace`
+
+Trouve toutes les photos contenant un visage similaire.
+
+```typescript
+findPhotosWithFace(
+  referenceImageUrl: string,
+  photos: Photo[]
+): Promise<Photo[]>
+```
+
+---
+
+## 🎯 Service Battles Automatiques
+
+**Fichier** : `services/autoBattleService.ts`
+
+Gère les battles photos automatiques.
+
+### `createAutoBattle`
+
+Crée automatiquement une battle entre deux photos populaires.
+
+```typescript
+createAutoBattle(eventId: string): Promise<PhotoBattle | null>
+```
+
+---
+
+## 👏 Service Détection d'Applaudissements
+
+**Fichier** : `services/applauseDetectionService.ts`
+
+Détecte les applaudissements pour déclencher des effets AR.
+
+### `detectApplause`
+
+Détecte les applaudissements depuis l'audio du microphone.
+
+```typescript
+detectApplause(audioContext: AudioContext): Promise<boolean>
+```
+
+---
+
+## 🖼️ Service Cadres Locaux
+
+**Fichier** : `services/localFramesService.ts`
+
+Gère les cadres stockés localement (fallback si Supabase indisponible).
+
+### `getLocalFrames`
+
+Récupère les cadres locaux.
+
+```typescript
+getLocalFrames(): Frame[]
+```
+
+---
+
 ## 🔌 Client Supabase
 
 **Fichier** : `services/supabaseClient.ts`
