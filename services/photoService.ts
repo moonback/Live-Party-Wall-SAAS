@@ -88,12 +88,17 @@ export const enrichPhotosWithOrientation = async (photos: Photo[]): Promise<Phot
 /**
  * Upload a photo to Supabase Storage and insert record into DB.
  * @param eventId - ID de l'événement
+ * @param base64Image - Image en base64
+ * @param caption - Légende de la photo
+ * @param author - Nom de l'auteur
+ * @param tags - Tags suggérés par l'IA (optionnel)
  */
 export const addPhotoToWall = async (
   eventId: string,
   base64Image: string,
   caption: string,
-  author: string
+  author: string,
+  tags?: string[]
 ): Promise<Photo> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible d'envoyer la photo.");
@@ -148,7 +153,8 @@ export const addPhotoToWall = async (
           author,
           likes_count: 0,
           type: 'photo',
-          event_id: eventId
+          event_id: eventId,
+          tags: tags && tags.length > 0 ? tags : null
         }
       ])
       .select()
@@ -160,11 +166,12 @@ export const addPhotoToWall = async (
     const photo: Photo = {
       id: data.id,
       url: publicUrl, // Utiliser publicUrl au lieu de data.url pour être cohérent
-      caption: data.caption,
-      author: data.author,
+      caption: data.caption || '',
+      author: data.author || '',
       timestamp: new Date(data.created_at).getTime(),
       likes_count: 0,
-      type: 'photo'
+      type: 'photo',
+      tags: Array.isArray(data.tags) ? data.tags : (tags || [])
     };
     
     // Précalculer l'orientation (utiliser base64Image pour un chargement immédiat, sinon publicUrl)
@@ -315,7 +322,8 @@ export const getPhotos = async (eventId: string): Promise<Photo[]> => {
     timestamp: new Date(p.created_at).getTime(),
     likes_count: likesCountMap.get(p.id) || 0, // Utiliser le nombre réel depuis la table likes
     type: (p.type || 'photo') as MediaType,
-    duration: p.duration ? Number(p.duration) : undefined
+    duration: p.duration ? Number(p.duration) : undefined,
+    tags: Array.isArray(p.tags) ? p.tags : undefined
   }));
 
   // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)

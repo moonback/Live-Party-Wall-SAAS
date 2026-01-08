@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X } from 'lucide-react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -23,6 +23,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     { key: 'ar_scene_enabled', label: 'Scène AR', icon: Sparkles, disabled: false },
     { key: 'battle_mode_enabled', label: 'Mode Battle', icon: Trophy, disabled: false },
     { key: 'caption_generation_enabled', label: 'Génération de légendes', icon: Type, disabled: false },
+    { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false },
     { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false },
   ];
 

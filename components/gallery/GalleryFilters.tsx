@@ -1,7 +1,7 @@
 import React from 'react';
 import { Filter, User, Zap } from 'lucide-react';
 import { GalleryFiltersModal } from './GalleryFiltersModal';
-import type { SortOption, MediaFilter } from '../../types';
+import type { SortOption, MediaFilter, Photo } from '../../types';
 
 interface GalleryFiltersProps {
   sortBy: SortOption;
@@ -18,6 +18,9 @@ interface GalleryFiltersProps {
   onFindMeClick?: () => void;
   isModalOpen?: boolean;
   onModalOpenChange?: (open: boolean) => void;
+  photos: Photo[];
+  selectedAuthors: string[];
+  onSelectedAuthorsChange: (authors: string[]) => void;
 }
 
 export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
@@ -34,7 +37,10 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
   findMeEnabled,
   onFindMeClick,
   isModalOpen: externalIsModalOpen,
-  onModalOpenChange
+  onModalOpenChange,
+  photos,
+  selectedAuthors,
+  onSelectedAuthorsChange
 }) => {
   const [internalIsModalOpen, setInternalIsModalOpen] = React.useState(false);
   const isModalOpen = externalIsModalOpen !== undefined ? externalIsModalOpen : internalIsModalOpen;
@@ -101,6 +107,9 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         onMediaFilterChange={onMediaFilterChange}
         showLeaderboard={showLeaderboard}
         onToggleLeaderboard={onToggleLeaderboard}
+        photos={photos}
+        selectedAuthors={selectedAuthors}
+        onSelectedAuthorsChange={onSelectedAuthorsChange}
       />
     </>
   );

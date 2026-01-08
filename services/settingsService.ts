@@ -19,6 +19,7 @@ export interface EventSettings {
   ar_scene_enabled: boolean;
   battle_mode_enabled: boolean;
   auto_battles_enabled: boolean;
+  tags_generation_enabled: boolean;
   alert_text: string | null;
 }
 
@@ -29,16 +30,17 @@ export const defaultSettings: EventSettings = {
   slide_transition: 'fade',
   decorative_frame_enabled: false,
   decorative_frame_url: null,
-  caption_generation_enabled: true,
+  caption_generation_enabled: false,
   content_moderation_enabled: true,
-  video_capture_enabled: true,
-  collage_mode_enabled: true,
-  stats_enabled: true,
+  video_capture_enabled: false,
+  collage_mode_enabled: false,
+  stats_enabled: false,
   event_context: null,
-  find_me_enabled: true,
-  ar_scene_enabled: true,
-  battle_mode_enabled: true,
+  find_me_enabled: false,
+  ar_scene_enabled: false,
+  battle_mode_enabled: false,
   auto_battles_enabled: false,
+  tags_generation_enabled: true,
   alert_text: null
 };
 

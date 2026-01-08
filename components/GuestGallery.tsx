@@ -46,6 +46,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -286,8 +287,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       sortBy,
       searchQuery: debouncedSearchQuery,
       mediaFilter,
+      selectedAuthors,
     });
-  }, [photos, sortBy, debouncedSearchQuery, mediaFilter]);
+  }, [photos, sortBy, debouncedSearchQuery, mediaFilter, selectedAuthors]);
 
   // Navigation avec swipe
   const navigateToPhoto = useCallback((direction: 'next' | 'prev', currentIndex: number) => {
@@ -397,6 +399,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onFindMeClick={onFindMeClick}
             isModalOpen={isFiltersModalOpen}
             onModalOpenChange={setIsFiltersModalOpen}
+            photos={photos}
+            selectedAuthors={selectedAuthors}
+            onSelectedAuthorsChange={setSelectedAuthors}
           />
               </div>
             </div>

@@ -14,6 +14,8 @@ export interface ImageAnalysis {
   moderationReason?: string;
   suggestedFilter?: 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
   quality: 'good' | 'fair' | 'poor';
+  suggestedImprovements?: string[]; // Suggestions d'amélioration (ex: ["améliorer luminosité", "recadrer"])
+  estimatedQuality?: 'excellent' | 'good' | 'fair' | 'poor'; // Estimation plus précise de la qualité
 }
 
 /**

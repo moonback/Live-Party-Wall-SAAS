@@ -17,7 +17,14 @@ export const filterAndSortPhotos = (
     filtered = filtered.filter(p => p.type === options.mediaFilter);
   }
   
-  // Filtre par recherche (auteur ou légende)
+  // Filtre par auteur(s)
+  if (options.selectedAuthors && options.selectedAuthors.length > 0) {
+    filtered = filtered.filter(p => 
+      options.selectedAuthors.includes(p.author)
+    );
+  }
+  
+  // Filtre par recherche textuelle (auteur ou légende)
   if (options.searchQuery.trim()) {
     const query = options.searchQuery.toLowerCase().trim();
     filtered = filtered.filter(p => 

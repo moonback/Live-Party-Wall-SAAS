@@ -56,6 +56,7 @@ function cleanCache(): void {
 export interface CombinedAnalysisResult {
   analysis: ImageAnalysis;
   caption: string;
+  tags: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
 }
 
 /**
@@ -85,8 +86,11 @@ export const analyzeAndCaptionImage = async (
           isAppropriate: true,
           suggestedFilter: 'none',
           quality: 'fair',
+          estimatedQuality: 'fair',
+          suggestedImprovements: [],
         },
         caption: "Party time! 🎉",
+        tags: [],
       };
     }
 
@@ -113,7 +117,7 @@ export const analyzeAndCaptionImage = async (
     // Construire le prompt personnalisé pour la légende
     const captionPrompt = buildPersonalizedCaptionPrompt(eventContext);
 
-    // Prompt combiné : modération + légende
+    // Prompt combiné : modération + légende + tags + améliorations
     const combinedPrompt = `
 Analyse cette photo de fête et réponds UNIQUEMENT avec un JSON valide (sans markdown, sans code blocks) avec cette structure exacte :
 {
@@ -123,7 +127,10 @@ Analyse cette photo de fête et réponds UNIQUEMENT avec un JSON valide (sans ma
   "moderationReason": string | null,
   "suggestedFilter": "none" | "vintage" | "blackwhite" | "warm" | "cool",
   "quality": "good" | "fair" | "poor",
-  "caption": string
+  "estimatedQuality": "excellent" | "good" | "fair" | "poor",
+  "suggestedImprovements": string[],
+  "caption": string,
+  "tags": string[]
 }
 
 RÈGLES DE MODÉRATION :
@@ -133,14 +140,23 @@ RÈGLES DE MODÉRATION :
 4. moderationReason: raison si isAppropriate est false, sinon null
 5. suggestedFilter: suggère un filtre esthétique basé sur l'ambiance (vintage pour photos rétro, warm pour ambiance chaleureuse, cool pour ambiance moderne/froide, blackwhite pour photos artistiques, none si aucun filtre nécessaire)
 6. quality: évalue la qualité technique (good: nette et bien exposée, fair: acceptable, poor: floue ou mal exposée)
+7. estimatedQuality: évaluation plus précise de la qualité (excellent: parfaite, good: très bonne, fair: correcte, poor: à améliorer)
+8. suggestedImprovements: tableau de suggestions concrètes pour améliorer la photo (ex: ["améliorer luminosité", "recadrer", "réduire bruit"], tableau vide si aucune amélioration nécessaire)
 
 RÈGLES DE LÉGENDE :
 ${captionPrompt}
+
+RÈGLES DE TAGS :
+- tags: tableau de 3 à 8 tags pertinents en français décrivant la photo
+- Tags possibles : actions (danse, rire, célébrer, sourire), personnes (groupe, couple, famille, amis), ambiance (fête, joie, émotion, moment), objets (gâteau, décoration, musique), lieux (intérieur, extérieur, scène)
+- Utilise des mots simples et descriptifs, en minuscules
+- Exemples : ["sourire", "groupe", "danse", "fête", "joie"], ["couple", "moment", "émotion", "célébration"]
 
 IMPORTANT : 
 - Réponds UNIQUEMENT avec le JSON, rien d'autre
 - Le champ "caption" doit contenir la légende générée selon les règles ci-dessus
 - Maximum 12 mots pour la légende, uniquement en français
+- Le champ "tags" doit être un tableau de strings en français
 `;
 
     const response = await ai.models.generateContent({
@@ -175,8 +191,11 @@ IMPORTANT :
           isAppropriate: true,
           suggestedFilter: 'none',
           quality: 'fair',
+          estimatedQuality: 'fair',
+          suggestedImprovements: [],
         },
         caption: "Party time! 🎉",
+        tags: [],
       };
     }
     
@@ -195,7 +214,10 @@ IMPORTANT :
       moderationReason?: string | null;
       suggestedFilter?: 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
       quality?: 'good' | 'fair' | 'poor';
+      estimatedQuality?: 'excellent' | 'good' | 'fair' | 'poor';
+      suggestedImprovements?: string[];
       caption?: string;
+      tags?: string[];
     };
 
     try {
@@ -214,8 +236,11 @@ IMPORTANT :
           isAppropriate: true,
           suggestedFilter: 'none',
           quality: 'fair',
+          estimatedQuality: 'fair',
+          suggestedImprovements: [],
         },
         caption: "Party time! 🎉",
+        tags: [],
       };
     }
 
@@ -227,14 +252,22 @@ IMPORTANT :
       moderationReason: parsed.moderationReason || undefined,
       suggestedFilter: parsed.suggestedFilter || 'none',
       quality: parsed.quality || 'good',
+      estimatedQuality: parsed.estimatedQuality || parsed.quality || 'good',
+      suggestedImprovements: Array.isArray(parsed.suggestedImprovements) ? parsed.suggestedImprovements : [],
     };
 
     // Validation et fallback pour la légende
     const caption = parsed.caption?.trim() || "Party time! 🎉";
 
+    // Validation et fallback pour les tags
+    const tags = Array.isArray(parsed.tags) && parsed.tags.length > 0 
+      ? parsed.tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0).slice(0, 8) // Max 8 tags
+      : [];
+
     const result: CombinedAnalysisResult = {
       analysis,
       caption,
+      tags,
     };
     
     // Mettre en cache le résultat
@@ -265,8 +298,11 @@ IMPORTANT :
         isAppropriate: true, // Par défaut, on accepte (mais on log l'erreur)
         suggestedFilter: 'none',
         quality: 'fair',
+        estimatedQuality: 'fair',
+        suggestedImprovements: [],
       },
       caption: "Party time! 🎉", // Légende par défaut cohérente avec geminiService
+      tags: [],
     };
   }
 };

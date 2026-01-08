@@ -34,6 +34,7 @@ export interface Photo {
   duration?: number; // Durée en secondes (pour les vidéos)
   orientation?: 'portrait' | 'landscape' | 'square' | 'unknown'; // ⚡ Précalculé pour performance
   reactions?: ReactionCounts; // Compteurs de réactions par type
+  tags?: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
 }
 
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile';
@@ -85,6 +86,7 @@ export interface FilterOptions {
   sortBy: SortOption;
   searchQuery: string;
   mediaFilter: MediaFilter;
+  selectedAuthors: string[]; // Filtre par auteur(s) - tableau vide = tous les auteurs
 }
 
 export interface GuestPhotoCardProps {
@@ -186,6 +188,7 @@ export interface PhotoRow {
   likes_count: number;
   type: 'photo' | 'video';
   duration: number | null;
+  tags: string[] | null; // Tags suggérés par l'IA (tableau JSON)
 }
 
 export interface LikeRow {

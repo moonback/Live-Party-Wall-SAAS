@@ -579,6 +579,10 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
         // 3. Utiliser la légende générée (ou vide si désactivée)
         const caption = eventSettings.caption_generation_enabled ? aiResult.caption : '';
+        // Utiliser les tags suggérés par l'IA uniquement si la génération de tags est activée
+        const tags = eventSettings.tags_generation_enabled && aiResult.tags && aiResult.tags.length > 0 
+          ? aiResult.tags 
+          : undefined;
 
         // 4. Upload
         if (!currentEvent) {
@@ -592,7 +596,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           currentEvent.id,
           finalImage, 
           caption, 
-          finalAuthorName
+          finalAuthorName,
+          tags
         );
         
         // Sauvegarder l'avatar si disponible

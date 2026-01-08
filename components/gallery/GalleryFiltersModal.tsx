@@ -1,6 +1,6 @@
-import React from 'react';
-import { SortOption, MediaFilter } from '../../types';
-import { Clock, Sparkles, Trophy, Image, Video, Filter, X } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { SortOption, MediaFilter, Photo } from '../../types';
+import { Clock, Sparkles, Trophy, Image, Video, Filter, X, User, XCircle } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface GalleryFiltersModalProps {
@@ -12,6 +12,9 @@ interface GalleryFiltersModalProps {
   onMediaFilterChange: (filter: MediaFilter) => void;
   showLeaderboard: boolean;
   onToggleLeaderboard: () => void;
+  photos: Photo[];
+  selectedAuthors: string[];
+  onSelectedAuthorsChange: (authors: string[]) => void;
 }
 
 export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
@@ -22,9 +25,32 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
   mediaFilter,
   onMediaFilterChange,
   showLeaderboard,
-  onToggleLeaderboard
+  onToggleLeaderboard,
+  photos,
+  selectedAuthors,
+  onSelectedAuthorsChange
 }) => {
   const isMobile = useIsMobile();
+
+  // Extraire la liste unique des auteurs
+  const uniqueAuthors = useMemo(() => {
+    const authorsSet = new Set(photos.map(p => p.author).filter(Boolean));
+    return Array.from(authorsSet).sort();
+  }, [photos]);
+
+  const toggleAuthor = (author: string) => {
+    if (selectedAuthors.includes(author)) {
+      onSelectedAuthorsChange(selectedAuthors.filter(a => a !== author));
+    } else {
+      onSelectedAuthorsChange([...selectedAuthors, author]);
+    }
+  };
+
+  const clearAllFilters = () => {
+    onSelectedAuthorsChange([]);
+  };
+
+  const hasActiveFilters = selectedAuthors.length > 0;
 
   if (!isOpen) return null;
 
@@ -61,15 +87,18 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
             </button>
           </div>
 
-          {/* Content - Plus compact sur desktop */}
-          <div className={`p-5`}>
-            <div
-              className={`flex flex-wrap items-center justify-center gap-3 ${
-                isMobile
-                  ? ''
-                  : 'gap-1 [&>button]:px-2 [&>button]:py-2 [&>button>span]:hidden'
-              }`}
-            >
+          {/* Content */}
+          <div className={`p-5 max-h-[80vh] overflow-y-auto`}>
+            {/* Filtres de base */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Filtres rapides</h3>
+              <div
+                className={`flex flex-wrap items-center justify-center gap-3 ${
+                  isMobile
+                    ? ''
+                    : 'gap-1 [&>button]:px-2 [&>button]:py-2 [&>button>span]:hidden'
+                }`}
+              >
               {/* Filtre par type */}
               <button
                 onClick={() => {
@@ -223,6 +252,57 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
                   <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900/95"></div>
                 </div>
               </button>
+              </div>
+            </div>
+
+            {/* Filtres avancés */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Filtres avancés</h3>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-xs text-pink-400 hover:text-pink-300 flex items-center gap-1 transition-colors"
+                  >
+                    <XCircle className="w-3 h-3" />
+                    Réinitialiser
+                  </button>
+                )}
+              </div>
+
+              {/* Filtre par auteur */}
+              <div className="mb-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-300 mb-2">
+                  <User className="w-4 h-4" />
+                  Auteurs
+                </label>
+                <div className="max-h-32 overflow-y-auto bg-slate-800/50 rounded-lg p-2 border border-white/10">
+                  {uniqueAuthors.length === 0 ? (
+                    <p className="text-xs text-slate-500 text-center py-2">Aucun auteur disponible</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueAuthors.map(author => (
+                        <button
+                          key={author}
+                          onClick={() => toggleAuthor(author)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 ${
+                            selectedAuthors.includes(author)
+                              ? 'bg-gradient-to-r from-pink-500/30 to-purple-500/30 text-white border border-pink-500/50'
+                              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 border border-white/10'
+                          }`}
+                        >
+                          {author}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {selectedAuthors.length > 0 && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    {selectedAuthors.length} auteur{selectedAuthors.length > 1 ? 's' : ''} sélectionné{selectedAuthors.length > 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

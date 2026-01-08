@@ -1876,6 +1876,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                           </div>
                         </label>
                       </div>
+                      {/* Génération de tags */}
+                      <div className="bg-slate-950/60 border border-purple-400/15 rounded-2xl p-5 hover:border-pink-400/20 transition group">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="tags_generation_enabled"
+                            checked={localConfig.tags_generation_enabled ?? true}
+                            onChange={handleConfigChange}
+                            className="h-4 w-4 accent-pink-500 mt-1 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-white flex items-center gap-2 mb-0.5">
+                              <Tag className="w-4 h-4 text-purple-400" />
+                              Génération de tags IA
+                              {localConfig.tags_generation_enabled ? (
+                                <span className="px-2 py-0.5 ml-2 bg-green-500/20 border border-green-500/30 text-green-400 text-xs rounded-full">Actif</span>
+                              ) : (
+                                <span className="px-2 py-0.5 ml-2 bg-slate-700/40 border border-slate-600/40 text-slate-400 text-xs rounded-full">Inactif</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-300 mt-1">Génère automatiquement des tags descriptifs (ex: "sourire", "groupe", "danse") pour chaque photo avec IA Gemini.</p>
+                          </div>
+                        </label>
+                      </div>
                       {/* Modération */}
                       <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 border border-green-500/20 rounded-2xl p-5">
                         <div className="flex items-start gap-3">

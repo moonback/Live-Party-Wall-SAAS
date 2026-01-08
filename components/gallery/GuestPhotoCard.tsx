@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Image, Video } from 'lucide-react';
+import { Heart, Download, Image, Video, Tag } from 'lucide-react';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useSwipe } from '../../hooks/useSwipe';
 import { getUserAvatar } from '../../utils/userAvatar';
+import { useSettings } from '../../context/SettingsContext';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -40,6 +41,7 @@ export const GuestPhotoCard = React.memo(({
   reactions = {},
   guestAvatars
 }: GuestPhotoCardProps) => {
+  const { settings } = useSettings();
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
@@ -433,6 +435,28 @@ export const GuestPhotoCard = React.memo(({
           <span className={`font-bold text-white text-xs`}>{photo.author}</span>{' '}
           <span className="text-slate-200 text-xs">{photo.caption}</span>
         </div>
+        {/* Tags */}
+        {settings.tags_generation_enabled !== false && photo.tags && photo.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-2 mt-2">
+            <Tag className="w-3 h-3 text-slate-400 flex-shrink-0" />
+            <div className="flex flex-wrap gap-1.5">
+              {photo.tags.slice(0, 5).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2 py-0.5 rounded-lg bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-300 text-[10px] font-medium shadow-sm hover:from-pink-500/30 hover:to-purple-500/30 transition-all"
+                  title={tag}
+                >
+                  {tag}
+                </span>
+              ))}
+              {photo.tags.length > 5 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-800/50 border border-white/10 text-slate-400 text-[10px] font-medium">
+                  +{photo.tags.length - 5}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
         {/* Timestamp */}
         <span className={`text-slate-500 ${isMobile ? 'text-[10px]' : 'text-xs uppercase tracking-wide'}`}>
           {isMobile 
