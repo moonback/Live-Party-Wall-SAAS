@@ -854,14 +854,14 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
     <section ref={containerRef} className="relative min-h-[100svh] flex items-center justify-center pt-24 sm:pt-28 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-black to-pink-900">
       
       {/* Mobile Background Image (remplace la scène 3D sur mobile) */}
-      <div className="absolute inset-0 md:hidden pointer-events-none flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 md:hidden pointer-events-none flex items-start justify-center overflow-hidden">
         <img
           src="/background.png"
           alt=""
           aria-hidden="true"
-          className="w-full h-full object-contain object-center opacity-60"
+          className="w-full h-full object-cover object-top opacity-60"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80" />
       </div>
 
       {/* Dynamic Background Elements */}
