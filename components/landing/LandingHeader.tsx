@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Users, Menu, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { StickyNavigation } from './StickyNavigation';
 
 interface LandingHeaderProps {
   isAuthenticated: boolean;
@@ -94,19 +95,11 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               </span>
             </button>
 
-            {/* Navigation Desktop */}
-            <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <button
-                  key={link.id}
-                  onClick={() => handleScrollToSection(link.id)}
-                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
-                >
-                  {link.label}
-                  <span className="absolute bottom-1 left-4 right-4 h-px bg-gradient-to-r from-pink-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                </button>
-              ))}
-            </nav>
+            {/* Navigation Desktop avec indicateur de section active */}
+            <StickyNavigation 
+              links={navLinks} 
+              onScrollToSection={handleScrollToSection} 
+            />
 
             {/* CTA Button Desktop */}
             <div className="hidden md:flex items-center gap-4">

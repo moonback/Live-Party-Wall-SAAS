@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import { Sparkles, ArrowRight, Zap, RefreshCcw, Heart, Share2, Play, Star } from 'lucide-react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { DemoModal } from './DemoModal';
 
 // Photos optimisées et fiables pour éviter les erreurs de chargement
 const EVENT_PHOTOS = [
@@ -818,6 +819,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
 const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+  const [showDemo, setShowDemo] = useState(false);
   
   // Smooth scroll for parallax
   const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
@@ -918,7 +920,8 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             >
               <button 
                 onClick={onAdminClick}
-                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all transform hover:-translate-y-0.5 w-full sm:w-auto overflow-hidden group shadow-lg"
+                aria-label="Essayer maintenant - Créer un événement gratuitement"
+                className="relative px-8 py-3.5 bg-white text-black rounded-full font-bold text-sm sm:text-base hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all transform hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto overflow-hidden group shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Essayer maintenant
@@ -929,7 +932,9 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               
               <button
                 type="button"
-                className="px-8 py-3.5 bg-transparent text-white/90 hover:text-white transition-colors font-semibold text-sm sm:text-base flex items-center justify-center gap-2 w-full sm:w-auto"
+                onClick={() => setShowDemo(true)}
+                aria-label="Voir la démo vidéo de Live Party Wall"
+                className="px-8 py-3.5 bg-transparent text-white/90 hover:text-white transition-colors font-semibold text-sm sm:text-base flex items-center justify-center gap-2 w-full sm:w-auto border border-white/20 hover:border-white/40 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <Play className="w-4 h-4 fill-white/90" />
                 Voir la démo
@@ -976,6 +981,9 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
           </div>
         </div>
       </div>
+
+      {/* Demo Modal */}
+      <DemoModal isOpen={showDemo} onClose={() => setShowDemo(false)} />
     </section>
   );
 };

@@ -8,4 +8,9 @@ export { QRCodeFullscreenModal } from './QRCodeFullscreenModal';
 export { ActionButton } from './ActionButton';
 export { EscapeHandler } from './EscapeHandler';
 export { PhotoboothComparison } from './PhotoboothComparison';
+export { ScrollToTop } from './ScrollToTop';
+export { Testimonials } from './Testimonials';
+export { TrustBadges } from './TrustBadges';
+export { DemoModal } from './DemoModal';
+export { StickyNavigation } from './StickyNavigation';
 

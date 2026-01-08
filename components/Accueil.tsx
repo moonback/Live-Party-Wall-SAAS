@@ -12,6 +12,9 @@ import { Pricing } from './landing/Pricing';
 import { PhotoboothComparison } from './landing/PhotoboothComparison';
 import { FinalCTA } from './landing/FinalCTA';
 import { LandingFooter } from './landing/LandingFooter';
+import { Testimonials } from './landing/Testimonials';
+import { TrustBadges } from './landing/TrustBadges';
+import { ScrollToTop } from './landing/ScrollToTop';
 
 interface AccueilProps {
   onAdminClick: () => void;
@@ -54,14 +57,18 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         <Hero onAdminClick={onAdminClick} />
         <HowItWorks />
         <Features />
+        <Testimonials />
         <Advantages />
         <UseCases />
         <GuestMessage />
         <Pricing onAdminClick={onAdminClick} />
         <PhotoboothComparison />
         <FinalCTA onAdminClick={onAdminClick} />
+        <TrustBadges />
         <LandingFooter />
       </div>
+
+      <ScrollToTop />
     </div>
   );
 };
