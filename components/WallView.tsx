@@ -181,7 +181,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
         arSceneManagerRef.current?.triggerEffect('fireworks', 1);
     } else if (tieBattleDisplay) {
         playDefeatOrTieSound();
-        arSceneManagerRef.current?.triggerEffect('bubbles', 0.8);
+        arSceneManagerRef.current?.triggerEffect('fireworks', 0.8);
     }
   }, [winnerPhotoDisplay, tieBattleDisplay]);
 

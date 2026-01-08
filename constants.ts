@@ -468,7 +468,5 @@ export const REACTION_TYPES = Object.keys(REACTIONS) as import('./types').Reacti
 export const AR_DEFAULT_TIME_WINDOW = 15; // Fenêtre de temps en minutes pour ouverture/fermeture
 export const AR_APPLAUSE_THRESHOLD = 0.6; // Seuil de détection d'applaudissements (0-1)
 export const AR_EFFECT_DURATION = {
-  fireworks: 4000,
-  bubbles: 5000,
-  halos: 4000
+  fireworks: 8000
 } as const;
