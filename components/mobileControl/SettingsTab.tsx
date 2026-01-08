@@ -1,9 +1,11 @@
-import React from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
+import { useEvent } from '../../context/EventContext';
 import { logger } from '../../utils/logger';
+import { uploadBackgroundImage } from '../../services/backgroundService';
 
 interface SettingsTabProps {
   onBack: () => void;
@@ -13,6 +15,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const { signOut } = useAuth();
   const { settings, updateSettings } = useSettings();
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
+  const [uploadingDesktop, setUploadingDesktop] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
+  const desktopInputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   const featureConfigs = [
     { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false },
@@ -26,6 +33,62 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false },
     { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false },
   ];
+
+  const handleBackgroundUpload = async (file: File, type: 'desktop' | 'mobile') => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    const setUploading = type === 'desktop' ? setUploadingDesktop : setUploadingMobile;
+    setUploading(true);
+
+    try {
+      const { publicUrl } = await uploadBackgroundImage(currentEvent.id, file, type);
+      const fieldName = type === 'desktop' ? 'background_desktop_url' : 'background_mobile_url';
+      await updateSettings({ [fieldName]: publicUrl });
+      addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} uploadée avec succès`, 'success');
+      logger.info('Background image uploaded', { component: 'SettingsTab', action: 'uploadBackground', type, eventId: currentEvent.id });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('Error uploading background image', error, { component: 'SettingsTab', action: 'uploadBackground', type });
+      if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
+        addToast('❌ Policies Supabase manquantes. Vérifiez la configuration du bucket party-backgrounds', 'error');
+      } else {
+        addToast(`Erreur: ${errorMsg}`, 'error');
+      }
+    } finally {
+      setUploading(false);
+      // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+      if (type === 'desktop' && desktopInputRef.current) {
+        desktopInputRef.current.value = '';
+      }
+      if (type === 'mobile' && mobileInputRef.current) {
+        mobileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDesktopBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleBackgroundUpload(file, 'desktop');
+    }
+  };
+
+  const handleMobileBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleBackgroundUpload(file, 'mobile');
+    }
+  };
+
+  const clearBackground = async (type: 'desktop' | 'mobile') => {
+    const fieldName = type === 'desktop' ? 'background_desktop_url' : 'background_mobile_url';
+    await updateSettings({ [fieldName]: null });
+    addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} supprimée`, 'success');
+    logger.info('Background image cleared', { component: 'SettingsTab', action: 'clearBackground', type });
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -75,6 +138,143 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <option value="normal">Normale</option>
               <option value="fast">Rapide</option>
             </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Images de fond */}
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+          Images de fond
+        </h2>
+        <div className="space-y-4">
+          {/* Desktop Background */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <Monitor className="w-4 h-4" />
+              Fond Desktop
+            </label>
+            {settings.background_desktop_url ? (
+              <div className="relative">
+                <img
+                  src={settings.background_desktop_url}
+                  alt="Fond desktop"
+                  className="w-full h-32 object-cover rounded-lg border border-white/20"
+                />
+                <button
+                  onClick={() => clearBackground('desktop')}
+                  className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                  title="Supprimer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+                <p className="text-sm text-white/60 mb-3">Aucune image de fond desktop</p>
+                <button
+                  onClick={() => desktopInputRef.current?.click()}
+                  disabled={uploadingDesktop}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingDesktop ? 'Upload en cours...' : 'Uploader une image'}
+                </button>
+              </div>
+            )}
+            {!settings.background_desktop_url && (
+              <input
+                ref={desktopInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleDesktopBackgroundChange}
+                className="hidden"
+              />
+            )}
+            {settings.background_desktop_url && (
+              <button
+                onClick={() => desktopInputRef.current?.click()}
+                disabled={uploadingDesktop}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload className="w-4 h-4" />
+                {uploadingDesktop ? 'Remplacement en cours...' : 'Remplacer'}
+              </button>
+            )}
+            {settings.background_desktop_url && (
+              <input
+                ref={desktopInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleDesktopBackgroundChange}
+                className="hidden"
+              />
+            )}
+          </div>
+
+          {/* Mobile Background */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <Smartphone className="w-4 h-4" />
+              Fond Mobile
+            </label>
+            {settings.background_mobile_url ? (
+              <div className="relative">
+                <img
+                  src={settings.background_mobile_url}
+                  alt="Fond mobile"
+                  className="w-full h-32 object-cover rounded-lg border border-white/20"
+                />
+                <button
+                  onClick={() => clearBackground('mobile')}
+                  className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                  title="Supprimer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+                <p className="text-sm text-white/60 mb-3">Aucune image de fond mobile</p>
+                <button
+                  onClick={() => mobileInputRef.current?.click()}
+                  disabled={uploadingMobile}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingMobile ? 'Upload en cours...' : 'Uploader une image'}
+                </button>
+              </div>
+            )}
+            {!settings.background_mobile_url && (
+              <input
+                ref={mobileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleMobileBackgroundChange}
+                className="hidden"
+              />
+            )}
+            {settings.background_mobile_url && (
+              <button
+                onClick={() => mobileInputRef.current?.click()}
+                disabled={uploadingMobile}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload className="w-4 h-4" />
+                {uploadingMobile ? 'Remplacement en cours...' : 'Remplacer'}
+              </button>
+            )}
+            {settings.background_mobile_url && (
+              <input
+                ref={mobileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleMobileBackgroundChange}
+                className="hidden"
+              />
+            )}
           </div>
         </div>
       </div>

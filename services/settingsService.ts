@@ -21,6 +21,8 @@ export interface EventSettings {
   auto_battles_enabled: boolean;
   tags_generation_enabled: boolean;
   alert_text: string | null;
+  background_desktop_url: string | null;
+  background_mobile_url: string | null;
 }
 
 export const defaultSettings: EventSettings = {
@@ -41,7 +43,9 @@ export const defaultSettings: EventSettings = {
   battle_mode_enabled: false,
   auto_battles_enabled: false,
   tags_generation_enabled: false,
-  alert_text: null
+  alert_text: null,
+  background_desktop_url: null,
+  background_mobile_url: null
 };
 
 /**
@@ -89,10 +93,11 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
     // Normaliser alert_text (null si vide ou seulement espaces)
     const alertText = settings.alert_text && settings.alert_text.trim() ? settings.alert_text.trim() : null;
     
-    // Vérifier si des settings existent déjà pour cet événement
-    const { data: existingSettings } = await supabase
+    // Récupérer les settings existants directement depuis la base de données
+    // pour préserver les valeurs non modifiées (sans passer par getSettings qui retourne des defaults)
+    const { data: existingSettingsRow } = await supabase
       .from('event_settings')
-      .select('id')
+      .select('*')
       .eq('event_id', eventId)
       .limit(1)
       .maybeSingle();
@@ -101,18 +106,28 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
     // Retirer l'id si présent pour éviter les conflits lors de l'upsert
     const { id, ...settingsWithoutId } = settings;
     
-    // Si on a un ID existant, l'utiliser pour l'update, sinon laisser Supabase générer un nouvel ID
+    // Si des settings existent, merger avec les nouveaux, sinon utiliser les defaults
+    const baseSettings = existingSettingsRow 
+      ? { ...defaultSettings, ...existingSettingsRow }
+      : defaultSettings;
+    
+    // Merger les settings existants avec les nouveaux settings
+    // Cela préserve les valeurs existantes pour les champs non modifiés
     const settingsToUpdate: any = {
+      ...baseSettings,
       ...settingsWithoutId,
-      alert_text: alertText,
+      alert_text: alertText !== undefined ? alertText : (baseSettings.alert_text || null),
       content_moderation_enabled: true, // Toujours activée
       updated_at: new Date().toISOString(),
       event_id: eventId
     };
     
+    // Retirer l'id de settingsToUpdate pour éviter les conflits
+    delete settingsToUpdate.id;
+    
     // Si on a un ID existant, l'inclure pour l'update
-    if (existingSettings?.id) {
-      settingsToUpdate.id = existingSettings.id;
+    if (existingSettingsRow?.id) {
+      settingsToUpdate.id = existingSettingsRow.id;
     }
     
     logger.info('Updating settings', { 
@@ -121,7 +136,7 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
       eventId,
       alert_text: alertText,
       has_alert: !!alertText,
-      existingId: existingSettings?.id
+      existingId: existingSettingsRow?.id
     });
     
     // Utiliser upsert avec onConflict sur event_id (qui est unique)

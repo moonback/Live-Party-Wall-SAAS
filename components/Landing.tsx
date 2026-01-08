@@ -25,7 +25,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     subtitle: defaultSettings.event_subtitle,
     statsEnabled: defaultSettings.stats_enabled,
     findMeEnabled: defaultSettings.find_me_enabled,
-    battleModeEnabled: defaultSettings.battle_mode_enabled ?? false
+    battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
+    backgroundDesktopUrl: defaultSettings.background_desktop_url,
+    backgroundMobileUrl: defaultSettings.background_mobile_url
   });
 
   // Déterminer le titre à afficher : nom de l'événement en priorité, sinon event_title
@@ -67,30 +69,36 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         subtitle: defaultSettings.event_subtitle,
         statsEnabled: defaultSettings.stats_enabled,
         findMeEnabled: defaultSettings.find_me_enabled,
-        battleModeEnabled: defaultSettings.battle_mode_enabled ?? false
+        battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
+        backgroundDesktopUrl: defaultSettings.background_desktop_url,
+        backgroundMobileUrl: defaultSettings.background_mobile_url
       });
       return;
     }
 
     getSettings(currentEvent.id).then(settings => {
-      setUiConfig({
-        title: settings.event_title,
-        subtitle: settings.event_subtitle,
-        statsEnabled: settings.stats_enabled ?? true,
-        findMeEnabled: settings.find_me_enabled ?? true,
-        battleModeEnabled: settings.battle_mode_enabled ?? false
-      });
+      setUiConfig(prev => ({
+        title: settings.event_title ?? prev.title,
+        subtitle: settings.event_subtitle ?? prev.subtitle,
+        statsEnabled: settings.stats_enabled ?? prev.statsEnabled,
+        findMeEnabled: settings.find_me_enabled ?? prev.findMeEnabled,
+        battleModeEnabled: settings.battle_mode_enabled ?? prev.battleModeEnabled,
+        backgroundDesktopUrl: settings.background_desktop_url ?? prev.backgroundDesktopUrl,
+        backgroundMobileUrl: settings.background_mobile_url ?? prev.backgroundMobileUrl
+      }));
     });
 
     // Realtime Subscription
     const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
-      setUiConfig({
-        title: newSettings.event_title,
-        subtitle: newSettings.event_subtitle,
-        statsEnabled: newSettings.stats_enabled ?? true,
-        findMeEnabled: newSettings.find_me_enabled ?? true,
-        battleModeEnabled: newSettings.battle_mode_enabled ?? false
-      });
+      setUiConfig(prev => ({
+        title: newSettings.event_title ?? prev.title,
+        subtitle: newSettings.event_subtitle ?? prev.subtitle,
+        statsEnabled: newSettings.stats_enabled ?? prev.statsEnabled,
+        findMeEnabled: newSettings.find_me_enabled ?? prev.findMeEnabled,
+        battleModeEnabled: newSettings.battle_mode_enabled ?? prev.battleModeEnabled,
+        backgroundDesktopUrl: newSettings.background_desktop_url ?? prev.backgroundDesktopUrl,
+        backgroundMobileUrl: newSettings.background_mobile_url ?? prev.backgroundMobileUrl
+      }));
     });
 
     return () => {
@@ -168,7 +176,11 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     >
       {/* Background Image - Responsive */}
       <img
-        src={isMobile ? getStaticAssetPath('background-mobile.png') : getStaticAssetPath('background-desktop.png')}
+        src={
+          isMobile
+            ? (uiConfig.backgroundMobileUrl || getStaticAssetPath('background-mobile.png'))
+            : (uiConfig.backgroundDesktopUrl || getStaticAssetPath('background-desktop.png'))
+        }
         alt="Background"
         className="fixed inset-0 w-full h-full object-cover z-0"
         style={{
