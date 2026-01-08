@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Save, Trash2, Users, UserPlus, X, 
   Loader2, AlertTriangle, Shield, Globe,
-  Settings
+  Settings,
+  Home
 } from 'lucide-react';
 
 interface EventManagerProps {
@@ -187,7 +188,7 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                 className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 transition-colors text-slate-400 hover:text-slate-200"
                 aria-label="Retour"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <X className="w-5 h-5 text-red-500" />
               </motion.button>
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-slate-800/50 border border-slate-700">

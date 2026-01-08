@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Settings, Type, Tag, Sparkles, Frame, Upload, X, Save, RefreshCw, 
   Image as ImageIcon, Gauge, Move, Shield, Video, Grid3x3, BarChart2, 
-  User, Trophy, Info, CheckCircle2 
+  User, Trophy, Info, CheckCircle2, Power
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { usePhotos } from '../../context/PhotosContext';
@@ -153,6 +153,22 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const filteredFrames = selectedCategory === 'all' 
     ? localFrames 
     : localFrames.filter(f => f.category === selectedCategory);
+
+  const handleDisableAllFeatures = () => {
+    setLocalConfig(prev => ({
+      ...prev,
+      caption_generation_enabled: false,
+      tags_generation_enabled: false,
+      video_capture_enabled: false,
+      collage_mode_enabled: false,
+      stats_enabled: false,
+      find_me_enabled: false,
+      ar_scene_enabled: false,
+      battle_mode_enabled: false,
+      // content_moderation_enabled reste toujours à true
+    }));
+    addToast("Toutes les fonctionnalités ont été désactivées. N'oubliez pas de sauvegarder.", 'info');
+  };
 
   const saveConfig = async () => {
     setSavingConfig(true);
@@ -469,11 +485,11 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
           {/* Section IA - Sidebar */}
           <aside className="lg:col-span-5 space-y-6">
             <section className="bg-slate-950/50 border border-slate-800 rounded-xl p-6 sticky top-4">
-              <header className="flex items-center gap-3 mb-6">
+              <header className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
                   <Sparkles className="w-5 h-5 text-indigo-400" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-lg font-semibold text-slate-100">
                     Modules supplémentaires
                   </h3>
@@ -482,6 +498,16 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   </p>
                 </div>
               </header>
+              <div className="mb-4 pb-4 border-b border-slate-800">
+                <button
+                  type="button"
+                  onClick={handleDisableAllFeatures}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-red-500/50 rounded-lg transition-colors text-sm font-medium text-slate-200 hover:text-red-400"
+                >
+                  <Power className="w-4 h-4" />
+                  <span>Désactiver toutes les fonctionnalités</span>
+                </button>
+              </div>
               <div className="space-y-3">
                 {/* Génération de légende */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-indigo-500/30 transition-colors">

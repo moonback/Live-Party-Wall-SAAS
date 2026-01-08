@@ -235,8 +235,12 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
                 <div className="w-20 h-20 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-3xl mx-auto mb-4 flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
                   <User className="w-10 h-10 text-white" />
                 </div>
-                <h1 className="text-3xl font-black text-white mb-2">Comment t'appelles-tu ?</h1>
-                <p className="text-slate-400">Entre ton nom pour que les autres te reconnaissent sur le mur.</p>
+                <h1 className="text-3xl font-black text-white mb-2">
+                  Quel est ton prénom ou pseudo&nbsp;?
+                </h1>
+                <p className="text-slate-400">
+                  Indique le nom qui s'affichera à côté de ta photo sur le mur, pour que tes amis et invités puissent te reconnaître facilement&nbsp;!
+                </p>
               </div>
 
               <div className="space-y-6">
@@ -282,8 +286,12 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
               </button>
 
               <div className="text-center mb-6">
-                <h1 className="text-2xl font-black text-white mb-2">Sourire ! 📸</h1>
-                <p className="text-slate-400">Prends une petite photo pour ton profil.</p>
+                <h1 className="text-3xl font-black text-white mb-2">
+                  Prends ta photo de profil&nbsp;! <span role="img" aria-label="Appareil photo">📸</span>
+                </h1>
+                <p className="text-slate-400">
+                  Cette photo apparaîtra à côté de ton nom sur le mur.
+                </p>
               </div>
 
               <div className="mb-8">
