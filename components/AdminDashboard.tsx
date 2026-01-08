@@ -6,6 +6,7 @@ import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../context/EventContext';
+import { isElectron } from '../utils/electronPaths';
 import AnalyticsView from './AnalyticsView';
 import EventSelector from './EventSelector';
 import EventManager from './EventManager';
@@ -289,7 +290,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const handleLogout = async () => {
     try {
       await signOut();
-      onBack();
+      // Dans Electron, onBack ne fait rien, donc on reste sur le login automatiquement
+      // car isAdminAuthenticated sera false et affichera AdminLogin
+      if (!isElectron()) {
+        onBack();
+      }
     } catch (error) {
       addToast("Erreur lors de la déconnexion", 'error');
     }

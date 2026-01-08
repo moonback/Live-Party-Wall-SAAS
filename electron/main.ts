@@ -117,12 +117,15 @@ function createWindow(): void {
     }
   });
 
-  // Charger l'application
+  // Charger l'application avec le paramètre mode=admin pour ouvrir directement la page de login
   if (isDev && VITE_DEV_SERVER_URL) {
-    // Mode développement : charger depuis le serveur Vite
-    mainWindow.loadURL(VITE_DEV_SERVER_URL);
+    // Mode développement : charger depuis le serveur Vite avec paramètre mode=admin
+    const urlWithMode = VITE_DEV_SERVER_URL.includes('?') 
+      ? `${VITE_DEV_SERVER_URL}&mode=admin` 
+      : `${VITE_DEV_SERVER_URL}?mode=admin`;
+    mainWindow.loadURL(urlWithMode);
   } else {
-    // Mode production : charger depuis le build
+    // Mode production : charger depuis le build avec paramètre mode=admin
     // Le fichier index.html est dans dist/ à la racine de app.asar
     const indexPath = path.join(appBasePath, 'dist', 'index.html');
     
@@ -134,9 +137,14 @@ function createWindow(): void {
       console.log('File exists:', existsSync(indexPath));
     }
     
-    mainWindow.loadFile(indexPath).catch((error) => {
+    // Utiliser loadURL avec file:// pour pouvoir ajouter des paramètres de requête
+    // Normaliser le chemin pour Windows (remplacer les backslashes par des slashes)
+    const normalizedPath = indexPath.replace(/\\/g, '/');
+    const fileUrl = `file:///${normalizedPath}?mode=admin`;
+    mainWindow.loadURL(fileUrl).catch((error) => {
       console.error('Error loading index.html:', error);
       console.error('Tried path:', indexPath);
+      console.error('File URL:', fileUrl);
       console.error('App base path:', appBasePath);
       console.error('__dirname:', __dirname);
       console.error('App path:', app.getAppPath());

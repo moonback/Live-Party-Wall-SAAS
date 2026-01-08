@@ -3,6 +3,7 @@ import { Lock, LogIn, Shield, Zap, BarChart3, Users, Image, Settings, Sparkles, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { isElectron } from '../utils/electronPaths';
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
@@ -18,6 +19,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const isElectronApp = isElectron();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,14 +207,16 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                   {isSignUp ? 'Déjà membre ? Connectez-vous' : 'Pas encore de compte ? Inscrivez-vous'}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="w-full text-sm font-bold text-gray-500 hover:text-pink-400 transition-colors py-2 flex items-center justify-center gap-2 group"
-                >
-                  <motion.span whileHover={{ x: -3 }} className="inline-block">←</motion.span>
-                  Retour à l'accueil
-                </button>
+                {!isElectronApp && (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="w-full text-sm font-bold text-gray-500 hover:text-pink-400 transition-colors py-2 flex items-center justify-center gap-2 group"
+                  >
+                    <motion.span whileHover={{ x: -3 }} className="inline-block">←</motion.span>
+                    Retour à l'accueil
+                  </button>
+                )}
               </div>
             </motion.div>
 

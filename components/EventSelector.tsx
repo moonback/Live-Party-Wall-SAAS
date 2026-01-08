@@ -5,6 +5,7 @@ import { getUserEvents, createEvent, deleteEvent } from '../services/eventServic
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isElectron } from '../utils/electronPaths';
 import { 
   Plus, Calendar, Search, Loader2, Clock, 
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
@@ -214,7 +215,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
             Connexion requise
           </h2>
           <p className="text-slate-400 mb-8 text-sm">Vous devez être connecté pour accéder à votre tableau de bord d'événements.</p>
-          {onBack && (
+          {onBack && !isElectron() && (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

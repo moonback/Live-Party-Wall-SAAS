@@ -1,9 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Copy, Check } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
 import { isElectron } from '../../utils/electronPaths';
+import { useEvent } from '../../context/EventContext';
+import { getBaseUrl } from '../../utils/urlUtils';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -30,12 +33,48 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   exportProgress,
   currentEventName
 }) => {
+  const { currentEvent } = useEvent();
+  const [showEventLink, setShowEventLink] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
   const handleCloseApp = async () => {
     if (isElectron() && window.electronAPI) {
       try {
         await window.electronAPI.closeApp();
       } catch (error) {
         console.error('Erreur lors de la fermeture de l\'application:', error);
+      }
+    }
+  };
+
+  const getEventUrl = (): string => {
+    if (!currentEvent?.slug) return '';
+    const baseUrl = getBaseUrl();
+    return `${baseUrl}?event=${currentEvent.slug}`;
+  };
+
+  const handleOpenEventLink = () => {
+    const eventUrl = getEventUrl();
+    if (eventUrl) {
+      // Dans Electron, ouvrir dans le navigateur par défaut
+      if (isElectron() && window.electronAPI) {
+        // Utiliser shell.openExternal via l'API Electron si disponible
+        window.open(eventUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open(eventUrl, '_blank', 'noopener,noreferrer');
+      }
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const eventUrl = getEventUrl();
+    if (eventUrl) {
+      try {
+        await navigator.clipboard.writeText(eventUrl);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      } catch (error) {
+        console.error('Erreur lors de la copie du lien:', error);
       }
     }
   };
@@ -76,7 +115,8 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 )}
               </div>
             </div>
-            {currentEventName && (
+            
+            {currentEventName && !isElectron() && (
               <motion.button
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.95 }}
@@ -91,18 +131,48 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 </span>
               </motion.button>
             )}
-            {isElectron() && (
+            {isElectron() && currentEvent?.slug && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.07 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowEventLink(!showEventLink)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-800/30 to-blue-700/20 hover:bg-blue-600/25 transition-all duration-150 text-blue-300 hover:text-blue-100 group shadow"
+                  aria-label="Afficher le lien de l'événement"
+                  title="Afficher le lien de l'événement"
+                >
+                  <ExternalLink className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                    Lien
+                  </span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.07 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCloseApp}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400/30 bg-gradient-to-r from-red-800/30 to-red-700/20 hover:bg-red-600/25 transition-all duration-150 text-red-300 hover:text-red-100 group shadow"
+                  aria-label="Fermer l'application"
+                  title="Fermer l'application"
+                >
+                  <Power className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                    Fermer
+                  </span>
+                </motion.button>
+              </>
+            )}
+            {!isElectron() && currentEventName && (
               <motion.button
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleCloseApp}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400/30 bg-gradient-to-r from-red-800/30 to-red-700/20 hover:bg-red-600/25 transition-all duration-150 text-red-300 hover:text-red-100 group shadow"
-                aria-label="Fermer l'application"
-                title="Fermer l'application"
+                onClick={onBack}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-green-400/30 bg-gradient-to-r from-green-800/30 to-green-700/20 hover:bg-green-600/25 transition-all duration-150 text-green-300 hover:text-green-100 group shadow"
+                aria-label="Retour à l'application"
+                title="Retour à la sélection d'événements"
               >
-                <Power className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                <Home className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
-                  Fermer
+                  Application
                 </span>
               </motion.button>
             )}
@@ -202,6 +272,120 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal pour afficher le lien de l'événement (Electron uniquement) */}
+      <AnimatePresence>
+        {showEventLink && isElectron() && currentEvent?.slug && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowEventLink(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700 p-6 max-w-md w-full mx-4 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-slate-100">Lien de l'événement</h3>
+                <button
+                  onClick={() => setShowEventLink(false)}
+                  className="text-slate-400 hover:text-slate-200 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* QR Code */}
+              <div className="mb-6 flex justify-center">
+                <div className="relative group">
+                  {/* Glow effect */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
+                  
+                  {/* QR Code Container */}
+                  <div className="relative bg-gradient-to-br from-white via-white to-gray-50 p-4 rounded-2xl shadow-2xl border-2 border-white/50">
+                    <div className="bg-white p-3 rounded-xl shadow-inner">
+                      <QRCodeCanvas
+                        value={getEventUrl()}
+                        size={200}
+                        level="H"
+                        bgColor="#ffffff"
+                        fgColor="#000000"
+                        includeMargin={false}
+                      />
+                      {/* Logo overlay center */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg border border-gray-200/30">
+                          <ExternalLink className="w-6 h-6 text-gray-800" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Text */}
+                    <div className="text-center mt-3">
+                      <p className="text-slate-900 font-extrabold text-xs uppercase tracking-wider mb-1">
+                        Scannez pour accéder
+                      </p>
+                      <p className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 font-extrabold text-sm">
+                        à l'événement
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-sm text-slate-400 mb-2">Partagez ce lien avec vos invités :</p>
+                <div className="flex items-center gap-2 p-3 bg-slate-950 rounded-lg border border-slate-800">
+                  <code className="flex-1 text-sm text-slate-300 break-all font-mono">
+                    {getEventUrl()}
+                  </code>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCopyLink}
+                    className="flex-shrink-0 p-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+                    title="Copier le lien"
+                  >
+                    {linkCopied ? (
+                      <Check className="w-4 h-4 text-white" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white" />
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleOpenEventLink}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-semibold transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Ouvrir dans le navigateur
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowEventLink(false)}
+                  className="px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-semibold transition-colors"
+                >
+                  Fermer
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

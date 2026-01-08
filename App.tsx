@@ -8,6 +8,7 @@ import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import TransitionWrapper from './components/TransitionWrapper';
 import { getGuestByName } from './services/guestService';
+import { isElectron } from './utils/electronPaths';
 
 // Lazy loading components
 const Landing = lazy(() => import('./components/Landing'));
@@ -271,6 +272,14 @@ const AppContent: React.FC = () => {
                 {isAdminAuthenticated ? (
                   <AdminDashboard 
                     onBack={() => {
+                      // Dans Electron, ne pas permettre de retourner à l'accueil
+                      // Rester sur le dashboard ou rediriger vers login si déconnecté
+                      if (isElectron()) {
+                        // Dans Electron, on ne peut pas quitter le dashboard
+                        // Le handleLogout dans AdminDashboard gérera la déconnexion
+                        return;
+                      }
+                      // En web, comportement normal
                       if (currentEvent) {
                         setViewMode('landing');
                       } else {
@@ -283,6 +292,11 @@ const AppContent: React.FC = () => {
                   <AdminLogin 
                     onLoginSuccess={() => {}}
                     onBack={() => {
+                      // Dans Electron, ne rien faire (rester sur le login)
+                      if (isElectron()) {
+                        // Ne pas permettre de quitter le login dans Electron
+                        return;
+                      }
                       // Retourner à l'accueil : si pas d'événement, afficher Accueil, sinon Landing
                       if (!currentEvent) {
                         // Mettre un mode qui n'est pas 'admin' pour déclencher l'affichage de Accueil
