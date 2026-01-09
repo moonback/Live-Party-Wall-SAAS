@@ -8,6 +8,7 @@ import { getBaseUrl } from '../utils/urlUtils';
 import { logger } from '../utils/logger';
 import { useEvent } from '../context/EventContext';
 import { subscribeToRemoteCommands, RemoteCommand } from '../services/remoteControlService';
+import { createRandomBattle } from '../services/battleService';
 
 // Hooks
 import { useWallData } from '../hooks/wall/useWallData';
@@ -283,6 +284,50 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             });
           } else {
             logger.info('Lightbox already closed, nothing to do', {
+              component: 'WallView',
+              action: 'remoteCommand'
+            });
+          }
+          break;
+
+        case 'START_BATTLE':
+          // Lancer une battle automatique de 10 minutes
+          if (currentEvent?.id) {
+            logger.info('Starting battle via remote command', {
+              component: 'WallView',
+              action: 'remoteCommand',
+              eventId: currentEvent.id,
+              durationMinutes: 10
+            });
+            
+            createRandomBattle(currentEvent.id, 10)
+              .then(battle => {
+                if (battle) {
+                  logger.info('✅ Battle created successfully via remote command', {
+                    component: 'WallView',
+                    action: 'remoteCommand',
+                    battleId: battle.id,
+                    photo1Id: battle.photo1.id,
+                    photo2Id: battle.photo2.id
+                  });
+                } else {
+                  logger.warn('No battle created (not enough photos available)', {
+                    component: 'WallView',
+                    action: 'remoteCommand',
+                    eventId: currentEvent.id
+                  });
+                }
+              })
+              .catch(error => {
+                logger.error('❌ Error creating battle via remote command', {
+                  component: 'WallView',
+                  action: 'remoteCommand',
+                  eventId: currentEvent.id,
+                  error: error instanceof Error ? error.message : 'Unknown error'
+                });
+              });
+          } else {
+            logger.warn('Cannot start battle: no event ID available', {
               component: 'WallView',
               action: 'remoteCommand'
             });

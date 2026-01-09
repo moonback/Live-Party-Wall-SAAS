@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.remote_commands (
     command_value TEXT,
     processed BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-    CHECK (command_type IN ('TOGGLE_AUTO_SCROLL', 'TRIGGER_AR_EFFECT', 'TOGGLE_QR_CODES', 'SHOW_RANDOM_PHOTO', 'CLOSE_RANDOM_PHOTO'))
+    CHECK (command_type IN ('TOGGLE_AUTO_SCROLL', 'TRIGGER_AR_EFFECT', 'TOGGLE_QR_CODES', 'SHOW_RANDOM_PHOTO', 'CLOSE_RANDOM_PHOTO', 'START_BATTLE'))
 );
 
 -- Index pour performance
@@ -61,7 +61,7 @@ END $$;
 -- Commentaires pour documentation
 COMMENT ON TABLE public.remote_commands IS 'Commandes distantes envoyées par l''ESP32 pour contrôler le mur. Les commandes sont reçues en temps réel via Supabase Realtime.';
 COMMENT ON COLUMN public.remote_commands.event_id IS 'ID de l''événement concerné par la commande';
-COMMENT ON COLUMN public.remote_commands.command_type IS 'Type de commande : TOGGLE_AUTO_SCROLL, TRIGGER_AR_EFFECT, TOGGLE_QR_CODES, SHOW_RANDOM_PHOTO, CLOSE_RANDOM_PHOTO';
+COMMENT ON COLUMN public.remote_commands.command_type IS 'Type de commande : TOGGLE_AUTO_SCROLL, TRIGGER_AR_EFFECT, TOGGLE_QR_CODES, SHOW_RANDOM_PHOTO, CLOSE_RANDOM_PHOTO, START_BATTLE';
 COMMENT ON COLUMN public.remote_commands.command_value IS 'Valeur optionnelle de la commande (peut être null)';
 COMMENT ON COLUMN public.remote_commands.processed IS 'Indique si la commande a été traitée par l''application React';
 

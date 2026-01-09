@@ -118,7 +118,8 @@ export const subscribeToRemoteCommands = (
           'TRIGGER_AR_EFFECT',
           'TOGGLE_QR_CODES',
           'SHOW_RANDOM_PHOTO',
-          'CLOSE_RANDOM_PHOTO'
+          'CLOSE_RANDOM_PHOTO',
+          'START_BATTLE'
         ];
 
         if (!validCommandTypes.includes(commandRow.command_type as RemoteCommandType)) {
