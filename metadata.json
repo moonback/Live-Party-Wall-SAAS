@@ -1,5 +1,5 @@
 {
-  "name": "Live Party Wall SaaS",
+  "name": "Live Party Wall",
   "description": "Une expérience événementielle interactive. Transformez les photos des invités en un mur visuel animé en temps réel avec des légendes IA.",
   "requestFramePermissions": [
     "camera"

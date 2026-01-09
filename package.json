@@ -1,7 +1,7 @@
 {
-  "name": "live-party-wall-SaaS",
+  "name": "live-party-wall",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "main": "dist-electron/main/main.js",
   "scripts": {
