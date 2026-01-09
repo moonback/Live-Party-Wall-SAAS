@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Timer } from 'lucide-react';
+import { Timer, Zap } from 'lucide-react';
 import { CaptureButton } from './CaptureButton';
 import { CountdownOverlay } from './CountdownOverlay';
 import { VideoTimer } from './VideoTimer';
@@ -20,6 +20,9 @@ interface CameraViewProps {
   cameraError: boolean;
   timerMaxDuration?: number;
   onTimerSettingsClick?: () => void;
+  burstMode?: boolean;
+  onBurstModeToggle?: () => void;
+  isCapturingBurst?: boolean;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
@@ -36,7 +39,10 @@ export const CameraView: React.FC<CameraViewProps> = ({
   videoRef,
   cameraError,
   timerMaxDuration = 3,
-  onTimerSettingsClick
+  onTimerSettingsClick,
+  burstMode = false,
+  onBurstModeToggle,
+  isCapturingBurst = false
 }) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const showSwitchCamera = videoDevices.length > 1 || videoDevices.length === 0;
@@ -81,17 +87,44 @@ export const CameraView: React.FC<CameraViewProps> = ({
         <VideoTimer duration={videoDuration} />
       )}
 
-      {/* Bouton flottant de configuration du timer */}
-      {mediaType === 'photo' && onTimerSettingsClick && !cameraError && (
-        <button
-          onClick={onTimerSettingsClick}
-          className="absolute top-20 sm:top-24 right-4 sm:right-6 z-40 bg-gradient-to-br from-pink-500/95 to-purple-600/95 backdrop-blur-md p-3 sm:p-4 rounded-full hover:from-pink-600 hover:to-purple-700 active:scale-95 transition-all duration-200 shadow-2xl border-2 border-white/30 hover:border-white/50 hover:shadow-pink-500/50 group"
-          aria-label="Paramètres du timer"
-          title="Paramètres du timer"
-        >
-          <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
-          <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
-        </button>
+      {/* Boutons flottants de configuration */}
+      {mediaType === 'photo' && !cameraError && (
+        <div className="absolute top-20 sm:top-24 right-4 sm:right-6 z-40 flex flex-col gap-2 sm:gap-3">
+          {/* Bouton mode rafale */}
+          {onBurstModeToggle && (
+            <button
+              onClick={onBurstModeToggle}
+              className={`backdrop-blur-md p-3 sm:p-4 rounded-full active:scale-95 transition-all duration-200 shadow-2xl border-2 group ${
+                burstMode
+                  ? 'bg-gradient-to-br from-yellow-500/95 to-orange-600/95 hover:from-yellow-600 hover:to-orange-700 border-yellow-400/50 hover:border-yellow-300/70 hover:shadow-yellow-500/50'
+                  : 'bg-gradient-to-br from-slate-500/95 to-slate-600/95 hover:from-slate-600 hover:to-slate-700 border-white/30 hover:border-white/50'
+              }`}
+              aria-label={burstMode ? 'Désactiver le mode rafale' : 'Activer le mode rafale'}
+              title={burstMode ? 'Mode rafale activé (3-5 photos)' : 'Mode rafale désactivé'}
+              disabled={isCapturingBurst}
+            >
+              <Zap className={`w-5 h-5 sm:w-6 sm:h-6 drop-shadow-lg group-hover:scale-110 transition-transform ${
+                burstMode ? 'text-white' : 'text-white/70'
+              }`} strokeWidth={burstMode ? 3 : 2} />
+              <div className={`absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse ${
+                burstMode ? 'bg-yellow-400/20' : 'bg-white/20'
+              }`}></div>
+            </button>
+          )}
+          
+          {/* Bouton configuration du timer */}
+          {onTimerSettingsClick && (
+            <button
+              onClick={onTimerSettingsClick}
+              className="bg-gradient-to-br from-pink-500/95 to-purple-600/95 backdrop-blur-md p-3 sm:p-4 rounded-full hover:from-pink-600 hover:to-purple-700 active:scale-95 transition-all duration-200 shadow-2xl border-2 border-white/30 hover:border-white/50 hover:shadow-pink-500/50 group"
+              aria-label="Paramètres du timer"
+              title="Paramètres du timer"
+            >
+              <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
+              <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+            </button>
+          )}
+        </div>
       )}
 
       <CameraControls
@@ -105,9 +138,22 @@ export const CameraView: React.FC<CameraViewProps> = ({
             cameraError={cameraError}
             countdown={countdown}
             onClick={onCapture}
+            disabled={isCapturingBurst}
           />
         }
       />
+      
+      {/* Indicateur mode rafale */}
+      {burstMode && mediaType === 'photo' && !cameraError && (
+        <div className="absolute bottom-24 sm:bottom-28 left-0 right-0 flex justify-center z-30">
+          <div className="bg-yellow-500/90 backdrop-blur-md px-4 py-2 rounded-full border-2 border-yellow-400/50 shadow-lg">
+            <p className="text-white text-xs sm:text-sm font-bold flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              Mode rafale activé
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

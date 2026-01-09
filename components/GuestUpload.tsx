@@ -7,7 +7,7 @@ import { useEvent } from '../context/EventContext';
 import { validateImageFile, validateAuthorName, validateVideoFile, validateVideoDuration } from '../utils/validation';
 import { logger } from '../utils/logger';
 import { drawPngOverlay } from '../utils/imageOverlay';
-import { IMAGE_QUALITY, MAX_IMAGE_WIDTH } from '../constants';
+import { IMAGE_QUALITY, MAX_IMAGE_WIDTH, BURST_DEFAULT_PHOTOS, BURST_CAPTURE_INTERVAL } from '../constants';
 import { useImageProcessing } from '../hooks/useImageProcessing';
 import { useVideoRecording } from '../hooks/useVideoRecording';
 import { useCamera } from '../hooks/useCamera';
@@ -16,6 +16,7 @@ import { PhotoboothHeader } from './photobooth/PhotoboothHeader';
 import { CameraView } from './photobooth/CameraView';
 import { PreviewView } from './photobooth/PreviewView';
 import { TimerSettings } from './photobooth/TimerSettings';
+import { BurstModeView } from './photobooth/BurstModeView';
 
 interface GuestUploadProps {
   onPhotoUploaded: (photo: Photo) => void;
@@ -40,6 +41,15 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const [showFilters, setShowFilters] = useState(false);
   const [showFrames, setShowFrames] = useState(false);
   const [showTimerSettings, setShowTimerSettings] = useState(false);
+  
+  // Mode rafale
+  const [burstMode, setBurstMode] = useState(() => {
+    const saved = localStorage.getItem('party_burst_mode');
+    return saved !== null ? saved === 'true' : false;
+  });
+  const [burstPhotos, setBurstPhotos] = useState<string[]>([]);
+  const [selectedBurstIndex, setSelectedBurstIndex] = useState<number | null>(null);
+  const [isCapturingBurst, setIsCapturingBurst] = useState(false);
   
   // Préférences du timer depuis localStorage
   const [timerEnabled, setTimerEnabled] = useState(() => {
@@ -97,13 +107,18 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      // capturePhoto utilise des refs et eventSettings qui sont stables
+      // capturePhoto ou captureBurst selon le mode
+      // Ces fonctions utilisent des refs et eventSettings qui sont stables
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      capturePhoto();
+      if (burstMode) {
+        captureBurst();
+      } else {
+        capturePhoto();
+      }
       setCountdown(null);
       return undefined;
     }
-  }, [countdown]);
+  }, [countdown, burstMode]);
 
   // Mettre à jour le preview quand une vidéo est enregistrée
   useEffect(() => {
@@ -112,21 +127,23 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
   }, [videoPreviewUrl, preview]);
 
-  // Démarrer la caméra quand pas de preview
+  // Démarrer la caméra quand pas de preview et pas de rafale en cours
   useEffect(() => {
-    if (!preview && !recordedBlob && !videoPreviewUrl) {
+    if (!preview && !recordedBlob && !videoPreviewUrl && burstPhotos.length === 0) {
       startCamera();
     }
     return () => {
-      if (!preview && !recordedBlob && !videoPreviewUrl) {
+      if (!preview && !recordedBlob && !videoPreviewUrl && burstPhotos.length === 0) {
         stopCamera();
       }
     };
-  }, [preview, recordedBlob, videoPreviewUrl, startCamera, stopCamera]);
+  }, [preview, recordedBlob, videoPreviewUrl, burstPhotos.length, startCamera, stopCamera]);
 
-  const capturePhoto = async () => {
-    setFlash(true);
-    setTimeout(() => setFlash(false), 500);
+  const capturePhoto = async (forBurst: boolean = false): Promise<string | null> => {
+    if (!forBurst) {
+      setFlash(true);
+      setTimeout(() => setFlash(false), 500);
+    }
 
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -156,14 +173,79 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           }
         }
         const dataUrl = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
-        setPreview(dataUrl);
-        stopCamera();
+        
+        if (forBurst) {
+          return dataUrl;
+        } else {
+          setPreview(dataUrl);
+          stopCamera();
+          return null;
+        }
       }
+    }
+    return null;
+  };
+
+  const captureBurst = async () => {
+    if (!videoRef.current || isCapturingBurst) return;
+
+    setIsCapturingBurst(true);
+    setFlash(true);
+    
+    const photos: string[] = [];
+    const numPhotos = BURST_DEFAULT_PHOTOS;
+
+    try {
+      for (let i = 0; i < numPhotos; i++) {
+        const photo = await capturePhoto(true);
+        if (photo) {
+          photos.push(photo);
+        }
+        
+        // Flash pour chaque photo sauf la dernière
+        if (i < numPhotos - 1) {
+          setFlash(false);
+          await new Promise(resolve => setTimeout(resolve, 50));
+          setFlash(true);
+          await new Promise(resolve => setTimeout(resolve, BURST_CAPTURE_INTERVAL - 50));
+        }
+      }
+      
+      setFlash(false);
+      
+      if (photos.length > 0) {
+        setBurstPhotos(photos);
+        setSelectedBurstIndex(0); // Sélectionner la première par défaut
+        stopCamera();
+      } else {
+        addToast('Erreur lors de la capture en rafale', 'error');
+        setIsCapturingBurst(false);
+      }
+    } catch (error) {
+      logger.error('Error capturing burst', error, { component: 'GuestUpload', action: 'captureBurst' });
+      addToast('Erreur lors de la capture en rafale', 'error');
+      setIsCapturingBurst(false);
+    }
+  };
+
+  const handleBurstPhotoSelect = (index: number) => {
+    setSelectedBurstIndex(index);
+  };
+
+  const handleBurstPhotoConfirm = () => {
+    if (selectedBurstIndex !== null && burstPhotos[selectedBurstIndex]) {
+      setPreview(burstPhotos[selectedBurstIndex]);
+      setBurstPhotos([]);
+      setSelectedBurstIndex(null);
+      setIsCapturingBurst(false);
     }
   };
 
   const handleRetake = () => {
     setPreview(null);
+    setBurstPhotos([]);
+    setSelectedBurstIndex(null);
+    setIsCapturingBurst(false);
     resetImageProcessing();
     resetVideoRecording();
     // Le preview vidéo est géré par le hook
@@ -180,12 +262,21 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         startRecording();
       }
     } else {
-      // Utiliser les préférences du timer depuis localStorage
-      if (timerEnabled && timerDuration > 0) {
-        setCountdown(timerDuration);
+      // Mode rafale
+      if (burstMode) {
+        if (timerEnabled && timerDuration > 0) {
+          setCountdown(timerDuration);
+        } else {
+          captureBurst();
+        }
       } else {
-        // Timer désactivé ou durée à 0 : capture immédiate
-        capturePhoto();
+        // Mode normal : utiliser les préférences du timer depuis localStorage
+        if (timerEnabled && timerDuration > 0) {
+          setCountdown(timerDuration);
+        } else {
+          // Timer désactivé ou durée à 0 : capture immédiate
+          capturePhoto();
+        }
       }
     }
   };
@@ -372,7 +463,14 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       />
 
       <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 w-full max-w-2xl mx-auto h-full mt-12 sm:mt-16">
-        {!preview && !recordedBlob && !videoPreviewUrl ? (
+        {burstPhotos.length > 0 ? (
+          <BurstModeView
+            burstPhotos={burstPhotos}
+            onSelectPhoto={handleBurstPhotoSelect}
+            selectedIndex={selectedBurstIndex}
+            onConfirm={handleBurstPhotoConfirm}
+          />
+        ) : !preview && !recordedBlob && !videoPreviewUrl ? (
           <CameraView
             mediaType={mediaType}
             countdown={countdown}
@@ -388,6 +486,14 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             cameraError={cameraError}
             timerMaxDuration={timerDuration}
             onTimerSettingsClick={() => setShowTimerSettings(true)}
+            burstMode={burstMode}
+            onBurstModeToggle={() => {
+              const newBurstMode = !burstMode;
+              setBurstMode(newBurstMode);
+              localStorage.setItem('party_burst_mode', newBurstMode.toString());
+              addToast(newBurstMode ? 'Mode rafale activé' : 'Mode rafale désactivé', 'success');
+            }}
+            isCapturingBurst={isCapturingBurst}
           />
         ) : (
           <PreviewView
