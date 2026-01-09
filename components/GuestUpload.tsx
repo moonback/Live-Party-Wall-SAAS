@@ -15,6 +15,7 @@ import { submitPhoto, submitVideo } from '../services/photoboothService';
 import { PhotoboothHeader } from './photobooth/PhotoboothHeader';
 import { CameraView } from './photobooth/CameraView';
 import { PreviewView } from './photobooth/PreviewView';
+import { TimerSettings } from './photobooth/TimerSettings';
 
 interface GuestUploadProps {
   onPhotoUploaded: (photo: Photo) => void;
@@ -38,6 +39,18 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const [flash, setFlash] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showFrames, setShowFrames] = useState(false);
+  const [showTimerSettings, setShowTimerSettings] = useState(false);
+  
+  // Préférences du timer depuis localStorage
+  const [timerEnabled, setTimerEnabled] = useState(() => {
+    const saved = localStorage.getItem('party_timer_enabled');
+    return saved !== null ? saved === 'true' : true; // Par défaut activé
+  });
+  
+  const [timerDuration, setTimerDuration] = useState(() => {
+    const saved = localStorage.getItem('party_timer_duration');
+    return saved !== null ? parseInt(saved, 10) : 3; // Par défaut 3 secondes
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,6 +97,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
+      // capturePhoto utilise des refs et eventSettings qui sont stables
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       capturePhoto();
       setCountdown(null);
       return undefined;
@@ -165,8 +180,22 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         startRecording();
       }
     } else {
-      setCountdown(3);
+      // Utiliser les préférences du timer depuis localStorage
+      if (timerEnabled && timerDuration > 0) {
+        setCountdown(timerDuration);
+      } else {
+        // Timer désactivé ou durée à 0 : capture immédiate
+        capturePhoto();
+      }
     }
+  };
+
+  const handleTimerSettingsSave = (enabled: boolean, duration: number) => {
+    setTimerEnabled(enabled);
+    setTimerDuration(duration);
+    localStorage.setItem('party_timer_enabled', enabled.toString());
+    localStorage.setItem('party_timer_duration', duration.toString());
+    addToast('Paramètres du timer enregistrés !', 'success');
   };
 
   const handleBackInternal = () => {
@@ -357,6 +386,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             decorativeFrameEnabled={eventSettings.decorative_frame_enabled}
             videoRef={videoRef}
             cameraError={cameraError}
+            timerMaxDuration={timerDuration}
+            onTimerSettingsClick={() => setShowTimerSettings(true)}
           />
         ) : (
           <PreviewView
@@ -392,6 +423,14 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       />
       
       <canvas ref={canvasRef} className="hidden"></canvas>
+      
+      <TimerSettings
+        isOpen={showTimerSettings}
+        onClose={() => setShowTimerSettings(false)}
+        timerEnabled={timerEnabled}
+        timerDuration={timerDuration}
+        onSave={handleTimerSettingsSave}
+      />
     </div>
   );
 };

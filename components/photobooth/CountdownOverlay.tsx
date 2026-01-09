@@ -2,9 +2,10 @@ import React from 'react';
 
 interface CountdownOverlayProps {
   countdown: number;
+  maxDuration?: number; // Durée maximale du timer pour le calcul de la progression
 }
 
-export const CountdownOverlay: React.FC<CountdownOverlayProps> = ({ countdown }) => {
+export const CountdownOverlay: React.FC<CountdownOverlayProps> = ({ countdown, maxDuration = 3 }) => {
   return (
     <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-lg transition-all duration-500">
       <div
@@ -36,7 +37,7 @@ export const CountdownOverlay: React.FC<CountdownOverlayProps> = ({ countdown })
                   stroke="url(#gradient)"
                   strokeWidth="14"
                   strokeDasharray={440}
-                  strokeDashoffset={440 - (countdown / 3) * 440}
+                  strokeDashoffset={440 - (countdown / maxDuration) * 440}
                   strokeLinecap="round"
                   className="transition-all duration-700"
                   style={{ filter: 'drop-shadow(0 0 40px #ec489988)' }}

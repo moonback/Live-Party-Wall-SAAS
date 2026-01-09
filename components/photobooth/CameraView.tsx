@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { Timer } from 'lucide-react';
 import { CaptureButton } from './CaptureButton';
 import { CountdownOverlay } from './CountdownOverlay';
 import { VideoTimer } from './VideoTimer';
@@ -17,6 +18,8 @@ interface CameraViewProps {
   decorativeFrameEnabled?: boolean;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   cameraError: boolean;
+  timerMaxDuration?: number;
+  onTimerSettingsClick?: () => void;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
@@ -31,7 +34,9 @@ export const CameraView: React.FC<CameraViewProps> = ({
   decorativeFrameUrl,
   decorativeFrameEnabled,
   videoRef,
-  cameraError
+  cameraError,
+  timerMaxDuration = 3,
+  onTimerSettingsClick
 }) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const showSwitchCamera = videoDevices.length > 1 || videoDevices.length === 0;
@@ -69,11 +74,24 @@ export const CameraView: React.FC<CameraViewProps> = ({
       )}
 
       {countdown !== null && mediaType === 'photo' && (
-        <CountdownOverlay countdown={countdown} />
+        <CountdownOverlay countdown={countdown} maxDuration={timerMaxDuration} />
       )}
 
       {isRecording && mediaType === 'video' && (
         <VideoTimer duration={videoDuration} />
+      )}
+
+      {/* Bouton flottant de configuration du timer */}
+      {mediaType === 'photo' && onTimerSettingsClick && !cameraError && (
+        <button
+          onClick={onTimerSettingsClick}
+          className="absolute top-20 sm:top-24 right-4 sm:right-6 z-40 bg-gradient-to-br from-pink-500/95 to-purple-600/95 backdrop-blur-md p-3 sm:p-4 rounded-full hover:from-pink-600 hover:to-purple-700 active:scale-95 transition-all duration-200 shadow-2xl border-2 border-white/30 hover:border-white/50 hover:shadow-pink-500/50 group"
+          aria-label="Paramètres du timer"
+          title="Paramètres du timer"
+        >
+          <Timer className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
+          <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+        </button>
       )}
 
       <CameraControls
