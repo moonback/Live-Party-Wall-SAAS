@@ -4,13 +4,13 @@
  * UI Console DJ / Régie événement
  */
 
- #include <WiFi.h>
- #include <HTTPClient.h>
- #include <ArduinoJson.h>
- #include <Adafruit_GFX.h>
- #include <Adafruit_ST7735.h>
- #include <SPI.h>
- #include <string.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7735.h>
+#include <SPI.h>
+#include <string.h>
  
  // ==================================================
  // TFT CONFIG
@@ -278,6 +278,87 @@ void drawStatusBar(bool wifiOK) {
 }
  
 // ==================================================
+// UI – SPLASH SCREEN (Écran de démarrage)
+// ==================================================
+void drawSplashScreen() {
+  // Fond avec dégradé (simulé avec rectangles)
+  tft.fillScreen(DJ_BG);
+  
+  // Dégradé de fond (rose vers violet)
+  for (int i = 0; i < 160; i++) {
+    uint16_t color;
+    if (i < 80) {
+      // Rose (magenta)
+      color = DJ_ACCENT;
+    } else {
+      // Violet (bleu foncé)
+      color = DJ_PANEL;
+    }
+    tft.drawFastVLine(i, 0, 160, color);
+  }
+  
+  // Icône caméra stylisée (cercle principal)
+  int centerX = 80;
+  int centerY = 60;
+  int cameraSize = 40;
+  
+  // Corps de la caméra (rectangle arrondi)
+  tft.fillRoundRect(centerX - cameraSize/2, centerY - cameraSize/2, cameraSize, cameraSize, 8, DJ_TEXT);
+  
+  // Objectif (cercle)
+  tft.fillCircle(centerX - 8, centerY, 12, DJ_BG);
+  tft.drawCircle(centerX - 8, centerY, 12, DJ_TEXT);
+  tft.fillCircle(centerX - 8, centerY, 6, DJ_PANEL);
+  
+  // Viseur (petit cercle en haut à gauche)
+  tft.fillCircle(centerX - 12, centerY - 12, 4, DJ_BG);
+  tft.drawCircle(centerX - 12, centerY - 12, 4, DJ_TEXT);
+  
+  // Flash (étoile/éclat) - 4 branches simples
+  int flashX = centerX + 15;
+  int flashY = centerY - 10;
+  
+  // Branches de l'étoile flash (haut, bas, gauche, droite)
+  tft.drawLine(flashX, flashY, flashX, flashY - 8, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX, flashY + 8, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX - 8, flashY, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX + 8, flashY, DJ_YELLOW);
+  
+  // Branches diagonales
+  tft.drawLine(flashX, flashY, flashX - 6, flashY - 6, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX + 6, flashY - 6, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX - 6, flashY + 6, DJ_YELLOW);
+  tft.drawLine(flashX, flashY, flashX + 6, flashY + 6, DJ_YELLOW);
+  
+  tft.fillCircle(flashX, flashY, 3, DJ_YELLOW);
+  
+  // Titre "LIVE PARTY WALL"
+  tft.setTextColor(DJ_TEXT);
+  tft.setTextSize(2);
+  tft.setCursor(10, 110);
+  tft.print("LIVE PARTY");
+  
+  tft.setTextSize(1);
+  tft.setCursor(20, 130);
+  tft.print("WALL");
+  
+  // Version/Info
+  tft.setTextSize(1);
+  tft.setTextColor(DJ_ACCENT);
+  tft.setCursor(50, 145);
+  tft.print("ESP32 Remote");
+  
+  // Animation de chargement (points qui clignotent)
+  // Note: dotCounter sera passé en paramètre si besoin d'animation
+  int dotX = 70;
+  int dotY = 150;
+  // Afficher les 3 points (animation gérée dans la boucle du setup)
+  for (int i = 0; i < 3; i++) {
+    tft.fillCircle(dotX + i * 8, dotY, 2, DJ_GREEN);
+  }
+}
+
+// ==================================================
 // UI – ACTION FEEDBACK (Animation Premium)
 // ==================================================
 void showDJAction(const char* label, bool success) {
@@ -384,11 +465,32 @@ void showDJAction(const char* label, bool success) {
    tft.setRotation(1);
    tft.fillScreen(DJ_BG);
  
-  // Écran de démarrage
-  drawDJHeader();
-  drawLevelMeter();
-  drawNowPlaying("INITIALIZING...");
-  drawStatusBar(false);
+   // Splash Screen - Afficher pendant 5 secondes avec animation
+   unsigned long splashStart = millis();
+   uint8_t animationFrame = 0;
+   while (millis() - splashStart < 5000) {
+     drawSplashScreen();
+     
+     // Animation des points de chargement
+     int dotX = 70;
+     int dotY = 150;
+     for (int i = 0; i < 3; i++) {
+       bool visible = ((animationFrame / 5 + i) % 3) < 2;
+       tft.fillCircle(dotX + i * 8, dotY, 2, visible ? DJ_GREEN : DJ_BG);
+     }
+     animationFrame++;
+     
+     delay(100); // Rafraîchir toutes les 100ms pour l'animation
+   }
+ 
+   // Effacer l'écran après le splash
+   tft.fillScreen(DJ_BG);
+ 
+   // Écran de démarrage normal
+   drawDJHeader();
+   drawLevelMeter();
+   drawNowPlaying("INITIALIZING...");
+   drawStatusBar(false);
  
    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
      pinMode(buttons[i].pin, INPUT_PULLUP);
