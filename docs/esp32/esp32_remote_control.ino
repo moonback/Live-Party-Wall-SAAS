@@ -21,18 +21,17 @@
   
  Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
   
- // ==================================================
- // PALETTE PROFESSIONNELLE MINIMALISTE
- // ==================================================
- #define COLOR_BG         0x0000  // Noir
- #define COLOR_PANEL      0x2945  // Gris foncé
- #define COLOR_BORDER     0x4A49  // Gris moyen
- #define COLOR_SUCCESS    0x07E0  // Vert
- #define COLOR_ERROR      0xF800  // Rouge
- #define COLOR_WARNING    0xFD20  // Orange
- #define COLOR_TEXT       0xFFFF  // Blanc
- #define COLOR_TEXT_DIM   0x7BEF  // Gris clair
- #define COLOR_ACCENT     0x051D  // Bleu foncé
+  // ==================================================
+  // PALETTE PROFESSIONNELLE
+  // ==================================================
+  #define COLOR_BG         0x0000  // Noir
+  #define COLOR_PANEL      0x2104  // Gris très foncé
+  #define COLOR_BORDER      0x4208  // Gris moyen
+  #define COLOR_SUCCESS     0x07E0  // Vert
+  #define COLOR_ERROR       0xF800  // Rouge
+  #define COLOR_TEXT        0xFFFF  // Blanc
+  #define COLOR_TEXT_DIM  0x8410   // Gris clair
+  #define COLOR_ACCENT      0x001F  // Bleu foncé
   
  // ==================================================
  // WIFI & SUPABASE
@@ -72,247 +71,195 @@
   
  const uint8_t NUM_BUTTONS = sizeof(buttons) / sizeof(Button);
  
- // Variables globales
- uint8_t vuMeterLevels[20];
+  // ==================================================
+  // UI – HEADER
+  // ==================================================
+  void drawHeader() {
+    tft.fillRect(0, 0, 160, 20, COLOR_PANEL);
+    tft.drawFastHLine(0, 20, 160, COLOR_BORDER);
+    
+    tft.setTextColor(COLOR_TEXT);
+    tft.setTextSize(1);
+    tft.setCursor(4, 6);
+    tft.print("LIVE PARTY WALL");
+    
+    // Status LED
+    tft.fillCircle(150, 10, 3, COLOR_SUCCESS);
+  }
  
- // ==================================================
- // UI – HEADER SIMPLE & PRO
- // ==================================================
- void drawHeader() {
-   // Barre de titre sobre
-   tft.fillRect(0, 0, 160, 18, COLOR_PANEL);
-   tft.drawFastHLine(0, 18, 160, COLOR_BORDER);
-   
-   // Titre
-   tft.setTextColor(COLOR_TEXT);
-   tft.setTextSize(1);
-   tft.setCursor(8, 5);
-   tft.print("LIVE PARTY WALL");
-   
-   // Status indicator (simple LED)
-   tft.fillCircle(148, 9, 4, COLOR_SUCCESS);
- }
+  // ==================================================
+  // UI – STATUS INFO
+  // ==================================================
+  void drawStatusInfo(bool wifiOK) {
+    tft.fillRect(0, 22, 160, 30, COLOR_BG);
+    
+    // WiFi Status
+    tft.setTextColor(COLOR_TEXT_DIM);
+    tft.setTextSize(1);
+    tft.setCursor(4, 24);
+    tft.print("WiFi:");
+    
+    if (wifiOK) {
+      tft.setTextColor(COLOR_SUCCESS);
+      tft.setCursor(32, 24);
+      tft.print("Connected");
+      
+      // Signal strength
+      int rssi = WiFi.RSSI();
+      int bars = 0;
+      if (rssi > -50) bars = 4;
+      else if (rssi > -60) bars = 3;
+      else if (rssi > -70) bars = 2;
+      else if (rssi > -80) bars = 1;
+      
+      int barX = 100;
+      int barY = 26;
+      for (int i = 0; i < 4; i++) {
+        uint16_t color = (i < bars) ? COLOR_SUCCESS : COLOR_PANEL;
+        int barH = (i + 1) * 2;
+        tft.fillRect(barX + i * 4, barY + 6 - barH, 2, barH, color);
+      }
+    } else {
+      tft.setTextColor(COLOR_ERROR);
+      tft.setCursor(32, 24);
+      tft.print("Disconnected");
+    }
+    
+    // IP Address
+    if (wifiOK) {
+      IPAddress ip = WiFi.localIP();
+      tft.setTextColor(COLOR_TEXT_DIM);
+      tft.setCursor(4, 36);
+      tft.print("IP:");
+      tft.setTextColor(COLOR_TEXT);
+      tft.setCursor(20, 36);
+      char ipStr[16];
+      sprintf(ipStr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+      tft.print(ipStr);
+    }
+    
+    // Separator
+    tft.drawFastHLine(0, 51, 160, COLOR_BORDER);
+  }
  
- // ==================================================
- // UI – VU METER SIMPLE
- // ==================================================
- void drawVUMeter() {
-   // Cadre simple
-   tft.fillRect(4, 22, 152, 26, COLOR_BG);
-   tft.drawRect(4, 22, 152, 26, COLOR_BORDER);
-   
-   // Label
-   tft.setTextColor(COLOR_TEXT_DIM);
-   tft.setTextSize(1);
-   tft.setCursor(8, 25);
-   tft.print("ACTIVITY");
-   
-   // VU Meter - barres simples
-   int barWidth = 4;
-   int spacing = 2;
-   int numBars = 20;
-   int startX = 8;
-   int startY = 35;
-   int maxHeight = 10;
-   
-   // Initialiser si nécessaire
-   static bool initialized = false;
-   if (!initialized) {
-     for (int i = 0; i < 20; i++) {
-       vuMeterLevels[i] = random(2, maxHeight + 1);
-     }
-     initialized = true;
-   }
-   
-   // Mise à jour smooth
-   for (int i = 0; i < numBars; i++) {
-     if (vuMeterLevels[i] > 2) {
-       vuMeterLevels[i] -= random(0, 2);
-     }
-     if (random(100) < 10) {
-       vuMeterLevels[i] = random(6, maxHeight + 1);
-     }
-     
-     int x = startX + i * (barWidth + spacing);
-     int h = vuMeterLevels[i];
-     
-     // Couleur simple selon hauteur
-     uint16_t color;
-     if (h < 4) color = COLOR_SUCCESS;
-     else if (h < 7) color = COLOR_WARNING;
-     else color = COLOR_ERROR;
-     
-     int y = startY + maxHeight - h;
-     tft.fillRect(x, y, barWidth, h, color);
-   }
- }
+  // ==================================================
+  // UI – COMMAND STATUS
+  // ==================================================
+  void drawCommandStatus(const char* label) {
+    tft.fillRect(0, 54, 160, 20, COLOR_BG);
+    
+    tft.setTextColor(COLOR_TEXT_DIM);
+    tft.setTextSize(1);
+    tft.setCursor(4, 56);
+    tft.print("Last:");
+    
+    tft.setTextColor(COLOR_TEXT);
+    tft.setCursor(32, 56);
+    
+    // Tronquer si trop long
+    char displayLabel[20];
+    int len = strlen(label);
+    if (len > 19) {
+      strncpy(displayLabel, label, 16);
+      displayLabel[16] = '.';
+      displayLabel[17] = '.';
+      displayLabel[18] = '.';
+      displayLabel[19] = '\0';
+    } else {
+      strncpy(displayLabel, label, 19);
+      displayLabel[len] = '\0';
+    }
+    tft.print(displayLabel);
+    
+    // Separator
+    tft.drawFastHLine(0, 73, 160, COLOR_BORDER);
+  }
  
- // ==================================================
- // UI – NOW PLAYING SIMPLE
- // ==================================================
- void drawNowPlaying(const char* label) {
-   // Cadre simple
-   tft.fillRect(4, 52, 152, 28, COLOR_BG);
-   tft.drawRect(4, 52, 152, 28, COLOR_BORDER);
-   
-   // Header
-   tft.fillRect(4, 52, 152, 10, COLOR_PANEL);
-   tft.setTextColor(COLOR_TEXT_DIM);
-   tft.setTextSize(1);
-   tft.setCursor(8, 54);
-   tft.print("NOW PLAYING");
-   
-   // Contenu
-   tft.setTextColor(COLOR_TEXT);
-   tft.setCursor(8, 66);
-   
-   // Tronquer si trop long
-   char displayLabel[23];
-   int len = strlen(label);
-   if (len > 22) {
-     strncpy(displayLabel, label, 19);
-     displayLabel[19] = '.';
-     displayLabel[20] = '.';
-     displayLabel[21] = '.';
-     displayLabel[22] = '\0';
-   } else {
-     strncpy(displayLabel, label, 22);
-     displayLabel[len] = '\0';
-   }
-   tft.print(displayLabel);
- }
+  // ==================================================
+  // UI – SYSTEM INFO
+  // ==================================================
+  void drawSystemInfo() {
+    tft.fillRect(0, 76, 160, 52, COLOR_BG);
+    
+    // Event ID (tronqué)
+    tft.setTextColor(COLOR_TEXT_DIM);
+    tft.setTextSize(1);
+    tft.setCursor(4, 78);
+    tft.print("Event:");
+    tft.setTextColor(COLOR_TEXT);
+    tft.setCursor(38, 78);
+    String eventShort = String(EVENT_ID).substring(0, 12);
+    tft.print(eventShort);
+    
+    // System status
+    tft.setTextColor(COLOR_TEXT_DIM);
+    tft.setCursor(4, 90);
+    tft.print("Status:");
+    tft.setTextColor(COLOR_SUCCESS);
+    tft.setCursor(48, 90);
+    tft.print("Ready");
+    
+    // Separator
+    tft.drawFastHLine(0, 127, 160, COLOR_BORDER);
+  }
  
- // ==================================================
- // UI – STATUS BAR PROPRE
- // ==================================================
- void drawStatus(bool wifiOK) {
-   int statusY = 84;
-   
-   // Ligne de séparation
-   tft.drawFastHLine(0, statusY, 160, COLOR_BORDER);
-   
-   // Fond
-   tft.fillRect(0, statusY + 1, 160, 44, COLOR_BG);
-   
-   // WiFi Status
-   tft.setTextColor(COLOR_TEXT_DIM);
-   tft.setTextSize(1);
-   tft.setCursor(8, statusY + 5);
-   tft.print("WiFi:");
-   
-   if (wifiOK) {
-     int rssi = WiFi.RSSI();
-     
-     // Signal strength
-     tft.setTextColor(COLOR_TEXT);
-     tft.setCursor(38, statusY + 5);
-     
-     if (rssi > -50) tft.print("Excellent");
-     else if (rssi > -60) tft.print("Good");
-     else if (rssi > -70) tft.print("Fair");
-     else tft.print("Weak");
-     
-     // Barres de signal
-     int barX = 110;
-     int barY = statusY + 5;
-     for (int i = 0; i < 4; i++) {
-       bool filled = (rssi > (-80 + i * 10));
-       uint16_t color = filled ? COLOR_SUCCESS : COLOR_PANEL;
-       int barH = (i + 1) * 2;
-       tft.fillRect(barX + i * 4, barY + 8 - barH, 3, barH, color);
-     }
-   } else {
-     tft.setTextColor(COLOR_ERROR);
-     tft.setCursor(38, statusY + 5);
-     tft.print("Disconnected");
-   }
-   
-   // System Status
-   tft.setTextColor(COLOR_TEXT_DIM);
-   tft.setCursor(8, statusY + 17);
-   tft.print("System:");
-   
-   bool sysReady = wifiOK;
-   tft.setTextColor(sysReady ? COLOR_SUCCESS : COLOR_WARNING);
-   tft.setCursor(50, statusY + 17);
-   tft.print(sysReady ? "Ready" : "Initializing");
-   
-   // IP Address
-   if (wifiOK) {
-     tft.setTextColor(COLOR_TEXT_DIM);
-     tft.setCursor(8, statusY + 29);
-     tft.print("IP:");
-     
-     IPAddress ip = WiFi.localIP();
-     tft.setTextColor(COLOR_TEXT);
-     tft.setCursor(26, statusY + 29);
-     char ipStr[16];
-     sprintf(ipStr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-     tft.print(ipStr);
-   }
- }
+  // ==================================================
+  // UI – SPLASH SCREEN
+  // ==================================================
+  void drawSplash() {
+    tft.fillScreen(COLOR_BG);
+    
+    // Logo zone
+    tft.fillRect(40, 40, 80, 50, COLOR_PANEL);
+    tft.drawRect(40, 40, 80, 50, COLOR_BORDER);
+    
+    // Titre
+    tft.setTextColor(COLOR_TEXT);
+    tft.setTextSize(2);
+    tft.setCursor(50, 50);
+    tft.print("LIVE");
+    tft.setCursor(50, 70);
+    tft.print("PARTY");
+    
+    // Info
+    tft.setTextSize(1);
+    tft.setTextColor(COLOR_TEXT_DIM);
+    tft.setCursor(50, 100);
+    tft.print("ESP32 Remote");
+    
+    tft.setCursor(65, 115);
+    tft.print("v2.0");
+  }
  
- // ==================================================
- // UI – SPLASH SCREEN SIMPLE
- // ==================================================
- void drawSplash() {
-   tft.fillScreen(COLOR_BG);
-   
-   // Logo simple - rectangle avec texte centré
-   tft.fillRect(30, 30, 100, 60, COLOR_PANEL);
-   tft.drawRect(30, 30, 100, 60, COLOR_BORDER);
-   
-   // Titre
-   tft.setTextColor(COLOR_TEXT);
-   tft.setTextSize(2);
-   tft.setCursor(38, 45);
-   tft.print("LIVE");
-   tft.setCursor(38, 65);
-   tft.print("PARTY");
-   
-   // Sous-titre
-   tft.setTextSize(1);
-   tft.setTextColor(COLOR_TEXT_DIM);
-   tft.setCursor(50, 100);
-   tft.print("ESP32 Remote");
-   
-   // Version
-   tft.setCursor(60, 115);
-   tft.print("v2.0");
- }
- 
- // ==================================================
- // UI – ACTION FEEDBACK SIMPLE
- // ==================================================
- void showFeedback(const char* label, bool success) {
-   uint16_t color = success ? COLOR_SUCCESS : COLOR_ERROR;
-   
-   // Flash rapide
-   tft.fillRect(0, 60, 160, 30, color);
-   delay(100);
-   tft.fillRect(0, 60, 160, 30, COLOR_BG);
-   
-   // Redessiner interface
-   drawHeader();
-   drawVUMeter();
-   drawNowPlaying(label);
-   drawStatus(success);
-   
-   // Message simple
-   tft.fillRect(30, 60, 100, 20, COLOR_PANEL);
-   tft.drawRect(30, 60, 100, 20, color);
-   
-   tft.setTextColor(COLOR_TEXT);
-   tft.setTextSize(1);
-   tft.setCursor(45, 67);
-   tft.print(success ? "SUCCESS" : "ERROR");
-   
-   delay(800);
-   
-   // Effacer message
-   tft.fillRect(30, 60, 100, 20, COLOR_BG);
-   drawNowPlaying(label);
- }
+  // ==================================================
+  // UI – FEEDBACK
+  // ==================================================
+  void showFeedback(const char* label, bool success) {
+    // Flash visuel minimal
+    uint16_t flashColor = success ? COLOR_SUCCESS : COLOR_ERROR;
+    tft.fillRect(0, 54, 160, 20, flashColor);
+    delay(80);
+    
+    // Redessiner interface
+    drawHeader();
+    drawStatusInfo(WiFi.status() == WL_CONNECTED);
+    drawCommandStatus(label);
+    drawSystemInfo();
+    
+    // Message de confirmation
+    tft.fillRect(50, 54, 60, 20, COLOR_PANEL);
+    tft.drawRect(50, 54, 60, 20, flashColor);
+    
+    tft.setTextColor(COLOR_TEXT);
+    tft.setTextSize(1);
+    tft.setCursor(58, 61);
+    tft.print(success ? "OK" : "ERR");
+    
+    delay(500);
+    
+    // Restaurer
+    drawCommandStatus(label);
+  }
  
  // ==================================================
  // WIFI
@@ -370,16 +317,16 @@
    tft.setRotation(1);
    tft.fillScreen(COLOR_BG);
    
-   // Splash screen simple - 2 secondes
-   drawSplash();
-   delay(2000);
-   
-   // Interface principale
-   tft.fillScreen(COLOR_BG);
-   drawHeader();
-   drawVUMeter();
-   drawNowPlaying("System Ready");
-   drawStatus(false);
+    // Splash screen - 5 secondes
+    drawSplash();
+    delay(5000);
+    
+    // Interface principale
+    tft.fillScreen(COLOR_BG);
+    drawHeader();
+    drawStatusInfo(false);
+    drawCommandStatus("Ready");
+    drawSystemInfo();
    
    // Initialisation boutons
    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
@@ -403,12 +350,11 @@
      lastWiFiCheck = millis();
    }
    
-   // Mise à jour interface toutes les 300ms
-   if (millis() - lastUpdate > 300) {
-     drawVUMeter();
-     drawStatus(WiFi.status() == WL_CONNECTED);
-     lastUpdate = millis();
-   }
+    // Mise à jour interface toutes les 2 secondes
+    if (millis() - lastUpdate > 2000) {
+      drawStatusInfo(WiFi.status() == WL_CONNECTED);
+      lastUpdate = millis();
+    }
    
    // Lecture boutons
    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
