@@ -19,6 +19,13 @@ export const BADGES: Record<BadgeType, Badge> = {
     emoji: '⭐',
     description: 'Photo la plus likée',
     color: 'from-pink-500 to-purple-500'
+  },
+  challenge_winner: {
+    type: 'challenge_winner',
+    label: 'Gagnant de défi',
+    emoji: '🏆',
+    description: 'A gagné un challenge photo',
+    color: 'from-yellow-400 to-orange-500'
   }
 };
 
@@ -176,5 +183,66 @@ export const getAuthorStats = (author: string, photos: Photo[]): AuthorStats | n
     ...stats,
     badges: getAuthorBadges(author, photos)
   };
+};
+
+/**
+ * Vérifie si un auteur a gagné un challenge
+ * @param author - Nom de l'auteur
+ * @param eventId - ID de l'événement
+ * @returns Promise résolue avec true si l'auteur a gagné au moins un challenge
+ */
+export const hasChallengeWinnerBadge = async (
+  author: string,
+  eventId: string
+): Promise<boolean> => {
+  const { getFinishedChallenges } = await import('./challengeService');
+  
+  try {
+    const finishedChallenges = await getFinishedChallenges(eventId, 100);
+    
+    // Vérifier si l'auteur a gagné au moins un challenge
+    return finishedChallenges.some(challenge => {
+      if (!challenge.winnerPhotoId || !challenge.submissions) return false;
+      
+      const winnerSubmission = challenge.submissions.find(
+        s => s.photo.id === challenge.winnerPhotoId
+      );
+      
+      return winnerSubmission?.submittedBy === author;
+    });
+  } catch (error) {
+    console.error('Error checking challenge winner badge:', error);
+    return false;
+  }
+};
+
+/**
+ * Récupère tous les badges d'un auteur (incluant les badges de challenges)
+ * @param author - Nom de l'auteur
+ * @param photos - Liste des photos
+ * @param eventId - ID de l'événement (optionnel, pour vérifier les badges de challenges)
+ * @returns Promise résolue avec la liste des badges
+ */
+export const getAllAuthorBadges = async (
+  author: string,
+  photos: Photo[],
+  eventId?: string
+): Promise<Badge[]> => {
+  const badges: Badge[] = [];
+  
+  // Badges basés sur les photos
+  if (hasPhotographerBadge(author, photos)) {
+    badges.push(BADGES.photographer);
+  }
+  
+  // Badge de gagnant de challenge (si eventId fourni)
+  if (eventId) {
+    const hasChallengeBadge = await hasChallengeWinnerBadge(author, eventId);
+    if (hasChallengeBadge) {
+      badges.push(BADGES.challenge_winner);
+    }
+  }
+  
+  return badges;
 };
 

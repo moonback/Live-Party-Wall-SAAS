@@ -6,6 +6,8 @@ import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { getActiveBattles, subscribeToNewBattles } from '../services/battleService';
+import { getActiveChallenges, Challenge } from '../services/challengeService';
+import { ChallengeView } from './challenges/ChallengeView';
 import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
@@ -44,6 +46,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [photosReactions, setPhotosReactions] = useState<Map<string, import('../types').ReactionCounts>>(new Map());
   const [battles, setBattles] = useState<PhotoBattle[]>([]);
   const [showBattles, setShowBattles] = useState(true);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [showChallenges, setShowChallenges] = useState(true);
   const [lightboxPhoto, setLightboxPhoto] = useState<Photo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
@@ -144,12 +148,32 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       }
     };
 
+    const loadChallenges = async () => {
+      if (!currentEvent?.id) {
+        setChallenges([]);
+        return;
+      }
+      try {
+        const activeChallenges = await getActiveChallenges(currentEvent.id, userId);
+        setChallenges(activeChallenges);
+      } catch (error) {
+        console.error('Error loading challenges:', error);
+      }
+    };
+
     loadBattles();
+    loadChallenges();
 
     let checkExpiredInterval: NodeJS.Timeout | null = null;
     if (settings.battle_mode_enabled !== false) {
       checkExpiredInterval = setInterval(() => {
         loadBattles();
+        loadChallenges();
+      }, 30000);
+    } else {
+      // Même sans battles, on rafraîchit les challenges
+      checkExpiredInterval = setInterval(() => {
+        loadChallenges();
       }, 30000);
     }
 
@@ -466,6 +490,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             showBattles={showBattles}
             onToggleBattles={() => setShowBattles(!showBattles)}
             battlesCount={battles.length}
+            showChallenges={showChallenges}
+            onToggleChallenges={() => setShowChallenges(!showChallenges)}
+            challengesCount={challenges.length}
             battleModeEnabled={settings.battle_mode_enabled !== false}
             findMeEnabled={settings.find_me_enabled}
             onFindMeClick={onFindMeClick}
@@ -485,6 +512,28 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         className="flex-1 overflow-y-auto pb-24 md:pb-28 scroll-smooth relative z-10"
       >
         <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-6">
+          {/* Challenges Section */}
+          {showChallenges && challenges.length > 0 && (
+            <div className="mb-6 space-y-4">
+              {challenges.map((challenge) => (
+                <ChallengeView
+                  key={challenge.id}
+                  challenge={challenge}
+                  userIdentifier={userId}
+                  userName={localStorage.getItem('party_user_name') || 'Invité'}
+                  photos={photos}
+                  onChallengeFinished={() => {
+                    // Rafraîchir les challenges
+                    if (currentEvent?.id) {
+                      getActiveChallenges(currentEvent.id, userId).then(setChallenges);
+                    }
+                  }}
+                  onPhotoClick={handlePhotoClick}
+                />
+              ))}
+            </div>
+          )}
+
           <GalleryContent
             loading={loading}
             photos={filteredAndSortedPhotos}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, User, Zap, Trophy, LayoutGrid, Calendar } from 'lucide-react';
+import { Filter, User, Zap, Trophy, LayoutGrid, Calendar, Sparkles, X } from 'lucide-react';
 import { GalleryFiltersModal } from './GalleryFiltersModal';
 import type { SortOption, MediaFilter, Photo } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,9 @@ interface GalleryFiltersProps {
   onToggleBattles: () => void;
   battlesCount: number;
   battleModeEnabled: boolean;
+  showChallenges?: boolean;
+  onToggleChallenges?: () => void;
+  challengesCount?: number;
   findMeEnabled?: boolean;
   onFindMeClick?: () => void;
   isModalOpen?: boolean;
@@ -36,6 +39,9 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
   onToggleBattles,
   battlesCount,
   battleModeEnabled,
+  showChallenges,
+  onToggleChallenges,
+  challengesCount = 0,
   findMeEnabled,
   onFindMeClick,
   isModalOpen: externalIsModalOpen,
@@ -102,6 +108,26 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             {battlesCount > 0 && (
               <span className="bg-indigo-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-black">
                 {battlesCount}
+              </span>
+            )}
+          </button>
+        )}
+
+        {/* Challenges Toggle */}
+        {onToggleChallenges && (
+          <button
+            onClick={onToggleChallenges}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+              showChallenges
+                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-500'
+                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Challenges</span>
+            {challengesCount > 0 && (
+              <span className="bg-yellow-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-black">
+                {challengesCount}
               </span>
             )}
           </button>

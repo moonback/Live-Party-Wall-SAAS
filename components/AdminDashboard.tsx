@@ -19,6 +19,7 @@ import { GuestsTab } from './admin/GuestsTab';
 import { ConfigurationTab } from './admin/ConfigurationTab';
 import { AftermovieTab } from './admin/AftermovieTab';
 import { BattlesTab } from './admin/BattlesTab';
+import { ChallengesTab } from './admin/ChallengesTab';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { getPhotosByAuthor } from '../services/photoService';
@@ -451,6 +452,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
         {activeTab === 'battles' && config.battle_mode_enabled !== false && (
           <BattlesTab />
+        )}
+
+        {activeTab === 'challenges' && (
+          <ChallengesTab photos={photos} />
         )}
 
         {activeTab === 'guests' && (

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu 
+  Zap, Users, Menu, Sparkles
 } from 'lucide-react';
 import { AdminTab } from './types';
 
@@ -42,6 +42,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
     { id: 'configuration' as AdminTab, label: 'Configuration', icon: Settings, requiresEvent: true },
     { id: 'aftermovie' as AdminTab, label: 'Aftermovie', icon: Video, requiresEvent: true },
     { id: 'battles' as AdminTab, label: 'Battles', icon: Zap, count: battlesCount, requiresEvent: true, requiresBattleMode: true },
+    { id: 'challenges' as AdminTab, label: 'Challenges', icon: Sparkles, requiresEvent: true },
     { id: 'guests' as AdminTab, label: 'Inviter', icon: Users, count: guestsCount, requiresEvent: true },
   ];
 

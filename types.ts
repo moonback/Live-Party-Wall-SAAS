@@ -46,7 +46,7 @@ export interface ToastMessage {
 }
 
 // Gamification Types
-export type BadgeType = 'photographer' | 'star';
+export type BadgeType = 'photographer' | 'star' | 'challenge_winner';
 
 export interface Badge {
   type: BadgeType;
@@ -314,5 +314,67 @@ export interface EventOrganizerRow {
   event_id: string;
   user_id: string;
   role: 'owner' | 'organizer' | 'viewer';
+  created_at: string;
+}
+
+// Challenge Types
+export type ChallengeType = 'time_based' | 'theme';
+export type ChallengeStatus = 'active' | 'voting' | 'finished' | 'cancelled';
+
+export interface Challenge {
+  id: string;
+  eventId: string;
+  title: string;
+  description: string | null;
+  type: ChallengeType;
+  theme: string | null;
+  startAt: number;
+  endAt: number;
+  status: ChallengeStatus;
+  winnerPhotoId: string | null;
+  createdAt: number;
+  updatedAt: number;
+  submissions?: ChallengeSubmission[];
+  userVote?: string | null; // ID de la soumission pour laquelle l'utilisateur a voté
+}
+
+export interface ChallengeRow {
+  id: string;
+  event_id: string;
+  title: string;
+  description: string | null;
+  type: ChallengeType;
+  theme: string | null;
+  start_at: string;
+  end_at: string;
+  status: ChallengeStatus;
+  winner_photo_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChallengeSubmission {
+  id: string;
+  challengeId: string;
+  photo: Photo;
+  submittedBy: string;
+  submittedAt: number;
+  votesCount: number;
+}
+
+export interface ChallengeSubmissionRow {
+  id: string;
+  challenge_id: string;
+  photo_id: string;
+  submitted_by: string;
+  submitted_at: string;
+  votes_count: number;
+}
+
+export interface ChallengeVoteRow {
+  id: string;
+  challenge_id: string;
+  submission_id: string;
+  user_identifier: string;
   created_at: string;
 }
