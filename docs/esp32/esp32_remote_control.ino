@@ -1,52 +1,48 @@
 /*
- * ESP32 Remote Control – Live Party Wall
+ * ESP32 Remote Control – Live Party Wall CLEAN PRO
  * TFT 1.8" SPI 128x160
- * UI Console DJ / Régie événement
+ * UI Console DJ / Régie événement - Interface Simple & Professionnelle
  */
 
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
-#include <SPI.h>
-#include <string.h>
- 
+ #include <WiFi.h>
+ #include <HTTPClient.h>
+ #include <ArduinoJson.h>
+ #include <Adafruit_GFX.h>
+ #include <Adafruit_ST7735.h>
+ #include <SPI.h>
+ #include <string.h>
+  
  // ==================================================
  // TFT CONFIG
  // ==================================================
  #define TFT_CS   15
  #define TFT_DC   2
  #define TFT_RST  4
- 
+  
  Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
- 
-// ==================================================
-// DJ UI COLORS (utilise uniquement couleurs existantes)
-// ==================================================
-#define DJ_BG        ST7735_BLACK
-#define DJ_PANEL     ST7735_BLUE
-#define DJ_ACCENT    ST7735_MAGENTA
-#define DJ_GREEN     ST7735_GREEN
-#define DJ_RED       ST7735_RED
-#define DJ_YELLOW    ST7735_YELLOW
-#define DJ_TEXT      ST7735_WHITE
-#define DJ_CYAN      0x07FF  // Cyan custom (RGB 565)
-#define DJ_ORANGE    0xFD20  // Orange custom (RGB 565)
- 
+  
  // ==================================================
- // WIFI
+ // PALETTE PROFESSIONNELLE MINIMALISTE
+ // ==================================================
+ #define COLOR_BG         0x0000  // Noir
+ #define COLOR_PANEL      0x2945  // Gris foncé
+ #define COLOR_BORDER     0x4A49  // Gris moyen
+ #define COLOR_SUCCESS    0x07E0  // Vert
+ #define COLOR_ERROR      0xF800  // Rouge
+ #define COLOR_WARNING    0xFD20  // Orange
+ #define COLOR_TEXT       0xFFFF  // Blanc
+ #define COLOR_TEXT_DIM   0x7BEF  // Gris clair
+ #define COLOR_ACCENT     0x051D  // Bleu foncé
+  
+ // ==================================================
+ // WIFI & SUPABASE
  // ==================================================
  const char* WIFI_SSID     = "Bbox-4C3BF6DA";
  const char* WIFI_PASSWORD = "2PapyAndreMarcelOise";
- 
- // ==================================================
- // SUPABASE
- // ==================================================
  const char* SUPABASE_URL      = "https://izkytczkzkqxvylujwqo.supabase.co";
  const char* SUPABASE_ANON_KEY = "sb_publishable_9n9o9TS-jhYexS2_XypICg_S7_VPuh3";
  const char* EVENT_ID          = "345c0eef-bdd8-40d5-a75a-24c836beebdc";
- 
+  
  // ==================================================
  // BUTTONS
  // ==================================================
@@ -56,368 +52,277 @@
  #define BUTTON_RANDOM_PHOTO  25
  #define BUTTON_CLOSE_RANDOM  33
  #define BUTTON_START_BATTLE  32
- 
  #define DEBOUNCE_DELAY 50
- 
+  
  struct Button {
    uint8_t pin;
    const char* command;
    const char* label;
    bool lastState;
  };
- 
-Button buttons[] = {
-  {BUTTON_AUTO_SCROLL,  "TOGGLE_AUTO_SCROLL", "AUTO SCROLL", HIGH},
-  {BUTTON_AR_EFFECT,    "TRIGGER_AR_EFFECT",  "AR EFFECT", HIGH},
-  {BUTTON_QR_CODES,     "TOGGLE_QR_CODES",    "QR CODES", HIGH},
-  {BUTTON_RANDOM_PHOTO, "SHOW_RANDOM_PHOTO",  "RANDOM PHOTO", HIGH},
-  {BUTTON_CLOSE_RANDOM, "CLOSE_RANDOM_PHOTO", "CLOSE PHOTO", HIGH},
-  {BUTTON_START_BATTLE, "START_BATTLE",       "START BATTLE", HIGH}
-};
- 
+  
+ Button buttons[] = {
+   {BUTTON_AUTO_SCROLL,  "TOGGLE_AUTO_SCROLL", "AUTO SCROLL", HIGH},
+   {BUTTON_AR_EFFECT,    "TRIGGER_AR_EFFECT",  "AR EFFECT", HIGH},
+   {BUTTON_QR_CODES,     "TOGGLE_QR_CODES",    "QR CODES", HIGH},
+   {BUTTON_RANDOM_PHOTO, "SHOW_RANDOM_PHOTO",  "RANDOM PHOTO", HIGH},
+   {BUTTON_CLOSE_RANDOM, "CLOSE_RANDOM_PHOTO", "CLOSE PHOTO", HIGH},
+   {BUTTON_START_BATTLE, "START_BATTLE",       "START BATTLE", HIGH}
+ };
+  
  const uint8_t NUM_BUTTONS = sizeof(buttons) / sizeof(Button);
  
-// ==================================================
-// UI – HEADER DJ (Design Premium)
-// ==================================================
-void drawDJHeader() {
-  // Fond avec dégradé (simulé avec panneaux)
-  tft.fillRect(0, 0, 160, 20, DJ_BG);
-  tft.fillRect(0, 0, 160, 16, DJ_PANEL);
-  
-  // Titre principal avec effet 3D
-  tft.setTextColor(DJ_TEXT);
-  tft.setCursor(5, 4);
-  tft.setTextSize(1);
-  tft.print("LIVE PARTY");
-  
-  // Sous-titre accentué
-  tft.setTextColor(DJ_ACCENT);
-  tft.setCursor(5, 12);
-  tft.setTextSize(1);
-  tft.print("WALL");
-  
-  // LEDs style régie professionnel (3 LEDs avec glow)
-  uint16_t ledColors[] = {DJ_GREEN, DJ_YELLOW, DJ_RED};
-  for (int i = 0; i < 3; i++) {
-    int x = 125 + i * 11;
-    // Glow externe
-    tft.fillCircle(x, 10, 4, ledColors[i]);
-    // LED centrale
-    tft.fillCircle(x, 10, 2, DJ_TEXT);
-  }
-  
-  // Ligne de séparation stylisée
-  tft.drawFastHLine(0, 19, 160, DJ_ACCENT);
-}
+ // Variables globales
+ uint8_t vuMeterLevels[20];
  
-// ==================================================
-// UI – LEVEL METER (Animation fluide style VU Meter)
-// ==================================================
-void drawLevelMeter() {
-  tft.fillRect(6, 22, 148, 24, DJ_BG);
-  tft.drawRoundRect(6, 22, 148, 24, 3, DJ_PANEL);
-  
-  // Barres verticales VU Meter avec gradient
-  int barWidth = 4;
-  int spacing = 1;
-  int numBars = 20;
-  int startX = 8;
-  int startY = 24;
-  int maxHeight = 20;
-  
-  for (int i = 0; i < numBars; i++) {
-    int x = startX + i * (barWidth + spacing);
-    int h = random(2, maxHeight + 1);
-    
-    // Gradient de couleur selon la hauteur (vert → jaune → rouge)
-    uint16_t color;
-    if (h < 7) {
-      color = DJ_GREEN;
-    } else if (h < 14) {
-      color = DJ_YELLOW;
-    } else {
-      color = DJ_RED;
-    }
-    
-    // Barre avec highlight
-    int y = startY + maxHeight - h;
-    tft.fillRect(x, y, barWidth, h, color);
-    // Highlight en haut
-    tft.drawFastHLine(x, y, barWidth, DJ_TEXT);
-  }
-  
-  // Label stylisé
-  tft.setTextColor(DJ_ACCENT);
-  tft.setCursor(8, 24);
-  tft.setTextSize(1);
-  tft.print("ACTIVITY");
-}
+ // ==================================================
+ // UI – HEADER SIMPLE & PRO
+ // ==================================================
+ void drawHeader() {
+   // Barre de titre sobre
+   tft.fillRect(0, 0, 160, 18, COLOR_PANEL);
+   tft.drawFastHLine(0, 18, 160, COLOR_BORDER);
+   
+   // Titre
+   tft.setTextColor(COLOR_TEXT);
+   tft.setTextSize(1);
+   tft.setCursor(8, 5);
+   tft.print("LIVE PARTY WALL");
+   
+   // Status indicator (simple LED)
+   tft.fillCircle(148, 9, 4, COLOR_SUCCESS);
+ }
  
-// ==================================================
-// UI – NOW PLAYING (Design Premium)
-// ==================================================
-void drawNowPlaying(const char* label) {
-  // Fond avec bordure double
-  tft.fillRoundRect(6, 48, 148, 32, 4, DJ_BG);
-  tft.drawRoundRect(6, 48, 148, 32, 4, DJ_PANEL);
-  tft.fillRoundRect(7, 49, 146, 30, 3, DJ_PANEL);
-  
-  // Header "NOW PLAYING" avec accent
-  tft.fillRoundRect(6, 48, 148, 11, 4, DJ_ACCENT);
-  tft.setTextColor(DJ_TEXT);
-  tft.setCursor(10, 50);
-  tft.setTextSize(1);
-  tft.print("NOW PLAYING");
-  
-  // Contenu avec scroll si nécessaire
-  tft.setTextColor(DJ_TEXT);
-  tft.setCursor(10, 62);
-  tft.setTextSize(1);
-  
-  // Tronquer le label si trop long (max 18 caractères)
-  char displayLabel[19];
-  int len = strlen(label);
-  if (len > 18) {
-    strncpy(displayLabel, label, 15);
-    displayLabel[15] = '.';
-    displayLabel[16] = '.';
-    displayLabel[17] = '.';
-    displayLabel[18] = '\0';
-  } else {
-    strncpy(displayLabel, label, 18);
-    displayLabel[len] = '\0';
-  }
-  tft.print(displayLabel);
-  
-  // Indicateur de lecture (pulsant) avec animation
-  static uint8_t pulseCounter = 0;
-  pulseCounter++;
-  bool pulse = (pulseCounter / 5) % 2;
-  tft.fillCircle(145, 62, 3, pulse ? DJ_GREEN : DJ_BG);
-  tft.drawCircle(145, 62, 3, DJ_GREEN);
-}
+ // ==================================================
+ // UI – VU METER SIMPLE
+ // ==================================================
+ void drawVUMeter() {
+   // Cadre simple
+   tft.fillRect(4, 22, 152, 26, COLOR_BG);
+   tft.drawRect(4, 22, 152, 26, COLOR_BORDER);
+   
+   // Label
+   tft.setTextColor(COLOR_TEXT_DIM);
+   tft.setTextSize(1);
+   tft.setCursor(8, 25);
+   tft.print("ACTIVITY");
+   
+   // VU Meter - barres simples
+   int barWidth = 4;
+   int spacing = 2;
+   int numBars = 20;
+   int startX = 8;
+   int startY = 35;
+   int maxHeight = 10;
+   
+   // Initialiser si nécessaire
+   static bool initialized = false;
+   if (!initialized) {
+     for (int i = 0; i < 20; i++) {
+       vuMeterLevels[i] = random(2, maxHeight + 1);
+     }
+     initialized = true;
+   }
+   
+   // Mise à jour smooth
+   for (int i = 0; i < numBars; i++) {
+     if (vuMeterLevels[i] > 2) {
+       vuMeterLevels[i] -= random(0, 2);
+     }
+     if (random(100) < 10) {
+       vuMeterLevels[i] = random(6, maxHeight + 1);
+     }
+     
+     int x = startX + i * (barWidth + spacing);
+     int h = vuMeterLevels[i];
+     
+     // Couleur simple selon hauteur
+     uint16_t color;
+     if (h < 4) color = COLOR_SUCCESS;
+     else if (h < 7) color = COLOR_WARNING;
+     else color = COLOR_ERROR;
+     
+     int y = startY + maxHeight - h;
+     tft.fillRect(x, y, barWidth, h, color);
+   }
+ }
  
-// ==================================================
-// UI – STATUS BAR (Design Compact et Informatif)
-// ==================================================
-void drawStatusBar(bool wifiOK) {
-  tft.fillRect(0, 82, 160, 46, DJ_BG);
-  tft.drawFastHLine(0, 82, 160, DJ_PANEL);
-  
-  // Ligne 1: STATUS READY
-  tft.setTextColor(DJ_TEXT);
-  tft.setCursor(6, 86);
-  tft.setTextSize(1);
-  tft.print("STATUS");
-  
-  // LED READY avec glow effect
-  tft.fillCircle(58, 88, 4, DJ_GREEN);
-  tft.fillCircle(58, 88, 2, DJ_TEXT);
-  tft.setCursor(66, 86);
-  tft.print("READY");
-  
-  // Ligne 2: WIFI avec signal strength
-  tft.setCursor(6, 96);
-  tft.print("WIFI");
-  uint16_t wifiColor = wifiOK ? DJ_GREEN : DJ_RED;
-  tft.fillCircle(58, 98, 4, wifiColor);
-  tft.fillCircle(58, 98, 2, DJ_TEXT);
-  
-  // Signal strength bars (si WiFi OK)
-  if (wifiOK) {
-    int rssi = WiFi.RSSI();
-    int bars = 0;
-    if (rssi > -50) bars = 4;
-    else if (rssi > -60) bars = 3;
-    else if (rssi > -70) bars = 2;
-    else if (rssi > -80) bars = 1;
-    
-    int barX = 66;
-    int barY = 96;
-    for (int i = 0; i < bars; i++) {
-      int barH = (i + 1) * 2;
-      tft.fillRect(barX + i * 3, barY + 4 - barH, 2, barH, DJ_GREEN);
-    }
-  } else {
-    tft.setCursor(66, 96);
-    tft.print("OFF");
-  }
-  
-  // Ligne 3: IP Address (compact)
-  if (wifiOK) {
-    IPAddress ip = WiFi.localIP();
-    tft.setCursor(6, 106);
-    tft.setTextColor(DJ_ACCENT);
-    tft.setTextSize(1);
-    // Format compact: 192.168.1.69
-    tft.print(ip[0]);
-    tft.print(".");
-    tft.print(ip[1]);
-    tft.print(".");
-    tft.print(ip[2]);
-    tft.print(".");
-    tft.print(ip[3]);
-  } else {
-    tft.setCursor(6, 106);
-    tft.setTextColor(DJ_RED);
-    tft.print("DISCONNECTED");
-  }
-  
-  // Ligne 4: Event ID (tronqué)
-  tft.setCursor(6, 116);
-  tft.setTextColor(DJ_PANEL);
-  tft.setTextSize(1);
-  tft.print("EVENT: ");
-  // Afficher les 8 premiers caractères de l'event ID
-  String eventShort = String(EVENT_ID).substring(0, 8);
-  tft.print(eventShort);
-  
-  // Ligne de séparation bas
-  tft.drawFastHLine(0, 127, 160, DJ_PANEL);
-}
+ // ==================================================
+ // UI – NOW PLAYING SIMPLE
+ // ==================================================
+ void drawNowPlaying(const char* label) {
+   // Cadre simple
+   tft.fillRect(4, 52, 152, 28, COLOR_BG);
+   tft.drawRect(4, 52, 152, 28, COLOR_BORDER);
+   
+   // Header
+   tft.fillRect(4, 52, 152, 10, COLOR_PANEL);
+   tft.setTextColor(COLOR_TEXT_DIM);
+   tft.setTextSize(1);
+   tft.setCursor(8, 54);
+   tft.print("NOW PLAYING");
+   
+   // Contenu
+   tft.setTextColor(COLOR_TEXT);
+   tft.setCursor(8, 66);
+   
+   // Tronquer si trop long
+   char displayLabel[23];
+   int len = strlen(label);
+   if (len > 22) {
+     strncpy(displayLabel, label, 19);
+     displayLabel[19] = '.';
+     displayLabel[20] = '.';
+     displayLabel[21] = '.';
+     displayLabel[22] = '\0';
+   } else {
+     strncpy(displayLabel, label, 22);
+     displayLabel[len] = '\0';
+   }
+   tft.print(displayLabel);
+ }
  
-// ==================================================
-// UI – SPLASH SCREEN (Écran de démarrage)
-// ==================================================
-void drawSplashScreen() {
-  // Fond avec dégradé (simulé avec rectangles)
-  tft.fillScreen(DJ_BG);
-  
-  // Dégradé de fond (rose vers violet)
-  for (int i = 0; i < 160; i++) {
-    uint16_t color;
-    if (i < 80) {
-      // Rose (magenta)
-      color = DJ_ACCENT;
-    } else {
-      // Violet (bleu foncé)
-      color = DJ_PANEL;
-    }
-    tft.drawFastVLine(i, 0, 160, color);
-  }
-  
-  // Icône caméra stylisée (cercle principal)
-  int centerX = 80;
-  int centerY = 60;
-  int cameraSize = 40;
-  
-  // Corps de la caméra (rectangle arrondi)
-  tft.fillRoundRect(centerX - cameraSize/2, centerY - cameraSize/2, cameraSize, cameraSize, 8, DJ_TEXT);
-  
-  // Objectif (cercle)
-  tft.fillCircle(centerX - 8, centerY, 12, DJ_BG);
-  tft.drawCircle(centerX - 8, centerY, 12, DJ_TEXT);
-  tft.fillCircle(centerX - 8, centerY, 6, DJ_PANEL);
-  
-  // Viseur (petit cercle en haut à gauche)
-  tft.fillCircle(centerX - 12, centerY - 12, 4, DJ_BG);
-  tft.drawCircle(centerX - 12, centerY - 12, 4, DJ_TEXT);
-  
-  // Flash (étoile/éclat) - 4 branches simples
-  int flashX = centerX + 15;
-  int flashY = centerY - 10;
-  
-  // Branches de l'étoile flash (haut, bas, gauche, droite)
-  tft.drawLine(flashX, flashY, flashX, flashY - 8, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX, flashY + 8, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX - 8, flashY, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX + 8, flashY, DJ_YELLOW);
-  
-  // Branches diagonales
-  tft.drawLine(flashX, flashY, flashX - 6, flashY - 6, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX + 6, flashY - 6, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX - 6, flashY + 6, DJ_YELLOW);
-  tft.drawLine(flashX, flashY, flashX + 6, flashY + 6, DJ_YELLOW);
-  
-  tft.fillCircle(flashX, flashY, 3, DJ_YELLOW);
-  
-  // Titre "LIVE PARTY WALL"
-  tft.setTextColor(DJ_TEXT);
-  tft.setTextSize(2);
-  tft.setCursor(10, 110);
-  tft.print("LIVE PARTY");
-  
-  tft.setTextSize(1);
-  tft.setCursor(20, 130);
-  tft.print("WALL");
-  
-  // Version/Info
-  tft.setTextSize(1);
-  tft.setTextColor(DJ_ACCENT);
-  tft.setCursor(50, 145);
-  tft.print("ESP32 Remote");
-  
-  // Animation de chargement (points qui clignotent)
-  // Note: dotCounter sera passé en paramètre si besoin d'animation
-  int dotX = 70;
-  int dotY = 150;
-  // Afficher les 3 points (animation gérée dans la boucle du setup)
-  for (int i = 0; i < 3; i++) {
-    tft.fillCircle(dotX + i * 8, dotY, 2, DJ_GREEN);
-  }
-}
-
-// ==================================================
-// UI – ACTION FEEDBACK (Animation Premium)
-// ==================================================
-void showDJAction(const char* label, bool success) {
-  uint16_t flashColor = success ? DJ_GREEN : DJ_RED;
-  uint16_t borderColor = success ? DJ_GREEN : DJ_RED;
-  
-  // Animation zoom-in avec bordure
-  for (int i = 0; i < 4; i++) {
-    int offset = i * 3;
-    tft.drawRoundRect(15 - offset, 35 - offset, 130 + offset*2, 90 + offset*2, 6, flashColor);
-    delay(25);
-  }
-  
-  // Flash complet avec effet
-  tft.fillScreen(flashColor);
-  delay(60);
-  
-  // Retour à l'interface
-  tft.fillScreen(DJ_BG);
-  
-  // Redessiner l'interface complète
-  drawDJHeader();
-  drawLevelMeter();
-  drawNowPlaying(label);
-  drawStatusBar(success);
-  
-  // Message de feedback stylisé
-  tft.fillRect(0, 128, 160, 32, DJ_BG);
-  tft.fillRoundRect(35, 130, 90, 28, 4, DJ_BG);
-  tft.drawRoundRect(35, 130, 90, 28, 4, borderColor);
-  tft.fillRoundRect(36, 131, 88, 26, 3, borderColor);
-  
-  tft.setTextColor(DJ_TEXT);
-  tft.setCursor(45, 138);
-  tft.setTextSize(1);
-  if (success) {
-    tft.print("OK");
-    // Checkmark symbolique
-    tft.fillCircle(75, 138, 2, DJ_TEXT);
-  } else {
-    tft.print("ERROR");
-  }
-  
-  delay(400);
-  
-  // Effacer le message de feedback
-  tft.fillRect(0, 128, 160, 32, DJ_BG);
-  drawStatusBar(success);
-}
+ // ==================================================
+ // UI – STATUS BAR PROPRE
+ // ==================================================
+ void drawStatus(bool wifiOK) {
+   int statusY = 84;
+   
+   // Ligne de séparation
+   tft.drawFastHLine(0, statusY, 160, COLOR_BORDER);
+   
+   // Fond
+   tft.fillRect(0, statusY + 1, 160, 44, COLOR_BG);
+   
+   // WiFi Status
+   tft.setTextColor(COLOR_TEXT_DIM);
+   tft.setTextSize(1);
+   tft.setCursor(8, statusY + 5);
+   tft.print("WiFi:");
+   
+   if (wifiOK) {
+     int rssi = WiFi.RSSI();
+     
+     // Signal strength
+     tft.setTextColor(COLOR_TEXT);
+     tft.setCursor(38, statusY + 5);
+     
+     if (rssi > -50) tft.print("Excellent");
+     else if (rssi > -60) tft.print("Good");
+     else if (rssi > -70) tft.print("Fair");
+     else tft.print("Weak");
+     
+     // Barres de signal
+     int barX = 110;
+     int barY = statusY + 5;
+     for (int i = 0; i < 4; i++) {
+       bool filled = (rssi > (-80 + i * 10));
+       uint16_t color = filled ? COLOR_SUCCESS : COLOR_PANEL;
+       int barH = (i + 1) * 2;
+       tft.fillRect(barX + i * 4, barY + 8 - barH, 3, barH, color);
+     }
+   } else {
+     tft.setTextColor(COLOR_ERROR);
+     tft.setCursor(38, statusY + 5);
+     tft.print("Disconnected");
+   }
+   
+   // System Status
+   tft.setTextColor(COLOR_TEXT_DIM);
+   tft.setCursor(8, statusY + 17);
+   tft.print("System:");
+   
+   bool sysReady = wifiOK;
+   tft.setTextColor(sysReady ? COLOR_SUCCESS : COLOR_WARNING);
+   tft.setCursor(50, statusY + 17);
+   tft.print(sysReady ? "Ready" : "Initializing");
+   
+   // IP Address
+   if (wifiOK) {
+     tft.setTextColor(COLOR_TEXT_DIM);
+     tft.setCursor(8, statusY + 29);
+     tft.print("IP:");
+     
+     IPAddress ip = WiFi.localIP();
+     tft.setTextColor(COLOR_TEXT);
+     tft.setCursor(26, statusY + 29);
+     char ipStr[16];
+     sprintf(ipStr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+     tft.print(ipStr);
+   }
+ }
+ 
+ // ==================================================
+ // UI – SPLASH SCREEN SIMPLE
+ // ==================================================
+ void drawSplash() {
+   tft.fillScreen(COLOR_BG);
+   
+   // Logo simple - rectangle avec texte centré
+   tft.fillRect(30, 30, 100, 60, COLOR_PANEL);
+   tft.drawRect(30, 30, 100, 60, COLOR_BORDER);
+   
+   // Titre
+   tft.setTextColor(COLOR_TEXT);
+   tft.setTextSize(2);
+   tft.setCursor(38, 45);
+   tft.print("LIVE");
+   tft.setCursor(38, 65);
+   tft.print("PARTY");
+   
+   // Sous-titre
+   tft.setTextSize(1);
+   tft.setTextColor(COLOR_TEXT_DIM);
+   tft.setCursor(50, 100);
+   tft.print("ESP32 Remote");
+   
+   // Version
+   tft.setCursor(60, 115);
+   tft.print("v2.0");
+ }
+ 
+ // ==================================================
+ // UI – ACTION FEEDBACK SIMPLE
+ // ==================================================
+ void showFeedback(const char* label, bool success) {
+   uint16_t color = success ? COLOR_SUCCESS : COLOR_ERROR;
+   
+   // Flash rapide
+   tft.fillRect(0, 60, 160, 30, color);
+   delay(100);
+   tft.fillRect(0, 60, 160, 30, COLOR_BG);
+   
+   // Redessiner interface
+   drawHeader();
+   drawVUMeter();
+   drawNowPlaying(label);
+   drawStatus(success);
+   
+   // Message simple
+   tft.fillRect(30, 60, 100, 20, COLOR_PANEL);
+   tft.drawRect(30, 60, 100, 20, color);
+   
+   tft.setTextColor(COLOR_TEXT);
+   tft.setTextSize(1);
+   tft.setCursor(45, 67);
+   tft.print(success ? "SUCCESS" : "ERROR");
+   
+   delay(800);
+   
+   // Effacer message
+   tft.fillRect(30, 60, 100, 20, COLOR_BG);
+   drawNowPlaying(label);
+ }
  
  // ==================================================
  // WIFI
  // ==================================================
  void connectWiFi() {
    if (WiFi.status() == WL_CONNECTED) return;
- 
+   
    WiFi.mode(WIFI_STA);
    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
- 
+   
    unsigned long start = millis();
    while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
      delay(300);
@@ -429,29 +334,29 @@ void showDJAction(const char* label, bool success) {
  // ==================================================
  bool sendCommand(const char* command, const char* label) {
    if (WiFi.status() != WL_CONNECTED) {
-     showDJAction("WIFI OFF", false);
+     showFeedback("WIFI OFF", false);
      return false;
    }
- 
+   
    HTTPClient http;
    http.begin(String(SUPABASE_URL) + "/rest/v1/remote_commands");
    http.addHeader("Content-Type", "application/json");
    http.addHeader("apikey", SUPABASE_ANON_KEY);
    http.addHeader("Authorization", "Bearer " + String(SUPABASE_ANON_KEY));
- 
+   
    StaticJsonDocument<256> doc;
    doc["event_id"] = EVENT_ID;
    doc["command_type"] = command;
    doc["processed"] = false;
- 
+   
    String payload;
    serializeJson(doc, payload);
- 
+   
    int code = http.POST(payload);
    http.end();
- 
+   
    bool ok = (code >= 200 && code < 300);
-   showDJAction(label, ok);
+   showFeedback(label, ok);
    return ok;
  }
  
@@ -460,43 +365,28 @@ void showDJAction(const char* label, bool success) {
  // ==================================================
  void setup() {
    Serial.begin(115200);
- 
+   
    tft.initR(INITR_BLACKTAB);
    tft.setRotation(1);
-   tft.fillScreen(DJ_BG);
- 
-   // Splash Screen - Afficher pendant 5 secondes avec animation
-   unsigned long splashStart = millis();
-   uint8_t animationFrame = 0;
-   while (millis() - splashStart < 5000) {
-     drawSplashScreen();
-     
-     // Animation des points de chargement
-     int dotX = 70;
-     int dotY = 150;
-     for (int i = 0; i < 3; i++) {
-       bool visible = ((animationFrame / 5 + i) % 3) < 2;
-       tft.fillCircle(dotX + i * 8, dotY, 2, visible ? DJ_GREEN : DJ_BG);
-     }
-     animationFrame++;
-     
-     delay(100); // Rafraîchir toutes les 100ms pour l'animation
-   }
- 
-   // Effacer l'écran après le splash
-   tft.fillScreen(DJ_BG);
- 
-   // Écran de démarrage normal
-   drawDJHeader();
-   drawLevelMeter();
-   drawNowPlaying("INITIALIZING...");
-   drawStatusBar(false);
- 
+   tft.fillScreen(COLOR_BG);
+   
+   // Splash screen simple - 2 secondes
+   drawSplash();
+   delay(2000);
+   
+   // Interface principale
+   tft.fillScreen(COLOR_BG);
+   drawHeader();
+   drawVUMeter();
+   drawNowPlaying("System Ready");
+   drawStatus(false);
+   
+   // Initialisation boutons
    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
      pinMode(buttons[i].pin, INPUT_PULLUP);
      buttons[i].lastState = digitalRead(buttons[i].pin);
    }
- 
+   
    connectWiFi();
  }
  
@@ -505,34 +395,35 @@ void showDJAction(const char* label, bool success) {
  // ==================================================
  void loop() {
    static unsigned long lastWiFiCheck = 0;
-   static unsigned long lastAnim = 0;
- 
-   // check WiFi toutes les 10s
+   static unsigned long lastUpdate = 0;
+   
+   // WiFi check toutes les 10s
    if (millis() - lastWiFiCheck > 10000) {
      connectWiFi();
      lastWiFiCheck = millis();
    }
- 
-  // animation level meter toutes les 200ms (plus fluide)
-  if (millis() - lastAnim > 200) {
-    drawLevelMeter();
-    drawStatusBar(WiFi.status() == WL_CONNECTED);
-    lastAnim = millis();
-  }
- 
-   // lecture boutons
+   
+   // Mise à jour interface toutes les 300ms
+   if (millis() - lastUpdate > 300) {
+     drawVUMeter();
+     drawStatus(WiFi.status() == WL_CONNECTED);
+     lastUpdate = millis();
+   }
+   
+   // Lecture boutons
    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
      bool state = digitalRead(buttons[i].pin);
- 
+     
      if (state != buttons[i].lastState) {
        delay(DEBOUNCE_DELAY);
        state = digitalRead(buttons[i].pin);
- 
+       
        if (state == LOW && buttons[i].lastState == HIGH) {
          sendCommand(buttons[i].command, buttons[i].label);
        }
        buttons[i].lastState = state;
      }
    }
+   
+   delay(10);
  }
- 
