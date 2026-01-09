@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ViewMode } from '../../types';
 import { LucideIcon, ArrowRight, Zap } from 'lucide-react';
 
@@ -30,6 +30,9 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
 }) => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<string | null>(null);
+  const [ripples, setRipples] = useState<Record<string, Array<{ id: number; x: number; y: number }>>>({});
+  const rippleIdRef = useRef(0);
+  const cardRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   // Gère à la fois le hover (desktop), le focus (clavier) et le "press" (mobile)
   const handleMouseEnter = (id: string) => setHoveredCard(id);
@@ -38,6 +41,29 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
   const handleTouchEnd = () => setActiveCard(null);
   const handleFocus = (id: string) => setHoveredCard(id);
   const handleBlur = () => setHoveredCard(null);
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>, id: string) => {
+    const card = cardRefs.current[id];
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const rippleId = rippleIdRef.current++;
+      
+      setRipples(prev => ({
+        ...prev,
+        [id]: [...(prev[id] || []), { id: rippleId, x, y }]
+      }));
+      
+      setTimeout(() => {
+        setRipples(prev => ({
+          ...prev,
+          [id]: (prev[id] || []).filter(ripple => ripple.id !== rippleId)
+        }));
+      }, 800);
+    }
+    onSelectMode(id as ViewMode);
+  };
 
   return (
     <div className="w-full flex flex-col lg:flex-row items-center gap-2 lg:gap-3 lg:justify-center">
@@ -48,7 +74,8 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
         return (
           <button
             key={option.id}
-            onClick={() => onSelectMode(option.id as ViewMode)}
+            ref={el => cardRefs.current[option.id] = el}
+            onClick={(e) => handleClick(e, option.id)}
             onMouseEnter={() => handleMouseEnter(option.id)}
             onMouseLeave={handleMouseLeave}
             onTouchStart={() => handleTouchStart(option.id)}
@@ -61,42 +88,80 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
             style={{
               animationDelay: option.delay,
               transform: isActive
-                ? 'translateY(-4px) scale(1.02)'
+                ? 'translateY(-8px) scale(1.05)'
                 : 'translateY(0) scale(1)',
-              transition: 'all 0.28s cubic-bezier(.45,.05,.55,.95)'
+              transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}
             aria-label={option.title}
             tabIndex={0}
             type="button"
           >
-            {/* Animated Gradient Background */}
+            {/* Animated Gradient Background - amélioré */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${option.gradient} transition-opacity duration-700 pointer-events-none ${
-                isActive ? 'opacity-40 blur-[2px]' : 'opacity-0'
+              className={`absolute inset-0 bg-gradient-to-br ${option.gradient} transition-all duration-700 pointer-events-none ${
+                isActive ? 'opacity-50 blur-[3px] scale-110' : 'opacity-0 scale-100'
               }`}
+              style={{
+                backgroundSize: isActive ? '200% 200%' : '100% 100%',
+                animation: isActive ? 'gradient-shift 3s ease infinite' : 'none',
+              }}
             />
+            
+            {/* Ripple effects */}
+            {(ripples[option.id] || []).map(ripple => (
+              <span
+                key={ripple.id}
+                className="absolute rounded-full bg-white/50 pointer-events-none"
+                style={{
+                  left: `${ripple.x}px`,
+                  top: `${ripple.y}px`,
+                  width: '0px',
+                  height: '0px',
+                  transform: 'translate(-50%, -50%)',
+                  animation: 'ripple-expand 800ms cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              />
+            ))}
+            
+            {/* Shimmer effect au hover */}
+            <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 pointer-events-none ${
+              isActive ? 'translate-x-full' : '-translate-x-full'
+            }`} />
 
             {/* Main Card Area */}
             <div
-              className="relative h-full bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl flex items-center justify-between lg:justify-center px-3 sm:px-4 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-shadow duration-500"
+              className="relative h-full bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl flex items-center justify-between lg:justify-center px-3 sm:px-4 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-all duration-500 backdrop-blur-sm"
               style={{
                 boxShadow: isActive
-                  ? `0 4px 32px 0 ${option.glowColor}, 0 2px 12px rgba(0,0,0,0.14)`
+                  ? `0 8px 40px 0 ${option.glowColor}, 0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)`
                   : '0 2px 8px rgba(0,0,0,0.10)',
+                borderColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
               }}
             >
               {/* Icon - À gauche sur mobile, centré sur desktop */}
-              <div className="flex-shrink-0 relative">
+              <div className="flex-shrink-0 relative z-10">
                 <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-300 group-hover:scale-110 group-active:scale-105 ${
-                    isActive ? 'scale-110 ring-2 ring-white/30' : ''
+                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-500 ${
+                    isActive ? 'scale-125 ring-4 ring-white/40 rotate-6' : 'scale-100 rotate-0'
                   }`}
                   style={{
                     boxShadow: isActive
-                      ? `0 4px 20px ${option.glowColor}` : undefined,
+                      ? `0 8px 30px ${option.glowColor}, 0 0 20px ${option.glowColor}` : '0 2px 8px rgba(0,0,0,0.2)',
+                    transform: isActive 
+                      ? 'scale(1.25) rotate(6deg)' 
+                      : 'scale(1) rotate(0deg)',
                   }}
                 >
-                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-8 lg:h-8 text-white drop-shadow" />
+                  {/* Pulsing glow behind icon */}
+                  <div 
+                    className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br ${option.gradient} opacity-0 transition-opacity duration-500 ${
+                      isActive ? 'opacity-30 animate-pulse' : ''
+                    }`}
+                    style={{ filter: 'blur(8px)' }}
+                  />
+                  <Icon className={`relative w-7 h-7 sm:w-8 sm:h-8 lg:w-8 lg:h-8 text-white drop-shadow-lg transition-all duration-500 ${
+                    isActive ? 'scale-110' : 'scale-100'
+                  }`} />
                 </div>
                 {option.isPrimary && (
                   <div className="absolute -top-1.5 -right-1.5 lg:-top-2 lg:-right-2 z-20">
@@ -189,7 +254,20 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({
       <style>{`
         @keyframes gradient-shift {
           0% { background-position: 0% 50%; }
-          100% { background-position: 100% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes ripple-expand {
+          0% {
+            width: 0px;
+            height: 0px;
+            opacity: 1;
+          }
+          100% {
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+          }
         }
       `}</style>
     </div>

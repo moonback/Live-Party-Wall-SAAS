@@ -1,26 +1,16 @@
 import React from 'react';
-import { ArrowLeft, Camera as CameraIcon, Video, Grid3x3 } from 'lucide-react';
+import { ArrowLeft, Grid3x3 } from 'lucide-react';
 
 interface PhotoboothHeaderProps {
   onBack: () => void;
   onCollageMode?: () => void;
-  mediaType: 'photo' | 'video';
-  onMediaTypeChange: (type: 'photo' | 'video') => void;
-  isRecording: boolean;
-  videoCaptureEnabled: boolean;
   collageModeEnabled: boolean;
-  onStopRecording?: () => void;
 }
 
 export const PhotoboothHeader: React.FC<PhotoboothHeaderProps> = ({
   onBack,
   onCollageMode,
-  mediaType,
-  onMediaTypeChange,
-  isRecording,
-  videoCaptureEnabled,
-  collageModeEnabled,
-  onStopRecording
+  collageModeEnabled
 }) => {
   return (
     <header className="p-2 sm:p-4 flex items-center justify-between z-20 absolute top-0 w-full bg-gradient-to-b from-black/90 via-black/80 to-transparent backdrop-blur-xl border-b border-white/5">
@@ -47,41 +37,6 @@ export const PhotoboothHeader: React.FC<PhotoboothHeaderProps> = ({
             <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Collage</span>
           </button>
-        )}
-        
-        {videoCaptureEnabled && (
-          <div className="flex items-center gap-1 sm:gap-2 bg-black/30 backdrop-blur-md rounded-full p-0.5 sm:p-1 border border-white/20">
-            <button
-              onClick={() => {
-                if (isRecording && onStopRecording) onStopRecording();
-                onMediaTypeChange('photo');
-              }}
-              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all ${
-                mediaType === 'photo' 
-                  ? 'bg-pink-500 text-white' 
-                  : 'text-white/70 hover:text-white'
-              }`}
-              disabled={isRecording}
-            >
-              <CameraIcon className="w-3 h-3 sm:w-4 sm:h-4 inline sm:mr-1" />
-              <span className="hidden sm:inline">Photo</span>
-            </button>
-            <button
-              onClick={() => {
-                if (isRecording && onStopRecording) onStopRecording();
-                onMediaTypeChange('video');
-              }}
-              className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all ${
-                mediaType === 'video' 
-                  ? 'bg-pink-500 text-white' 
-                  : 'text-white/70 hover:text-white'
-              }`}
-              disabled={isRecording}
-            >
-              <Video className="w-3 h-3 sm:w-4 sm:h-4 inline sm:mr-1" />
-              <span className="hidden sm:inline">Vidéo</span>
-            </button>
-          </div>
         )}
       </div>
       

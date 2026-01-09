@@ -76,26 +76,7 @@ export const MediaDisplay: React.FC<MediaDisplayProps> = ({
       className="absolute inset-0 flex items-center justify-center"
       style={transitionStyle}
     >
-      {photo.type === 'video' ? (
-        <video
-          ref={videoRef}
-          key={photo.id}
-          src={photo.url}
-          className={`w-full h-full object-contain ${transitionClasses}`}
-          style={transitionStyle}
-          controls
-          playsInline
-          autoPlay
-          loop
-          onError={handleMediaError}
-          onLoadedData={() => {
-            if (videoRef.current) {
-              videoRef.current.style.opacity = '1';
-            }
-          }}
-        />
-      ) : (
-        <img
+      <img
           ref={imageRef}
           key={photo.id}
           src={photo.url}

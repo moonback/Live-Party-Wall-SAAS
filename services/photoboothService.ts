@@ -1,6 +1,6 @@
 import { analyzeAndCaptionImage } from './aiService';
 import { enhanceImageQuality } from '../utils/imageFilters';
-import { addPhotoToWall, addVideoToWall } from './photoService';
+import { addPhotoToWall } from './photoService';
 import { composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
 import { Photo } from '../types';
 import { IMAGE_QUALITY } from '../constants';
@@ -15,14 +15,6 @@ interface SubmitPhotoParams {
   eventSettings: EventSettings;
   activeFilter: string;
   activeFrame: string;
-}
-
-interface SubmitVideoParams {
-  videoBlob: Blob;
-  authorName: string;
-  eventId: string;
-  videoDuration: number;
-  eventSettings: EventSettings;
 }
 
 export const submitPhoto = async ({
@@ -85,36 +77,6 @@ export const submitPhoto = async ({
     caption,
     finalAuthorName,
     tags
-  );
-
-  // Sauvegarder l'avatar si disponible
-  const currentAvatar = getCurrentUserAvatar();
-  if (currentAvatar && finalAuthorName === localStorage.getItem('party_user_name')) {
-    saveUserAvatar(finalAuthorName, currentAvatar);
-  }
-
-  return photo;
-};
-
-export const submitVideo = async ({
-  videoBlob,
-  authorName,
-  eventId,
-  videoDuration,
-  eventSettings
-}: SubmitVideoParams): Promise<Photo> => {
-  let caption = '';
-  if (eventSettings.caption_generation_enabled) {
-    caption = 'Vidéo de la fête ! 🎉';
-  }
-
-  const finalAuthorName = authorName || 'Invité VIP';
-  const photo = await addVideoToWall(
-    eventId,
-    videoBlob,
-    caption,
-    finalAuthorName,
-    videoDuration
   );
 
   // Sauvegarder l'avatar si disponible

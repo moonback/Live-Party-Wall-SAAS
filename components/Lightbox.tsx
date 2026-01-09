@@ -71,16 +71,7 @@ const Lightbox: React.FC<LightboxProps> = ({
             
             {/* Media Container */}
             <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl">
-              {photo.type === 'video' ? (
-                <video
-                  src={photo.url}
-                  className="w-full max-h-[70vh] md:max-h-[80vh] object-contain"
-                  controls
-                  playsInline
-                  autoPlay
-                />
-              ) : (
-                <img
+              <img
                   src={photo.url}
                   alt={photo.caption}
                   className="w-full max-h-[60vh] md:max-h-[70vh] object-contain"

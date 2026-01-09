@@ -1,17 +1,15 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import { Photo } from '../types';
-// MAX_VIDEO_DURATION utilisé dans VideoTimer
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
-import { validateImageFile, validateAuthorName, validateVideoFile, validateVideoDuration } from '../utils/validation';
+import { validateImageFile, validateAuthorName } from '../utils/validation';
 import { logger } from '../utils/logger';
 import { drawPngOverlay } from '../utils/imageOverlay';
 import { IMAGE_QUALITY, MAX_IMAGE_WIDTH, BURST_DEFAULT_PHOTOS, BURST_CAPTURE_INTERVAL } from '../constants';
 import { useImageProcessing } from '../hooks/useImageProcessing';
-import { useVideoRecording } from '../hooks/useVideoRecording';
 import { useCamera } from '../hooks/useCamera';
-import { submitPhoto, submitVideo } from '../services/photoboothService';
+import { submitPhoto } from '../services/photoboothService';
 import { PhotoboothHeader } from './photobooth/PhotoboothHeader';
 import { CameraView } from './photobooth/CameraView';
 import { PreviewView } from './photobooth/PreviewView';
@@ -35,7 +33,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     return localStorage.getItem('party_user_name') || '';
   });
   
-  const [mediaType, setMediaType] = useState<'photo' | 'video'>('photo');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [flash, setFlash] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -78,26 +75,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   } = useImageProcessing();
   
   const { stream, videoRef, stopCamera, switchCamera, cameraError, videoDevices, startCamera } = useCamera();
-  
-  const {
-    isRecording,
-    recordedBlob,
-    videoPreviewUrl,
-    videoDuration,
-    startRecording,
-    stopRecording,
-    reset: resetVideoRecording
-  } = useVideoRecording(stream);
-
-  // Vérifier si la capture vidéo est désactivée
-  useEffect(() => {
-    if (!eventSettings.video_capture_enabled && mediaType === 'video') {
-      setMediaType('photo');
-      if (isRecording) {
-        stopRecording();
-      }
-    }
-  }, [eventSettings.video_capture_enabled, mediaType, isRecording, stopRecording]);
 
   // Countdown pour la photo
   useEffect(() => {
@@ -120,24 +97,17 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
   }, [countdown, burstMode]);
 
-  // Mettre à jour le preview quand une vidéo est enregistrée
-  useEffect(() => {
-    if (videoPreviewUrl && !preview) {
-      setPreview(videoPreviewUrl);
-    }
-  }, [videoPreviewUrl, preview]);
-
   // Démarrer la caméra quand pas de preview et pas de rafale en cours
   useEffect(() => {
-    if (!preview && !recordedBlob && !videoPreviewUrl && burstPhotos.length === 0) {
+    if (!preview && burstPhotos.length === 0) {
       startCamera();
     }
     return () => {
-      if (!preview && !recordedBlob && !videoPreviewUrl && burstPhotos.length === 0) {
+      if (!preview && burstPhotos.length === 0) {
         stopCamera();
       }
     };
-  }, [preview, recordedBlob, videoPreviewUrl, burstPhotos.length, startCamera, stopCamera]);
+  }, [preview, burstPhotos.length, startCamera, stopCamera]);
 
   const capturePhoto = async (forBurst: boolean = false): Promise<string | null> => {
     if (!forBurst) {
@@ -247,36 +217,23 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     setSelectedBurstIndex(null);
     setIsCapturingBurst(false);
     resetImageProcessing();
-    resetVideoRecording();
-    // Le preview vidéo est géré par le hook
-    if (videoPreviewUrl) {
-      setPreview(videoPreviewUrl);
-    }
   };
 
   const initiateCapture = () => {
-    if (mediaType === 'video') {
-      if (isRecording) {
-        stopRecording();
+    // Mode rafale
+    if (burstMode) {
+      if (timerEnabled && timerDuration > 0) {
+        setCountdown(timerDuration);
       } else {
-        startRecording();
+        captureBurst();
       }
     } else {
-      // Mode rafale
-      if (burstMode) {
-        if (timerEnabled && timerDuration > 0) {
-          setCountdown(timerDuration);
-        } else {
-          captureBurst();
-        }
+      // Mode normal : utiliser les préférences du timer depuis localStorage
+      if (timerEnabled && timerDuration > 0) {
+        setCountdown(timerDuration);
       } else {
-        // Mode normal : utiliser les préférences du timer depuis localStorage
-        if (timerEnabled && timerDuration > 0) {
-          setCountdown(timerDuration);
-        } else {
-          // Timer désactivé ou durée à 0 : capture immédiate
-          capturePhoto();
-        }
+        // Timer désactivé ou durée à 0 : capture immédiate
+        capturePhoto();
       }
     }
   };
@@ -320,7 +277,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
     try {
       if (file.type.startsWith('image/')) {
-        setMediaType('photo');
         const validation = validateImageFile(file);
         if (!validation.valid) {
           addToast(validation.error || 'Fichier invalide', 'error');
@@ -328,36 +284,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           return;
         }
         await loadImage(file);
-      } else if (file.type.startsWith('video/')) {
-        if (!eventSettings.video_capture_enabled) {
-          addToast('La capture vidéo est désactivée par l\'administrateur', 'error');
-          setLoading(false);
-          return;
-        }
-
-        const validation = validateVideoFile(file);
-        if (!validation.valid) {
-          addToast(validation.error || 'Fichier vidéo invalide', 'error');
-          setLoading(false);
-          return;
-        }
-
-        const url = URL.createObjectURL(file);
-        setPreview(url);
-        setMediaType('video');
-
-        const video = document.createElement('video');
-        video.src = url;
-        video.onloadedmetadata = () => {
-          const duration = video.duration;
-          const durationValidation = validateVideoDuration(duration);
-          if (!durationValidation.valid) {
-            addToast(durationValidation.error || 'Durée invalide', 'error');
-            setPreview(null);
-          }
-        };
       } else {
-        addToast('Type de fichier non supporté', 'error');
+        addToast('Type de fichier non supporté. Seules les images sont acceptées.', 'error');
       }
     } catch (error) {
       logger.error("Error loading file", error, { component: 'GuestUpload', action: 'handleFileChange' });
@@ -382,45 +310,19 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
 
     setLoading(true);
-    setLoadingStep('Analyse IA... 🤖');
+    setLoadingStep('Analyse IA et génération de légende... 🤖');
     
     try {
-      let newPhoto: Photo;
+      const newPhoto = await submitPhoto({
+        imageDataUrl: preview,
+        authorName,
+        eventId: currentEvent.id,
+        eventSettings,
+        activeFilter,
+        activeFrame
+      });
 
-      if (mediaType === 'video' && recordedBlob) {
-        setLoadingStep('Validation de la vidéo... 🎬');
-        
-        const durationValidation = validateVideoDuration(videoDuration);
-        if (!durationValidation.valid) {
-          addToast(durationValidation.error || 'Durée invalide', 'error');
-          setLoading(false);
-          return;
-        }
-
-        setLoadingStep('Envoi au mur... 🚀');
-        newPhoto = await submitVideo({
-          videoBlob: recordedBlob,
-          authorName,
-          eventId: currentEvent.id,
-          videoDuration,
-          eventSettings
-        });
-
-        addToast("Vidéo envoyée avec succès ! 🎉", 'success');
-      } else {
-        setLoadingStep('Analyse IA et génération de légende... 🤖');
-        
-        newPhoto = await submitPhoto({
-          imageDataUrl: preview,
-          authorName,
-          eventId: currentEvent.id,
-          eventSettings,
-          activeFilter,
-          activeFrame
-        });
-
-        addToast("Photo envoyée avec succès ! 🎉", 'success');
-      }
+      addToast("Photo envoyée avec succès ! 🎉", 'success');
 
       onPhotoUploaded(newPhoto);
       handleRetake();
@@ -454,12 +356,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       <PhotoboothHeader
         onBack={handleBackInternal}
         onCollageMode={onCollageMode}
-        mediaType={mediaType}
-        onMediaTypeChange={setMediaType}
-        isRecording={isRecording}
-        videoCaptureEnabled={eventSettings.video_capture_enabled ?? true}
         collageModeEnabled={eventSettings.collage_mode_enabled ?? true}
-        onStopRecording={stopRecording}
       />
 
       <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 w-full max-w-2xl mx-auto h-full mt-12 sm:mt-16">
@@ -470,12 +367,9 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             selectedIndex={selectedBurstIndex}
             onConfirm={handleBurstPhotoConfirm}
           />
-        ) : !preview && !recordedBlob && !videoPreviewUrl ? (
+        ) : !preview ? (
           <CameraView
-            mediaType={mediaType}
             countdown={countdown}
-            isRecording={isRecording}
-            videoDuration={videoDuration}
             onCapture={initiateCapture}
             onGalleryClick={triggerInput}
             onSwitchCamera={switchCamera}
@@ -498,7 +392,6 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         ) : (
           <PreviewView
             preview={preview || ''}
-            mediaType={mediaType}
             authorName={authorName}
             onAuthorNameChange={setAuthorName}
             onDownload={handleDownload}
@@ -524,7 +417,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/*,video/*"
+        accept="image/*"
         className="hidden"
       />
       

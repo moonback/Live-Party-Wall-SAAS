@@ -73,14 +73,7 @@ export const PhotoCard = React.memo(({
           ? 'min-h-[250px]' 
           : 'aspect-auto'
       }`}>
-        {photo.type === 'video' ? (
-          <video
-            src={photo.url}
-            className="w-full h-auto object-contain max-h-[40vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            preload="metadata"
-          />
-        ) : (
-          <img 
+        <img 
             src={photo.url} 
             alt={photo.caption} 
             className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -89,22 +82,14 @@ export const PhotoCard = React.memo(({
             onLoad={() => setImageLoaded(true)}
             style={{ maxWidth: '100%', height: 'auto' }}
           />
-        )}
         
         {/* Shine Effect */}
-        {photo.type === 'photo' && (
+        {(
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-md">
             <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-30 group-hover:animate-shimmer-enhanced" />
           </div>
         )}
 
-        {/* Badge vidéo */}
-        {photo.type === 'video' && (
-          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-            <span className="text-white text-xs font-bold">🎬</span>
-            {photo.duration && <span className="text-white text-[10px] font-medium">{Math.floor(photo.duration)}s</span>}
-          </div>
-        )}
       </div>
       
       {/* Author */}

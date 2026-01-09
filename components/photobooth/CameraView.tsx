@@ -2,14 +2,10 @@ import React, { useRef } from 'react';
 import { Timer, Zap } from 'lucide-react';
 import { CaptureButton } from './CaptureButton';
 import { CountdownOverlay } from './CountdownOverlay';
-import { VideoTimer } from './VideoTimer';
 import { CameraControls } from './CameraControls';
 
 interface CameraViewProps {
-  mediaType: 'photo' | 'video';
   countdown: number | null;
-  isRecording: boolean;
-  videoDuration: number;
   onCapture: () => void;
   onGalleryClick: () => void;
   onSwitchCamera: () => void;
@@ -26,10 +22,7 @@ interface CameraViewProps {
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
-  mediaType,
   countdown,
-  isRecording,
-  videoDuration,
   onCapture,
   onGalleryClick,
   onSwitchCamera,
@@ -79,16 +72,12 @@ export const CameraView: React.FC<CameraViewProps> = ({
         </div>
       )}
 
-      {countdown !== null && mediaType === 'photo' && (
+      {countdown !== null && (
         <CountdownOverlay countdown={countdown} maxDuration={timerMaxDuration} />
       )}
 
-      {isRecording && mediaType === 'video' && (
-        <VideoTimer duration={videoDuration} />
-      )}
-
       {/* Boutons flottants de configuration */}
-      {mediaType === 'photo' && !cameraError && (
+      {!cameraError && (
         <div className="absolute top-20 sm:top-24 right-4 sm:right-6 z-40 flex flex-col gap-2 sm:gap-3">
           {/* Bouton mode rafale */}
           {onBurstModeToggle && (
@@ -133,8 +122,6 @@ export const CameraView: React.FC<CameraViewProps> = ({
         showSwitchCamera={showSwitchCamera}
         captureButton={
           <CaptureButton
-            mediaType={mediaType}
-            isRecording={isRecording}
             cameraError={cameraError}
             countdown={countdown}
             onClick={onCapture}
@@ -144,7 +131,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
       />
       
       {/* Indicateur mode rafale */}
-      {burstMode && mediaType === 'photo' && !cameraError && (
+      {burstMode && !cameraError && (
         <div className="absolute bottom-24 sm:bottom-28 left-0 right-0 flex justify-center z-30">
           <div className="bg-yellow-500/90 backdrop-blur-md px-4 py-2 rounded-full border-2 border-yellow-400/50 shadow-lg">
             <p className="text-white text-xs sm:text-sm font-bold flex items-center gap-2">

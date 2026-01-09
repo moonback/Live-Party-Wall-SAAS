@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type MediaType = 'photo' | 'video';
+export type MediaType = 'photo';
 
 // Types de réactions disponibles
 export type ReactionType = 'heart' | 'laugh' | 'cry' | 'fire' | 'wow' | 'thumbsup';
@@ -30,8 +30,7 @@ export interface Photo {
   author: string;
   timestamp: number;
   likes_count: number;
-  type: MediaType; // 'photo' ou 'video'
-  duration?: number; // Durée en secondes (pour les vidéos)
+  type: MediaType; // 'photo'
   orientation?: 'portrait' | 'landscape' | 'square' | 'unknown'; // ⚡ Précalculé pour performance
   reactions?: ReactionCounts; // Compteurs de réactions par type
   tags?: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
@@ -186,8 +185,7 @@ export interface PhotoRow {
   author: string | null;
   created_at: string;
   likes_count: number;
-  type: 'photo' | 'video';
-  duration: number | null;
+  type: 'photo';
   tags: string[] | null; // Tags suggérés par l'IA (tableau JSON)
 }
 

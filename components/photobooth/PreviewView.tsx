@@ -6,7 +6,6 @@ import { MAX_AUTHOR_NAME_LENGTH } from '../../constants';
 
 interface PreviewViewProps {
   preview: string;
-  mediaType: 'photo' | 'video';
   authorName: string;
   onAuthorNameChange: (name: string) => void;
   onDownload: () => void;
@@ -28,7 +27,6 @@ interface PreviewViewProps {
 
 export const PreviewView: React.FC<PreviewViewProps> = ({
   preview,
-  mediaType,
   authorName,
   onAuthorNameChange,
   onDownload,
@@ -51,7 +49,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
     <div className="absolute inset-0 z-10 bg-black animate-fade-in-up flex flex-col">
       {/* Toolbar Top */}
       <div className="absolute top-14 sm:top-20 right-2 sm:right-4 z-30 flex flex-col gap-2 sm:gap-3">
-        {mediaType === 'photo' && (
+        {(
           <>
             <button 
               onClick={onDownload}
@@ -96,18 +94,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       {/* Media Preview */}
       <div className="relative flex-1 w-full h-full overflow-hidden bg-slate-900">
         <div className="absolute inset-0 flex items-center justify-center">
-          {mediaType === 'video' && preview ? (
-            <video
-              src={preview}
-              controls
-              className="w-full h-full max-h-[80vh] object-contain"
-              autoPlay
-              loop
-              playsInline
-            />
-          ) : (
-            <>
-              <img 
+          <>
+            <img 
                 src={preview} 
                 alt="Preview" 
                 className="w-full h-full max-h-[80vh] object-contain"
@@ -124,7 +112,6 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 />
               )}
             </>
-          )}
         </div>
         
         {/* Author Name Input */}

@@ -311,21 +311,44 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         </div>
       </main>
 
-      {/* Floating Particles Effect - Réduit sur mobile pour performance */}
+      {/* Floating Particles Effect - Amélioré avec plus d'animations */}
       <div className="fixed inset-0 pointer-events-none z-[1]">
-        {[...Array(isMobile ? 3 : 6)].map((_, i) => (
+        {[...Array(isMobile ? 5 : 10)].map((_, i) => (
           <div
             key={i}
-            className={`absolute ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full bg-white/10 blur-sm animate-float`}
+            className={`absolute ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full bg-white/20 blur-sm`}
             style={{
-              left: `${15 + i * (isMobile ? 30 : 15)}%`,
-              top: `${20 + i * (isMobile ? 25 : 12)}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i * 0.5}s`,
+              left: `${10 + i * (isMobile ? 20 : 9)}%`,
+              top: `${15 + i * (isMobile ? 18 : 8)}%`,
+              animation: `float-particle ${4 + (i % 3) * 0.5}s ease-in-out infinite`,
+              animationDelay: `${i * 0.3}s`,
+              boxShadow: `0 0 ${isMobile ? '4px' : '6px'} rgba(255, 255, 255, 0.3)`,
             }}
           />
         ))}
       </div>
+      
+      {/* Styles d'animation pour particules */}
+      <style>{`
+        @keyframes float-particle {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.3;
+          }
+          25% {
+            transform: translate(10px, -15px) scale(1.2);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translate(-8px, -25px) scale(0.9);
+            opacity: 0.8;
+          }
+          75% {
+            transform: translate(12px, -10px) scale(1.1);
+            opacity: 0.5;
+          }
+        }
+      `}</style>
 
     </div>
   );

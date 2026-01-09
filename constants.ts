@@ -358,10 +358,7 @@ export const IMAGE_QUALITY = 0.9;
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-// Video processing constants
-export const MAX_VIDEO_DURATION = 20; // 20 secondes max
-export const MAX_VIDEO_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-export const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'] as const;
+// Video processing constants - Retiré (mode vidéo désactivé)
 
 // Aftermovie (timelapse) presets
 export const AFTERMOVIE_PRESETS = {
