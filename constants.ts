@@ -344,7 +344,7 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
 };
 
 // Maximum number of photos to keep in memory to prevent crash
-export const MAX_PHOTOS_HISTORY = 50;
+export const MAX_PHOTOS_HISTORY = 150;
 
 // ⚡ Minimum number of photos to display (optimisé pour 200+ photos)
 export const MIN_PHOTOS_DISPLAYED = 200;
@@ -446,7 +446,7 @@ export const REACTIONS: Record<import('./types').ReactionType, import('./types')
   cry: {
     type: 'cry',
     emoji: '😢',
-    label: 'Pleure',
+    label: 'Je pleure',
     color: 'text-blue-500'
   },
   fire: {
@@ -458,13 +458,13 @@ export const REACTIONS: Record<import('./types').ReactionType, import('./types')
   wow: {
     type: 'wow',
     emoji: '😮',
-    label: 'Surprise',
+    label: 'Wow !',
     color: 'text-purple-500'
   },
   thumbsup: {
     type: 'thumbsup',
     emoji: '👍',
-    label: 'Thumbs up',
+    label: 'Bravo !',
     color: 'text-green-500'
   }
 };
