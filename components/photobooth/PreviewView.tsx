@@ -62,8 +62,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
 
   return (
     <div className={`absolute inset-0 z-10 bg-gradient-to-br from-black via-slate-900 to-black flex flex-col transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Toolbar Top - Amélioré avec animations et meilleure visibilité */}
-      <div className="absolute top-4 sm:top-6 right-3 sm:right-6 z-50 flex flex-col gap-2.5 sm:gap-3 animate-fade-in-down">
+      {/* Toolbar Top - Visible uniquement en desktop */}
+      <div className="hidden sm:flex absolute top-4 sm:top-6 right-3 sm:right-6 z-50 flex-col gap-2.5 sm:gap-3 animate-fade-in-down">
         {mediaType === 'photo' && (
           <>
             <button 
@@ -236,14 +236,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       </div>
 
       {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité */}
-      <div className={`absolute bottom-0 left-0 w-full p-4 sm:p-6 pb-6 sm:pb-8 bg-gradient-to-t from-black via-black/95 to-black/80 flex space-x-3 sm:space-x-4 z-40 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        {/* Bouton pour cacher/afficher les inputs - Positionné en bas pour meilleure visibilité */}
+      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 pb-4 sm:pb-8 bg-gradient-to-t from-black via-black/95 to-black/80 flex flex-wrap gap-2 sm:gap-0 sm:space-x-3 sm:space-x-4 z-40 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+        {/* Bouton pour cacher/afficher les inputs - Toujours visible */}
         <button 
           onClick={() => setShowInputs(!showInputs)}
-          className={`group relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
+          className={`group relative w-12 h-12 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
             showInputs 
-              ? 'bg-black/80 border-white/30 text-white hover:bg-black/90 hover:border-white/50' 
-              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/70 text-white shadow-blue-500/50'
+              ? 'bg-black/90 border-white/40 text-white hover:bg-black/95 hover:border-white/60' 
+              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/80 text-white shadow-blue-500/50'
           }`}
           title={showInputs ? "Masquer les champs" : "Afficher les champs"}
           aria-label={showInputs ? "Masquer les champs" : "Afficher les champs"}
@@ -254,16 +254,29 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               : 'bg-gradient-to-br from-blue-400/20 to-blue-600/20 opacity-100'
           }`} />
           {showInputs ? (
-            <EyeOff className="w-6 h-6 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <EyeOff className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
           ) : (
-            <Eye className="w-6 h-6 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <Eye className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
           )}
         </button>
+        
+        {/* Bouton Télécharger - Visible en mobile dans la barre du bas */}
+        {mediaType === 'photo' && (
+          <button 
+            onClick={onDownload}
+            className="group relative w-12 h-12 sm:hidden rounded-2xl bg-black/90 backdrop-blur-xl border-2 border-white/40 flex items-center justify-center hover:bg-black/95 hover:border-white/60 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl"
+            title="Télécharger"
+            aria-label="Télécharger la photo"
+          >
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Download className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+          </button>
+        )}
         
         <button
           onClick={onRetake}
           disabled={loading}
-          className="group relative w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center bg-white/15 backdrop-blur-xl text-white rounded-2xl font-bold border-2 border-white/30 active:scale-95 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-white/15 backdrop-blur-xl text-white rounded-2xl font-bold border-2 border-white/30 active:scale-95 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refaire"
           aria-label="Refaire la photo"
         >
