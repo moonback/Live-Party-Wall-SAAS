@@ -2,13 +2,15 @@ import React from 'react';
 import { Download, Frame, Palette } from 'lucide-react';
 import { FilterSelector } from './FilterSelector';
 import { FilterType, FrameType } from '../../utils/imageFilters';
-import { MAX_AUTHOR_NAME_LENGTH } from '../../constants';
+import { MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH } from '../../constants';
 
 interface PreviewViewProps {
   preview: string;
   mediaType: 'photo' | 'video';
   authorName: string;
   onAuthorNameChange: (name: string) => void;
+  userDescription: string;
+  onUserDescriptionChange: (description: string) => void;
   onDownload: () => void;
   onRetake: () => void;
   onSubmit: () => void;
@@ -31,6 +33,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   mediaType,
   authorName,
   onAuthorNameChange,
+  userDescription,
+  onUserDescriptionChange,
   onDownload,
   onRetake,
   onSubmit,
@@ -128,7 +132,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         </div>
         
         {/* Author Name Input */}
-        <div className="absolute bottom-20 sm:bottom-28 left-0 w-full px-4 sm:px-6 flex justify-center z-20">
+        <div className="absolute bottom-32 sm:bottom-40 left-0 w-full px-4 sm:px-6 flex justify-center z-20">
           <div className="bg-black/40 backdrop-blur-md p-2.5 sm:p-3 rounded-xl sm:rounded-2xl w-full max-w-sm border border-white/10 shadow-lg">
             <input
               type="text"
@@ -140,6 +144,26 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               autoFocus
               inputMode="text"
             />
+          </div>
+        </div>
+
+        {/* User Description Input */}
+        <div className="absolute bottom-20 sm:bottom-28 left-0 w-full px-4 sm:px-6 flex justify-center z-20">
+          <div className="bg-black/40 backdrop-blur-md p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-full max-w-sm border border-white/10 shadow-lg">
+            <textarea
+              value={userDescription}
+              onChange={(e) => onUserDescriptionChange(e.target.value)}
+              placeholder="Ajoutez une description (optionnel)..."
+              className="w-full text-center text-sm sm:text-base text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none"
+              maxLength={MAX_USER_DESCRIPTION_LENGTH}
+              rows={2}
+              style={{ minHeight: '2.5rem', maxHeight: '6rem' }}
+            />
+            {userDescription.length > 0 && (
+              <div className="text-xs text-white/50 text-center mt-1">
+                {userDescription.length}/{MAX_USER_DESCRIPTION_LENGTH}
+              </div>
+            )}
           </div>
         </div>
       </div>

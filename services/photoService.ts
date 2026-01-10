@@ -92,13 +92,15 @@ export const enrichPhotosWithOrientation = async (photos: Photo[]): Promise<Phot
  * @param caption - Légende de la photo
  * @param author - Nom de l'auteur
  * @param tags - Tags suggérés par l'IA (optionnel)
+ * @param userDescription - Description saisie par l'utilisateur (optionnel)
  */
 export const addPhotoToWall = async (
   eventId: string,
   base64Image: string,
   caption: string,
   author: string,
-  tags?: string[]
+  tags?: string[],
+  userDescription?: string
 ): Promise<Photo> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible d'envoyer la photo.");
@@ -154,7 +156,8 @@ export const addPhotoToWall = async (
           likes_count: 0,
           type: 'photo',
           event_id: eventId,
-          tags: tags && tags.length > 0 ? tags : null
+          tags: tags && tags.length > 0 ? tags : null,
+          user_description: userDescription && userDescription.trim() ? userDescription.trim() : null
         }
       ])
       .select()
@@ -171,7 +174,8 @@ export const addPhotoToWall = async (
       timestamp: new Date(data.created_at).getTime(),
       likes_count: 0,
       type: 'photo',
-      tags: Array.isArray(data.tags) ? data.tags : (tags || [])
+      tags: Array.isArray(data.tags) ? data.tags : (tags || []),
+      user_description: data.user_description || undefined
     };
     
     // Précalculer l'orientation (utiliser base64Image pour un chargement immédiat, sinon publicUrl)
@@ -188,13 +192,19 @@ export const addPhotoToWall = async (
 /**
  * Upload a video to Supabase Storage and insert record into DB.
  * @param eventId - ID de l'événement
+ * @param videoBlob - Vidéo en Blob
+ * @param caption - Légende de la vidéo
+ * @param author - Nom de l'auteur
+ * @param duration - Durée en secondes
+ * @param userDescription - Description saisie par l'utilisateur (optionnel)
  */
 export const addVideoToWall = async (
   eventId: string,
   videoBlob: Blob,
   caption: string,
   author: string,
-  duration: number
+  duration: number,
+  userDescription?: string
 ): Promise<Photo> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible d'envoyer la vidéo.");
@@ -240,7 +250,8 @@ export const addVideoToWall = async (
           likes_count: 0,
           type: 'video',
           duration: duration,
-          event_id: eventId
+          event_id: eventId,
+          user_description: userDescription && userDescription.trim() ? userDescription.trim() : null
         }
       ])
       .select()
@@ -257,7 +268,8 @@ export const addVideoToWall = async (
       timestamp: new Date(data.created_at).getTime(),
       likes_count: 0,
       type: 'video',
-      duration: data.duration ? Number(data.duration) : undefined
+      duration: data.duration ? Number(data.duration) : undefined,
+      user_description: data.user_description || undefined
     };
 
   } catch (error) {
@@ -323,7 +335,8 @@ export const getPhotos = async (eventId: string): Promise<Photo[]> => {
     likes_count: likesCountMap.get(p.id) || 0, // Utiliser le nombre réel depuis la table likes
     type: (p.type || 'photo') as MediaType,
     duration: p.duration ? Number(p.duration) : undefined,
-    tags: Array.isArray(p.tags) ? p.tags : undefined
+    tags: Array.isArray(p.tags) ? p.tags : undefined,
+    user_description: p.user_description || undefined
   }));
 
   // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)
@@ -392,7 +405,8 @@ export const getPhotosByAuthor = async (eventId: string, authorName: string): Pr
       timestamp: new Date(p.created_at).getTime(),
       likes_count: likesCountMap.get(p.id) || 0,
       type: (p.type || 'photo') as MediaType,
-      duration: p.duration ? Number(p.duration) : undefined
+      duration: p.duration ? Number(p.duration) : undefined,
+      user_description: p.user_description || undefined
     }));
 
     // Précalculer les orientations en parallèle

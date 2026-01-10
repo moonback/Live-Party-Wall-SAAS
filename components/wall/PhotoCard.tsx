@@ -100,64 +100,102 @@ export const PhotoCard = React.memo(({
 
         {/* Badge vidéo */}
         {photo.type === 'video' && (
-          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-            <span className="text-white text-xs font-bold">🎬</span>
-            {photo.duration && <span className="text-white text-[10px] font-medium">{Math.floor(photo.duration)}s</span>}
+          <div className="absolute top-2 left-2 z-20">
+            <div className="relative bg-gradient-to-r from-red-500/90 via-purple-500/90 to-blue-500/90 backdrop-blur-md px-2 py-1 rounded-full border border-white/30 shadow-lg flex items-center gap-1">
+              <span className="text-white text-xs font-bold drop-shadow-[0_0_4px_rgba(0,0,0,0.5)]">🎬</span>
+              {photo.duration && (
+                <span className="text-white text-[10px] font-medium drop-shadow-[0_0_4px_rgba(0,0,0,0.5)]">{Math.floor(photo.duration)}s</span>
+              )}
+              {/* Effet de brillance subtil */}
+              <div className="absolute inset-0 rounded-full overflow-hidden opacity-30">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Likes et Réactions - En haut, discrets */}
+        {(photo.likes_count > 0 || (reactions && Object.values(reactions).some(count => count > 0))) && (
+          <div className="absolute top-2 md:top-3 lg:top-4 right-2 md:right-3 lg:right-4 flex items-center gap-1 md:gap-1.5 flex-wrap justify-end z-10 opacity-70 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            {photo.likes_count > 0 && (
+              <div className="bg-black/60 backdrop-blur-sm text-white/80 text-[10px] md:text-xs lg:text-sm font-medium px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border border-pink-500/20 flex items-center gap-1">
+                <Heart className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 fill-pink-400/70 text-pink-400/70" /> 
+                <span>{photo.likes_count}</span>
+              </div>
+            )}
+            {reactions && Object.entries(reactions).map(([type, count]) => {
+              if (count === 0) return null;
+              const reaction = REACTIONS[type as keyof typeof REACTIONS];
+              if (!reaction) return null;
+              return (
+                <div key={type} className="bg-black/60 backdrop-blur-sm text-white/80 text-[10px] md:text-xs lg:text-sm font-medium px-1.5 md:px-2 py-0.5 md:py-1 rounded-full border border-slate-500/20 flex items-center gap-1">
+                  <span className="text-xs md:text-sm lg:text-base opacity-80">{reaction.emoji}</span>
+                  <span className="text-[9px] md:text-[10px] lg:text-xs">{count}</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
       
-      {/* Author */}
-      <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 via-black/60 to-transparent backdrop-blur-sm px-3 py-2.5 flex items-center justify-end">
-        <div className="flex items-center gap-1.5">
-          {authorHasPhotographerBadge && <span className="text-xs">📸</span>}
-          <p className="text-[10px] md:text-xs font-semibold text-white/90 uppercase tracking-wide truncate max-w-[120px]">
-            {photo.author}
-          </p>
-        </div>
-      </div>
-
-      {/* Badge NEW */}
+      {/* Badge NEW - Bandeau au-dessus du nom */}
       {index === 0 && (
-        <div className="absolute -top-3 -right-3 w-14 h-14 z-20 animate-bounce-slow">
-           <div className="relative w-full h-full">
-             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-400 to-cyan-300 animate-spin-slow blur-[2px] opacity-90"></div>
-             <div className="absolute inset-[2px] rounded-full bg-slate-900 backdrop-blur-sm flex items-center justify-center border-2 border-white/30">
-               <span className="text-[11px] font-black text-white italic transform -rotate-12">NEW</span>
-             </div>
-           </div>
+        <div className="pointer-events-none select-none absolute bottom-12 md:bottom-14 lg:bottom-16 left-2 md:left-3 z-30 animate-bounce-slow">
+          <div className="relative">
+            {/* Glow effect animé */}
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500/60 via-purple-500/60 to-cyan-400/60 blur-lg opacity-75 animate-pulse"></div>
+            
+            {/* Bandeau principal */}
+            <div className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 backdrop-blur-md px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-white/60 shadow-[0_0_15px_rgba(236,72,153,0.6)] flex items-center justify-center">
+              <span className="text-[10px] md:text-xs lg:text-sm font-black text-white italic drop-shadow-[0_0_6px_rgba(236,72,153,0.8)] relative z-10 tracking-wide">
+                NEW
+              </span>
+              
+              {/* Effet de brillance */}
+              <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 animate-pulse">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Badge Star */}
       {photoBadge && (
-        <div className="absolute top-3 right-3 z-20">
-          <div className="relative bg-gradient-to-r from-pink-500/95 via-purple-500/95 to-pink-500/95 backdrop-blur-md px-3 py-1.5 rounded-full border-2 border-white/40 shadow-lg flex items-center gap-1.5 animate-bounce-slow">
-            <span className="text-base relative z-10">⭐</span>
-            <span className="text-[10px] font-extrabold text-white relative z-10">Star</span>
+        <div className="absolute top-2 md:top-3 left-2 md:left-3 z-20">
+          <div className="relative w-auto">
+            {/* Glow effect animé */}
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400/60 via-orange-400/60 to-pink-500/60 blur-lg opacity-75 animate-pulse"></div>
+            
+            {/* Badge principal */}
+            <div className="relative bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 backdrop-blur-md px-2 py-1 rounded-full border border-white/60 shadow-[0_0_15px_rgba(251,191,36,0.6)] flex items-center gap-1 animate-bounce-slow">
+              {/* Effet de brillance sur l'étoile */}
+              <span className="text-sm md:text-base relative z-10 drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-spin-slow" style={{ animationDuration: '3s' }}>⭐</span>
+              <span className="text-[10px] md:text-xs font-extrabold text-white relative z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] tracking-tight">Star</span>
+              
+              {/* Effet de scintillement */}
+              <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 animate-pulse">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+              </div>
+            </div>
           </div>
         </div>
       )}
-      
-      {/* Likes et Réactions */}
-      <div className="absolute top-2 right-2 flex items-center gap-1.5 flex-wrap max-w-[120px] justify-end z-10">
-        {photo.likes_count > 0 && (
-          <div className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg border border-pink-500/30 flex items-center gap-1">
-            <Heart className="w-3 h-3 fill-pink-400 text-pink-400" /> 
-            <span>{photo.likes_count}</span>
-          </div>
-        )}
-        {reactions && Object.entries(reactions).map(([type, count]) => {
-          if (count === 0) return null;
-          const reaction = REACTIONS[type as keyof typeof REACTIONS];
-          if (!reaction) return null;
-          return (
-            <div key={type} className="bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-slate-500/30 flex items-center gap-1">
-              <span className="text-xs">{reaction.emoji}</span>
-              <span className="text-[9px]">{count}</span>
-            </div>
-          );
-        })}
+
+      {/* Auteur sous la photo */}
+      <div className="pointer-events-none select-none absolute bottom-2 md:bottom-3 left-2 md:left-3 z-30">
+        <div className="flex items-center gap-1.5 md:gap-2 bg-black/80 px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg border border-pink-500/30">
+          {authorHasPhotographerBadge && (
+            <span className="text-base md:text-lg lg:text-xl relative inline-block">
+              {/* Glow effect pour le badge photographe */}
+              <span className="absolute inset-0 blur-sm opacity-60 animate-pulse">📸</span>
+              <span className="relative drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]">📸</span>
+            </span>
+          )}
+          <p className="text-xs md:text-sm lg:text-base xl:text-lg font-semibold text-white/90 uppercase tracking-wide truncate max-w-[120px] md:max-w-[150px] lg:max-w-[200px]">
+            {photo.author}
+          </p>
+        </div>
       </div>
     </motion.div>
   );

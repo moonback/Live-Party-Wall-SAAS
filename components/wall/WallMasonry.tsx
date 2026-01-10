@@ -135,7 +135,7 @@ const VirtualColumn = React.memo(({
                 width: '100%',
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className="pb-4 md:pb-6 lg:pb-8"
+              className="pb-4 md:pb-6 lg:pb-8 xl:pb-10"
             >
               {item.type === 'battle' ? (
                 <PhotoBattleComponent
@@ -191,9 +191,10 @@ export const WallMasonry = React.memo(({
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         const w = window.innerWidth;
-        // Breakpoints optimisés pour une meilleure distribution
-        if (w >= 2560) setNumColumns(10); // Très grands écrans (4K+)
-        else if (w >= 1920) setNumColumns(8); // Grands écrans (Full HD+)
+        // Breakpoints optimisés pour TV et vidéoprojecteurs (75"+)
+        if (w >= 3840) setNumColumns(12); // 4K Ultra HD (TV 75"+)
+        else if (w >= 2560) setNumColumns(10); // 2K/QHD (TV 65"+)
+        else if (w >= 1920) setNumColumns(8); // Full HD (TV 55"+)
         else if (w >= 1536) setNumColumns(6); // Laptops larges
         else if (w >= 1280) setNumColumns(5); // Laptops standards
         else if (w >= 1024) setNumColumns(4); // Tablettes paysage
@@ -276,7 +277,7 @@ export const WallMasonry = React.memo(({
   }, [photos, numColumns, battles, showBattles]);
 
   return (
-    <div className="flex gap-2 md:gap-3 lg:gap-4 w-full px-1 md:px-2 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
+    <div className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-1 md:px-2 lg:px-3 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
       {columnsData.map((colData, i) => (
         <div key={i} className="flex-1 min-w-0 transition-all duration-300 ease-in-out">
           <VirtualColumn 

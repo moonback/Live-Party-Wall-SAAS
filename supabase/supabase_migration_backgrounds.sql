@@ -56,3 +56,5 @@ ALTER TABLE event_settings
 ALTER TABLE event_settings
   ADD COLUMN IF NOT EXISTS background_mobile_url TEXT;
 
+
+

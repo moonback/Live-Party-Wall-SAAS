@@ -28,3 +28,5 @@ CREATE INDEX IF NOT EXISTS idx_photos_tags_gin ON public.photos USING GIN (tags)
 -- Note: Les tags sont stockés comme JSONB pour permettre des requêtes efficaces
 -- Exemple de requête : SELECT * FROM photos WHERE tags @> '["danse"]'::jsonb;
 
+
+

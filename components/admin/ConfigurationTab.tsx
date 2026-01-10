@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Settings, Type, Tag, Sparkles, Frame, Upload, X, Save, RefreshCw, 
   Image as ImageIcon, Gauge, Move, Shield, Video, Grid3x3, BarChart2, 
-  User, Trophy, Info, CheckCircle2, Power
+  User, Trophy, Info, CheckCircle2, Power, Play
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { usePhotos } from '../../context/PhotosContext';
@@ -230,6 +230,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
       find_me_enabled: false,
       ar_scene_enabled: false,
       battle_mode_enabled: false,
+      auto_carousel_enabled: false,
       // content_moderation_enabled reste toujours à true
     }));
     addToast("Toutes les fonctionnalités ont été désactivées. N'oubliez pas de sauvegarder.", 'info');
@@ -904,6 +905,53 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                       <p className="text-xs text-slate-400 mt-1">Crée des battles entre deux photos ; les invités votent en live.</p>
                     </div>
                   </label>
+                </div>
+                {/* Carrousel automatique */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-indigo-500/30 transition-colors">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="auto_carousel_enabled"
+                      checked={localConfig.auto_carousel_enabled ?? true}
+                      onChange={handleConfigChange}
+                      className="h-4 w-4 accent-indigo-500 mt-1 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-100 flex items-center gap-2 mb-0.5">
+                        <Play className="w-4 h-4 text-indigo-400" />
+                        Carrousel automatique
+                        {localConfig.auto_carousel_enabled ? (
+                          <span className="px-2 py-0.5 ml-2 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded-full">Actif</span>
+                        ) : (
+                          <span className="px-2 py-0.5 ml-2 bg-slate-700 text-slate-400 text-xs rounded-full">Inactif</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">Affiche automatiquement les photos en carrousel après une période d'inactivité.</p>
+                    </div>
+                  </label>
+                  {/* Configuration du délai - visible uniquement si activé */}
+                  {localConfig.auto_carousel_enabled && (
+                    <div className="mt-4 pt-4 border-t border-slate-700">
+                      <label className="block text-xs font-medium text-slate-300 mb-2">
+                        Délai d'activation: {localConfig.auto_carousel_delay ?? 20} secondes
+                      </label>
+                      <input
+                        type="range"
+                        name="auto_carousel_delay"
+                        min="5"
+                        max="240"
+                        step="5"
+                        value={localConfig.auto_carousel_delay ?? 20}
+                        onChange={handleConfigChange}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                      <div className="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>5s</span>
+                        <span>120s</span>
+                        <span>240s</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

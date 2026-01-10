@@ -103,7 +103,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
               </div>
             </div>
             
-            {currentEventName && !isElectron() && (
+            {/* {currentEventName && !isElectron() && (
               <motion.button
                 whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.95 }}
@@ -117,7 +117,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                   Application
                 </span>
               </motion.button>
-            )}
+            )} */}
             {isElectron() && currentEvent?.slug && (
               <>
                 <motion.button

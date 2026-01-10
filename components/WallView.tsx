@@ -150,15 +150,15 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   }, [photosReactions]);
 
   // Hook pour le carrousel automatique
-  useAutoCarousel({
+  const { isCarouselActive } = useAutoCarousel({
     photos: displayedPhotos,
     lightboxIndex,
     setLightboxIndex,
     newPhotoIndicator,
     hasNewLike,
     hasNewReaction,
-    enabled: true,
-    inactivityDelay: 60 * 1000, // 1 minute
+    enabled: settings?.auto_carousel_enabled ?? true,
+    inactivityDelay: (settings?.auto_carousel_delay ?? 20) * 1000, // Utilise la valeur configurée (en millisecondes)
     photoDisplayDuration: 3000 // 3 secondes par photo
   });
   
@@ -344,8 +344,8 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             </div>
             
             {/* Contenu centré */}
-            <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-8 lg:px-12">
-              <div className="flex flex-col items-center justify-center gap-4">
+            <div className="relative z-10 max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-6 md:px-8 lg:px-12 xl:px-16">
+              <div className="flex flex-col items-center justify-center gap-6 md:gap-8 lg:gap-10">
                 {/* Icône d'alerte */}
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
@@ -353,8 +353,8 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
                   transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
                   className="flex-shrink-0"
                 >
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/40 animate-bounce-slow shadow-lg">
-                    <span className="text-2xl md:text-3xl lg:text-4xl">⚠️</span>
+                  <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 md:border-[5px] border-white/40 animate-bounce-slow shadow-lg">
+                    <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl">⚠️</span>
                   </div>
                 </motion.div>
                 
@@ -365,7 +365,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
                   transition={{ delay: 0.3, duration: 0.4 }}
                   className="text-center"
                 >
-                  <p className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] break-words leading-relaxed tracking-normal max-w-3xl mx-auto">
+                  <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] break-words leading-relaxed tracking-normal max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
                     <span className="relative inline-block">
                       <span className="absolute inset-0 bg-gradient-to-r from-white via-yellow-100 to-white opacity-30 blur-xl animate-pulse"></span>
                       <span className="relative">{settings.alert_text}</span>
@@ -376,7 +376,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             </div>
             
             {/* Bordure animée autour */}
-            <div className="absolute inset-0 border-4 border-yellow-400/60 shadow-[0_0_40px_rgba(255,193,7,0.6)] animate-pulse pointer-events-none"></div>
+            <div className="absolute inset-0 border-4 md:border-[6px] lg:border-8 border-yellow-400/60 shadow-[0_0_40px_rgba(255,193,7,0.6)] animate-pulse pointer-events-none"></div>
             
             {/* Effet de brillance qui traverse */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -396,15 +396,15 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
         onMouseLeave={() => setIsPaused(false)}
       >
         {displayedPhotos.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 px-6">
-            <div className="relative mb-8">
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 px-6 md:px-8 lg:px-12">
+            <div className="relative mb-8 md:mb-12 lg:mb-16">
                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-full blur-3xl opacity-20 animate-pulse-slow"></div>
-               <div className="relative text-8xl md:text-9xl animate-bounce-slow filter drop-shadow-2xl">📸</div>
+               <div className="relative text-8xl md:text-9xl lg:text-[12rem] xl:text-[14rem] 2xl:text-[16rem] animate-bounce-slow filter drop-shadow-2xl">📸</div>
             </div>
-            <p className="text-3xl md:text-5xl font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 mb-4 text-center">
+            <p className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 mb-4 md:mb-6 lg:mb-8 text-center">
                Le mur attend sa première star...
             </p>
-            <p className="text-sm md:text-base text-slate-400 uppercase tracking-[0.3em] font-bold mb-8">
+            <p className="text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl text-slate-400 uppercase tracking-[0.3em] font-bold mb-8 md:mb-12 lg:mb-16">
                Scannez le QR Code pour participer
             </p>
           </div>
@@ -444,6 +444,8 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             currentIndex={lightboxIndex ?? 0}
             totalPhotos={displayedPhotos.length}
             downloadUrl={lightboxPhoto.url}
+            reactions={photosReactions.get(lightboxPhoto.id)}
+            isAutoMode={isCarouselActive}
           />
         </Suspense>
       )}

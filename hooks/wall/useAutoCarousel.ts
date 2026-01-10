@@ -39,6 +39,7 @@ export const useAutoCarousel = ({
   const photosRef = useRef<Photo[]>(photos);
   const lightboxIndexRef = useRef<number | null>(lightboxIndex);
   const isCarouselActiveRef = useRef<boolean>(false);
+  const previousPhotosCountRef = useRef<number>(photos.length);
 
   // Mettre à jour les refs
   useEffect(() => {
@@ -146,11 +147,17 @@ export const useAutoCarousel = ({
 
   // Arrêter le carrousel si une nouvelle photo est postée
   useEffect(() => {
-    if (newPhotoIndicator && isCarouselActiveRef.current) {
+    const currentPhotosCount = photos.length;
+    const hasNewPhoto = currentPhotosCount > previousPhotosCountRef.current;
+    
+    if ((newPhotoIndicator || hasNewPhoto) && isCarouselActiveRef.current) {
       stopCarousel();
       resetInactivityTimer();
     }
-  }, [newPhotoIndicator, stopCarousel, resetInactivityTimer]);
+    
+    // Mettre à jour le compteur de photos
+    previousPhotosCountRef.current = currentPhotosCount;
+  }, [newPhotoIndicator, photos.length, stopCarousel, resetInactivityTimer]);
 
   // Arrêter le carrousel si un like est ajouté
   useEffect(() => {
