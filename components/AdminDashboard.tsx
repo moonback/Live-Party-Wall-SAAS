@@ -235,7 +235,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     addToast("Préparation de l'archive ZIP...", 'info');
     
     try {
-        await exportPhotosToZip(photos, config.event_title);
+        await exportPhotosToZip(photos, config.event_title, {
+          logoUrl: config.logo_url,
+          logoWatermarkEnabled: config.logo_watermark_enabled
+        });
         addToast("Téléchargement lancé !", 'success');
     } catch (error) {
         console.error(error);
@@ -275,7 +278,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               message: progress.message
             });
           },
-          batchSize
+          batchSize,
+          {
+            logoUrl: config.logo_url,
+            logoWatermarkEnabled: config.logo_watermark_enabled
+          }
         );
         addToast("Téléchargement lancé !", 'success');
     } catch (error) {

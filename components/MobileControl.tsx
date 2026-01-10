@@ -259,7 +259,10 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     setIsExporting(true);
     try {
       const eventTitle = settings.event_title || 'Party Wall';
-      await exportPhotosToZip(photos, eventTitle);
+      await exportPhotosToZip(photos, eventTitle, {
+        logoUrl: settings.logo_url,
+        logoWatermarkEnabled: settings.logo_watermark_enabled
+      });
       addToast('Export réussi !', 'success');
     } catch (error) {
       addToast('Erreur lors de l\'export', 'error');

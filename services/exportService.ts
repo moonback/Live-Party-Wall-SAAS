@@ -1,8 +1,18 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Photo, ReactionCounts } from '../types';
+import { applyWatermarkToImage } from '../utils/watermarkUtils';
 
-export const exportPhotosToZip = async (photos: Photo[], eventTitle: string) => {
+export interface ExportOptions {
+  logoUrl?: string | null;
+  logoWatermarkEnabled?: boolean;
+}
+
+export const exportPhotosToZip = async (
+  photos: Photo[], 
+  eventTitle: string,
+  options?: ExportOptions
+) => {
   const zip = new JSZip();
   const folderName = `${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_photos`;
   const folder = zip.folder(folderName);
@@ -24,12 +34,24 @@ export const exportPhotosToZip = async (photos: Photo[], eventTitle: string) => 
   // Télécharger et ajouter chaque image
   const promises = photos.map(async (photo) => {
     try {
-      // Fetch l'image
-      const response = await fetch(photo.url);
-      const blob = await response.blob();
+      let blob: Blob;
+      
+      // Si c'est une photo et que le filigrane est activé, appliquer le watermark
+      if (
+        photo.type === 'photo' && 
+        options?.logoUrl && 
+        options?.logoWatermarkEnabled
+      ) {
+        blob = await applyWatermarkToImage(photo.url, options.logoUrl);
+      } else {
+        // Téléchargement normal (vidéo ou photo sans filigrane)
+        const response = await fetch(photo.url);
+        blob = await response.blob();
+      }
       
       // Nom du fichier
-      const filename = `photo_${photo.id}.jpg`;
+      const extension = photo.type === 'video' ? (photo.url.includes('.webm') ? 'webm' : 'mp4') : 'jpg';
+      const filename = `photo_${photo.id}.${extension}`;
       
       // Ajouter au ZIP
       folder.file(filename, blob);
@@ -248,6 +270,8 @@ const drawMetadataOnCanvas = (
  * @param likesCount - Nombre de likes
  * @param reactions - Compteurs de réactions
  * @param caption - Légende de la photo
+ * @param logoUrl - URL du logo pour filigrane (optionnel)
+ * @param logoWatermarkEnabled - Activer le filigrane (optionnel)
  * @returns Promise résolue avec un Blob PNG
  */
 const drawMetadataOnImage = async (
@@ -255,7 +279,9 @@ const drawMetadataOnImage = async (
   author: string,
   likesCount: number,
   reactions: ReactionCounts,
-  caption: string
+  caption: string,
+  logoUrl?: string | null,
+  logoWatermarkEnabled?: boolean
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -282,14 +308,80 @@ const drawMetadataOnImage = async (
         // Dessiner les métadonnées
         drawMetadataOnCanvas(ctx, img, author, likesCount, reactions, caption);
 
-        // Convertir en PNG
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
+        // Fonction pour appliquer le filigrane et convertir en PNG
+        const applyWatermarkAndConvert = () => {
+          // Appliquer le filigrane si activé
+          if (logoUrl && logoWatermarkEnabled) {
+            const logo = new Image();
+            logo.crossOrigin = 'anonymous';
+            
+            logo.onload = () => {
+              try {
+                // Calculer la taille du logo (environ 8% de la largeur de l'image, max 150px)
+                const logoMaxWidth = Math.min(img.width * 0.08, 150);
+                const logoAspectRatio = logo.width / logo.height;
+                const logoWidth = logoMaxWidth;
+                const logoHeight = logoWidth / logoAspectRatio;
+                
+                // Position : bas à gauche avec padding (2% de l'image)
+                const padding = Math.max(img.width, img.height) * 0.02;
+                const logoX = padding;
+                const logoY = img.height - logoHeight - padding;
+                
+                // Dessiner un fond semi-transparent pour le logo
+                const backgroundPadding = 8;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(
+                  logoX - backgroundPadding,
+                  logoY - backgroundPadding,
+                  logoWidth + (backgroundPadding * 2),
+                  logoHeight + (backgroundPadding * 2)
+                );
+                
+                // Dessiner le logo avec opacité
+                ctx.globalAlpha = 0.8;
+                ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                ctx.globalAlpha = 1.0;
+              } catch (err) {
+                console.warn('Erreur lors du dessin du logo:', err);
+              }
+              
+              // Convertir en PNG
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  resolve(blob);
+                } else {
+                  reject(new Error('Impossible de convertir le canvas en blob'));
+                }
+              }, 'image/png');
+            };
+            
+            logo.onerror = () => {
+              // Continuer sans logo si erreur de chargement
+              console.warn('Erreur lors du chargement du logo pour filigrane');
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  resolve(blob);
+                } else {
+                  reject(new Error('Impossible de convertir le canvas en blob'));
+                }
+              }, 'image/png');
+            };
+            
+            logo.src = logoUrl;
           } else {
-            reject(new Error('Impossible de convertir le canvas en blob'));
+            // Convertir en PNG sans filigrane
+            canvas.toBlob((blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('Impossible de convertir le canvas en blob'));
+              }
+            }, 'image/png');
           }
-        }, 'image/png');
+        };
+
+        applyWatermarkAndConvert();
       } catch (error) {
         reject(error);
       }
@@ -312,13 +404,62 @@ const drawMetadataOnImage = async (
             ctx.drawImage(imgRetry, 0, 0);
             // Réutiliser la fonction de dessin
             drawMetadataOnCanvas(ctx, imgRetry, author, likesCount, reactions, caption);
-            canvas.toBlob((blob) => {
-              if (blob) {
-                resolve(blob);
-              } else {
-                reject(new Error('Impossible de convertir le canvas en blob'));
-              }
-            }, 'image/png');
+            
+            // Appliquer le filigrane si activé
+            if (logoUrl && logoWatermarkEnabled) {
+              const logo = new Image();
+              logo.onload = () => {
+                try {
+                  const logoMaxWidth = Math.min(imgRetry.width * 0.08, 150);
+                  const logoAspectRatio = logo.width / logo.height;
+                  const logoWidth = logoMaxWidth;
+                  const logoHeight = logoWidth / logoAspectRatio;
+                  const padding = Math.max(imgRetry.width, imgRetry.height) * 0.02;
+                  const logoX = padding;
+                  const logoY = imgRetry.height - logoHeight - padding;
+                  const backgroundPadding = 8;
+                  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                  ctx.fillRect(
+                    logoX - backgroundPadding,
+                    logoY - backgroundPadding,
+                    logoWidth + (backgroundPadding * 2),
+                    logoHeight + (backgroundPadding * 2)
+                  );
+                  ctx.globalAlpha = 0.8;
+                  ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                  ctx.globalAlpha = 1.0;
+                } catch (err) {
+                  console.warn('Erreur lors du dessin du logo:', err);
+                }
+                
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    resolve(blob);
+                  } else {
+                    reject(new Error('Impossible de convertir le canvas en blob'));
+                  }
+                }, 'image/png');
+              };
+              logo.onerror = () => {
+                // Continuer sans logo si erreur
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    resolve(blob);
+                  } else {
+                    reject(new Error('Impossible de convertir le canvas en blob'));
+                  }
+                }, 'image/png');
+              };
+              logo.src = logoUrl;
+            } else {
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  resolve(blob);
+                } else {
+                  reject(new Error('Impossible de convertir le canvas en blob'));
+                }
+              }, 'image/png');
+            }
           } catch (err) {
             reject(err);
           }
@@ -353,13 +494,15 @@ export interface ExportProgress {
  * @param eventTitle - Titre de l'événement
  * @param onProgress - Callback optionnel pour suivre la progression
  * @param batchSize - Taille des lots pour le traitement (défaut: 5)
+ * @param options - Options d'export (logo, filigrane)
  */
 export const exportPhotosWithMetadataToZip = async (
   photos: Photo[],
   reactionsMap: Map<string, ReactionCounts>,
   eventTitle: string,
   onProgress?: (progress: ExportProgress) => void,
-  batchSize: number = 5
+  batchSize: number = 5,
+  options?: ExportOptions
 ) => {
   const zip = new JSZip();
   const folderName = `${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_photos_with_metadata`;
@@ -400,7 +543,9 @@ export const exportPhotosWithMetadataToZip = async (
           photo.author || 'Anonyme',
           photo.likes_count,
           reactions,
-          photo.caption || ''
+          photo.caption || '',
+          options?.logoUrl,
+          options?.logoWatermarkEnabled
         );
 
         // Nom du fichier avec index pour l'ordre

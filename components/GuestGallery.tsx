@@ -20,6 +20,7 @@ import { GalleryFAB } from './gallery/GalleryFAB';
 import { AftermovieCard } from './gallery/AftermovieCard';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { applyWatermarkToImage } from '../utils/watermarkUtils';
 
 // Lazy load Lightbox
 const Lightbox = lazy(() => import('./Lightbox'));
@@ -409,10 +410,17 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     try {
       addToast("Téléchargement en cours...", 'info');
       
-      const response = await fetch(photo.url);
-      if (!response.ok) throw new Error('Erreur de téléchargement');
+      let blob: Blob;
       
-      const blob = await response.blob();
+      // Si c'est une photo et que le filigrane est activé, appliquer le watermark
+      if (photo.type === 'photo' && settings.logo_url && settings.logo_watermark_enabled) {
+        blob = await applyWatermarkToImage(photo.url, settings.logo_url);
+      } else {
+        // Téléchargement normal (vidéo ou photo sans filigrane)
+        const response = await fetch(photo.url);
+        if (!response.ok) throw new Error('Erreur de téléchargement');
+        blob = await response.blob();
+      }
       
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -437,7 +445,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         });
       }, 500);
     }
-  }, [addToast]);
+  }, [addToast, settings.logo_url, settings.logo_watermark_enabled]);
 
   const handleBatchDownload = async () => {
     if (selectedIds.size === 0) return;
@@ -449,8 +457,17 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       const selectedPhotos = photos.filter(p => selectedIds.has(p.id));
       
       for (const photo of selectedPhotos) {
-        const response = await fetch(photo.url);
-        const blob = await response.blob();
+        let blob: Blob;
+        
+        // Si c'est une photo et que le filigrane est activé, appliquer le watermark
+        if (photo.type === 'photo' && settings.logo_url && settings.logo_watermark_enabled) {
+          blob = await applyWatermarkToImage(photo.url, settings.logo_url);
+        } else {
+          // Téléchargement normal (vidéo ou photo sans filigrane)
+          const response = await fetch(photo.url);
+          blob = await response.blob();
+        }
+        
         const extension = photo.type === 'video' ? (photo.url.includes('.webm') ? 'webm' : 'mp4') : 'jpg';
         const fileName = `${photo.author}-${photo.id.substring(0, 8)}.${extension}`;
         zip.file(fileName, blob);
