@@ -23,6 +23,8 @@ import { ProjectionControls } from './projection/ProjectionControls';
 import { ProjectionSettings } from './projection/ProjectionSettings';
 import { ProjectionStats } from './projection/ProjectionStats';
 import { MediaDisplay } from './projection/MediaDisplay';
+import { useReactionFlow } from '../hooks/wall/useReactionFlow';
+import { FlyingReactions } from './wall/Overlays/FlyingReactions';
 
 interface ProjectionWallProps {
   photos: Photo[];
@@ -64,6 +66,9 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
   const [photosReactions, setPhotosReactions] = useState<Map<string, ReactionCounts>>(new Map());
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
+  
+  // Hook pour gérer les animations de réactions volantes
+  const { flyingReactions } = useReactionFlow();
   
   // Debug: Log quand alert_text change
   useEffect(() => {
@@ -290,6 +295,28 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
     }
   }, [displayedPhotos.length]);
 
+  // Fonction pour changer vers une photo spécifique (utilisée pour les likes/réactions)
+  const switchToPhoto = useCallback(
+    (photoId: string) => {
+      const photoIndex = displayedPhotos.findIndex((p) => p.id === photoId);
+      if (photoIndex === -1 || photoIndex === currentIndex) {
+        return; // Photo non trouvée ou déjà affichée
+      }
+
+      setIsTransitioning(true);
+      setProgress(100);
+
+      setTimeout(() => {
+        setCurrentIndex(photoIndex);
+        setProgress(0);
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 50);
+      }, transitionDuration);
+    },
+    [displayedPhotos, currentIndex, transitionDuration]
+  );
+
   // S'abonner aux mises à jour de likes en temps réel
   useEffect(() => {
     const subscription = subscribeToLikesUpdates(
@@ -317,6 +344,9 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
             const updated = [activity, ...prev].slice(0, 5); // Garder seulement les 5 derniers
             return updated;
           });
+          
+          // Afficher automatiquement la photo concernée
+          switchToPhoto(photoId);
         }
       }
     );
@@ -324,7 +354,7 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [switchToPhoto]);
 
   // S'abonner aux mises à jour de réactions en temps réel
   useEffect(() => {
@@ -357,13 +387,16 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
           const updated = [activity, ...prev].slice(0, 5); // Garder seulement les 5 derniers
           return updated;
         });
+        
+        // Afficher automatiquement la photo concernée
+        switchToPhoto(photoId);
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [switchToPhoto]);
 
   // Synchroniser avec les photos reçues en props
   useEffect(() => {
@@ -974,6 +1007,9 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
           timeWindow={AR_DEFAULT_TIME_WINDOW}
         />
       )}
+
+      {/* Animations de réactions volantes (emojis) */}
+      <FlyingReactions reactions={flyingReactions} />
     </div>
   );
 };

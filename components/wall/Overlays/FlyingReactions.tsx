@@ -8,7 +8,7 @@ interface FlyingReactionsProps {
 
 export const FlyingReactions = React.memo(({ reactions }: FlyingReactionsProps) => {
   return (
-    <div className="fixed inset-0 pointer-events-none z-[80] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
       <AnimatePresence>
         {reactions.map((reaction) => {
           // Rotation aléatoire pour chaque emoji
