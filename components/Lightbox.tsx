@@ -249,11 +249,11 @@ const Lightbox: React.FC<LightboxProps> = ({
 
             {/* QR Code pour télécharger - Design moderne - Thème sombre */}
             <div className="ml-auto">
-              <div className="relative bg-slate-800/95 backdrop-blur-xl p-2 rounded-xl shadow-2xl border border-slate-700/50 transition-all duration-300 hover:scale-105 group">
-                <div className="relative bg-white p-1.5 rounded-lg">
+              <div className="relative bg-slate-800/95 backdrop-blur-xl p-3 md:p-4 rounded-xl shadow-2xl border border-slate-700/50 transition-all duration-300 hover:scale-105 group">
+                <div className="relative bg-white p-2 md:p-2.5 rounded-lg">
                   <QRCodeCanvas 
                     value={downloadUrl} 
-                    size={60}
+                    size={120}
                     level={"H"}
                     bgColor={"#ffffff"}
                     fgColor={"#000000"}
@@ -261,12 +261,12 @@ const Lightbox: React.FC<LightboxProps> = ({
                     key={photo.id}
                   />
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white rounded-full p-0.5 shadow-md">
-                      <span className="text-sm">⬇️</span>
+                    <div className="bg-white rounded-full p-1 shadow-md">
+                      <span className="text-lg md:text-xl">⬇️</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-center mt-1 text-[9px] font-bold text-slate-300 uppercase tracking-wider group-hover:text-cyan-400 transition-colors">
+                <p className="text-center mt-2 text-[10px] md:text-xs font-bold text-slate-300 uppercase tracking-wider group-hover:text-cyan-400 transition-colors">
                   Télécharger
                 </p>
               </div>
