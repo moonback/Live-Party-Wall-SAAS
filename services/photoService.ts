@@ -2,6 +2,8 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Photo, MediaType, PhotoRow, LikeRow, ReactionType, ReactionCounts, ReactionRow } from '../types';
 import { debounce } from '../utils/debounce';
 import { logger } from '../utils/logger';
+import { getEventById } from './eventService';
+import { getOrCreateTodaySession } from './sessionService';
 
 /**
  * ⚡ Précalcule l'orientation d'une image pour éviter les recalculs à chaque render
@@ -145,7 +147,31 @@ export const addPhotoToWall = async (
       .from('party-photos')
       .getPublicUrl(filename);
 
-    // 5. Insert into Database
+    // 5. Vérifier si l'événement est permanent et récupérer/créer la session du jour
+    let sessionId: string | null = null;
+    try {
+      const event = await getEventById(eventId);
+      if (event && (event.event_type === 'permanent' || event.event_type === 'recurring')) {
+        const session = await getOrCreateTodaySession(eventId);
+        sessionId = session.id;
+        logger.info('Photo associated with session', {
+          component: 'photoService',
+          action: 'addPhotoToWall',
+          eventId,
+          sessionId,
+          eventType: event.event_type
+        });
+      }
+    } catch (sessionError) {
+      // Ne pas bloquer l'upload si la gestion de session échoue
+      logger.warn('Error managing session for photo, continuing without session', sessionError, {
+        component: 'photoService',
+        action: 'addPhotoToWall',
+        eventId
+      });
+    }
+
+    // 6. Insert into Database
     const { data, error: insertError } = await supabase
       .from('photos')
       .insert([
@@ -156,6 +182,7 @@ export const addPhotoToWall = async (
           likes_count: 0,
           type: 'photo',
           event_id: eventId,
+          session_id: sessionId,
           tags: tags && tags.length > 0 ? tags : null,
           user_description: userDescription && userDescription.trim() ? userDescription.trim() : null
         }
@@ -165,7 +192,7 @@ export const addPhotoToWall = async (
 
     if (insertError) throw insertError;
 
-    // 6. ⚡ Précalculer l'orientation et retourner la photo enrichie
+    // 7. ⚡ Précalculer l'orientation et retourner la photo enrichie
     const photo: Photo = {
       id: data.id,
       url: publicUrl, // Utiliser publicUrl au lieu de data.url pour être cohérent
@@ -175,7 +202,8 @@ export const addPhotoToWall = async (
       likes_count: 0,
       type: 'photo',
       tags: Array.isArray(data.tags) ? data.tags : (tags || []),
-      user_description: data.user_description || undefined
+      user_description: data.user_description || undefined,
+      session_id: sessionId || undefined
     };
     
     // Précalculer l'orientation (utiliser base64Image pour un chargement immédiat, sinon publicUrl)
@@ -239,7 +267,31 @@ export const addVideoToWall = async (
       .from('party-photos')
       .getPublicUrl(filename);
 
-    // 4. Insert into Database
+    // 4. Vérifier si l'événement est permanent et récupérer/créer la session du jour
+    let sessionId: string | null = null;
+    try {
+      const event = await getEventById(eventId);
+      if (event && (event.event_type === 'permanent' || event.event_type === 'recurring')) {
+        const session = await getOrCreateTodaySession(eventId);
+        sessionId = session.id;
+        logger.info('Video associated with session', {
+          component: 'photoService',
+          action: 'addVideoToWall',
+          eventId,
+          sessionId,
+          eventType: event.event_type
+        });
+      }
+    } catch (sessionError) {
+      // Ne pas bloquer l'upload si la gestion de session échoue
+      logger.warn('Error managing session for video, continuing without session', sessionError, {
+        component: 'photoService',
+        action: 'addVideoToWall',
+        eventId
+      });
+    }
+
+    // 5. Insert into Database
     const { data, error: insertError } = await supabase
       .from('photos')
       .insert([
@@ -251,6 +303,7 @@ export const addVideoToWall = async (
           type: 'video',
           duration: duration,
           event_id: eventId,
+          session_id: sessionId,
           user_description: userDescription && userDescription.trim() ? userDescription.trim() : null
         }
       ])
@@ -259,7 +312,7 @@ export const addVideoToWall = async (
 
     if (insertError) throw insertError;
 
-    // 5. Return mapped object
+    // 6. Return mapped object
     return {
       id: data.id,
       url: data.url,
@@ -269,7 +322,8 @@ export const addVideoToWall = async (
       likes_count: 0,
       type: 'video',
       duration: data.duration ? Number(data.duration) : undefined,
-      user_description: data.user_description || undefined
+      user_description: data.user_description || undefined,
+      session_id: sessionId || undefined
     };
 
   } catch (error) {
@@ -283,15 +337,23 @@ export const addVideoToWall = async (
  * Calculates likes_count from the likes table to ensure accuracy.
  * ⚡ Optimisé pour gérer 200+ photos efficacement.
  * @param eventId - ID de l'événement
+ * @param sessionId - ID de la session (optionnel, pour filtrer par session)
  */
-export const getPhotos = async (eventId: string): Promise<Photo[]> => {
+export const getPhotos = async (eventId: string, sessionId?: string): Promise<Photo[]> => {
   if (!isSupabaseConfigured()) return [];
 
   // ⚡ Récupérer toutes les photos de l'événement (support jusqu'à 1000+ photos par défaut Supabase)
-  const { data: photosData, error: photosError } = await supabase
+  let query = supabase
     .from('photos')
     .select('*')
-    .eq('event_id', eventId)
+    .eq('event_id', eventId);
+  
+  // Filtrer par session si fourni
+  if (sessionId) {
+    query = query.eq('session_id', sessionId);
+  }
+  
+  const { data: photosData, error: photosError } = await query
     .order('created_at', { ascending: true });
 
   if (photosError) {
@@ -336,7 +398,8 @@ export const getPhotos = async (eventId: string): Promise<Photo[]> => {
     type: (p.type || 'photo') as MediaType,
     duration: p.duration ? Number(p.duration) : undefined,
     tags: Array.isArray(p.tags) ? p.tags : undefined,
-    user_description: p.user_description || undefined
+    user_description: p.user_description || undefined,
+    session_id: p.session_id || undefined
   }));
 
   // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)
@@ -406,7 +469,8 @@ export const getPhotosByAuthor = async (eventId: string, authorName: string): Pr
       likes_count: likesCountMap.get(p.id) || 0,
       type: (p.type || 'photo') as MediaType,
       duration: p.duration ? Number(p.duration) : undefined,
-      user_description: p.user_description || undefined
+      user_description: p.user_description || undefined,
+      session_id: p.session_id || undefined
     }));
 
     // Précalculer les orientations en parallèle
@@ -452,7 +516,8 @@ export const subscribeToNewPhotos = (eventId: string, onNewPhoto: (photo: Photo)
           timestamp: new Date(p.created_at).getTime(),
           likes_count: p.likes_count || 0,
           type: (p.type || 'photo') as MediaType,
-          duration: p.duration ? Number(p.duration) : undefined
+          duration: p.duration ? Number(p.duration) : undefined,
+          session_id: p.session_id || undefined
         };
         
         // ⚡ Précalculer l'orientation pour les nouvelles photos

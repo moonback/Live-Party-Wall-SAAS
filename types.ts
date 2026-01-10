@@ -36,6 +36,7 @@ export interface Photo {
   reactions?: ReactionCounts; // Compteurs de réactions par type
   tags?: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
   user_description?: string; // Description saisie par l'utilisateur lors de l'upload
+  session_id?: string; // ID de la session (soirée) pour événements permanents
 }
 
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile';
@@ -191,6 +192,7 @@ export interface PhotoRow {
   duration: number | null;
   tags: string[] | null; // Tags suggérés par l'IA (tableau JSON)
   user_description: string | null; // Description saisie par l'utilisateur
+  session_id: string | null; // ID de la session (soirée) pour événements permanents
 }
 
 export interface LikeRow {
@@ -281,6 +283,8 @@ export interface BlockedGuestRow {
 }
 
 // Event Types (Multi-tenant SaaS)
+export type EventType = 'one_shot' | 'recurring' | 'permanent';
+
 export interface Event {
   id: string;
   slug: string;
@@ -290,6 +294,8 @@ export interface Event {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+  event_type?: EventType; // Type d'événement : one_shot, recurring, permanent
+  restaurant_mode_enabled?: boolean; // Active le mode restaurateur
 }
 
 export interface EventRow {
@@ -301,6 +307,37 @@ export interface EventRow {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+  event_type?: EventType;
+  restaurant_mode_enabled?: boolean;
+}
+
+// Event Session Types (pour événements permanents)
+export interface EventSession {
+  id: string;
+  event_id: string;
+  date: string; // ISO date string (YYYY-MM-DD)
+  photo_count: number;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventSessionRow {
+  id: string;
+  event_id: string;
+  date: string; // DATE au format ISO
+  photo_count: number;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SessionStats {
+  sessionId: string;
+  photoCount: number;
+  totalLikes: number;
+  uniqueAuthors: number;
+  date: string;
 }
 
 export interface EventOrganizer {

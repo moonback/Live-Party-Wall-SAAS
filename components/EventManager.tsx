@@ -32,6 +32,8 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
   const [editedSlug, setEditedSlug] = useState(event.slug);
   const [editedDescription, setEditedDescription] = useState(event.description || '');
   const [editedIsActive, setEditedIsActive] = useState(event.is_active);
+  const [editedEventType, setEditedEventType] = useState<'one_shot' | 'recurring' | 'permanent'>(event.event_type || 'one_shot');
+  const [editedRestaurantMode, setEditedRestaurantMode] = useState(event.restaurant_mode_enabled || false);
   
   // Gestion des organisateurs
   const [organizers, setOrganizers] = useState<EventOrganizer[]>([]);
@@ -81,7 +83,9 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
         name: editedName,
         slug: editedSlug,
         description: editedDescription || null,
-        is_active: editedIsActive
+        is_active: editedIsActive,
+        event_type: editedEventType,
+        restaurant_mode_enabled: editedRestaurantMode
       });
 
       if (updated) {
@@ -162,7 +166,9 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
     editedName !== event.name ||
     editedSlug !== event.slug ||
     editedDescription !== (event.description || '') ||
-    editedIsActive !== event.is_active;
+    editedIsActive !== event.is_active ||
+    editedEventType !== (event.event_type || 'one_shot') ||
+    editedRestaurantMode !== (event.restaurant_mode_enabled || false);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden">
@@ -357,6 +363,61 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                     </span>
                   </div>
                 </motion.div>
+
+                {/* Type d'événement */}
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="space-y-2"
+                >
+                  <label className="block text-sm font-semibold text-slate-300">
+                    Type d'événement
+                  </label>
+                  <select
+                    value={editedEventType}
+                    onChange={(e) => setEditedEventType(e.target.value as 'one_shot' | 'recurring' | 'permanent')}
+                    disabled={!canEdit}
+                    className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
+                  >
+                    <option value="one_shot">Ponctuel (mariage, anniversaire...)</option>
+                    <option value="recurring">Récurrent (événements réguliers)</option>
+                    <option value="permanent">Permanent (restaurant, bar...)</option>
+                  </select>
+                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                    {editedEventType === 'permanent' && 'Pour les lieux avec mur photo permanent'}
+                    {editedEventType === 'recurring' && 'Pour les événements qui se répètent'}
+                    {editedEventType === 'one_shot' && 'Pour les événements ponctuels'}
+                  </p>
+                </motion.div>
+
+                {/* Mode restaurateur */}
+                {editedEventType === 'permanent' && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="space-y-2"
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editedRestaurantMode}
+                        onChange={(e) => setEditedRestaurantMode(e.target.checked)}
+                        disabled={!canEdit}
+                        className="w-5 h-5 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-2 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      <span className="text-sm font-semibold text-slate-300">
+                        Mode Restaurateur
+                      </span>
+                    </label>
+                    <p className="text-xs text-slate-500 ml-8 flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                      Interface simplifiée, écran ambiant, sessions automatiques
+                    </p>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
 

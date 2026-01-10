@@ -25,6 +25,14 @@ export interface EventSettings {
   background_mobile_url: string | null;
   auto_carousel_enabled: boolean;
   auto_carousel_delay: number; // Délai en secondes avant activation du carrousel
+  // Mode restaurateur
+  restaurant_mode_enabled?: boolean;
+  ambient_display_enabled?: boolean;
+  ambient_display_speed?: 'very_slow' | 'slow' | 'normal';
+  auto_pause_when_empty?: boolean;
+  social_sharing_enabled?: boolean;
+  social_watermark_enabled?: boolean;
+  review_prompt_enabled?: boolean;
 }
 
 export const defaultSettings: EventSettings = {
@@ -49,7 +57,15 @@ export const defaultSettings: EventSettings = {
   background_desktop_url: null,
   background_mobile_url: null,
   auto_carousel_enabled: true,
-  auto_carousel_delay: 20 // 20 secondes par défaut
+  auto_carousel_delay: 20, // 20 secondes par défaut
+  // Mode restaurateur - valeurs par défaut
+  restaurant_mode_enabled: false,
+  ambient_display_enabled: false,
+  ambient_display_speed: 'very_slow',
+  auto_pause_when_empty: true,
+  social_sharing_enabled: false,
+  social_watermark_enabled: true,
+  review_prompt_enabled: false
 };
 
 /**

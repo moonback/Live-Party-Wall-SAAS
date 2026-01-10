@@ -243,7 +243,7 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
  */
 export const updateEvent = async (
   eventId: string,
-  updates: Partial<Pick<Event, 'name' | 'description' | 'slug' | 'is_active'>>
+  updates: Partial<Pick<Event, 'name' | 'description' | 'slug' | 'is_active' | 'event_type' | 'restaurant_mode_enabled'>>
 ): Promise<Event | null> => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de mettre à jour l'événement.");
@@ -524,7 +524,9 @@ const mapEventRowToEvent = (row: EventRow): Event => ({
   owner_id: row.owner_id,
   created_at: row.created_at,
   updated_at: row.updated_at,
-  is_active: row.is_active
+  is_active: row.is_active,
+  event_type: row.event_type,
+  restaurant_mode_enabled: row.restaurant_mode_enabled
 });
 
 /**

@@ -44,6 +44,8 @@ Table centrale pour le système multi-événements SaaS.
 | `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now() |
 | `updated_at` | TIMESTAMPTZ | Date de mise à jour | DEFAULT now() |
 | `is_active` | BOOLEAN | Événement actif ou non | DEFAULT true |
+| `event_type` | TEXT | Type d'événement | DEFAULT 'one_shot', CHECK (event_type IN ('one_shot', 'recurring', 'permanent')) |
+| `restaurant_mode_enabled` | BOOLEAN | Active le mode restaurateur | DEFAULT false |
 
 **Exemple** :
 ```sql
@@ -67,6 +69,7 @@ Table principale pour stocker les photos/vidéos partagées.
 | `type` | TEXT | Type de média | DEFAULT 'photo', CHECK (type IN ('photo', 'video')) |
 | `duration` | NUMERIC | Durée en secondes (vidéos) | NULL |
 | `likes_count` | INTEGER | Nombre de likes | DEFAULT 0 |
+| `session_id` | UUID | Session (soirée) associée | FK → event_sessions, ON DELETE SET NULL |
 | `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now() |
 
 **Exemple** :
@@ -152,6 +155,13 @@ Table pour les paramètres de configuration de chaque événement.
 | `ar_scene_enabled` | BOOLEAN | Activer la scène AR | DEFAULT false |
 | `event_context` | TEXT | Contexte pour personnaliser les légendes IA | NULL |
 | `alert_text` | TEXT | Texte d'alerte affiché sur le mur | NULL |
+| `restaurant_mode_enabled` | BOOLEAN | Active le mode restaurateur | DEFAULT false |
+| `ambient_display_enabled` | BOOLEAN | Active le mode écran ambiant | DEFAULT false |
+| `ambient_display_speed` | TEXT | Vitesse d'affichage ambiant | DEFAULT 'very_slow', CHECK (ambient_display_speed IN ('very_slow', 'slow', 'normal')) |
+| `auto_pause_when_empty` | BOOLEAN | Pause automatique si aucune photo | DEFAULT true |
+| `social_sharing_enabled` | BOOLEAN | Active les options de partage social | DEFAULT false |
+| `social_watermark_enabled` | BOOLEAN | Ajoute un watermark sur les images partagées | DEFAULT true |
+| `review_prompt_enabled` | BOOLEAN | Affiche un prompt pour demander un avis | DEFAULT false |
 | ... | ... | Autres paramètres | ... |
 
 **Contrainte unique** : `UNIQUE(event_id)` - Un seul paramètre par événement.
@@ -194,6 +204,30 @@ Table pour bloquer temporairement des invités.
 
 ---
 
+### `event_sessions` - Sessions (soirées)
+
+Table pour gérer les sessions (soirées) pour les événements permanents (restaurateurs).
+
+| Colonne | Type | Description | Contraintes |
+|---------|------|-------------|-------------|
+| `id` | UUID | Identifiant unique | PRIMARY KEY, DEFAULT gen_random_uuid() |
+| `event_id` | UUID | Événement associé | FK → events, ON DELETE CASCADE, NOT NULL |
+| `date` | DATE | Date de la session | NOT NULL, UNIQUE(event_id, date) |
+| `photo_count` | INTEGER | Nombre de photos dans cette session | DEFAULT 0 |
+| `is_archived` | BOOLEAN | Session archivée (soirée terminée) | DEFAULT false |
+| `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now() |
+| `updated_at` | TIMESTAMPTZ | Date de mise à jour | DEFAULT now() |
+
+**Exemple** :
+```sql
+INSERT INTO event_sessions (event_id, date)
+VALUES ('event-uuid', '2026-01-15');
+```
+
+**Note** : Les sessions sont créées automatiquement au premier upload de la journée pour les événements permanents.
+
+---
+
 ### `photo_battles` - Battles photos
 
 Table pour les battles (duels) entre photos.
@@ -225,8 +259,10 @@ auth.users
     │     │     │
     │     │     ├─── likes (photo_id)
     │     │     ├─── reactions (photo_id)
-    │     │     └─── photo_battles (photo_a_id, photo_b_id)
+    │     │     ├─── photo_battles (photo_a_id, photo_b_id)
+    │     │     └─── event_sessions (session_id) [pour événements permanents]
     │     │
+    │     ├─── event_sessions (event_id) [pour événements permanents]
     │     ├─── guests (event_id)
     │     ├─── event_settings (event_id) [1-1]
     │     ├─── blocked_guests (event_id)
@@ -261,6 +297,15 @@ auth.users
    - Un événement a plusieurs organisateurs
    - `UNIQUE(event_id, user_id)` : Un utilisateur ne peut être organisateur qu'une fois par événement
 
+7. **events → event_sessions** : 1-N (pour événements permanents)
+   - Un événement permanent a plusieurs sessions (une par date)
+   - `UNIQUE(event_id, date)` : Une seule session par date pour un événement
+   - `ON DELETE CASCADE` : Supprimer un événement supprime toutes ses sessions
+
+8. **event_sessions → photos** : 1-N
+   - Une session a plusieurs photos
+   - `ON DELETE SET NULL` : Supprimer une session ne supprime pas les photos (session_id devient NULL)
+
 ---
 
 ## 📇 Indexes
@@ -278,6 +323,14 @@ CREATE INDEX idx_photos_event_id ON photos(event_id);
 CREATE INDEX idx_photos_created_at ON photos(created_at DESC);
 CREATE INDEX idx_photos_type ON photos(type);
 CREATE INDEX idx_photos_author ON photos(author);
+CREATE INDEX idx_photos_session_id ON photos(session_id);
+CREATE INDEX idx_photos_event_session ON photos(event_id, session_id);
+
+-- Event Sessions
+CREATE INDEX idx_event_sessions_event_id ON event_sessions(event_id);
+CREATE INDEX idx_event_sessions_date ON event_sessions(date DESC);
+CREATE INDEX idx_event_sessions_event_date ON event_sessions(event_id, date DESC);
+CREATE INDEX idx_event_sessions_is_archived ON event_sessions(is_archived);
 
 -- Likes
 CREATE INDEX idx_likes_photo_id ON likes(photo_id);
@@ -438,6 +491,7 @@ Les tables suivantes ont la réplication Realtime activée pour la synchronisati
 - ✅ `likes` : Mises à jour de likes en temps réel
 - ✅ `reactions` : Réactions en temps réel
 - ✅ `event_settings` : Changements de paramètres en temps réel
+- ✅ `event_sessions` : Création et mise à jour de sessions (pour événements permanents)
 - ✅ `guests` : Nouveaux invités en temps réel
 
 ### Activation Realtime

@@ -4,6 +4,8 @@ import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates } from '../ser
 import { supabase } from '../services/supabaseClient';
 import { logger } from '../utils/logger';
 import { useEvent } from './EventContext';
+import { getOrCreateTodaySession } from '../services/sessionService';
+import { isPermanentEvent } from '../utils/featureFlags';
 
 interface PhotosContextType {
   photos: Photo[];
@@ -35,7 +37,22 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setLoading(true);
     setError(null);
     try {
-      const data = await getPhotos(currentEvent.id);
+      // Si événement permanent, récupérer/créer la session du jour et filtrer les photos
+      let sessionId: string | undefined;
+      if (isPermanentEvent(currentEvent)) {
+        try {
+          const session = await getOrCreateTodaySession(currentEvent.id);
+          sessionId = session.id;
+        } catch (sessionError) {
+          logger.warn('Error getting today session, loading all photos', sessionError, {
+            component: 'PhotosContext',
+            action: 'refresh'
+          });
+          // Continuer sans filtre de session en cas d'erreur
+        }
+      }
+      
+      const data = await getPhotos(currentEvent.id, sessionId);
       setPhotos(data);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erreur de chargement des photos');

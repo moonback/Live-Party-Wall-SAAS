@@ -28,7 +28,27 @@
 ```
 💍 Mariages          🎂 Anniversaires       🏢 Événements d'entreprise
 🎊 Soirées privées   🤝 Team building       📊 Séminaires & Conférences
+🍽️ Restaurants       🍻 Bars & Rooftops     🏨 Hôtels événementiels
 ```
+
+### 🍽️ Cas d'usage : Restaurateurs & lieux événementiels
+
+Live Party Wall s'adapte parfaitement aux restaurants, bars et hôtels souhaitant créer une animation visuelle permanente et engageante.
+
+**Fonctionnalités dédiées** :
+- 🎯 **Mur photo permanent** - Actif toute l'année, regroupement automatique par soirée
+- 📱 **QR code permanent** - Un seul QR code toujours valide pour les clients
+- 🖥️ **Mode écran ambiant** - Affichage lent et discret en boucle toute la journée
+- 📸 **Partage social automatique** - Génération de formats Instagram Story/Reel avec watermark
+- ⭐ **Engagement client** - Prompt d'avis vers Google Maps / TripAdvisor (optionnel)
+- 🎛️ **Dashboard simplifié** - Interface ultra-simple pour équipes non techniques
+
+**Avantages** :
+- ✅ Aucun matériel spécifique requis
+- ✅ Contenu généré par les clients (UGC)
+- ✅ Visibilité sociale accrue
+- ✅ Animation permanente sans maintenance
+- ✅ Sessions automatiques par date (soirée)
 
 ### 🌟 Vision
 
