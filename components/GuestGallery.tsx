@@ -605,7 +605,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
       {/* Filters */}
       <div className="sticky top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-1">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-1">
           <GalleryFilters
             sortBy={sortBy}
             onSortChange={setSortBy}
@@ -636,29 +636,29 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       {/* Content */}
       <div 
         ref={parentRef} 
-        className="flex-1 overflow-y-auto pb-24 md:pb-28 scroll-smooth relative z-10"
+        className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
       >
-        <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-6">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
           {/* Section Aftermovies ultra-compacte */}
           {settings.aftermovies_enabled !== false && aftermovies.length > 0 && showAftermovies && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-4"
+              className="mb-3 sm:mb-4"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-md border border-indigo-500/30">
-                  <Video className="w-3.5 h-3.5 text-indigo-400" />
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                <div className="p-1 sm:p-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-md border border-indigo-500/30">
+                  <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-400" />
                 </div>
-                <h2 className="text-lg font-semibold text-white flex items-center gap-1.5">
+                <h2 className="text-base sm:text-lg font-semibold text-white flex items-center gap-1 sm:gap-1.5">
                   Aftermovies
-                  <span className="text-xs font-normal text-slate-400">
+                  <span className="text-[10px] sm:text-xs font-normal text-slate-400">
                     ({aftermovies.length})
                   </span>
                 </h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {aftermovies.map((aftermovie, index) => (
                   <motion.div
                     key={aftermovie.id}
