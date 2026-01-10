@@ -162,22 +162,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
           )}
         </div>
         
-        {/* Inputs Container - Sur la même ligne en desktop, empilés en mobile */}
+        {/* Inputs Container - Sur la même ligne en desktop, empilés en mobile - Version compacte */}
         {showInputs && (
-        <div className={`absolute bottom-[140px] sm:bottom-[100px] left-0 w-full px-4 sm:px-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 z-40 transition-all duration-500 ${
+        <div className={`absolute bottom-[140px] sm:bottom-[100px] left-0 w-full px-3 sm:px-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 z-40 transition-all duration-500 ${
           mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
         }`}>
-          {/* Author Name Input */}
+          {/* Author Name Input - Compact */}
           <div className={`relative w-full sm:flex-1 sm:max-w-md transition-all duration-300 ${
             isAuthorNameFocused ? 'scale-105' : 'scale-100'
           }`}>
-            <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-pink-500/30 blur-xl transition-opacity duration-300 ${
+            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-pink-500/30 blur-xl transition-opacity duration-300 ${
               isAuthorNameFocused ? 'opacity-100' : 'opacity-0'
             }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-2 mb-1.5">
-                <User className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
-                <span className="text-xs sm:text-sm text-white/80 font-semibold">Votre nom</span>
+            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-full border-2 border-white/30 shadow-2xl">
+              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+                <User className="w-3 h-3 sm:w-4 sm:h-4 text-pink-400" />
+                <span className="text-[10px] sm:text-xs text-white/80 font-semibold">Votre nom</span>
               </div>
               <input
                 type="text"
@@ -186,31 +186,31 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 onFocus={() => setIsAuthorNameFocused(true)}
                 onBlur={() => setIsAuthorNameFocused(false)}
                 placeholder="Entrez votre nom..."
-                className="w-full text-center font-bold text-xl sm:text-2xl text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300"
+                className="w-full text-center font-bold text-base sm:text-lg text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300 py-0.5"
                 maxLength={MAX_AUTHOR_NAME_LENGTH}
                 autoFocus
                 inputMode="text"
                 aria-label="Nom de l'auteur"
               />
               {authorName.length > 0 && (
-                <div className="text-xs text-white/60 text-center mt-2 animate-fade-in font-medium">
+                <div className="text-[10px] sm:text-xs text-white/50 text-center mt-0.5 sm:mt-1 animate-fade-in font-medium">
                   {authorName.length}/{MAX_AUTHOR_NAME_LENGTH}
                 </div>
               )}
             </div>
           </div>
 
-          {/* User Description Input */}
+          {/* User Description Input - Compact */}
           <div className={`relative w-full sm:flex-1 sm:max-w-md transition-all duration-300 delay-100 ${
             isDescriptionFocused ? 'scale-105' : 'scale-100'
           }`}>
-            <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-blue-500/30 blur-xl transition-opacity duration-300 ${
+            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-blue-500/30 blur-xl transition-opacity duration-300 ${
               isDescriptionFocused ? 'opacity-100' : 'opacity-0'
             }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-3 sm:p-3.5 rounded-2xl sm:rounded-3xl w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-2 mb-1.5">
-                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
-                <span className="text-xs text-white/80 font-semibold">Description (optionnel)</span>
+            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-full border-2 border-white/30 shadow-2xl">
+              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+                <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" />
+                <span className="text-[10px] sm:text-xs text-white/80 font-semibold">Description (optionnel)</span>
               </div>
               <textarea
                 value={userDescription}
@@ -218,14 +218,14 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 onFocus={() => setIsDescriptionFocused(true)}
                 onBlur={() => setIsDescriptionFocused(false)}
                 placeholder="Ajoutez une description..."
-                className="w-full text-center text-sm sm:text-base text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300"
+                className="w-full text-center text-xs sm:text-sm text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300 py-0.5"
                 maxLength={MAX_USER_DESCRIPTION_LENGTH}
-                rows={2}
-                style={{ minHeight: '2.5rem', maxHeight: '6rem' }}
+                rows={1}
+                style={{ minHeight: '1.5rem', maxHeight: '4rem' }}
                 aria-label="Description de la photo"
               />
               {userDescription.length > 0 && (
-                <div className="text-xs text-white/60 text-center mt-1.5 animate-fade-in font-medium">
+                <div className="text-[10px] sm:text-xs text-white/50 text-center mt-0.5 sm:mt-1 animate-fade-in font-medium">
                   {userDescription.length}/{MAX_USER_DESCRIPTION_LENGTH}
                 </div>
               )}

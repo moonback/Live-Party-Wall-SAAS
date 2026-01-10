@@ -653,7 +653,7 @@ export const COLLAGE_GAP = 10; // Espacement entre les images en pixels
 export const BURST_MIN_PHOTOS = 3;
 export const BURST_MAX_PHOTOS = 5;
 export const BURST_DEFAULT_PHOTOS = 3;
-export const BURST_CAPTURE_INTERVAL = 300; // Intervalle entre chaque capture en ms
+export const BURST_CAPTURE_INTERVAL = 2000; // Intervalle entre chaque capture en ms (2 secondes)
 
 // Wall View Layout Modes
 export const WALL_LAYOUT_MODES = ['masonry', 'grid'] as const;
