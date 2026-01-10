@@ -157,7 +157,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     newPhotoIndicator,
     hasNewLike,
     hasNewReaction,
-    enabled: true,
+    enabled: settings?.auto_carousel_enabled ?? true,
     inactivityDelay: 60 * 1000, // 1 minute
     photoDisplayDuration: 3000 // 3 secondes par photo
   });

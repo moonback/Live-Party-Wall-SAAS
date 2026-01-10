@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone } from 'lucide-react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -32,6 +32,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     { key: 'caption_generation_enabled', label: 'Génération de légendes', icon: Type, disabled: false },
     { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false },
     { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false },
+    { key: 'auto_carousel_enabled', label: 'Carrousel automatique', icon: Play, disabled: false },
   ];
 
   const handleBackgroundUpload = async (file: File, type: 'desktop' | 'mobile') => {

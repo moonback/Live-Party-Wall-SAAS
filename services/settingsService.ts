@@ -23,6 +23,7 @@ export interface EventSettings {
   alert_text: string | null;
   background_desktop_url: string | null;
   background_mobile_url: string | null;
+  auto_carousel_enabled: boolean;
 }
 
 export const defaultSettings: EventSettings = {
@@ -45,7 +46,8 @@ export const defaultSettings: EventSettings = {
   tags_generation_enabled: false,
   alert_text: null,
   background_desktop_url: null,
-  background_mobile_url: null
+  background_mobile_url: null,
+  auto_carousel_enabled: true
 };
 
 /**
