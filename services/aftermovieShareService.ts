@@ -216,6 +216,93 @@ export async function deleteAftermovieFromStorage(
 }
 
 /**
+ * Supprime complètement un aftermovie (fichier + enregistrement DB)
+ * @param aftermovieId - ID de l'aftermovie à supprimer
+ * @returns Promise résolue une fois la suppression terminée
+ */
+export async function deleteAftermovie(
+  aftermovieId: string
+): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase n'est pas configuré.");
+  }
+
+  try {
+    // 1. Récupérer l'aftermovie pour obtenir le storage_path
+    const { data: aftermovieData, error: fetchError } = await supabase
+      .from('aftermovies')
+      .select('storage_path, event_id')
+      .eq('id', aftermovieId)
+      .single();
+
+    if (fetchError || !aftermovieData) {
+      logger.error("Error fetching aftermovie for deletion", fetchError, {
+        component: 'aftermovieShareService',
+        action: 'deleteAftermovie',
+        aftermovieId
+      });
+      throw new Error("Aftermovie introuvable");
+    }
+
+    const { storage_path, event_id } = aftermovieData;
+
+    // 2. Supprimer le fichier du storage
+    try {
+      const { error: storageError } = await supabase.storage
+        .from('party-photos')
+        .remove([storage_path]);
+
+      if (storageError) {
+        logger.warn("Error deleting aftermovie from storage (continuing with DB deletion)", storageError, {
+          component: 'aftermovieShareService',
+          action: 'deleteAftermovie',
+          aftermovieId,
+          storage_path
+        });
+        // On continue quand même avec la suppression DB même si le fichier n'existe plus
+      }
+    } catch (storageErr) {
+      logger.warn("Storage deletion failed, continuing with DB deletion", storageErr, {
+        component: 'aftermovieShareService',
+        action: 'deleteAftermovie',
+        aftermovieId
+      });
+    }
+
+    // 3. Supprimer l'enregistrement de la base de données
+    const { error: deleteError } = await supabase
+      .from('aftermovies')
+      .delete()
+      .eq('id', aftermovieId);
+
+    if (deleteError) {
+      logger.error("Error deleting aftermovie from database", deleteError, {
+        component: 'aftermovieShareService',
+        action: 'deleteAftermovie',
+        aftermovieId
+      });
+      throw deleteError;
+    }
+
+    logger.info("Aftermovie deleted completely", {
+      component: 'aftermovieShareService',
+      action: 'deleteAftermovie',
+      aftermovieId,
+      event_id,
+      storage_path
+    });
+
+  } catch (error) {
+    logger.error("Error in deleteAftermovie", error, {
+      component: 'aftermovieShareService',
+      action: 'deleteAftermovie',
+      aftermovieId
+    });
+    throw error instanceof Error ? error : new Error("Erreur lors de la suppression de l'aftermovie");
+  }
+}
+
+/**
  * Récupère tous les aftermovies d'un événement
  * @param eventId - ID de l'événement
  * @returns Promise résolue avec la liste des aftermovies
