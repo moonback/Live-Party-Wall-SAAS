@@ -114,8 +114,8 @@ const Lightbox: React.FC<LightboxProps> = ({
             </>
           )}
 
-          {/* Content - Design moderne et épuré - Plein écran */}
-          <div className="relative bg-white/95 backdrop-blur-2xl rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl border border-white/20 animate-scale-in flex-1 flex flex-col min-h-0">
+          {/* Content - Design moderne et épuré - Plein écran - Thème sombre */}
+          <div className="relative bg-slate-900/95 backdrop-blur-2xl rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl border border-slate-700/50 animate-scale-in flex-1 flex flex-col min-h-0">
             {/* Media Container - Utilise l'espace disponible */}
             <div className="relative bg-gradient-to-br from-slate-900 via-black to-slate-900 overflow-hidden flex-1 flex items-center justify-center min-h-0">
               {photo.type === 'video' ? (
@@ -140,51 +140,51 @@ const Lightbox: React.FC<LightboxProps> = ({
               )}
             </div>
 
-            {/* Info Panel - Design moderne et organisé - Scrollable */}
-            <div className="relative bg-white p-4 md:p-6 lg:p-8 overflow-y-auto max-h-[40vh] md:max-h-[35vh] lg:max-h-[30vh]">
-              {/* Légende principale - Adaptée plein écran */}
-              <div className="mb-4 md:mb-6">
-                <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-slate-900 leading-tight mb-3 md:mb-4 max-w-full break-words">
+            {/* Info Panel - Design compact et thème sombre - Scrollable */}
+            <div className="relative bg-slate-900 p-3 md:p-4 overflow-y-auto max-h-[35vh] md:max-h-[30vh] lg:max-h-[25vh]">
+              {/* Légende principale - Compacte */}
+              <div className="mb-3">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white leading-tight mb-2 max-w-full break-words">
                   {photo.caption}
                 </h2>
               </div>
 
-              {/* Grid d'informations - 2 colonnes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
+              {/* Grid d'informations - 2 colonnes - Compact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 {/* Auteur et date */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center shadow-lg">
-                      <User className="w-5 h-5 text-white" />
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center shadow-lg flex-shrink-0">
+                      <User className="w-4 h-4 text-white" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Auteur</p>
-                      <p className="text-sm md:text-base font-bold text-slate-900">{photo.author}</p>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Auteur</p>
+                      <p className="text-xs md:text-sm font-bold text-white truncate">{photo.author}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-600 text-xs md:text-sm pl-13">
-                    <Clock className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5 text-slate-400 text-[10px] md:text-xs pl-10">
+                    <Clock className="w-3 h-3" />
                     <span>{formattedDate.relative}</span>
-                    <span className="text-slate-400">•</span>
+                    <span className="text-slate-600">•</span>
                     <span>{formattedDate.time}</span>
                   </div>
                 </div>
 
                 {/* Statistiques d'engagement */}
                 {totalEngagement > 0 && (
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Engagement</p>
-                    <div className="flex flex-wrap items-center gap-3">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Engagement</p>
+                    <div className="flex flex-wrap items-center gap-2">
                       {photo.likes_count > 0 && (
-                        <div className="flex items-center gap-2 bg-gradient-to-r from-pink-50 to-rose-50 px-4 py-2.5 rounded-xl border border-pink-200/50 shadow-sm">
-                          <Heart className="w-5 h-5 text-pink-500 fill-current" />
-                          <span className="text-base font-bold text-pink-600">{photo.likes_count}</span>
+                        <div className="flex items-center gap-1.5 bg-pink-500/20 px-2.5 py-1.5 rounded-lg border border-pink-500/30">
+                          <Heart className="w-3.5 h-3.5 text-pink-400 fill-current" />
+                          <span className="text-xs font-bold text-pink-300">{photo.likes_count}</span>
                         </div>
                       )}
                       {totalReactions > 0 && (
-                        <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2.5 rounded-xl border border-purple-200/50 shadow-sm">
-                          <TrendingUp className="w-5 h-5 text-purple-500" />
-                          <span className="text-base font-bold text-purple-600">{totalReactions}</span>
+                        <div className="flex items-center gap-1.5 bg-purple-500/20 px-2.5 py-1.5 rounded-lg border border-purple-500/30">
+                          <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+                          <span className="text-xs font-bold text-purple-300">{totalReactions}</span>
                         </div>
                       )}
                     </div>
@@ -192,11 +192,11 @@ const Lightbox: React.FC<LightboxProps> = ({
                 )}
               </div>
 
-              {/* Réactions détaillées */}
+              {/* Réactions détaillées - Compact */}
               {reactions && totalReactions > 0 && (
-                <div className="pt-4 md:pt-6 border-t border-slate-200">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 md:mb-4">Réactions</p>
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="pt-2 border-t border-slate-700">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Réactions</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {Object.entries(reactions).map(([type, count]) => {
                       if (!count || count === 0) return null;
                       const reaction = REACTIONS[type as keyof typeof REACTIONS];
@@ -204,11 +204,11 @@ const Lightbox: React.FC<LightboxProps> = ({
                       return (
                         <div
                           key={type}
-                          className="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-xl shadow-sm border border-slate-200/50 hover:shadow-md hover:border-slate-300/50 transition-all cursor-default"
+                          className="flex items-center gap-1.5 bg-slate-800/50 px-2 py-1 rounded-lg border border-slate-700/50 hover:border-slate-600/50 transition-all cursor-default"
                         >
-                          <span className="text-lg">{reaction.emoji}</span>
-                          <span className="text-sm font-bold text-slate-700">{count}</span>
-                          <span className="text-xs text-slate-500 hidden sm:inline ml-1">{reaction.label}</span>
+                          <span className="text-sm">{reaction.emoji}</span>
+                          <span className="text-xs font-bold text-slate-300">{count}</span>
+                          <span className="text-[10px] text-slate-500 hidden sm:inline ml-0.5">{reaction.label}</span>
                         </div>
                       );
                     })}
@@ -216,18 +216,18 @@ const Lightbox: React.FC<LightboxProps> = ({
                 </div>
               )}
 
-              {/* Tags */}
+              {/* Tags - Compact */}
               {photo.tags && photo.tags.length > 0 && (
-                <div className="pt-4 md:pt-6 border-t border-slate-200">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 md:mb-4 flex items-center gap-2">
-                    <Tag className="w-4 h-4" />
+                <div className="pt-2 border-t border-slate-700">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Tag className="w-3 h-3" />
                     Tags
                   </p>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {photo.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 text-xs font-medium rounded-lg border border-cyan-200/50 hover:border-cyan-300/50 transition-colors"
+                        className="px-2 py-1 bg-cyan-500/20 text-cyan-300 text-[10px] font-medium rounded border border-cyan-500/30 hover:border-cyan-500/50 transition-colors"
                       >
                         #{tag}
                       </span>
@@ -247,10 +247,10 @@ const Lightbox: React.FC<LightboxProps> = ({
               </div>
             )}
 
-            {/* QR Code pour télécharger - Design moderne */}
+            {/* QR Code pour télécharger - Design moderne - Thème sombre */}
             <div className="ml-auto">
-              <div className="relative bg-white/95 backdrop-blur-xl p-2 md:p-3 rounded-xl md:rounded-2xl shadow-2xl border border-white/30 transition-all duration-300 hover:scale-105 group">
-                <div className="relative bg-white p-1.5 md:p-2 rounded-lg md:rounded-xl">
+              <div className="relative bg-slate-800/95 backdrop-blur-xl p-2 rounded-xl shadow-2xl border border-slate-700/50 transition-all duration-300 hover:scale-105 group">
+                <div className="relative bg-white p-1.5 rounded-lg">
                   <QRCodeCanvas 
                     value={downloadUrl} 
                     size={60}
@@ -261,12 +261,12 @@ const Lightbox: React.FC<LightboxProps> = ({
                     key={photo.id}
                   />
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white rounded-full p-0.5 md:p-1 shadow-md">
-                      <span className="text-sm md:text-base">⬇️</span>
+                    <div className="bg-white rounded-full p-0.5 shadow-md">
+                      <span className="text-sm">⬇️</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-center mt-1 md:mt-2 text-[9px] md:text-[10px] font-bold text-slate-700 uppercase tracking-wider group-hover:text-cyan-600 transition-colors">
+                <p className="text-center mt-1 text-[9px] font-bold text-slate-300 uppercase tracking-wider group-hover:text-cyan-400 transition-colors">
                   Télécharger
                 </p>
               </div>
