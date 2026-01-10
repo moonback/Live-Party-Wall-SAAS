@@ -267,7 +267,7 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-// Affichage Légende "Cinéma" moderne amélioré (Gradient + Texte avec effets premium)
+// Affichage Légende "Cinéma" moderne avec design complet et professionnel
 function drawCinematicLegend(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -275,94 +275,139 @@ function drawCinematicLegend(
   title: string,
   subtitle?: string
 ): void {
-  // Gradient plus haut pour meilleure visibilité
+  // Gradient plus haut pour meilleure visibilité (35% de la hauteur)
   const gradientHeight = height * 0.35;
   
   // Gradient amélioré avec plus de profondeur et opacité
   const gradient = ctx.createLinearGradient(0, height - gradientHeight, 0, height);
   gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  gradient.addColorStop(0.2, 'rgba(0, 0, 0, 0.4)');
-  gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.75)');
-  gradient.addColorStop(0.8, 'rgba(0, 0, 0, 0.9)');
+  gradient.addColorStop(0.15, 'rgba(0, 0, 0, 0.3)');
+  gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.7)');
+  gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.85)');
+  gradient.addColorStop(0.9, 'rgba(0, 0, 0, 0.95)');
   gradient.addColorStop(1, 'rgba(0, 0, 0, 0.98)');
 
   ctx.save();
   ctx.fillStyle = gradient;
   ctx.fillRect(0, height - gradientHeight, width, gradientHeight);
 
-  const paddingX = width * 0.06;
-  const paddingY = height * 0.08; // Plus d'espace en bas
+  // Padding optimisé pour meilleure proportion
+  const paddingX = width * 0.08;
+  const paddingY = height * 0.06;
   
-  // Ombre portée plus prononcée pour le titre
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 4;
+  // Zone de texte avec fond semi-transparent pour meilleure lisibilité
+  const textAreaY = height - gradientHeight * 0.6;
+  const textAreaHeight = gradientHeight * 0.5;
+  
+  // Fond subtil pour la zone de texte (optionnel, pour plus de contraste)
+  ctx.globalAlpha = 0.3;
+  const textBgGradient = ctx.createLinearGradient(
+    paddingX, textAreaY,
+    paddingX, textAreaY + textAreaHeight
+  );
+  textBgGradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
+  textBgGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
+  textBgGradient.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+  ctx.fillStyle = textBgGradient;
+  drawRoundedRect(ctx, paddingX, textAreaY, width - paddingX * 2, textAreaHeight, 16);
+  ctx.fill();
+  ctx.globalAlpha = 1.0;
 
-  // Titre avec style premium (taille augmentée)
-  const titleFontSize = Math.round(width * 0.042);
-  ctx.font = `900 ${titleFontSize}px "Inter", system-ui, -apple-system, sans-serif`;
+  // Titre avec taille optimisée (proportionnelle mais pas trop grande)
+  const titleFontSize = Math.max(24, Math.min(48, Math.round(width * 0.032)));
+  ctx.font = `700 ${titleFontSize}px "Inter", system-ui, -apple-system, sans-serif`;
   
-  // Gradient sur le texte pour effet premium (plus contrasté)
+  // Gradient élégant sur le texte pour effet premium
   const textGradient = ctx.createLinearGradient(
-    width / 2 - width * 0.25, 
-    height - paddingY - (subtitle ? width * 0.035 : 0), 
-    width / 2 + width * 0.25, 
-    height - paddingY - (subtitle ? width * 0.035 : 0)
+    width / 2 - width * 0.3, 
+    height - paddingY - (subtitle ? titleFontSize * 1.2 : 0), 
+    width / 2 + width * 0.3, 
+    height - paddingY - (subtitle ? titleFontSize * 1.2 : 0)
   );
   textGradient.addColorStop(0, '#ffffff');
-  textGradient.addColorStop(0.3, '#f0f0f0');
+  textGradient.addColorStop(0.25, '#f8f8f8');
   textGradient.addColorStop(0.5, '#ffffff');
-  textGradient.addColorStop(0.7, '#f0f0f0');
+  textGradient.addColorStop(0.75, '#f8f8f8');
   textGradient.addColorStop(1, '#ffffff');
   
   ctx.fillStyle = textGradient;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
 
-  const titleY = subtitle ? height - paddingY - (width * 0.03) : height - paddingY;
+  const titleY = subtitle ? height - paddingY - (titleFontSize * 0.4) : height - paddingY;
   
-  // Contour plus épais pour meilleure lisibilité
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.lineWidth = 3;
+  // Ombre portée prononcée pour le titre (multi-couches pour effet de profondeur)
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 4;
+  
+  // Contour épais pour meilleure lisibilité
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.lineWidth = 4;
+  ctx.lineJoin = 'round';
+  ctx.miterLimit = 2;
   ctx.strokeText(title, width / 2, titleY);
+  
+  // Ombre plus douce pour le remplissage
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 2;
   ctx.fillText(title, width / 2, titleY);
 
   if (subtitle) {
-    // Sous-titre avec style élégant (taille augmentée)
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 3;
+    // Sous-titre avec style élégant et taille proportionnée
+    const subtitleFontSize = Math.max(16, Math.min(28, Math.round(width * 0.022)));
+    ctx.font = `600 ${subtitleFontSize}px "Inter", system-ui, -apple-system, sans-serif`;
     
-    const subtitleFontSize = Math.round(width * 0.026);
-    ctx.font = `700 ${subtitleFontSize}px "Inter", system-ui, -apple-system, sans-serif`;
-    
-    // Gradient rose/violet pour le sous-titre (plus vibrant)
+    // Gradient rose/violet pour le sous-titre avec effet glow
     const subtitleGradient = ctx.createLinearGradient(
-      width / 2 - width * 0.18, 
-      titleY - (width * 0.05), 
-      width / 2 + width * 0.18, 
-      titleY - (width * 0.05)
+      width / 2 - width * 0.2, 
+      titleY - (titleFontSize * 0.7), 
+      width / 2 + width * 0.2, 
+      titleY - (titleFontSize * 0.7)
     );
     subtitleGradient.addColorStop(0, 'rgba(236, 72, 153, 1)');
+    subtitleGradient.addColorStop(0.3, 'rgba(192, 132, 252, 1)');
     subtitleGradient.addColorStop(0.5, 'rgba(168, 85, 247, 1)');
+    subtitleGradient.addColorStop(0.7, 'rgba(192, 132, 252, 1)');
     subtitleGradient.addColorStop(1, 'rgba(236, 72, 153, 1)');
     
     ctx.fillStyle = subtitleGradient;
     const subText = `📸 ${subtitle}`;
+    const subtitleY = titleY - (titleFontSize * 0.7);
     
-    // Contour pour le sous-titre (plus épais)
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.lineWidth = 2;
-    ctx.strokeText(subText, width / 2, titleY - (width * 0.05));
-    ctx.fillText(subText, width / 2, titleY - (width * 0.05));
+    // Ombre pour le sous-titre
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 2;
+    
+    // Contour pour le sous-titre
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.lineWidth = 2.5;
+    ctx.strokeText(subText, width / 2, subtitleY);
+    
+    // Glow effect pour le sous-titre
+    ctx.shadowColor = 'rgba(168, 85, 247, 0.6)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillText(subText, width / 2, subtitleY);
+    
+    // Remplissage final
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText(subText, width / 2, subtitleY);
   }
 
   ctx.restore();
 }
 
-// Légende professionnelle avec style minimaliste et élégant
+// Légende style bande dessinée avec design complet et professionnel
 function drawComicBubble(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -371,56 +416,103 @@ function drawComicBubble(
 ): void {
   if (!text) return;
 
-  // Dimensions optimisées pour un style professionnel
-  const bubbleW = width * 0.75;
-  const bubbleH = height * 0.12;
+  // Dimensions optimisées pour un style professionnel (plus compact)
+  const bubbleW = Math.min(width * 0.7, 600);
+  const bubbleH = Math.max(60, Math.min(height * 0.1, 100));
   const x = (width - bubbleW) / 2;
-  const y = height * 0.78; // Position basse pour style cinématique
-  const borderRadius = 12; // Coins arrondis subtils
+  const y = height * 0.82; // Position basse pour style cinématique
+  const borderRadius = 20; // Coins arrondis plus prononcés
 
   ctx.save();
 
-  // Fond sombre semi-transparent professionnel
+  // Ombre portée externe pour effet de profondeur
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 4;
+  
+  // Fond avec gradient professionnel et effet de profondeur
   const bgGradient = ctx.createLinearGradient(x, y, x, y + bubbleH);
-  bgGradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
-  bgGradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.9)');
-  bgGradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+  bgGradient.addColorStop(0, 'rgba(20, 20, 30, 0.95)');
+  bgGradient.addColorStop(0.3, 'rgba(15, 15, 25, 0.98)');
+  bgGradient.addColorStop(0.5, 'rgba(10, 10, 20, 1)');
+  bgGradient.addColorStop(0.7, 'rgba(15, 15, 25, 0.98)');
+  bgGradient.addColorStop(1, 'rgba(20, 20, 30, 0.95)');
   
   drawRoundedRect(ctx, x, y, bubbleW, bubbleH, borderRadius);
   ctx.fillStyle = bgGradient;
   ctx.fill();
 
-  // Bordure fine et élégante
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  // Bordure avec gradient pour effet premium
+  ctx.shadowColor = 'transparent';
+  const borderGradient = ctx.createLinearGradient(x, y, x, y + bubbleH);
+  borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+  borderGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+  borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
+  ctx.strokeStyle = borderGradient;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Ligne intérieure subtile pour plus de profondeur
+  const innerY = y + 2;
+  const innerH = bubbleH - 4;
+  const innerW = bubbleW - 4;
+  const innerX = x + 2;
+  const innerRadius = borderRadius - 2;
+  
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.lineWidth = 1;
+  drawRoundedRect(ctx, innerX, innerY, innerW, innerH, innerRadius);
   ctx.stroke();
 
   // Texte avec typographie professionnelle
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Taille de police optimale pour lisibilité
-  let fontSize = Math.round(height * 0.04);
+  // Taille de police optimisée (proportionnelle mais pas trop grande)
+  let fontSize = Math.max(20, Math.min(32, Math.round(height * 0.028)));
   ctx.font = `600 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
   
   // Ajuster la taille si le texte est trop long
   const textWidth = ctx.measureText(text).width;
-  const maxTextWidth = bubbleW * 0.88;
+  const maxTextWidth = bubbleW * 0.85;
   if (textWidth > maxTextWidth) {
     const scale = maxTextWidth / textWidth;
-    fontSize = Math.floor(fontSize * scale);
+    fontSize = Math.max(16, Math.floor(fontSize * scale));
     ctx.font = `600 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
   }
 
-  // Texte blanc pur pour contraste optimal
-  ctx.fillStyle = '#ffffff';
+  // Texte avec gradient élégant
+  const textGradient = ctx.createLinearGradient(
+    width / 2 - bubbleW * 0.3,
+    y + bubbleH / 2,
+    width / 2 + bubbleW * 0.3,
+    y + bubbleH / 2
+  );
+  textGradient.addColorStop(0, '#ffffff');
+  textGradient.addColorStop(0.25, '#f5f5f5');
+  textGradient.addColorStop(0.5, '#ffffff');
+  textGradient.addColorStop(0.75, '#f5f5f5');
+  textGradient.addColorStop(1, '#ffffff');
   
-  // Ombre portée subtile pour profondeur
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 8;
+  ctx.fillStyle = textGradient;
+  
+  // Ombre portée pour le texte (multi-couches)
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+  ctx.shadowBlur = 12;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   
+  // Contour subtil pour le texte
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeText(text, width / 2, y + bubbleH / 2);
+  
+  // Ombre plus douce pour le remplissage
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 1;
   ctx.fillText(text, width / 2, y + bubbleH / 2);
   
   ctx.restore();

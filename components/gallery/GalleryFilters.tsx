@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, User, Zap, Trophy, LayoutGrid, Calendar } from 'lucide-react';
+import { Filter, User, Zap, Trophy, LayoutGrid, Calendar, Video, X } from 'lucide-react';
 import { GalleryFiltersModal } from './GalleryFiltersModal';
 import type { SortOption, MediaFilter, Photo } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,10 @@ interface GalleryFiltersProps {
   selectedAuthors: string[];
   onSelectedAuthorsChange: (authors: string[]) => void;
   videoEnabled?: boolean;
+  showAftermovies?: boolean;
+  onToggleAftermovies?: () => void;
+  aftermoviesCount?: number;
+  aftermoviesEnabled?: boolean;
 }
 
 export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
@@ -43,7 +47,11 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
   photos,
   selectedAuthors,
   onSelectedAuthorsChange,
-  videoEnabled = true
+  videoEnabled = true,
+  showAftermovies = true,
+  onToggleAftermovies,
+  aftermoviesCount = 0,
+  aftermoviesEnabled = false
 }) => {
   const [internalIsModalOpen, setInternalIsModalOpen] = React.useState(false);
   const isModalOpen = externalIsModalOpen !== undefined ? externalIsModalOpen : internalIsModalOpen;
@@ -119,6 +127,26 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
           <Trophy className="w-4 h-4" />
           <span>Classement</span>
         </button>
+
+        {/* Aftermovies Toggle */}
+        {aftermoviesEnabled && onToggleAftermovies && (
+          <button
+            onClick={onToggleAftermovies}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+              showAftermovies
+                ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Video className="w-4 h-4" />
+            <span>Aftermovies</span>
+            {aftermoviesCount > 0 && (
+              <span className="bg-purple-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-black">
+                {aftermoviesCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Find Me */}
         {onFindMeClick && findMeEnabled && (

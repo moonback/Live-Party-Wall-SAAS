@@ -48,6 +48,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [photosReactions, setPhotosReactions] = useState<Map<string, import('../types').ReactionCounts>>(new Map());
   const [battles, setBattles] = useState<PhotoBattle[]>([]);
   const [showBattles, setShowBattles] = useState(true);
+  const [showAftermovies, setShowAftermovies] = useState(true);
   const [lightboxPhoto, setLightboxPhoto] = useState<Photo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
@@ -624,6 +625,10 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectedAuthors={selectedAuthors}
             onSelectedAuthorsChange={setSelectedAuthors}
             videoEnabled={settings.video_capture_enabled !== false}
+            showAftermovies={showAftermovies}
+            onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
+            aftermoviesCount={aftermovies.length}
+            aftermoviesEnabled={settings.aftermovies_enabled !== false}
           />
               </div>
             </div>
@@ -634,42 +639,32 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         className="flex-1 overflow-y-auto pb-24 md:pb-28 scroll-smooth relative z-10"
       >
         <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-6">
-          {/* Section Aftermovies améliorée */}
-          {settings.aftermovies_enabled !== false && aftermovies.length > 0 && (
+          {/* Section Aftermovies ultra-compacte */}
+          {settings.aftermovies_enabled !== false && aftermovies.length > 0 && showAftermovies && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-12"
+              className="mb-4"
             >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, type: 'spring' }}
-                    className="p-3 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-indigo-500/30 shadow-lg"
-                  >
-                    <Video className="w-6 h-6 text-indigo-400" />
-                  </motion.div>
-                  <div>
-                    <h2 className="text-3xl font-black text-white mb-1 flex items-center gap-3">
-                      Aftermovies
-                      <span className="text-lg font-normal text-slate-400">
-                        ({aftermovies.length})
-                      </span>
-                    </h2>
-                    <p className="text-sm text-slate-400">Vidéos souvenirs de l'événement à télécharger</p>
-                  </div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-md border border-indigo-500/30">
+                  <Video className="w-3.5 h-3.5 text-indigo-400" />
                 </div>
+                <h2 className="text-lg font-semibold text-white flex items-center gap-1.5">
+                  Aftermovies
+                  <span className="text-xs font-normal text-slate-400">
+                    ({aftermovies.length})
+                  </span>
+                </h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {aftermovies.map((aftermovie, index) => (
                   <motion.div
                     key={aftermovie.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    transition={{ delay: index * 0.03, duration: 0.2 }}
                   >
                     <AftermovieCard
                       aftermovie={aftermovie}
