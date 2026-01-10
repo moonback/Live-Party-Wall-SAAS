@@ -78,7 +78,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+      <div className={`grid grid-cols-1 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6'}`}>
         <PhotoCardSkeletons count={8} columns={isMobile ? 1 : 4} />
       </div>
     );
@@ -89,17 +89,17 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-16 sm:py-20 md:py-24 px-4 sm:px-6"
+        className={`text-center ${isMobile ? 'py-12 px-4' : 'py-16 sm:py-20 md:py-24 px-4 sm:px-6'}`}
       >
-        <div className="text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6">
+        <div className={`${isMobile ? 'text-5xl mb-4' : 'text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6'}`}>
           {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
         </div>
-        <h3 className="text-xl sm:text-2xl font-black text-white mb-1.5 sm:mb-2">
+        <h3 className={`${isMobile ? 'text-lg mb-2' : 'text-xl sm:text-2xl mb-1.5 sm:mb-2'} font-black text-white`}>
           {searchQuery || mediaFilter !== 'all' 
             ? 'Aucun résultat' 
             : 'Le mur est vide'}
         </h3>
-        <p className="text-slate-500 max-w-xs mx-auto text-xs sm:text-sm">
+        <p className={`text-slate-500 max-w-xs mx-auto ${isMobile ? 'text-sm' : 'text-xs sm:text-sm'}`}>
           {searchQuery || mediaFilter !== 'all' 
             ? 'Essayez de modifier vos filtres ou votre recherche.' 
             : 'Soyez le premier à capturer un moment magique !'}
@@ -119,7 +119,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-slate-900/40 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 border border-white/5 shadow-2xl">
+            <div className={`bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8'} border border-white/5 shadow-2xl`}>
               <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} photosReactions={photosReactions} />
             </div>
           </motion.div>
@@ -127,9 +127,9 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       </AnimatePresence>
 
       {/* Grid de photos avec Masonry Style */}
-      <div className={`flex flex-col md:flex-row gap-3 sm:gap-4 md:gap-6`}>
+      <div className={`flex flex-col ${isMobile ? 'gap-3' : 'md:flex-row gap-3 sm:gap-4 md:gap-6'}`}>
         {columns.map((colPhotos, colIdx) => (
-          <div key={colIdx} className="flex-1 flex flex-col gap-3 sm:gap-4 md:gap-6">
+          <div key={colIdx} className={`flex-1 flex flex-col ${isMobile ? 'gap-3' : 'gap-3 sm:gap-4 md:gap-6'}`}>
             {/* Show battles only in the first column on desktop, or top on mobile */}
             {colIdx === 0 && battleModeEnabled && showBattles && battlesForGrid.map((battle) => (
               <motion.div
