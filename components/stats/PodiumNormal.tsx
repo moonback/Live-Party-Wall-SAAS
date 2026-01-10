@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Camera, Star } from 'lucide-react';
+import { Trophy, Camera, Star, Zap } from 'lucide-react';
 import { LeaderboardEntry, Photo, ReactionCounts } from '../../types';
 import { getUserAvatar } from '../../utils/userAvatar';
 import { REACTIONS } from '../../constants';
@@ -85,6 +85,18 @@ export const PodiumNormal: React.FC<PodiumNormalProps> = ({ top3, photos, photos
                   <Star className="w-2.5 h-2.5 md:w-3 md:h-3 text-yellow-400 fill-current flex-shrink-0" />
                   <span className="truncate">{entry.totalLikes} like{entry.totalLikes > 1 ? 's' : ''}</span>
                 </div>
+                {entry.totalReactions > 0 && (
+                  <div className="flex items-center justify-center gap-1 md:gap-1.5 text-gray-300 text-[10px] md:text-xs">
+                    <span className="text-pink-400">❤️</span>
+                    <span className="truncate">{entry.totalReactions} réaction{entry.totalReactions > 1 ? 's' : ''}</span>
+                  </div>
+                )}
+                {entry.score > 0 && (
+                  <div className="flex items-center justify-center gap-1 md:gap-1.5 text-blue-400 text-[10px] md:text-xs font-semibold">
+                    <Zap className="w-2.5 h-2.5 md:w-3 md:h-3 flex-shrink-0" />
+                    <span className="truncate">{Math.round(entry.score)} pts</span>
+                  </div>
+                )}
                 {(() => {
                   const authorReactionsMap: ReactionCounts = {};
                   photos

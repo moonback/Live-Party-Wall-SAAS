@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Camera, Star, Trophy } from 'lucide-react';
+import { TrendingUp, Camera, Star, Trophy, Zap } from 'lucide-react';
 import { LeaderboardEntry, Photo, ReactionCounts } from '../../types';
 import { getUserAvatar } from '../../utils/userAvatar';
 import { REACTIONS } from '../../constants';
@@ -116,11 +116,17 @@ export const LeaderboardNormal: React.FC<LeaderboardNormalProps> = ({
 
                 {/* Score Indicator */}
                 <div className="flex-shrink-0 ml-2">
-                  <div className="flex flex-col items-end">
+                  <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-0.5 md:gap-1 text-yellow-400">
                       <TrendingUp className="w-2.5 h-2.5 md:w-3 md:h-3 flex-shrink-0" />
                       <span className="text-[10px] md:text-xs font-bold">#{entry.rank}</span>
                     </div>
+                    {entry.score > 0 && (
+                      <div className="flex items-center gap-0.5 text-blue-400">
+                        <Zap className="w-2 h-2 md:w-2.5 md:h-2.5 flex-shrink-0" />
+                        <span className="text-[9px] md:text-[10px] font-semibold">{Math.round(entry.score)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

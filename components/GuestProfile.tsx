@@ -4,6 +4,7 @@ import { getCurrentUserName, getCurrentUserAvatar, disconnectUser } from '../uti
 import { getPhotosByAuthor, getPhotosReactions } from '../services/photoService';
 import { Photo, ReactionCounts } from '../types';
 import { REACTIONS } from '../constants';
+import { getAuthorStats, getAuthorBadges, getAuthorMilestones, getNextMilestone } from '../services/gamificationService';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useEvent } from '../context/EventContext';
 import { useToast } from '../context/ToastContext';
@@ -224,6 +225,119 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
               </div>
             </div>
           </div>
+
+          {/* Badges et Milestones */}
+          {!loading && userPhotos.length > 0 && (() => {
+            // Récupérer toutes les photos de l'événement pour le calcul des badges
+            // Note: On utilise seulement les photos de l'utilisateur pour les milestones
+            const allPhotos = userPhotos; // Pour les badges, on a besoin de toutes les photos de l'événement
+            // Pour l'instant, on utilise les photos de l'utilisateur seulement
+            const authorBadges = getAuthorBadges(userName!, allPhotos, photosReactions);
+            const milestones = getAuthorMilestones(userName!, allPhotos, photosReactions);
+            const nextMilestone = getNextMilestone(userName!, allPhotos, photosReactions);
+            const stats = getAuthorStats(userName!, allPhotos, photosReactions);
+
+            return (
+              <>
+                {/* Badges */}
+                {authorBadges.length > 0 && (
+                  <div className="mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 mb-3">
+                      <Award className="w-5 h-5 text-yellow-400" />
+                      Mes badges
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {authorBadges.map((badge) => (
+                        <div
+                          key={badge.type}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r ${badge.color} border border-white/20 shadow-lg`}
+                          title={badge.description}
+                        >
+                          <span className="text-lg">{badge.emoji}</span>
+                          <span className="text-sm font-bold text-white">{badge.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Milestones */}
+                {milestones.length > 0 && (
+                  <div className="mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2 mb-3">
+                      <Award className="w-5 h-5 text-purple-400" />
+                      Mes achievements
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {milestones.slice(0, 6).map((milestone) => (
+                        <div
+                          key={milestone.id}
+                          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-2 sm:p-3 text-center"
+                          title={milestone.description}
+                        >
+                          <div className="text-2xl sm:text-3xl mb-1">{milestone.emoji}</div>
+                          <div className="text-xs sm:text-sm font-bold text-white mb-0.5">{milestone.label}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{milestone.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Prochain milestone */}
+                {nextMilestone && stats && (
+                  <div className="mb-6 backdrop-blur-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4">
+                    <h3 className="text-sm sm:text-base font-bold text-white mb-2 flex items-center gap-2">
+                      <span className="text-lg">{nextMilestone.emoji}</span>
+                      Prochain objectif
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 mb-2">{nextMilestone.description}</p>
+                    <div className="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, ((() => {
+                            let value = 0;
+                            switch (nextMilestone.type) {
+                              case 'photos': value = stats.photoCount; break;
+                              case 'likes': value = stats.totalLikes; break;
+                              case 'reactions': value = stats.totalReactions; break;
+                              case 'score': value = stats.score; break;
+                              case 'average': value = stats.averageLikes; break;
+                            }
+                            return (value / nextMilestone.threshold) * 100;
+                          })()))}%`
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 text-right">
+                      {(() => {
+                        let value = 0;
+                        switch (nextMilestone.type) {
+                          case 'photos': value = stats.photoCount; break;
+                          case 'likes': value = stats.totalLikes; break;
+                          case 'reactions': value = stats.totalReactions; break;
+                          case 'score': value = stats.score; break;
+                          case 'average': value = stats.averageLikes; break;
+                        }
+                        return `${Math.round(value)} / ${nextMilestone.threshold}`;
+                      })()}
+                    </p>
+                  </div>
+                )}
+
+                {/* Score */}
+                {stats && stats.score > 0 && (
+                  <div className="mb-6 backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent mb-1">
+                      {Math.round(stats.score)} points
+                    </div>
+                    <div className="text-xs text-slate-400">Score de gamification</div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {/* Liste des photos */}
           {loading ? (

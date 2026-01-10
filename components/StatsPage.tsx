@@ -189,9 +189,9 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
 
   // Calculer les statistiques
   const stats = useMemo(() => {
-    const leaderboard = generateLeaderboard(photos);
+    const leaderboard = generateLeaderboard(photos, photosReactions);
     const starPhoto = getStarPhoto(photos);
-    const topPhotographer = getTopPhotographer(photos);
+    const topPhotographer = getTopPhotographer(photos, photosReactions);
 
     // Statistiques globales
     const totalPhotos = photos.length;
@@ -266,10 +266,6 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
     return `#${rank}`;
   };
 
-  const getScore = (photoCount: number, totalLikes: number) => {
-    // Score simple, lisible, “compétition”
-    return totalLikes * 10 + photoCount * 5;
-  };
 
   const getRankColor = (rank: number) => {
     if (rank === 1) return 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30';
@@ -359,7 +355,6 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
               photos={photos}
               photosReactions={photosReactions}
               uploadUrl={uploadUrl}
-              getScore={getScore}
               guestAvatars={guestAvatars}
             />
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Camera, Star } from 'lucide-react';
+import { Trophy, Camera, Star, Zap, Heart } from 'lucide-react';
 import { LeaderboardEntry } from '../../types';
 import { getUserAvatar } from '../../utils/userAvatar';
 
@@ -42,13 +42,23 @@ export const PodiumDisplay: React.FC<PodiumDisplayProps> = ({ top3, guestAvatars
               <div className="text-xs font-bold text-white truncate max-w-[100px]">
                 {top3[1].author}
               </div>
-              <div className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-800/40 border border-white/5 text-white/90 text-[9px]">
+              <div className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-800/40 border border-white/5 text-white/90 text-[9px] flex-wrap justify-center">
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Camera className="w-2 h-2" /> {top3[1].photoCount}
                 </span>
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Star className="w-2 h-2 text-yellow-400 fill-current" /> {top3[1].totalLikes}
                 </span>
+                {top3[1].totalReactions > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold">
+                    <Heart className="w-2 h-2 text-pink-400 fill-current" /> {top3[1].totalReactions}
+                  </span>
+                )}
+                {top3[1].score > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold text-blue-400">
+                    <Zap className="w-2 h-2" /> {Math.round(top3[1].score)}
+                  </span>
+                )}
               </div>
             </div>
             <div className="mt-1.5 h-8 w-full rounded-t-lg bg-gradient-to-t from-gray-500/20 to-transparent border-t border-gray-400/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.3s', animationFillMode: 'both' }} />
@@ -82,13 +92,23 @@ export const PodiumDisplay: React.FC<PodiumDisplayProps> = ({ top3, guestAvatars
               <div className="text-sm font-bold text-white truncate max-w-[120px]">
                 {top3[0].author}
               </div>
-              <div className="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-400/20 text-yellow-50 text-[9px]">
+              <div className="mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 border border-yellow-400/20 text-yellow-50 text-[9px] flex-wrap justify-center">
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Camera className="w-2 h-2" /> {top3[0].photoCount}
                 </span>
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Star className="w-2 h-2 text-yellow-400 fill-current" /> {top3[0].totalLikes}
                 </span>
+                {top3[0].totalReactions > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold">
+                    <Heart className="w-2 h-2 text-pink-400 fill-current" /> {top3[0].totalReactions}
+                  </span>
+                )}
+                {top3[0].score > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold text-blue-400">
+                    <Zap className="w-2 h-2" /> {Math.round(top3[0].score)}
+                  </span>
+                )}
               </div>
             </div>
             <div className="mt-1.5 h-12 w-full rounded-t-lg bg-gradient-to-t from-yellow-500/20 to-transparent border-t border-yellow-400/15 animate-slide-in-from-bottom" style={{ animationDelay: '0.2s', animationFillMode: 'both' }} />
@@ -120,13 +140,23 @@ export const PodiumDisplay: React.FC<PodiumDisplayProps> = ({ top3, guestAvatars
               <div className="text-xs font-bold text-white truncate max-w-[100px]">
                 {top3[2].author}
               </div>
-              <div className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-800/40 border border-white/5 text-white/90 text-[9px]">
+              <div className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-800/40 border border-white/5 text-white/90 text-[9px] flex-wrap justify-center">
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Camera className="w-2 h-2" /> {top3[2].photoCount}
                 </span>
                 <span className="inline-flex items-center gap-0.5 font-semibold">
                   <Star className="w-2 h-2 text-yellow-400 fill-current" /> {top3[2].totalLikes}
                 </span>
+                {top3[2].totalReactions > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold">
+                    <Heart className="w-2 h-2 text-pink-400 fill-current" /> {top3[2].totalReactions}
+                  </span>
+                )}
+                {top3[2].score > 0 && (
+                  <span className="inline-flex items-center gap-0.5 font-semibold text-blue-400">
+                    <Zap className="w-2 h-2" /> {Math.round(top3[2].score)}
+                  </span>
+                )}
               </div>
             </div>
             <div className="mt-1.5 h-6 w-full rounded-t-lg bg-gradient-to-t from-amber-600/20 to-transparent border-t border-amber-500/10 animate-slide-in-from-bottom" style={{ animationDelay: '0.4s', animationFillMode: 'both' }} />

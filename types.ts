@@ -47,7 +47,19 @@ export interface ToastMessage {
 }
 
 // Gamification Types
-export type BadgeType = 'photographer' | 'star';
+export type BadgeType = 
+  | 'photographer' // Plus de photos
+  | 'star' // Photo la plus likée
+  | 'early_bird' // Première photo
+  | 'popular' // Plus de likes totaux
+  | 'consistent' // Photos régulières
+  | 'quality' // Meilleure moyenne de likes
+  | 'social_butterfly' // Plus de réactions reçues
+  | 'trending' // Photo en hausse
+  | 'viral' // Photo avec beaucoup de réactions
+  | 'dedicated' // Beaucoup de photos en peu de temps
+  | 'influencer' // Meilleur ratio likes/photos
+  | 'reaction_master'; // Plus de réactions variées
 
 export interface Badge {
   type: BadgeType;
@@ -55,6 +67,7 @@ export interface Badge {
   emoji: string;
   description: string;
   color: string;
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary'; // Rareté du badge
 }
 
 export interface AuthorStats {
@@ -62,7 +75,12 @@ export interface AuthorStats {
   photoCount: number;
   totalLikes: number;
   averageLikes: number;
+  totalReactions: number; // Total de toutes les réactions reçues
+  reactionVariety: number; // Nombre de types de réactions différents reçus
   badges: Badge[];
+  score: number; // Score total de gamification
+  firstPhotoTimestamp?: number; // Timestamp de la première photo
+  lastPhotoTimestamp?: number; // Timestamp de la dernière photo
 }
 
 export interface LeaderboardEntry {
@@ -70,7 +88,9 @@ export interface LeaderboardEntry {
   author: string;
   photoCount: number;
   totalLikes: number;
+  totalReactions: number;
   badges: Badge[];
+  score: number; // Score pour le classement
 }
 
 export interface PhotoBadge {

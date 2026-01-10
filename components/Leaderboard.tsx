@@ -1,19 +1,20 @@
 import React, { useMemo } from 'react';
-import { Photo, LeaderboardEntry, Badge } from '../types';
+import { Photo, LeaderboardEntry, Badge, ReactionCounts } from '../types';
 import { generateLeaderboard, BADGES } from '../services/gamificationService';
-import { Trophy, Camera, Star, TrendingUp } from 'lucide-react';
+import { Trophy, Camera, Star, TrendingUp, Heart, Zap } from 'lucide-react';
 import { getUserAvatar } from '../utils/userAvatar';
 
 interface LeaderboardProps {
   photos: Photo[];
   maxEntries?: number;
   guestAvatars?: Map<string, string>;
+  photosReactions?: Map<string, ReactionCounts>;
 }
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10, guestAvatars }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10, guestAvatars, photosReactions }) => {
   const leaderboard = useMemo(() => {
-    return generateLeaderboard(photos).slice(0, maxEntries);
-  }, [photos, maxEntries]);
+    return generateLeaderboard(photos, photosReactions).slice(0, maxEntries);
+  }, [photos, maxEntries, photosReactions]);
 
   if (leaderboard.length === 0) {
     return (
@@ -96,17 +97,29 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ photos, maxEntries = 10, gues
                     <Star className="w-3 h-3 text-yellow-400 fill-current" />
                     <span>{entry.totalLikes} like{entry.totalLikes > 1 ? 's' : ''}</span>
                   </div>
+                  {entry.totalReactions > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3 text-pink-400 fill-current" />
+                      <span>{entry.totalReactions} réaction{entry.totalReactions > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Score Indicator */}
             <div className="flex-shrink-0 ml-4">
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-1 text-yellow-400">
                   <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm font-bold">{entry.rank}</span>
+                  <span className="text-sm font-bold">#{entry.rank}</span>
                 </div>
+                {entry.score > 0 && (
+                  <div className="flex items-center gap-1 text-blue-400">
+                    <Zap className="w-3 h-3" />
+                    <span className="text-xs font-semibold">{Math.round(entry.score)} pts</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

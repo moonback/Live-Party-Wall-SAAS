@@ -17,7 +17,9 @@ import {
   Users,
   Smartphone,
   Trophy,
-  User
+  User,
+  Award,
+  TrendingUp
 } from 'lucide-react';
 
 interface HelpPageProps {
@@ -482,6 +484,143 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
                 Pour la meilleure expérience, utilisez un navigateur récent (Chrome, Safari, Firefox, Edge).
               </p>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'gamification',
+      title: 'Gamification',
+      icon: Trophy,
+      gradient: 'from-yellow-500 via-amber-500 to-orange-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+              Système de badges
+            </h4>
+            <p className="text-sm mb-3">
+              Gagnez des badges en participant activement à l'événement ! Les badges sont attribués automatiquement selon vos performances :
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <div className="p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">📸</span>
+                  <span className="font-semibold text-white text-sm">Photographe</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir posté le plus de photos</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">⭐</span>
+                  <span className="font-semibold text-white text-sm">Star</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir la photo la plus likée</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-blue-400/10 to-cyan-500/10 border border-blue-400/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🐦</span>
+                  <span className="font-semibold text-white text-sm">Oiseau matinal</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir posté la première photo</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🔥</span>
+                  <span className="font-semibold text-white text-sm">Populaire</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir reçu le plus de likes</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">📅</span>
+                  <span className="font-semibold text-white text-sm">Régulier</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir posté régulièrement</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">💎</span>
+                  <span className="font-semibold text-white text-sm">Qualité</span>
+                </div>
+                <p className="text-xs text-slate-400">Meilleure moyenne de likes</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-pink-400/10 to-rose-500/10 border border-pink-400/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🦋</span>
+                  <span className="font-semibold text-white text-sm">Papillon social</span>
+                </div>
+                <p className="text-xs text-slate-400">Avoir reçu le plus de réactions</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">🚀</span>
+                  <span className="font-semibold text-white text-sm">Viral</span>
+                </div>
+                <p className="text-xs text-slate-400">Photo avec énormément de réactions</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-400" />
+              Système de points
+            </h4>
+            <p className="text-sm mb-3">
+              Chaque action vous rapporte des points pour le classement :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li><span className="text-white font-medium">10 points</span> par photo postée</li>
+              <li><span className="text-white font-medium">5 points</span> par like reçu</li>
+              <li><span className="text-white font-medium">3 points</span> par réaction reçue</li>
+              <li><span className="text-white font-medium">Bonus qualité</span> : points supplémentaires pour une bonne moyenne de likes</li>
+              <li><span className="text-white font-medium">Bonus variété</span> : points pour recevoir différents types de réactions</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5 text-purple-400" />
+              Milestones et achievements
+            </h4>
+            <p className="text-sm mb-3">
+              Débloquez des achievements en atteignant des objectifs :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Première photo, 5 photos, 10 photos, 25 photos, 50 photos...</li>
+              <li>10 likes, 50 likes, 100 likes, 250 likes...</li>
+              <li>20 réactions, 50 réactions, 100 réactions...</li>
+              <li>100 points, 500 points, 1000 points, 2500 points...</li>
+              <li>Moyenne de 5 ou 10 likes par photo (avec minimum de photos requis)</li>
+            </ul>
+            <p className="text-sm mt-3 text-slate-400">
+              💡 Consultez votre profil pour voir vos achievements et votre prochain objectif !
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-400" />
+              Classement en direct
+            </h4>
+            <p className="text-sm mb-3">
+              Le classement est mis à jour en temps réel et affiche :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Votre rang dans l'événement</li>
+              <li>Votre score total de gamification</li>
+              <li>Tous vos badges obtenus</li>
+              <li>Vos statistiques (photos, likes, réactions)</li>
+              <li>Le podium des 3 meilleurs participants</li>
+            </ul>
+            <p className="text-sm mt-3 text-slate-400">
+              💡 Le classement est basé sur le score total, puis le nombre de photos, puis les likes totaux.
+            </p>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-yellow-500/10 to-orange-500/10">
+            <p className="text-sm text-yellow-300">
+              🎯 Astuce : Plus vous participez activement, plus vous gagnez de points et de badges ! 
+              Interagissez avec les photos des autres (likes, réactions) pour encourager la communauté.
+            </p>
           </div>
         </div>
       ),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Camera, Star } from 'lucide-react';
+import { TrendingUp, Camera, Star, Heart, Zap } from 'lucide-react';
 import { LeaderboardEntry, Photo, ReactionCounts } from '../../types';
 import { getUserAvatar } from '../../utils/userAvatar';
 import { REACTIONS } from '../../constants';
@@ -13,7 +13,6 @@ interface LeaderboardDisplayProps {
   photos: Photo[];
   photosReactions: Map<string, ReactionCounts>;
   uploadUrl: string;
-  getScore: (photoCount: number, totalLikes: number) => number;
   guestAvatars?: Map<string, string>; // Mapping nom -> avatar_url depuis la BDD
 }
 
@@ -26,7 +25,6 @@ export const LeaderboardDisplay: React.FC<LeaderboardDisplayProps> = ({
   photos,
   photosReactions,
   uploadUrl,
-  getScore,
   guestAvatars,
 }) => {
   return (
@@ -78,6 +76,11 @@ export const LeaderboardDisplay: React.FC<LeaderboardDisplayProps> = ({
                   <span className="inline-flex items-center gap-0.5">
                     <Star className="w-2.5 h-2.5 text-yellow-400 fill-current" /> {entry.totalLikes}
                   </span>
+                  {entry.totalReactions > 0 && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <Heart className="w-2.5 h-2.5 text-pink-400 fill-current" /> {entry.totalReactions}
+                    </span>
+                  )}
                   {(() => {
                     const authorReactionsMap: ReactionCounts = {};
                     photos
@@ -109,10 +112,22 @@ export const LeaderboardDisplay: React.FC<LeaderboardDisplayProps> = ({
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-bold text-white">
-                  {getScore(entry.photoCount, entry.totalLikes)}
-                </div>
-                <div className="text-[9px] uppercase tracking-wide text-white/30">pts</div>
+                {entry.score > 0 ? (
+                  <>
+                    <div className="text-sm font-bold text-white flex items-center justify-end gap-1">
+                      <Zap className="w-3 h-3 text-blue-400" />
+                      {Math.round(entry.score)}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wide text-white/30">pts</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-bold text-white">
+                      {entry.photoCount * 10 + entry.totalLikes * 5}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-wide text-white/30">pts</div>
+                  </>
+                )}
               </div>
             </div>
           ))
