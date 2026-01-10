@@ -114,25 +114,266 @@ export const applyImageFilter = (
 };
 
 /**
- * Améliore la qualité d'une image si nécessaire
+ * Interface pour les métriques d'image
  */
-export const enhanceImageQuality = (imageDataUrl: string): Promise<string> => {
+export interface ImageMetrics {
+  brightness: number; // 0-255, moyenne de la luminosité
+  contrast: number; // 0-1, écart-type des valeurs de luminosité
+  sharpness: number; // 0-1, mesure de la netteté basée sur les gradients
+  isUnderexposed: boolean; // Luminosité moyenne < 80
+  isOverexposed: boolean; // Luminosité moyenne > 200
+  needsSharpening: boolean; // Netteté < 0.3
+  needsContrastBoost: boolean; // Contraste < 0.15
+}
+
+/**
+ * Analyse les métriques d'une image pour détecter les problèmes de qualité
+ */
+const analyzeImageMetrics = (imageData: ImageData): ImageMetrics => {
+  const data = imageData.data;
+  const width = imageData.width;
+  const height = imageData.height;
+  const pixelCount = width * height;
+  
+  let totalBrightness = 0;
+  const brightnessValues: number[] = [];
+  
+  // Calculer la luminosité moyenne et collecter les valeurs
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    // Formule de luminosité perceptuelle
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+    totalBrightness += brightness;
+    brightnessValues.push(brightness);
+  }
+  
+  const avgBrightness = totalBrightness / pixelCount;
+  
+  // Calculer l'écart-type pour le contraste
+  const variance = brightnessValues.reduce((acc, val) => {
+    return acc + Math.pow(val - avgBrightness, 2);
+  }, 0) / pixelCount;
+  const contrast = Math.sqrt(variance) / 255; // Normalisé entre 0 et 1
+  
+  // Calculer la netteté basée sur les gradients (Laplacien simplifié)
+  let sharpnessSum = 0;
+  let sharpnessCount = 0;
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const idx = (y * width + x) * 4;
+      const center = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+      
+      const right = 0.299 * data[idx + 4] + 0.587 * data[idx + 5] + 0.114 * data[idx + 6];
+      const bottom = 0.299 * data[(y + 1) * width * 4 + x * 4] + 
+                     0.587 * data[(y + 1) * width * 4 + x * 4 + 1] + 
+                     0.114 * data[(y + 1) * width * 4 + x * 4 + 2];
+      
+      const gradient = Math.abs(center - right) + Math.abs(center - bottom);
+      sharpnessSum += gradient;
+      sharpnessCount++;
+    }
+  }
+  const sharpness = (sharpnessSum / sharpnessCount) / 255; // Normalisé entre 0 et 1
+  
+  return {
+    brightness: avgBrightness,
+    contrast,
+    sharpness,
+    isUnderexposed: avgBrightness < 80,
+    isOverexposed: avgBrightness > 200,
+    needsSharpening: sharpness < 0.3,
+    needsContrastBoost: contrast < 0.15,
+  };
+};
+
+/**
+ * Applique un filtre de netteté (unsharp mask) à une image
+ */
+const applySharpening = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  intensity: number = 0.5
+): void => {
+  // Créer un canvas temporaire pour le flou
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = width;
+  tempCanvas.height = height;
+  const tempCtx = tempCanvas.getContext('2d', {
+    willReadFrequently: true
+  });
+  
+  if (!tempCtx) return;
+  
+  // Copier l'image actuelle
+  const imageData = ctx.getImageData(0, 0, width, height);
+  tempCtx.putImageData(imageData, 0, 0);
+  
+  // Créer un canvas source pour le flou
+  const sourceCanvas = document.createElement('canvas');
+  sourceCanvas.width = width;
+  sourceCanvas.height = height;
+  const sourceCtx = sourceCanvas.getContext('2d');
+  
+  if (!sourceCtx) return;
+  
+  sourceCtx.putImageData(imageData, 0, 0);
+  
+  // Appliquer un flou gaussien léger
+  tempCtx.filter = 'blur(1px)';
+  tempCtx.drawImage(sourceCanvas, 0, 0);
+  const blurredData = tempCtx.getImageData(0, 0, width, height);
+  
+  // Appliquer l'unsharp mask : original - blurred * intensity
+  const originalData = imageData.data;
+  const blurred = blurredData.data;
+  
+  for (let i = 0; i < originalData.length; i += 4) {
+    const diff = originalData[i] - blurred[i];
+    originalData[i] = Math.max(0, Math.min(255, originalData[i] + diff * intensity));
+    originalData[i + 1] = Math.max(0, Math.min(255, originalData[i + 1] + (originalData[i + 1] - blurred[i + 1]) * intensity));
+    originalData[i + 2] = Math.max(0, Math.min(255, originalData[i + 2] + (originalData[i + 2] - blurred[i + 2]) * intensity));
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+};
+
+/**
+ * Améliore la qualité d'une image de manière intelligente
+ * Détecte automatiquement les problèmes et applique des corrections ciblées
+ * Optimisé pour la projection sur grand écran
+ * 
+ * @param imageDataUrl - Image en base64
+ * @param suggestedImprovements - Suggestions d'amélioration de l'IA (optionnel)
+ * @returns Promise<string> - Image optimisée en base64
+ */
+export const enhanceImageQuality = (
+  imageDataUrl: string,
+  suggestedImprovements?: string[]
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
       
-      if (!ctx) {
+      // Optimiser la résolution pour grand écran (max 4K, mais garder les proportions)
+      const maxWidth = 3840;
+      const maxHeight = 2160;
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = Math.floor(width * ratio);
+        height = Math.floor(height * ratio);
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d', {
+        willReadFrequently: true, // Optimisation pour les lectures fréquentes
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+      });
+      
+      if (!ctx || !(ctx instanceof CanvasRenderingContext2D)) {
         reject(new Error('Canvas context not available'));
         return;
       }
 
-      // Amélioration légère : contraste et netteté
-      ctx.filter = 'contrast(1.1) brightness(1.02)';
-      ctx.drawImage(img, 0, 0);
+      // Dessiner l'image à la nouvelle taille (redimensionnement de qualité)
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Analyser les métriques de l'image
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const metrics = analyzeImageMetrics(imageData);
+      
+      // Déterminer les corrections à appliquer
+      let brightnessAdjust = 1.0;
+      let contrastAdjust = 1.0;
+      let saturationAdjust = 1.0;
+      let needsSharpening = metrics.needsSharpening;
+      let needsExposureFix = false;
+      
+      // Ajustements basés sur les métriques
+      if (metrics.isUnderexposed) {
+        brightnessAdjust = 1.0 + (80 - metrics.brightness) / 255 * 0.4; // Augmenter jusqu'à 40%
+        needsExposureFix = true;
+      } else if (metrics.isOverexposed) {
+        brightnessAdjust = 1.0 - (metrics.brightness - 200) / 255 * 0.3; // Réduire jusqu'à 30%
+        needsExposureFix = true;
+      }
+      
+      if (metrics.needsContrastBoost) {
+        contrastAdjust = 1.0 + (0.15 - metrics.contrast) * 2; // Augmenter le contraste
+      }
+      
+      // Ajustements basés sur les suggestions de l'IA
+      if (suggestedImprovements) {
+        const improvements = suggestedImprovements.map(imp => imp.toLowerCase());
+        
+        if (improvements.some(imp => imp.includes('luminosité') || imp.includes('luminosite') || imp.includes('brightness'))) {
+          if (!needsExposureFix) {
+            brightnessAdjust = 1.1; // Augmentation légère
+          }
+        }
+        
+        if (improvements.some(imp => imp.includes('contraste') || imp.includes('contrast'))) {
+          contrastAdjust = Math.max(contrastAdjust, 1.15);
+        }
+        
+        if (improvements.some(imp => imp.includes('netteté') || imp.includes('netete') || imp.includes('sharp') || imp.includes('flou'))) {
+          needsSharpening = true;
+        }
+        
+        if (improvements.some(imp => imp.includes('saturation') || imp.includes('couleur') || imp.includes('color'))) {
+          saturationAdjust = 1.1;
+        }
+      }
+      
+      // Appliquer les corrections de base (luminosité, contraste, saturation)
+      if (brightnessAdjust !== 1.0 || contrastAdjust !== 1.0 || saturationAdjust !== 1.0) {
+        // Construire le filtre CSS
+        const filters: string[] = [];
+        
+        if (brightnessAdjust !== 1.0) {
+          filters.push(`brightness(${brightnessAdjust})`);
+        }
+        
+        if (contrastAdjust !== 1.0) {
+          filters.push(`contrast(${contrastAdjust})`);
+        }
+        
+        if (saturationAdjust !== 1.0) {
+          filters.push(`saturate(${saturationAdjust})`);
+        }
+        
+        if (filters.length > 0) {
+          // Créer un canvas temporaire pour appliquer les filtres
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = width;
+          tempCanvas.height = height;
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          if (tempCtx && tempCtx instanceof CanvasRenderingContext2D) {
+            tempCtx.filter = filters.join(' ');
+            tempCtx.drawImage(canvas, 0, 0);
+            // Copier le résultat vers le canvas principal
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(tempCanvas, 0, 0);
+          }
+        }
+      }
+      
+      // Appliquer le sharpening si nécessaire
+      if (needsSharpening) {
+        applySharpening(ctx, width, height, 0.6); // Intensité modérée pour éviter les artefacts
+      }
+      
+      // Qualité JPEG optimisée pour grand écran (0.92 = bon compromis qualité/taille)
+      // Pour projection, on privilégie la qualité
       resolve(canvas.toDataURL('image/jpeg', 0.92));
     };
 

@@ -66,13 +66,41 @@ export const submitPhoto = async ({
 
   const analysis = aiResult.analysis;
 
-  // Amélioration de la qualité si nécessaire
+  // Amélioration automatique de la qualité si nécessaire
+  // Utilise estimatedQuality pour une détection plus précise
+  // Optimise automatiquement pour la projection sur grand écran
   let finalImage = imageForAnalysis;
-  if (activeFilter === 'none' && activeFrame === 'none' && (analysis.quality === 'poor' || analysis.quality === 'fair')) {
+  const shouldEnhance = activeFilter === 'none' && activeFrame === 'none' && (
+    analysis.quality === 'poor' || 
+    analysis.quality === 'fair' ||
+    analysis.estimatedQuality === 'poor' ||
+    analysis.estimatedQuality === 'fair' ||
+    (analysis.suggestedImprovements && analysis.suggestedImprovements.length > 0)
+  );
+  
+  if (shouldEnhance) {
     try {
-      finalImage = await enhanceImageQuality(imageForAnalysis);
+      logger.info('Optimisation automatique de la qualité activée', {
+        component: 'photoboothService',
+        action: 'submitPhoto',
+        quality: analysis.quality,
+        estimatedQuality: analysis.estimatedQuality,
+        improvements: analysis.suggestedImprovements
+      });
+      
+      // Passer les suggestions d'amélioration de l'IA pour un traitement ciblé
+      finalImage = await enhanceImageQuality(
+        imageForAnalysis,
+        analysis.suggestedImprovements
+      );
+      
+      logger.info('Optimisation de la qualité terminée avec succès', {
+        component: 'photoboothService',
+        action: 'submitPhoto'
+      });
     } catch (enhanceError) {
       logger.warn("Quality enhancement failed", { component: 'photoboothService', action: 'submitPhoto' }, enhanceError);
+      // En cas d'erreur, continuer avec l'image originale
     }
   }
 
