@@ -65,7 +65,9 @@ Créer une animation collective et engageante où chaque photo devient un moment
 - ⚙️ **Personnalisation** - Paramètres granulaires
 - 🖼️ **Mode projection** - Optimisé pour grand écran
 - ⚔️ **Battles photos** - Créez des duels votés en direct
-- 🎬 **Aftermovie** - Génération automatique de timelapse
+- 🎬 **Aftermovie avancé** - Génération de timelapse avec presets (HD, Full HD, Story 9:16)
+- 📤 **Partage direct** - Upload automatique, QR code et lien de téléchargement
+- 📊 **Statistiques téléchargements** - Compteur de téléchargements par aftermovie
 - 👥 **Gestion d'équipe** - Rôles et permissions
 
 </td>
@@ -107,6 +109,7 @@ Créer une animation collective et engageante où chaque photo devient un moment
 | **Performance** | @tanstack/react-virtual 3.13 |
 | **Validation** | Zod 4.3 |
 | **Desktop** | Electron 39.2 |
+| **Vidéo** | MediaRecorder API, Canvas API pour génération aftermovies |
 | **Gamification** | Système de badges, points et milestones intégré |
 | **RGPD** | Gestion complète du consentement et des droits |
 
@@ -132,6 +135,8 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── supabaseClient.ts  # Configuration Supabase
 │   ├── photoService.ts    # CRUD photos, likes
 │   ├── geminiService.ts   # Intégration IA
+│   ├── aftermovieService.ts  # Génération timelapse
+│   ├── aftermovieShareService.ts  # Upload, partage, téléchargements
 │   ├── gamificationService.ts  # Badges, points, classements
 │   ├── rgpdService.ts     # Gestion consentement RGPD
 │   └── ...
@@ -148,7 +153,10 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   └── wall/              # Hooks spécifiques
 │
 ├── 🗄️ supabase/            # Scripts SQL
-│   └── supabase_complete_setup.sql
+│   ├── supabase_complete_setup.sql
+│   ├── supabase_aftermovies_migration.sql
+│   ├── supabase_aftermovies_enabled_migration.sql
+│   └── supabase_aftermovies_download_count_migration.sql
 │
 └── 🖥️ electron/            # Application desktop
     ├── main.ts
@@ -214,7 +222,7 @@ GEMINI_API_KEY=votre_cle_api_gemini
 ```
 
 4. Activez **Realtime** pour les tables :
-   - `photos`, `likes`, `reactions`, `event_settings`, `guests`, `photo_battles`
+   - `photos`, `likes`, `reactions`, `event_settings`, `guests`, `photo_battles`, `aftermovies`
 
 5. Créez votre compte admin dans **Authentication > Users**
 
@@ -254,6 +262,7 @@ npm run electron:pack
 | **event_settings** | Configuration par événement | ← events |
 | **event_organizers** | Organisateurs avec rôles | ← events, auth.users |
 | **photo_battles** | Duels entre photos | ← events, photos |
+| **aftermovies** | Vidéos timelapse générées | ← events |
 
 ### 🔒 Sécurité
 
@@ -266,7 +275,7 @@ npm run electron:pack
 
 | Bucket | Usage | Politique |
 |--------|-------|-----------|
-| `party-photos` | Photos invités | Public lecture, upload public |
+| `party-photos` | Photos invités + Aftermovies | Public lecture, upload public (photos), upload admin (aftermovies) |
 | `party-frames` | Cadres décoratifs | Public lecture, upload admin |
 | `party-avatars` | Avatars invités | Public lecture, upload public |
 
@@ -341,6 +350,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 📥 Téléchargement individuel
 - 📦 Export ZIP groupé
 - 📱 QR code pour accès rapide
+- 🎬 **Téléchargement aftermovies** - Accès direct aux vidéos souvenirs depuis la galerie
 
 </details>
 
@@ -392,11 +402,19 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 📊 Affichage résultats
 - 🖥️ Projection sur grand écran
 
-### Export
+### Export & Aftermovies
 - 📦 Export ZIP haute définition
-- 🎬 Génération aftermovie automatique
-- ⚙️ Personnalisation vidéos
-- 📥 Téléchargement facile
+- 🎬 **Génération aftermovie avancée** - Timelapse automatique avec personnalisation
+- 📐 **3 presets vidéo** - HD (720p), Full HD (1080p), Story (9:16 pour Instagram/TikTok)
+- 🎨 **Réorganisation des photos** - Drag & drop, boutons haut/bas, réinitialisation chronologique
+- 🎵 **Audio personnalisé** - Ajout de musique de fond avec contrôle volume et boucle
+- ⏱️ **Durée personnalisable** - Temps d'affichage par photo (0.5s à 5s)
+- 📤 **Partage direct** - Upload automatique vers Supabase Storage
+- 📱 **QR code de téléchargement** - Génération automatique pour partage facile
+- 🔗 **Lien de partage** - URL publique pour téléchargement direct
+- 📊 **Compteur de téléchargements** - Suivi du nombre de téléchargements par aftermovie
+- 📥 **Affichage dans la galerie** - Les clients peuvent voir et télécharger les aftermovies
+- ⚙️ **Personnalisation complète** - Transitions, effets, qualité vidéo
 
 ### Contrôle mobile
 - 📱 Interface optimisée mobile
@@ -404,6 +422,40 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 👮 Modération simplifiée
 - 📊 Stats temps réel
 - ⚔️ Création de battles
+
+### 🎬 Aftermovies - Génération de vidéos souvenirs
+
+#### Génération
+- 🎞️ **Timelapse automatique** - Création de vidéos à partir des photos sélectionnées
+- 📐 **3 presets de qualité** :
+  - **HD (720p)** - 1280x720, 30fps, 6 Mbps
+  - **Full HD (1080p)** - 1920x1080, 30fps, 12 Mbps
+  - **Story (9:16)** - 1080x1920, 30fps, 10 Mbps (optimisé Instagram/TikTok)
+- ⏱️ **Durée personnalisable** - Temps d'affichage par photo (0.5s à 5s)
+- 🎵 **Audio de fond** - Upload de fichier audio avec contrôle volume (0-100%) et boucle
+- 🎨 **Sélection intelligente** - Choix des photos à inclure dans l'aftermovie
+
+#### Réorganisation des photos
+- 🖱️ **Drag & Drop** - Réorganisez l'ordre des photos par glisser-déposer
+- ⬆️⬇️ **Boutons de navigation** - Déplacez une photo vers le haut ou le bas
+- 🔄 **Réinitialisation** - Retour à l'ordre chronologique en un clic
+- 👁️ **Aperçu visuel** - Miniatures avec numérotation pour visualiser l'ordre
+- 📋 **Liste détaillée** - Vue complète avec légendes, auteurs et horaires
+
+#### Partage & Distribution
+- 📤 **Upload automatique** - Enregistrement automatique dans Supabase Storage
+- 📱 **QR code** - Génération automatique pour téléchargement mobile
+- 🔗 **Lien de partage** - URL publique pour téléchargement direct
+- 📋 **Copie rapide** - Bouton pour copier le lien en un clic
+- 📊 **Compteur de téléchargements** - Suivi en temps réel du nombre de téléchargements
+- 🎯 **Affichage galerie** - Les aftermovies apparaissent dans la galerie invités
+- 📥 **Téléchargement facile** - Bouton de téléchargement direct depuis la galerie
+
+#### Interface utilisateur
+- 🎨 **Design moderne** - Interface intuitive avec animations fluides
+- 📊 **Barre de progression** - Suivi en temps réel de la génération
+- ✅ **Feedback visuel** - Notifications de succès/erreur
+- 🔄 **Génération en arrière-plan** - Possibilité d'annuler la génération
 
 </details>
 
@@ -420,6 +472,7 @@ Toutes ces fonctionnalités utilisent **Supabase Realtime** (WebSockets) :
 - ⚔️ Battles
 - 👥 Invités
 - 📊 Statistiques
+- 🎬 Nouveaux aftermovies
 
 ---
 
