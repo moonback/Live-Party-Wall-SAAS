@@ -58,6 +58,57 @@ export async function uploadBackgroundImage(
 }
 
 /**
+ * Upload un logo dans le bucket Supabase `party-backgrounds` pour un événement.
+ * Nécessite un utilisateur authentifié (admin).
+ * @param eventId - ID de l'événement
+ * @param file - Fichier image à uploader
+ * @returns Promise résolue avec l'URL publique et le chemin du fichier
+ */
+export async function uploadLogoImage(
+  eventId: string,
+  file: File
+): Promise<UploadBackgroundResult> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase n'est pas configuré.");
+  }
+
+  // Valider le type de fichier (images uniquement, avec support pour SVG)
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Le fichier doit être une image (JPEG, PNG, WebP ou SVG).');
+  }
+
+  // Valider la taille (max 5MB pour les logos, plus petit que les backgrounds)
+  const { MAX_FILE_SIZE } = await import('../constants');
+  const maxLogoSize = Math.min(MAX_FILE_SIZE, 5 * 1024 * 1024); // 5MB max
+  if (file.size > maxLogoSize) {
+    throw new Error('Le fichier est trop volumineux (max 5MB)');
+  }
+
+  const filenameSafe = file.name.replace(/[^\w.\-]/g, '_');
+  // Organiser par événement : party-backgrounds/{eventId}/logo-{timestamp}-{filename}
+  const path = `${eventId}/logo-${Date.now()}-${Math.random().toString(36).slice(2)}-${filenameSafe}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('party-backgrounds')
+    .upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('party-backgrounds')
+    .getPublicUrl(path);
+
+  return { publicUrl, path };
+}
+
+/**
  * Supprime une image de fond du bucket Supabase
  * @param eventId - ID de l'événement
  * @param path - Chemin du fichier à supprimer

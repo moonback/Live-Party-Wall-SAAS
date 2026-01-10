@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS public.event_settings (
     alert_text TEXT,
     background_desktop_url TEXT,
     background_mobile_url TEXT,
+    logo_url TEXT,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );

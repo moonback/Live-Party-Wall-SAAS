@@ -23,6 +23,7 @@ export interface EventSettings {
   alert_text: string | null;
   background_desktop_url: string | null;
   background_mobile_url: string | null;
+  logo_url: string | null;
   auto_carousel_enabled: boolean;
   auto_carousel_delay: number; // Délai en secondes avant activation du carrousel
   aftermovies_enabled: boolean;
@@ -49,6 +50,7 @@ export const defaultSettings: EventSettings = {
   alert_text: null,
   background_desktop_url: null,
   background_mobile_url: null,
+  logo_url: null,
   auto_carousel_enabled: true,
   auto_carousel_delay: 20, // 20 secondes par défaut
   aftermovies_enabled: true

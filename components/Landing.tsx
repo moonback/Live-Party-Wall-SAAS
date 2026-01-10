@@ -27,7 +27,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     findMeEnabled: defaultSettings.find_me_enabled,
     battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
     backgroundDesktopUrl: defaultSettings.background_desktop_url,
-    backgroundMobileUrl: defaultSettings.background_mobile_url
+    backgroundMobileUrl: defaultSettings.background_mobile_url,
+    logoUrl: defaultSettings.logo_url
   });
 
   // Déterminer le titre à afficher : nom de l'événement en priorité, sinon event_title
@@ -71,7 +72,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         findMeEnabled: defaultSettings.find_me_enabled,
         battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
         backgroundDesktopUrl: defaultSettings.background_desktop_url,
-        backgroundMobileUrl: defaultSettings.background_mobile_url
+        backgroundMobileUrl: defaultSettings.background_mobile_url,
+        logoUrl: defaultSettings.logo_url
       });
       return;
     }
@@ -84,7 +86,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         findMeEnabled: settings.find_me_enabled ?? prev.findMeEnabled,
         battleModeEnabled: settings.battle_mode_enabled ?? prev.battleModeEnabled,
         backgroundDesktopUrl: settings.background_desktop_url ?? prev.backgroundDesktopUrl,
-        backgroundMobileUrl: settings.background_mobile_url ?? prev.backgroundMobileUrl
+        backgroundMobileUrl: settings.background_mobile_url ?? prev.backgroundMobileUrl,
+        logoUrl: settings.logo_url ?? prev.logoUrl
       }));
     });
 
@@ -97,7 +100,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         findMeEnabled: newSettings.find_me_enabled ?? prev.findMeEnabled,
         battleModeEnabled: newSettings.battle_mode_enabled ?? prev.battleModeEnabled,
         backgroundDesktopUrl: newSettings.background_desktop_url ?? prev.backgroundDesktopUrl,
-        backgroundMobileUrl: newSettings.background_mobile_url ?? prev.backgroundMobileUrl
+        backgroundMobileUrl: newSettings.background_mobile_url ?? prev.backgroundMobileUrl,
+        logoUrl: newSettings.logo_url ?? prev.logoUrl
       }));
     });
 
@@ -266,15 +270,28 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
               </div>
             </div>
             
-            {/* Titre de l'événement - Style splash screen - Responsive */}
-            <h1 className="relative font-['Pacifico',cursive] text-[clamp(2rem,6vw,3.5rem)] sm:text-[clamp(2.5rem,7vw,4rem)] md:text-[clamp(3rem,7vw,3.8rem)] lg:text-[clamp(3.2rem,6vw,4rem)] leading-[1.1] sm:leading-[1.2] lg:leading-[1.15] text-center mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
-              <span 
-                className="bg-gradient-to-b from-white via-white/95 via-[#fef2f2] to-[#fbcfe8] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] break-words"
-              >
-                {displayTitle}
-              </span>
-              <span className="text-[#f472b6] ml-0.5 sm:ml-1 inline-block animate-[sparklePulse_2s_ease-in-out_infinite]">.</span>
-            </h1>
+            {/* Logo ou Titre de l'événement - Style splash screen - Responsive */}
+            {uiConfig.logoUrl ? (
+              <div className="relative mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
+                <img
+                  src={uiConfig.logoUrl}
+                  alt={displayTitle}
+                  className="max-w-[80vw] sm:max-w-[70vw] md:max-w-[60vw] lg:max-w-[50vw] max-h-24 sm:max-h-32 md:max-h-40 lg:max-h-48 object-contain mx-auto"
+                  style={{
+                    filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.5))',
+                  }}
+                />
+              </div>
+            ) : (
+              <h1 className="relative font-['Pacifico',cursive] text-[clamp(2rem,6vw,3.5rem)] sm:text-[clamp(2.5rem,7vw,4rem)] md:text-[clamp(3rem,7vw,3.8rem)] lg:text-[clamp(3.2rem,6vw,4rem)] leading-[1.1] sm:leading-[1.2] lg:leading-[1.15] text-center mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
+                <span 
+                  className="bg-gradient-to-b from-white via-white/95 via-[#fef2f2] to-[#fbcfe8] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] break-words"
+                >
+                  {displayTitle}
+                </span>
+                <span className="text-[#f472b6] ml-0.5 sm:ml-1 inline-block animate-[sparklePulse_2s_ease-in-out_infinite]">.</span>
+              </h1>
+            )}
             
             {/* Sous-titre/Description de l'événement - Style splash screen - Responsive */}
             {displaySubtitle && (

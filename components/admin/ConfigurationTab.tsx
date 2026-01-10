@@ -12,7 +12,7 @@ import { uploadDecorativeFramePng } from '../../services/frameService';
 import { getLocalFrames, getLocalFrameUrl, getLocalFrameThumbnailUrl, frameCategories, LocalFrame } from '../../services/localFramesService';
 import { generateEventContextSuggestion } from '../../services/eventContextService';
 import { EventSettings } from '../../services/settingsService';
-import { uploadBackgroundImage } from '../../services/backgroundService';
+import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
 import { Monitor, Smartphone } from 'lucide-react';
 
 interface ConfigurationTabProps {
@@ -35,8 +35,10 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const [contextSuggestion, setContextSuggestion] = useState<string | null>(null);
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Synchroniser localConfig avec config du Context
   useEffect(() => {
@@ -213,6 +215,52 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
       [fieldName]: null
     }));
     addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} supprimée. N'oubliez pas de sauvegarder.`, 'info');
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    setUploadingLogo(true);
+
+    try {
+      const { publicUrl } = await uploadLogoImage(currentEvent.id, file);
+      setLocalConfig(prev => ({
+        ...prev,
+        logo_url: publicUrl
+      }));
+      addToast('Logo uploadé. N\'oubliez pas de sauvegarder.', 'success');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
+        addToast('❌ Policies Supabase manquantes. Vérifiez la configuration du bucket party-backgrounds', 'error');
+      } else {
+        addToast(`Erreur: ${errorMsg}`, 'error');
+      }
+    } finally {
+      setUploadingLogo(false);
+      // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+      if (logoInputRef.current) {
+        logoInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleLogoUpload(file);
+    }
+  };
+
+  const clearLogo = () => {
+    setLocalConfig(prev => ({
+      ...prev,
+      logo_url: null
+    }));
+    addToast('Logo supprimé. N\'oubliez pas de sauvegarder.', 'info');
   };
 
   const filteredFrames = selectedCategory === 'all' 
@@ -612,6 +660,63 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
                     <Info className="w-3 h-3 text-slate-500" />
                     Images de fond personnalisées pour la page d'accueil (desktop et mobile)
+                  </p>
+                </div>
+
+                {/* Logo */}
+                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
+                  <label className="block text-sm font-medium text-slate-200 mb-4 flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-indigo-400" />
+                    Logo de l'événement
+                  </label>
+                  {localConfig.logo_url ? (
+                    <div className="relative">
+                      <div className="bg-slate-950/50 border border-slate-800 rounded-lg overflow-hidden flex items-center justify-center p-4">
+                        <img
+                          src={localConfig.logo_url}
+                          alt="Logo de l'événement"
+                          className="max-w-full max-h-32 object-contain"
+                        />
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <label className="inline-flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                          <input
+                            ref={logoInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                            onChange={handleLogoChange}
+                            className="hidden"
+                            disabled={uploadingLogo}
+                          />
+                          <Upload className="w-4 h-4 text-indigo-400" />
+                          <span className="text-indigo-300">{uploadingLogo ? 'Remplacement...' : 'Remplacer'}</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={clearLogo}
+                          className="px-3 py-2 bg-slate-800 border border-red-500/30 rounded-lg hover:border-red-500/50 hover:text-red-400 text-xs text-slate-200 transition-colors"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="flex items-center gap-2 px-3 py-2 border border-slate-700 bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-500/50 transition text-xs">
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                        disabled={uploadingLogo}
+                      />
+                      <Upload className="w-4 h-4 text-indigo-400" />
+                      <span className="text-indigo-300">{uploadingLogo ? 'Upload...' : 'Uploader un logo'}</span>
+                    </label>
+                  )}
+                  <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+                    <Info className="w-3 h-3 text-slate-500" />
+                    Logo de l'événement (JPEG, PNG, WebP ou SVG - max 5MB)
                   </p>
                 </div>
               </div>
