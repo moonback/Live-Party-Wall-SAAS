@@ -939,7 +939,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                         type="range"
                         name="auto_carousel_delay"
                         min="5"
-                        max="120"
+                        max="240"
                         step="5"
                         value={localConfig.auto_carousel_delay ?? 20}
                         onChange={handleConfigChange}
@@ -947,8 +947,8 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                       />
                       <div className="flex justify-between text-xs text-slate-500 mt-1">
                         <span>5s</span>
-                        <span>60s</span>
                         <span>120s</span>
+                        <span>240s</span>
                       </div>
                     </div>
                   )}

@@ -417,7 +417,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <input
                 type="range"
                 min="5"
-                max="120"
+                max="240"
                 step="5"
                 value={settings.auto_carousel_delay || 20}
                 onChange={async (e) => {
@@ -428,8 +428,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               />
               <div className="flex justify-between text-xs text-white/60 mt-1">
                 <span>5s</span>
-                <span>60s</span>
                 <span>120s</span>
+                <span>240s</span>
               </div>
               <p className="text-xs text-white/60 mt-2">
                 Le carrousel s'activera automatiquement après {settings.auto_carousel_delay || 20} secondes d'inactivité
