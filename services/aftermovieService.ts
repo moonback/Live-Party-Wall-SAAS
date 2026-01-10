@@ -767,6 +767,106 @@ function drawTransition(
       break;
     }
 
+    case 'rotate': {
+      // Rotate: rotation 3D avec fade
+      const rotationAngle = eased * Math.PI; // 0 à 180 degrés
+      const scale = 0.8 + (1 - Math.abs(Math.cos(rotationAngle))) * 0.2; // Effet 3D
+      
+      // Image actuelle (rotation sortante)
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(rotationAngle);
+      ctx.scale(scale, scale);
+      ctx.translate(-width / 2, -height / 2);
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      
+      // Image suivante (rotation entrante)
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(rotationAngle - Math.PI);
+      ctx.scale(scale, scale);
+      ctx.translate(-width / 2, -height / 2);
+      ctx.globalAlpha = eased;
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      break;
+    }
+
+    case 'blur': {
+      // Blur: transition avec effet de flou progressif
+      const blurAmount = Math.sin(eased * Math.PI) * 20; // Flou max à mi-transition
+      
+      // Image actuelle (flou puis fade)
+      ctx.save();
+      if (blurAmount > 0) {
+        ctx.filter = `blur(${blurAmount}px)`;
+      }
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      
+      // Image suivante (fade puis net)
+      ctx.save();
+      if (blurAmount > 0) {
+        ctx.filter = `blur(${20 - blurAmount}px)`;
+      }
+      ctx.globalAlpha = eased;
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      break;
+    }
+
+    case 'pixelate': {
+      // Pixelate: effet pixelisé qui se transforme en image nette
+      const pixelSize = Math.max(1, 20 * (1 - eased)); // Taille des pixels diminue
+      
+      // Image actuelle (pixelisée puis fade)
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      if (pixelSize > 1) {
+        // Effet pixelisé: dessiner avec résolution réduite puis agrandir
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = Math.max(1, Math.floor(width / pixelSize));
+        tempCanvas.height = Math.max(1, Math.floor(height / pixelSize));
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx) {
+          tempCtx.drawImage(currentImage as CanvasImageSource, 0, 0, tempCanvas.width, tempCanvas.height);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(tempCanvas, 0, 0, width, height);
+          ctx.imageSmoothingEnabled = true;
+        } else {
+          drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+        }
+      } else {
+        drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      }
+      ctx.restore();
+      
+      // Image suivante (pixelisée puis nette)
+      ctx.save();
+      ctx.globalAlpha = eased;
+      if (pixelSize > 1) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = Math.max(1, Math.floor(width / pixelSize));
+        tempCanvas.height = Math.max(1, Math.floor(height / pixelSize));
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx) {
+          tempCtx.drawImage(nextImage as CanvasImageSource, 0, 0, tempCanvas.width, tempCanvas.height);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(tempCanvas, 0, 0, width, height);
+          ctx.imageSmoothingEnabled = true;
+        } else {
+          drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+        }
+      } else {
+        drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      }
+      ctx.restore();
+      break;
+    }
+
     default:
       // Fallback: fade
       ctx.save();
@@ -793,7 +893,10 @@ const AVAILABLE_TRANSITIONS: TransitionType[] = [
   'zoom-in',
   'zoom-out',
   'wipe-left',
-  'wipe-right'
+  'wipe-right',
+  'rotate',
+  'blur',
+  'pixelate'
 ];
 
 // Sélectionne une transition aléatoire
@@ -868,9 +971,48 @@ export async function generateTimelapseAftermovie(
 
   assertNotAborted(signal);
 
-  // Cache pour les médias déjà chargés (optimisation)
+  // Cache optimisé pour les médias déjà chargés
+  // Utilise ImageBitmap pour meilleures performances (moins de mémoire, plus rapide)
   const mediaCache = new Map<string, ImageBitmap | HTMLImageElement | HTMLVideoElement>();
   const frameOverlayCache = new Map<string, ImageBitmap | HTMLImageElement>();
+  
+  // Préchargement des images en parallèle (améliore les performances)
+  const preloadMedia = async (photoUrls: string[], signal?: AbortSignal): Promise<void> => {
+    const loadPromises = photoUrls.slice(0, 10).map(async (url) => { // Précharger les 10 premières
+      if (mediaCache.has(url)) return; // Déjà en cache
+      try {
+        const response = await fetch(url, { signal });
+        if (!response.ok) return;
+        const blob = await response.blob();
+        if ('createImageBitmap' in window) {
+          const bitmap = await createImageBitmap(blob);
+          mediaCache.set(url, bitmap);
+        } else {
+          const img = new Image();
+          img.src = url;
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+          });
+          mediaCache.set(url, img);
+        }
+      } catch (err) {
+        // Ignorer les erreurs de préchargement (sera chargé plus tard si nécessaire)
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.warn(`Erreur préchargement ${url}:`, err);
+        }
+      }
+    });
+    await Promise.all(loadPromises);
+  };
+  
+  // Précharger les premières photos en arrière-plan
+  if (photos.length > 0) {
+    const firstPhotos = photos.slice(0, Math.min(10, photos.length)).map(p => p.url);
+    preloadMedia(firstPhotos, signal).catch(() => {
+      // Ignorer les erreurs de préchargement
+    });
+  }
 
   const INTRO_DURATION = options.enableIntroOutro ? 3000 : 0;
   const OUTRO_DURATION = options.enableIntroOutro ? 4000 : 0;

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Aftermovie } from '../../types';
 import { Video, Download, Calendar, Play, Clock, HardDrive, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateVideoThumbnail } from '../../utils/videoThumbnailGenerator';
 
 interface AftermovieCardProps {
   aftermovie: Aftermovie;
@@ -15,18 +16,41 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
   isDownloading = false
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailLoading, setThumbnailLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Essayer de charger une miniature depuis la vidéo
-    if (videoRef.current && aftermovie.url) {
-      const video = videoRef.current;
-      video.currentTime = 1; // Prendre une frame à 1 seconde
-      video.addEventListener('loadeddata', () => {
-        setThumbnailLoaded(true);
-      });
-    }
+    // Générer une vraie miniature depuis la vidéo
+    let cancelled = false;
+    
+    const loadThumbnail = async () => {
+      if (!aftermovie.url) return;
+      
+      setThumbnailLoading(true);
+      try {
+        // Essayer de générer une miniature à 1 seconde
+        const thumbnail = await generateVideoThumbnail(aftermovie.url, 1, 0.85);
+        if (!cancelled) {
+          setThumbnailUrl(thumbnail);
+          setThumbnailLoading(false);
+        }
+      } catch (error) {
+        console.warn('Erreur génération miniature:', error);
+        if (!cancelled) {
+          setThumbnailLoading(false);
+        }
+      }
+    };
+
+    loadThumbnail();
+
+    return () => {
+      cancelled = true;
+      if (thumbnailUrl && thumbnailUrl.startsWith('data:')) {
+        // Nettoyer si nécessaire (les data URLs sont automatiquement nettoyées)
+      }
+    };
   }, [aftermovie.url]);
 
   const formatFileSize = (bytes?: number): string => {
@@ -66,22 +90,20 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       className="group relative bg-gradient-to-br from-slate-900/60 to-slate-800/60 backdrop-blur-md rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl hover:border-indigo-500/50 hover:shadow-indigo-500/20 transition-all duration-300"
     >
-      {/* Thumbnail avec vidéo en arrière-plan */}
+      {/* Thumbnail avec vraie miniature vidéo */}
       <div className="relative aspect-video bg-gradient-to-br from-indigo-900/30 via-purple-900/30 to-pink-900/30 overflow-hidden">
-        {/* Vidéo cachée pour générer la miniature */}
-        <video
-          ref={videoRef}
-          src={aftermovie.url}
-          className="hidden"
-          preload="metadata"
-        />
-
-        {/* Thumbnail ou placeholder animé */}
-        {thumbnailLoaded && videoRef.current ? (
-          <div className="absolute inset-0">
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-purple-900/40" />
-          </div>
-        ) : (
+        {/* Vraie miniature vidéo */}
+        {thumbnailUrl ? (
+          <motion.img
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            src={thumbnailUrl}
+            alt="Miniature aftermovie"
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : thumbnailLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <motion.div
               animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
@@ -96,7 +118,14 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               </div>
             </motion.div>
           </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-900/40 to-purple-900/40">
+            <Video className="w-16 h-16 text-indigo-400/40" />
+          </div>
         )}
+
+        {/* Overlay gradient pour meilleure lisibilité des badges */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
         {/* Badge "Aftermovie" avec animation */}
         <motion.div

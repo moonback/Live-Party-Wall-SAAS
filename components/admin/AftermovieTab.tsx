@@ -15,7 +15,10 @@ import {
   AFTERMOVIE_MAX_MS_PER_PHOTO,
   AFTERMOVIE_DEFAULT_TRANSITION_DURATION,
   AFTERMOVIE_MIN_TRANSITION_DURATION,
-  AFTERMOVIE_MAX_TRANSITION_DURATION
+  AFTERMOVIE_MAX_TRANSITION_DURATION,
+  AFTERMOVIE_MAX_PHOTOS_RECOMMENDED,
+  AFTERMOVIE_MAX_PHOTOS_HARD_LIMIT,
+  AFTERMOVIE_WARNING_PHOTOS_THRESHOLD
 } from '../../constants';
 import { Photo, TransitionType, AftermovieProgress } from '../../types';
 
@@ -308,6 +311,33 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
       return;
     }
 
+    // Vérification des limites de performance
+    const photoCount = aftermovieSelectedPhotos.length;
+    
+    if (photoCount > AFTERMOVIE_MAX_PHOTOS_HARD_LIMIT) {
+      addToast(
+        `⚠️ Trop de photos sélectionnées (${photoCount}). La limite est de ${AFTERMOVIE_MAX_PHOTOS_HARD_LIMIT} photos pour éviter les problèmes de performance. Veuillez réduire la sélection.`,
+        'error'
+      );
+      return;
+    }
+
+    if (photoCount > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED) {
+      const confirmed = window.confirm(
+        `⚠️ Attention : Vous avez sélectionné ${photoCount} photos (recommandé : ${AFTERMOVIE_MAX_PHOTOS_RECOMMENDED} max).\n\n` +
+        `La génération peut prendre beaucoup de temps et utiliser beaucoup de mémoire.\n\n` +
+        `Voulez-vous continuer quand même ?`
+      );
+      if (!confirmed) {
+        return;
+      }
+    } else if (photoCount > AFTERMOVIE_WARNING_PHOTOS_THRESHOLD) {
+      addToast(
+        `ℹ️ ${photoCount} photos sélectionnées. La génération peut prendre plusieurs minutes.`,
+        'info'
+      );
+    }
+
     const preset = AFTERMOVIE_PRESETS[aftermoviePreset];
     const abort = new AbortController();
     aftermovieAbortRef.current = abort;
@@ -478,6 +508,41 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               </div>
             </div>
 
+            {/* Indicateur de performance */}
+            {aftermovieSelectedPhotos.length > 0 && (
+              <div className={`mb-4 p-3 rounded-lg border ${
+                aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED
+                  ? 'bg-red-500/10 border-red-500/30'
+                  : aftermovieSelectedPhotos.length > AFTERMOVIE_WARNING_PHOTOS_THRESHOLD
+                  ? 'bg-yellow-500/10 border-yellow-500/30'
+                  : 'bg-indigo-500/10 border-indigo-500/30'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-semibold ${
+                      aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED
+                        ? 'text-red-300'
+                        : aftermovieSelectedPhotos.length > AFTERMOVIE_WARNING_PHOTOS_THRESHOLD
+                        ? 'text-yellow-300'
+                        : 'text-indigo-300'
+                    }`}>
+                      {aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED ? '⚠️' : 'ℹ️'}
+                    </span>
+                    <span className="text-sm text-slate-300">
+                      {aftermovieSelectedPhotos.length} photo{aftermovieSelectedPhotos.length > 1 ? 's' : ''} sélectionnée{aftermovieSelectedPhotos.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED
+                      ? `Limite recommandée : ${AFTERMOVIE_MAX_PHOTOS_RECOMMENDED} photos`
+                      : aftermovieSelectedPhotos.length > AFTERMOVIE_WARNING_PHOTOS_THRESHOLD
+                      ? `Génération peut être lente`
+                      : `Performance optimale`}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Sélection manuelle des photos */}
             <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between gap-3 mb-3">
@@ -566,8 +631,15 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                     <div>
                       <div className="text-sm font-bold text-slate-100 flex items-center gap-2">
                         Ordre des photos
-                        <span className="px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs rounded-full">
+                        <span className={`px-2 py-0.5 border text-xs rounded-full font-semibold ${
+                          aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED
+                            ? 'bg-red-500/20 border-red-500/30 text-red-300'
+                            : aftermovieSelectedPhotos.length > AFTERMOVIE_WARNING_PHOTOS_THRESHOLD
+                            ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
+                            : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300'
+                        }`}>
                           {aftermovieSelectedPhotos.length}
+                          {aftermovieSelectedPhotos.length > AFTERMOVIE_MAX_PHOTOS_RECOMMENDED && ' ⚠️'}
                         </span>
                       </div>
                       <div className="text-xs text-slate-400 mt-0.5">
@@ -898,10 +970,18 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                         >
                           <option value="none">Aucune</option>
                           <option value="fade">Fondu (Fade)</option>
+                          <option value="cross-fade">Fondu croisé</option>
                           <option value="slide-left">Glissement gauche</option>
                           <option value="slide-right">Glissement droite</option>
                           <option value="slide-up">Glissement haut</option>
                           <option value="slide-down">Glissement bas</option>
+                          <option value="zoom-in">Zoom avant</option>
+                          <option value="zoom-out">Zoom arrière</option>
+                          <option value="wipe-left">Balayage gauche</option>
+                          <option value="wipe-right">Balayage droite</option>
+                          <option value="rotate">Rotation 3D ✨</option>
+                          <option value="blur">Flou progressif ✨</option>
+                          <option value="pixelate">Pixelisé ✨</option>
                         </select>
                       </>
                     )}
