@@ -156,7 +156,8 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── supabase_complete_setup.sql
 │   ├── supabase_aftermovies_migration.sql
 │   ├── supabase_aftermovies_enabled_migration.sql
-│   └── supabase_aftermovies_download_count_migration.sql
+│   ├── supabase_aftermovies_download_count_migration.sql
+│   └── supabase_logo_url_migration.sql
 │
 └── 🖥️ electron/            # Application desktop
     ├── main.ts
@@ -278,6 +279,7 @@ npm run electron:pack
 | `party-photos` | Photos invités + Aftermovies | Public lecture, upload public (photos), upload admin (aftermovies) |
 | `party-frames` | Cadres décoratifs | Public lecture, upload admin |
 | `party-avatars` | Avatars invités | Public lecture, upload public |
+| `party-backgrounds` | Images de fond + Logos | Public lecture, upload admin |
 
 </details>
 
@@ -373,7 +375,8 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - ✅ Activation/désactivation de fonctionnalités
 - 🤖 Configuration contexte IA
 - 📢 Messages d'alerte
-- 🖼️ Images de fond personnalisées
+- 🖼️ Images de fond personnalisées (desktop et mobile)
+- 🎨 Logo personnalisé (remplace le titre sur la landing page)
 - ⚡ Vitesse de défilement
 - ⏱️ Délai carrousel (5-240s)
 
@@ -422,6 +425,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 👮 Modération simplifiée
 - 📊 Stats temps réel
 - ⚔️ Création de battles
+- 🎨 Configuration complète (fond, logo, paramètres)
 
 ### 🎬 Aftermovies - Génération de vidéos souvenirs
 
