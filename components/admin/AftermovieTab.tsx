@@ -27,20 +27,12 @@ interface AftermovieTabProps {
   // Props si nécessaire
 }
 
-const toDatetimeLocal = (timestamp: number): string => {
-  const d = new Date(timestamp);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
-};
-
 export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const { photos: allPhotos, loading: photosLoading } = usePhotos();
   const { settings: config } = useSettings();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
   
-  const [aftermovieStart, setAftermovieStart] = useState<string>('');
-  const [aftermovieEnd, setAftermovieEnd] = useState<string>('');
   const [aftermoviePreset, setAftermoviePreset] = useState<keyof typeof AFTERMOVIE_PRESETS>('1080p');
   const [aftermovieFps, setAftermovieFps] = useState<number>(AFTERMOVIE_PRESETS['1080p'].fps);
   const [aftermovieBitrateMbps, setAftermovieBitrateMbps] = useState<number>(Math.round(AFTERMOVIE_PRESETS['1080p'].videoBitsPerSecond / 1_000_000));
@@ -106,24 +98,11 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   }, [currentEvent?.id]);
 
   // Initialiser la plage Aftermovie
-  useEffect(() => {
-    if (allPhotos.length === 0) return;
-    const sorted = [...allPhotos].sort((a, b) => a.timestamp - b.timestamp);
-    const first = sorted[0].timestamp;
-    const last = sorted[sorted.length - 1].timestamp;
-    if (!aftermovieStart) setAftermovieStart(toDatetimeLocal(first));
-    if (!aftermovieEnd) setAftermovieEnd(toDatetimeLocal(last));
-  }, [allPhotos, aftermovieStart, aftermovieEnd]);
-
   const aftermovieRangePhotos = useMemo(() => {
-    const startMs = aftermovieStart ? new Date(aftermovieStart).getTime() : NaN;
-    const endMs = aftermovieEnd ? new Date(aftermovieEnd).getTime() : NaN;
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) return [];
     return allPhotos
-      .filter((p) => p.timestamp >= startMs && p.timestamp <= endMs)
       .slice()
       .sort((a, b) => a.timestamp - b.timestamp);
-  }, [allPhotos, aftermovieStart, aftermovieEnd]);
+  }, [allPhotos]);
 
   useEffect(() => {
     setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)));
@@ -354,13 +333,6 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
 
   const handleGenerate = async () => {
     if (isGeneratingAftermovie) return;
-
-    const startMs = aftermovieStart ? new Date(aftermovieStart).getTime() : NaN;
-    const endMs = aftermovieEnd ? new Date(aftermovieEnd).getTime() : NaN;
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) {
-      addToast('Plage start/end invalide', 'error');
-      return;
-    }
 
     if (aftermovieRangePhotos.length === 0) {
       addToast('Aucune photo dans la plage sélectionnée', 'info');
@@ -715,29 +687,6 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Début</label>
-                <input
-                  type="datetime-local"
-                  value={aftermovieStart}
-                  onChange={(e) => setAftermovieStart(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
-                  disabled={isGeneratingAftermovie}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Fin</label>
-                <input
-                  type="datetime-local"
-                  value={aftermovieEnd}
-                  onChange={(e) => setAftermovieEnd(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
-                  disabled={isGeneratingAftermovie}
-                />
-              </div>
-            </div>
-
             {/* Indicateur de performance */}
             {aftermovieSelectedPhotos.length > 0 && (
               <div className={`mb-4 p-3 rounded-lg border ${
