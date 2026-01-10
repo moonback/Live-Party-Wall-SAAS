@@ -906,6 +906,30 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     </div>
                   </label>
                 </div>
+                {/* Aftermovies */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-indigo-500/30 transition-colors">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="aftermovies_enabled"
+                      checked={localConfig.aftermovies_enabled ?? true}
+                      onChange={handleConfigChange}
+                      className="h-4 w-4 accent-indigo-500 mt-1 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-100 flex items-center gap-2 mb-0.5">
+                        <Video className="w-4 h-4 text-indigo-400" />
+                        Aftermovies dans la galerie
+                        {localConfig.aftermovies_enabled ? (
+                          <span className="px-2 py-0.5 ml-2 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded-full">Actif</span>
+                        ) : (
+                          <span className="px-2 py-0.5 ml-2 bg-slate-700 text-slate-400 text-xs rounded-full">Inactif</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">Affiche les aftermovies générés dans la galerie pour que les clients puissent les télécharger.</p>
+                    </div>
+                  </label>
+                </div>
                 {/* Carrousel automatique */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-3 cursor-pointer">

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Video, Zap, Star, Award, Sparkles, Settings, ChevronDown, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, Move, X } from 'lucide-react';
+import { Video, Zap, Star, Award, Sparkles, Settings, ChevronDown, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, Move, X, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { usePhotos } from '../../context/PhotosContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
+import { useEvent } from '../../context/EventContext';
 import { generateTimelapseAftermovie } from '../../services/aftermovieService';
+import { uploadAftermovieToStorage } from '../../services/aftermovieShareService';
 import { 
   AFTERMOVIE_PRESETS, 
   AFTERMOVIE_DEFAULT_TARGET_SECONDS, 
@@ -29,6 +32,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const { photos: allPhotos, loading: photosLoading } = usePhotos();
   const { settings: config } = useSettings();
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
   
   const [aftermovieStart, setAftermovieStart] = useState<string>('');
   const [aftermovieEnd, setAftermovieEnd] = useState<string>('');
@@ -54,10 +58,17 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const [aftermovieTransitionType, setAftermovieTransitionType] = useState<TransitionType>('fade');
   const [aftermovieTransitionDuration, setAftermovieTransitionDuration] = useState<number>(AFTERMOVIE_DEFAULT_TRANSITION_DURATION);
   const [aftermovieRandomTransitions, setAftermovieRandomTransitions] = useState<boolean>(true);
-  const [aftermoviePresetMode, setAftermoviePresetMode] = useState<'rapide' | 'standard' | 'qualite'>('standard');
+  const [aftermoviePresetMode, setAftermoviePresetMode] = useState<'rapide' | 'standard' | 'qualite' | 'story'>('standard');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
   const [showTransitionsOptions, setShowTransitionsOptions] = useState<boolean>(false);
   const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showPhotoOrder, setShowPhotoOrder] = useState<boolean>(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [lastGeneratedBlob, setLastGeneratedBlob] = useState<Blob | null>(null);
 
   // Initialiser la plage Aftermovie
   useEffect(() => {
@@ -81,6 +92,8 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
 
   useEffect(() => {
     setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)));
+    // Réinitialiser l'ordre quand la plage change
+    setAftermoviePhotoOrder([]);
   }, [aftermovieRangePhotos]);
 
   const aftermovieSelectedPhotos = useMemo(() => {
@@ -99,6 +112,122 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
     }
     return selected;
   }, [aftermovieRangePhotos, aftermovieSelectedPhotoIds, aftermoviePhotoOrder]);
+
+  // Synchroniser l'ordre avec les photos sélectionnées
+  useEffect(() => {
+    if (aftermovieSelectedPhotos.length > 0 && aftermoviePhotoOrder.length === 0) {
+      // Initialiser l'ordre avec l'ordre chronologique si pas encore défini
+      setAftermoviePhotoOrder(aftermovieSelectedPhotos.map((p: Photo) => p.id));
+    }
+  }, [aftermovieSelectedPhotos, aftermoviePhotoOrder.length]);
+
+  // Fonctions de drag & drop
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+
+    const newOrder = [...aftermoviePhotoOrder];
+    const draggedId = newOrder[draggedIndex];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(dropIndex, 0, draggedId);
+
+    setAftermoviePhotoOrder(newOrder);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Déplacer une photo vers le haut
+  const movePhotoUp = (index: number) => {
+    if (index === 0 || aftermoviePhotoOrder.length === 0) return;
+    const newOrder = [...aftermoviePhotoOrder];
+    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+    setAftermoviePhotoOrder(newOrder);
+  };
+
+  // Déplacer une photo vers le bas
+  const movePhotoDown = (index: number) => {
+    if (index >= aftermoviePhotoOrder.length - 1 || aftermoviePhotoOrder.length === 0) return;
+    const newOrder = [...aftermoviePhotoOrder];
+    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+    setAftermoviePhotoOrder(newOrder);
+  };
+
+  // Réinitialiser l'ordre chronologique
+  const resetToChronologicalOrder = () => {
+    const chronologicalOrder = [...aftermovieSelectedPhotos]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map(p => p.id);
+    setAftermoviePhotoOrder(chronologicalOrder);
+    addToast('Ordre réinitialisé à l\'ordre chronologique', 'success');
+  };
+
+  // Uploader et partager l'aftermovie
+  const handleUploadAndShare = async () => {
+    if (!lastGeneratedBlob) {
+      addToast('Aucun aftermovie généré. Générez d\'abord une vidéo.', 'error');
+      return;
+    }
+
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const title = config.event_title || 'Aftermovie';
+      const filename = `${title}-${Date.now()}.webm`;
+      
+      // Calculer la durée approximative (nombre de photos * durée par photo)
+      const durationSeconds = aftermovieSelectedPhotos.length * (aftermovieMsPerPhoto / 1000);
+      
+      const result = await uploadAftermovieToStorage(
+        currentEvent.id,
+        lastGeneratedBlob,
+        filename,
+        title,
+        durationSeconds,
+        'Admin' // TODO: Récupérer le nom de l'admin connecté
+      );
+
+      setShareUrl(result.shareUrl);
+      addToast('Aftermovie uploadé et visible dans la galerie !', 'success');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      addToast(`Erreur upload: ${msg}`, 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Copier le lien de partage
+  const handleCopyLink = async () => {
+    if (!shareUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      addToast('Lien copié dans le presse-papiers !', 'success');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      addToast('Erreur lors de la copie du lien', 'error');
+    }
+  };
+
 
   // Preset -> fps/bitrate
   useEffect(() => {
@@ -143,6 +272,17 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
         setAftermovieEnableIntroOutro(true);
         setAftermovieRandomTransitions(true);
         setAftermovieTransitionDuration(600);
+        break;
+      case 'story':
+        setAftermoviePreset('story');
+        setAftermovieFps(30);
+        setAftermovieBitrateMbps(10);
+        setAftermovieMsPerPhoto(3000);
+        setAftermovieEnableKenBurns(true);
+        setAftermovieEnableSmartDuration(true);
+        setAftermovieEnableIntroOutro(true);
+        setAftermovieRandomTransitions(true);
+        setAftermovieTransitionDuration(400);
         break;
     }
   }, [aftermoviePresetMode, isGeneratingAftermovie]);
@@ -208,6 +348,9 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
         abort.signal
       );
 
+      // Sauvegarder le blob pour le partage
+      setLastGeneratedBlob(result.blob);
+
       const url = URL.createObjectURL(result.blob);
       const a = document.createElement('a');
       a.href = url;
@@ -249,7 +392,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
         {/* Presets simplifiés */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-300 mb-3">Mode de génération</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <button
               type="button"
               onClick={() => setAftermoviePresetMode('rapide')}
@@ -291,6 +434,20 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               <Award className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
               <div className="text-sm font-semibold text-slate-100">Qualité</div>
               <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAftermoviePresetMode('story')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                aftermoviePresetMode === 'story'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              }`}
+              disabled={isGeneratingAftermovie}
+            >
+              <Video className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <div className="text-sm font-semibold text-slate-100">Story</div>
+              <div className="text-xs text-slate-400 mt-1">9:16 • 30 FPS • 10 Mbps</div>
             </button>
           </div>
         </div>
@@ -396,6 +553,138 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                 </div>
               )}
             </div>
+
+            {/* Réorganisation des photos sélectionnées */}
+            {aftermovieSelectedPhotos.length > 0 && (
+              <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                      <Move className="w-4 h-4 text-indigo-400" />
+                      Ordre des photos
+                    </div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      {aftermovieSelectedPhotos.length} photo{aftermovieSelectedPhotos.length > 1 ? 's' : ''} sélectionnée{aftermovieSelectedPhotos.length > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowPhotoOrder(!showPhotoOrder)}
+                      className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+                      disabled={isGeneratingAftermovie}
+                    >
+                      {showPhotoOrder ? 'Masquer' : 'Afficher'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetToChronologicalOrder}
+                      className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5"
+                      disabled={isGeneratingAftermovie || aftermovieSelectedPhotos.length === 0}
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Réinitialiser
+                    </button>
+                  </div>
+                </div>
+
+                {showPhotoOrder && (
+                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    {aftermovieSelectedPhotos.map((photo, index) => {
+                      const isDragging = draggedIndex === index;
+                      const isDragOver = dragOverIndex === index;
+                      return (
+                        <div
+                          key={photo.id}
+                          draggable
+                          onDragStart={() => handleDragStart(index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`flex items-center gap-3 p-2 rounded-lg border transition-all ${
+                            isDragging
+                              ? 'opacity-50 border-indigo-500 bg-indigo-500/10'
+                              : isDragOver
+                              ? 'border-indigo-500 bg-indigo-500/20'
+                              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex-shrink-0 w-8 h-8 rounded-md bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xs font-semibold text-indigo-300">
+                            {index + 1}
+                          </div>
+                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-slate-800">
+                            <img
+                              src={photo.url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium text-slate-100 truncate">
+                              {photo.caption || 'Sans légende'}
+                            </div>
+                            <div className="text-xs text-slate-400 truncate">
+                              {photo.author} • {new Date(photo.timestamp).toLocaleTimeString()}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => movePhotoUp(index)}
+                              className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={isGeneratingAftermovie || index === 0}
+                              title="Déplacer vers le haut"
+                            >
+                              <ArrowUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => movePhotoDown(index)}
+                              className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={isGeneratingAftermovie || index === aftermovieSelectedPhotos.length - 1}
+                              title="Déplacer vers le bas"
+                            >
+                              <ArrowDown className="w-4 h-4" />
+                            </button>
+                            <div className="w-6 h-6 flex items-center justify-center text-slate-500 cursor-move">
+                              <Move className="w-4 h-4" />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!showPhotoOrder && aftermovieSelectedPhotos.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {aftermovieSelectedPhotos.slice(0, 10).map((photo, index) => (
+                      <div
+                        key={photo.id}
+                        className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-800"
+                        title={`${index + 1}. ${photo.caption || 'Sans légende'}`}
+                      >
+                        <img
+                          src={photo.url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-0 left-0 w-4 h-4 bg-indigo-500/90 text-white text-[10px] font-bold flex items-center justify-center">
+                          {index + 1}
+                        </div>
+                      </div>
+                    ))}
+                    {aftermovieSelectedPhotos.length > 10 && (
+                      <div className="w-12 h-12 rounded-lg border border-slate-800 bg-slate-900/50 flex items-center justify-center text-xs text-slate-400">
+                        +{aftermovieSelectedPhotos.length - 10}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -674,6 +963,96 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                 Annuler
               </button>
             </div>
+
+            {/* Bouton Upload & Partage */}
+            {lastGeneratedBlob && (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={handleUploadAndShare}
+                  className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  disabled={isUploading || !currentEvent}
+                >
+                  {isUploading ? (
+                    <>
+                      <Upload className="w-4 h-4 animate-pulse" />
+                      Upload en cours…
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-4 h-4" />
+                      Uploader & Partager
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Section Partage */}
+            {shareUrl && (
+              <div className="mt-6 bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Share2 className="w-5 h-5 text-indigo-400" />
+                  <h3 className="text-sm font-semibold text-slate-100">Lien de partage</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* QR Code */}
+                  <div className="flex justify-center">
+                    <div className="relative bg-white p-4 rounded-xl shadow-lg">
+                      <QRCodeCanvas
+                        value={shareUrl}
+                        size={200}
+                        level="H"
+                        bgColor="#ffffff"
+                        fgColor="#000000"
+                        includeMargin={true}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg border border-gray-200/30">
+                          <Video className="w-6 h-6 text-gray-800" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lien de partage */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-medium text-slate-300">Lien de téléchargement</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={shareUrl}
+                        readOnly
+                        className="flex-1 bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCopyLink}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-2"
+                        title="Copier le lien"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-4 h-4 text-green-400" />
+                            Copié
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copier
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-400 text-center">
+                    Scannez le QR code ou partagez le lien pour télécharger l'aftermovie
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="text-xs text-slate-500">
               Note: export en <span className="font-mono text-slate-300">.webm</span> (MediaRecorder). La qualité dépend du navigateur et de la machine.

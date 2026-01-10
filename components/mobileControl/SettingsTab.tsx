@@ -29,6 +29,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     { key: 'find_me_enabled', label: 'Retrouve-moi', icon: User, disabled: false },
     { key: 'ar_scene_enabled', label: 'Scène AR', icon: Sparkles, disabled: false },
     { key: 'battle_mode_enabled', label: 'Mode Battle', icon: Trophy, disabled: false },
+    { key: 'aftermovies_enabled', label: 'Aftermovies dans la galerie', icon: Video, disabled: false },
     { key: 'caption_generation_enabled', label: 'Génération de légendes', icon: Type, disabled: false },
     { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false },
     { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false },

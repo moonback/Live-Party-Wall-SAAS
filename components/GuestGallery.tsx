@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Photo, SortOption, MediaFilter } from '../types';
+import { Video } from 'lucide-react';
+import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { getActiveBattles, subscribeToNewBattles, subscribeToBattleUpdates } from '../services/battleService';
+import { getAftermovies } from '../services/aftermovieShareService';
 import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
@@ -14,6 +16,7 @@ import { GalleryHeader } from './gallery/GalleryHeader';
 import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
+import { AftermovieCard } from './gallery/AftermovieCard';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -49,6 +52,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+  const [aftermovies, setAftermovies] = useState<Aftermovie[]>([]);
+  const [downloadingAftermovieIds, setDownloadingAftermovieIds] = useState<Set<string>>(new Set());
   
   // Selection mode states
   const [selectionMode, setSelectionMode] = useState(false);
@@ -80,16 +85,18 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     const loadData = async () => {
       try {
         setLoading(true);
-        const [allPhotos, userLikes, userReactionsData, allGuests] = await Promise.all([
+        const [allPhotos, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
           getPhotos(currentEvent.id),
           getUserLikes(userId),
           getUserReactions(userId),
-          getAllGuests(currentEvent.id)
+          getAllGuests(currentEvent.id),
+          getAftermovies(currentEvent.id)
         ]);
         
         setPhotos(allPhotos);
         setLikedPhotoIds(new Set(userLikes));
         setUserReactions(userReactionsData);
+        setAftermovies(allAftermovies);
         
         const avatarsMap = new Map<string, string>();
         const sortedGuests = [...allGuests].sort((a, b) => b.updatedAt - a.updatedAt);
@@ -352,6 +359,38 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
   }, [userId, addToast, selectionMode]);
 
+  const handleDownloadAftermovie = useCallback(async (aftermovie: Aftermovie) => {
+    if (downloadingAftermovieIds.has(aftermovie.id)) return;
+    
+    setDownloadingAftermovieIds(prev => new Set(prev).add(aftermovie.id));
+    
+    try {
+      const response = await fetch(aftermovie.url);
+      if (!response.ok) throw new Error('Erreur de téléchargement');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = aftermovie.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      addToast('Aftermovie téléchargé !', 'success');
+    } catch (error) {
+      console.error('Error downloading aftermovie:', error);
+      addToast('Erreur lors du téléchargement', 'error');
+    } finally {
+      setDownloadingAftermovieIds(prev => {
+        const next = new Set(prev);
+        next.delete(aftermovie.id);
+        return next;
+      });
+    }
+  }, [addToast, downloadingAftermovieIds]);
+
   const handleDownload = useCallback(async (photo: Photo) => {
     setDownloadingIds(prev => new Set(prev).add(photo.id));
     
@@ -584,6 +623,31 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         className="flex-1 overflow-y-auto pb-24 md:pb-28 scroll-smooth relative z-10"
       >
         <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-6">
+          {/* Section Aftermovies */}
+          {settings.aftermovies_enabled !== false && aftermovies.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg border border-indigo-500/30">
+                  <Video className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">Aftermovies</h2>
+                  <p className="text-sm text-slate-400">Vidéos souvenirs de l'événement</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {aftermovies.map((aftermovie) => (
+                  <AftermovieCard
+                    key={aftermovie.id}
+                    aftermovie={aftermovie}
+                    onDownload={handleDownloadAftermovie}
+                    isDownloading={downloadingAftermovieIds.has(aftermovie.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <GalleryContent
             loading={loading}
             photos={filteredAndSortedPhotos}

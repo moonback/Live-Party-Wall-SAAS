@@ -38,6 +38,19 @@ export interface Photo {
   user_description?: string; // Description saisie par l'utilisateur lors de l'upload
 }
 
+export interface Aftermovie {
+  id: string;
+  event_id: string;
+  url: string; // URL publique dans Supabase Storage
+  storage_path: string;
+  title?: string;
+  filename: string;
+  file_size?: number;
+  duration_seconds?: number;
+  created_at: number; // Timestamp
+  created_by?: string; // Nom de l'organisateur/admin
+}
+
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'privacy' | 'data-management';
 
 export interface ToastMessage {

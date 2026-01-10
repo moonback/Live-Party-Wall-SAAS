@@ -613,6 +613,13 @@ export const AFTERMOVIE_PRESETS = {
     height: 1080,
     fps: 30,
     videoBitsPerSecond: 12_000_000
+  },
+  'story': {
+    label: 'Story (9:16)',
+    width: 1080,
+    height: 1920,
+    fps: 30,
+    videoBitsPerSecond: 10_000_000
   }
 } as const;
 
