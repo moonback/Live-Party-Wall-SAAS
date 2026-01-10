@@ -119,7 +119,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/5 shadow-2xl">
+            <div className="bg-slate-900/40 backdrop-blur-md rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 border border-white/5 shadow-2xl">
               <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} photosReactions={photosReactions} />
             </div>
           </motion.div>
@@ -127,9 +127,9 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       </AnimatePresence>
 
       {/* Grid de photos avec Masonry Style */}
-      <div className={`flex flex-col md:flex-row gap-6`}>
+      <div className={`flex flex-col md:flex-row gap-3 sm:gap-4 md:gap-6`}>
         {columns.map((colPhotos, colIdx) => (
-          <div key={colIdx} className="flex-1 flex flex-col gap-6">
+          <div key={colIdx} className="flex-1 flex flex-col gap-3 sm:gap-4 md:gap-6">
             {/* Show battles only in the first column on desktop, or top on mobile */}
             {colIdx === 0 && battleModeEnabled && showBattles && battlesForGrid.map((battle) => (
               <motion.div

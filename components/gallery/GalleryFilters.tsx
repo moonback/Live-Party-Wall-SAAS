@@ -72,9 +72,9 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3 px-1 py-4 overflow-x-auto scrollbar-hide">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-1 py-3 sm:py-4 overflow-x-auto scrollbar-hide">
         {/* Quick Filter: Media Type */}
-        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
+        <div className="flex bg-white/5 p-0.5 sm:p-1 rounded-xl sm:rounded-2xl border border-white/10 flex-shrink-0">
           {[
             { id: 'all', icon: LayoutGrid, label: 'Tout' },
             { id: 'photo', icon: User, label: 'Photos' },
@@ -83,13 +83,13 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             <button
               key={item.id}
               onClick={() => onMediaFilterChange(item.id as MediaFilter)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all touch-manipulation ${
                 mediaFilter === item.id 
                   ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/20' 
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <item.icon className="w-3.5 h-3.5" />
+              <item.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span className="hidden sm:inline">{item.label}</span>
             </button>
           ))}
@@ -99,16 +99,16 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         {battleModeEnabled && (
           <button
             onClick={onToggleBattles}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 ${
               showBattles
                 ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400'
                 : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
             }`}
           >
-            <Zap className="w-4 h-4" />
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Battles</span>
             {battlesCount > 0 && (
-              <span className="bg-indigo-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-black">
+              <span className="bg-indigo-500 text-white px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black">
                 {battlesCount}
               </span>
             )}
@@ -118,13 +118,13 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         {/* Leaderboard Toggle */}
         <button
           onClick={onToggleLeaderboard}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 ${
             showLeaderboard
               ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-500'
               : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
           }`}
         >
-          <Trophy className="w-4 h-4" />
+          <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Classement</span>
         </button>
 
@@ -132,16 +132,16 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         {aftermoviesEnabled && onToggleAftermovies && (
           <button
             onClick={onToggleAftermovies}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 ${
               showAftermovies
                 ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
                 : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
             }`}
           >
-            <Video className="w-4 h-4" />
+            <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Aftermovies</span>
             {aftermoviesCount > 0 && (
-              <span className="bg-purple-500 text-white px-1.5 py-0.5 rounded-full text-[9px] font-black">
+              <span className="bg-purple-500 text-white px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black">
                 {aftermoviesCount}
               </span>
             )}
@@ -152,9 +152,9 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         {onFindMeClick && findMeEnabled && (
           <button
             onClick={onFindMeClick}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 text-pink-400 border border-pink-500/30"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 text-pink-400 border border-pink-500/30 touch-manipulation flex-shrink-0"
           >
-            <User className="w-4 h-4" />
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Retrouve-moi</span>
           </button>
         )}
@@ -168,10 +168,10 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               exit={{ opacity: 0, scale: 0.8 }}
               key={author}
               onClick={() => onSelectedAuthorsChange(selectedAuthors.filter(a => a !== author))}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 text-[10px] font-bold uppercase tracking-tight"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-tight touch-manipulation flex-shrink-0"
             >
               {author}
-              <X className="w-3 h-3" />
+              <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             </motion.button>
           ))}
         </AnimatePresence>

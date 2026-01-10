@@ -251,7 +251,7 @@ export const GuestPhotoCard = React.memo(({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
-      className={`group relative bg-slate-900/40 backdrop-blur-md rounded-[2rem] overflow-hidden border transition-all duration-500 ${
+      className={`group relative bg-slate-900/40 backdrop-blur-md rounded-xl sm:rounded-2xl md:rounded-[2rem] overflow-hidden border transition-all duration-500 ${
         isSelected 
           ? 'border-indigo-500 ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/20' 
           : 'border-white/5 hover:border-white/20 shadow-xl'
@@ -260,40 +260,40 @@ export const GuestPhotoCard = React.memo(({
     >
       {/* Selection Overlay */}
       {selectionMode && (
-        <div className="absolute top-4 left-4 z-40">
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-40">
           <motion.div
             initial={false}
             animate={{ scale: isSelected ? 1.1 : 1 }}
-            className={`p-1.5 rounded-full ${isSelected ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/20 text-white/50 border border-white/20'}`}
+            className={`p-1 sm:p-1.5 rounded-full ${isSelected ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/20 text-white/50 border border-white/20'}`}
           >
-            {isSelected ? <CheckCircle className="w-6 h-6" /> : <Circle className="w-6 h-6" />}
+            {isSelected ? <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" /> : <Circle className="w-5 h-5 sm:w-6 sm:h-6" />}
           </motion.div>
         </div>
       )}
 
       {/* Header Photo */}
-      <div className={`flex items-center gap-3 p-4 bg-gradient-to-b from-black/20 to-transparent`}>
+      <div className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-b from-black/20 to-transparent`}>
         <div className="relative flex-shrink-0">
           {authorAvatar ? (
             <img
               src={authorAvatar}
               alt={photo.author}
-              className={`rounded-full object-cover border-2 border-white/10 shadow-lg ${isMobile ? 'w-10 h-10' : 'w-11 h-11'}`}
+              className={`rounded-full object-cover border-2 border-white/10 shadow-lg ${isMobile ? 'w-9 h-9 sm:w-10 sm:h-10' : 'w-11 h-11'}`}
             />
           ) : (
-            <div className={`rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg ${isMobile ? 'w-10 h-10 text-sm' : 'w-11 h-11 text-base'}`}>
+            <div className={`rounded-full bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center font-bold text-white shadow-lg ${isMobile ? 'w-9 h-9 sm:w-10 sm:h-10 text-xs sm:text-sm' : 'w-11 h-11 text-base'}`}>
               {photo.author[0]?.toUpperCase()}
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`font-bold text-white truncate ${isMobile ? 'text-sm' : 'text-base'}`}>{photo.author}</p>
-          <p className="text-slate-400 text-[10px] uppercase tracking-wider font-medium">
+          <p className={`font-bold text-white truncate ${isMobile ? 'text-xs sm:text-sm' : 'text-base'}`}>{photo.author}</p>
+          <p className="text-slate-400 text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">
             {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
           </p>
         </div>
-        <button className="p-2 text-slate-400 hover:text-white transition-colors">
-          <MoreVertical className="w-5 h-5" />
+        <button className="p-1.5 sm:p-2 text-slate-400 hover:text-white transition-colors touch-manipulation">
+          <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
 
@@ -344,12 +344,12 @@ export const GuestPhotoCard = React.memo(({
         )}
 
         {/* Media Badges */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex flex-col gap-1.5 sm:gap-2 z-20">
           {photo.type === 'video' && (
-            <div className="bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-lg">
-              <Video className="w-3.5 h-3.5 text-white" />
+            <div className="bg-black/60 backdrop-blur-md px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full flex items-center gap-1 sm:gap-1.5 border border-white/10 shadow-lg">
+              <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
               {photo.duration && (
-                <span className="text-white text-[10px] font-bold">{Math.floor(photo.duration)}s</span>
+                <span className="text-white text-[9px] sm:text-[10px] font-bold">{Math.floor(photo.duration)}s</span>
               )}
             </div>
           )}
@@ -374,9 +374,9 @@ export const GuestPhotoCard = React.memo(({
       </div>
 
       {/* Actions & Caption */}
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
+      <div className="p-3 sm:p-4 md:p-5">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Like */}
             <div className="relative">
               <button
@@ -387,9 +387,9 @@ export const GuestPhotoCard = React.memo(({
                 onTouchStart={handleReactionTouchStart}
                 onTouchEnd={handleReactionTouchEnd}
                 disabled={selectionMode}
-                className={`transition-all ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+                className={`transition-all touch-manipulation ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
               >
-                <Heart className={`w-7 h-7 ${isLiked ? 'fill-current' : ''}`} />
+                <Heart className={`w-6 h-6 sm:w-7 sm:h-7 ${isLiked ? 'fill-current' : ''}`} />
               </button>
               
               <AnimatePresence>
@@ -399,7 +399,7 @@ export const GuestPhotoCard = React.memo(({
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="absolute bottom-full left-0 mb-3 bg-slate-900/95 backdrop-blur-xl rounded-2xl p-2 shadow-2xl border border-white/10 z-50 flex items-center gap-1"
+                    className="absolute bottom-full left-0 mb-2 sm:mb-3 bg-slate-900/95 backdrop-blur-xl rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/10 z-50 flex items-center gap-0.5 sm:gap-1"
                   >
                     {REACTION_TYPES.map((type) => {
                       const reaction = REACTIONS[type];
@@ -412,10 +412,10 @@ export const GuestPhotoCard = React.memo(({
                             onReaction(photo.id, isActive ? null : type);
                             setShowReactionsMenu(false);
                           }}
-                          className={`flex flex-col items-center gap-1 px-2.5 py-2 rounded-xl transition-all ${isActive ? 'bg-pink-500/20 text-pink-400' : 'hover:bg-white/5 text-slate-400'}`}
+                          className={`flex flex-col items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-all touch-manipulation ${isActive ? 'bg-pink-500/20 text-pink-400' : 'hover:bg-white/5 text-slate-400'}`}
                         >
-                          <span className="text-xl">{reaction.emoji}</span>
-                          {count > 0 && <span className="text-[9px] font-black">{count}</span>}
+                          <span className="text-lg sm:text-xl">{reaction.emoji}</span>
+                          {count > 0 && <span className="text-[8px] sm:text-[9px] font-black">{count}</span>}
                         </button>
                       );
                     })}
@@ -428,35 +428,35 @@ export const GuestPhotoCard = React.memo(({
             <button
               onClick={handleShare}
               disabled={selectionMode}
-              className={`text-slate-400 hover:text-indigo-400 transition-colors ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+              className={`text-slate-400 hover:text-indigo-400 transition-colors touch-manipulation ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
             >
-              <Share2 className="w-7 h-7" />
+              <Share2 className="w-6 h-6 sm:w-7 sm:h-7" />
             </button>
 
             {/* Download */}
             <button
               onClick={() => onDownload(photo)}
               disabled={isDownloading || selectionMode}
-              className={`transition-all ${isDownloading ? 'text-blue-400' : 'text-slate-400 hover:text-blue-400'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+              className={`transition-all touch-manipulation ${isDownloading ? 'text-blue-400' : 'text-slate-400 hover:text-blue-400'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
             >
-              {isDownloading ? <div className="w-7 h-7 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : <Download className="w-7 h-7" />}
+              {isDownloading ? <div className="w-6 h-6 sm:w-7 sm:h-7 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" /> : <Download className="w-6 h-6 sm:w-7 sm:h-7" />}
             </button>
           </div>
 
           {/* Social Stats */}
           <div className="flex -space-x-2">
             {(photo.likes_count > 0 || Object.keys(reactions).length > 0) && (
-              <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-3 py-1 gap-1.5">
+              <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-2 sm:px-3 py-0.5 sm:py-1 gap-1 sm:gap-1.5">
                 {photo.likes_count > 0 && (
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-white">
-                    <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] font-bold text-white">
+                    <Heart className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-500 fill-red-500" />
                     {photo.likes_count}
                   </span>
                 )}
                 <div className="flex gap-0.5">
                   {onReaction && Object.entries(reactions).slice(0, 2).map(([type, count]) => {
                     if (count === 0) return null;
-                    return <span key={type} className="text-[11px]">{REACTIONS[type as ReactionType]?.emoji}</span>;
+                    return <span key={type} className="text-[10px] sm:text-[11px]">{REACTIONS[type as ReactionType]?.emoji}</span>;
                   })}
                 </div>
               </div>
@@ -465,36 +465,36 @@ export const GuestPhotoCard = React.memo(({
         </div>
 
         {/* Caption */}
-        <div className="space-y-2">
+        <div className="space-y-1.5 sm:space-y-2">
           {/* Caption (légende IA) */}
-          <p className="text-sm leading-relaxed text-slate-200">
-            <span className="font-black text-white mr-2">{photo.author}</span>
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-200">
+            <span className="font-black text-white mr-1.5 sm:mr-2">{photo.author}</span>
             {photo.caption}
           </p>
           
           {/* User Description (si présente) - En dessous */}
           {photo.user_description && (
-            <p className="text-sm leading-relaxed text-white/80 font-medium italic">
+            <p className="text-xs sm:text-sm leading-relaxed text-white/80 font-medium italic">
               {photo.user_description}
             </p>
           )}
 
           {/* Tags */}
           {settings.tags_generation_enabled !== false && photo.tags && photo.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-1 sm:gap-1.5 pt-0.5 sm:pt-1">
               {photo.tags.slice(0, 3).map((tag, idx) => (
-                <span key={idx} className="text-[10px] font-bold text-pink-400/80 uppercase tracking-tight">
+                <span key={idx} className="text-[9px] sm:text-[10px] font-bold text-pink-400/80 uppercase tracking-tight">
                   #{tag.replace(/\s+/g, '')}
                 </span>
               ))}
               {photo.tags.length > 3 && (
-                <span className="text-[10px] font-bold text-slate-500">+{photo.tags.length - 3}</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500">+{photo.tags.length - 3}</span>
               )}
             </div>
           )}
 
           {/* Time */}
-          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] pt-1">
+          <p className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-[0.1em] pt-0.5 sm:pt-1">
             {new Date(photo.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} • {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
           </p>
         </div>
