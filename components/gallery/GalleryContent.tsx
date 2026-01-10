@@ -188,9 +188,16 @@ const VirtualColumn = React.memo(({
           >
             {item.type === 'battle' ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.4,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                whileHover={{ scale: 1.02 }}
+                className="relative"
               >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <PhotoBattleComponent
                   battle={item.battle}
                   userId={userId}
@@ -203,24 +210,37 @@ const VirtualColumn = React.memo(({
                 />
               </motion.div>
             ) : (
-              <GuestPhotoCard
-                photo={item.photo}
-                isLiked={likedPhotoIds.has(item.photo.id)}
-                onLike={onLike}
-                onDownload={onDownload}
-                allPhotos={allPhotos}
-                index={item.originalIndex}
-                isDownloading={downloadingIds.has(item.photo.id)}
-                onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', item.originalIndex) : undefined}
-                onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', item.originalIndex) : undefined}
-                userReaction={userReactions.get(item.photo.id) || null}
-                onReaction={onReaction}
-                reactions={photosReactions.get(item.photo.id) || {}}
-                guestAvatars={guestAvatars}
-                selectionMode={selectionMode}
-                isSelected={selectedIds.has(item.photo.id)}
-                onSelect={onSelect}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.5,
+                  delay: Math.min(item.originalIndex * 0.03, 0.5),
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                whileHover={{ y: -4 }}
+                className="relative group"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 group-hover:from-pink-500/20 group-hover:via-purple-500/20 group-hover:to-indigo-500/20 rounded-2xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                <GuestPhotoCard
+                  photo={item.photo}
+                  isLiked={likedPhotoIds.has(item.photo.id)}
+                  onLike={onLike}
+                  onDownload={onDownload}
+                  allPhotos={allPhotos}
+                  index={item.originalIndex}
+                  isDownloading={downloadingIds.has(item.photo.id)}
+                  onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', item.originalIndex) : undefined}
+                  onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', item.originalIndex) : undefined}
+                  userReaction={userReactions.get(item.photo.id) || null}
+                  onReaction={onReaction}
+                  reactions={photosReactions.get(item.photo.id) || {}}
+                  guestAvatars={guestAvatars}
+                  selectionMode={selectionMode}
+                  isSelected={selectedIds.has(item.photo.id)}
+                  onSelect={onSelect}
+                />
+              </motion.div>
             )}
           </div>
         );
@@ -331,22 +351,43 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       <AnimatePresence>
         {showLeaderboard && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <div className={`bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8'} border border-white/5 shadow-2xl`}>
-              <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} photosReactions={photosReactions} />
-            </div>
+            <motion.div 
+              className={`bg-gradient-to-br from-slate-900/60 via-slate-800/40 to-slate-900/60 backdrop-blur-xl ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8'} border border-yellow-500/20 shadow-2xl relative overflow-hidden`}
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 opacity-50 blur-3xl" />
+              <div className="relative z-10">
+                <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} photosReactions={photosReactions} />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Grid de photos avec Masonry Style et Virtualisation */}
-      <div className={`flex flex-col ${isMobile ? 'gap-3' : 'md:flex-row gap-3 sm:gap-4 md:gap-6'}`}>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`flex flex-col ${isMobile ? 'gap-3' : 'md:flex-row gap-3 sm:gap-4 md:gap-6'}`}
+      >
         {columnsData.map((colData, colIdx) => (
-          <div key={colIdx} className="flex-1 min-w-0">
+          <motion.div 
+            key={colIdx} 
+            className="flex-1 min-w-0"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: colIdx * 0.1, duration: 0.4 }}
+          >
             <VirtualColumn
               data={colData}
               scrollContainerRef={scrollRef}
@@ -369,9 +410,9 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               numColumns={numColumns}
               isMobile={isMobile}
             />
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };

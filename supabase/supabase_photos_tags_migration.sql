@@ -30,3 +30,4 @@ CREATE INDEX IF NOT EXISTS idx_photos_tags_gin ON public.photos USING GIN (tags)
 
 
 
+

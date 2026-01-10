@@ -130,24 +130,48 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
                     {[
                       { id: 'recent', icon: Clock, label: 'Plus récents', desc: 'Dernières photos partagées' },
                       { id: 'popular', icon: Sparkles, label: 'Plus populaires', desc: 'Photos les plus likées' }
-                    ].map(item => (
-                      <button
+                    ].map((item, index) => (
+                      <motion.button
                         key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => onSortChange(item.id as SortOption)}
-                        className={`flex items-start ${isMobile ? 'gap-3 p-3 min-h-[80px] rounded-2xl' : 'gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl sm:rounded-3xl'} border text-left transition-all touch-manipulation ${
+                        className={`flex items-start ${isMobile ? 'gap-3 p-3 min-h-[80px] rounded-2xl' : 'gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl sm:rounded-3xl'} border text-left transition-all touch-manipulation relative overflow-hidden ${
                           sortBy === item.id 
-                            ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400 shadow-lg shadow-indigo-500/10' 
+                            ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400 shadow-lg shadow-indigo-500/20' 
                             : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
                         }`}
                       >
-                        <div className={`${isMobile ? 'p-2 rounded-xl' : 'p-2 sm:p-2.5 rounded-xl sm:rounded-2xl'} ${sortBy === item.id ? 'bg-indigo-500/20' : 'bg-white/5'}`}>
+                        {sortBy === item.id && (
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10"
+                            animate={{
+                              x: ['-100%', '100%'],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: 'linear'
+                            }}
+                          />
+                        )}
+                        <motion.div 
+                          className={`${isMobile ? 'p-2 rounded-xl' : 'p-2 sm:p-2.5 rounded-xl sm:rounded-2xl'} ${sortBy === item.id ? 'bg-indigo-500/20' : 'bg-white/5'} relative z-10`}
+                          animate={sortBy === item.id ? { 
+                            scale: [1, 1.1, 1],
+                          } : {}}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
                           <item.icon className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
-                        </div>
-                        <div>
+                        </motion.div>
+                        <div className="relative z-10">
                           <p className={`${isMobile ? 'text-xs' : 'text-[10px] sm:text-xs'} font-black uppercase tracking-tight`}>{item.label}</p>
                           <p className={`${isMobile ? 'text-[10px]' : 'text-[9px] sm:text-[10px]'} opacity-60 mt-0.5`}>{item.desc}</p>
                         </div>
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </section>
@@ -168,18 +192,36 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
                     </div>
                   </div>
                   <div className={`flex flex-wrap ${isMobile ? 'gap-2 max-h-48' : 'gap-1.5 sm:gap-2 max-h-40 sm:max-h-48'} overflow-y-auto p-1 scrollbar-hide`}>
-                    {uniqueAuthors.map(author => (
-                      <button
+                    {uniqueAuthors.map((author, index) => (
+                      <motion.button
                         key={author}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.03 }}
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => toggleAuthor(author)}
-                        className={`${isMobile ? 'px-4 py-2.5 min-h-[44px] rounded-xl text-xs' : 'px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs'} font-bold border transition-all touch-manipulation ${
+                        className={`${isMobile ? 'px-4 py-2.5 min-h-[44px] rounded-xl text-xs' : 'px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs'} font-bold border transition-all touch-manipulation relative overflow-hidden ${
                           selectedAuthors.includes(author)
-                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-none shadow-lg shadow-pink-500/20'
+                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white border-none shadow-lg shadow-pink-500/30'
                             : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'
                         }`}
                       >
-                        {author}
-                      </button>
+                        {selectedAuthors.includes(author) && (
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                            animate={{
+                              x: ['-100%', '100%'],
+                            }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              ease: 'linear'
+                            }}
+                          />
+                        )}
+                        <span className="relative z-10">{author}</span>
+                      </motion.button>
                     ))}
                     {uniqueAuthors.length === 0 && (
                       <p className={`text-slate-600 ${isMobile ? 'text-sm' : 'text-xs'} italic py-4 w-full text-center`}>Aucun auteur trouvé</p>
@@ -199,12 +241,20 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
                   <span className="hidden sm:inline">Réinitialiser</span>
                   <span className="sm:hidden">Reset</span>
                 </button>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={onClose}
-                  className={`${isMobile ? 'px-6 py-3.5 min-h-[48px] rounded-2xl text-sm' : 'px-6 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-3xl text-xs sm:text-sm'} bg-white text-slate-900 font-black uppercase tracking-widest hover:bg-pink-500 hover:text-white transition-all shadow-xl active:scale-95 touch-manipulation`}
+                  className={`${isMobile ? 'px-6 py-3.5 min-h-[48px] rounded-2xl text-sm' : 'px-6 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-3xl text-xs sm:text-sm'} bg-white text-slate-900 font-black uppercase tracking-widest hover:bg-pink-500 hover:text-white transition-all shadow-xl touch-manipulation relative overflow-hidden group`}
                 >
-                  Appliquer
-                </button>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <span className="relative z-10">Appliquer</span>
+                </motion.button>
               </div>
             </motion.div>
           </div>

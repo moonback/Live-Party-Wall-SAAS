@@ -85,13 +85,22 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -8, scale: 1.02 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative bg-gradient-to-br from-slate-900/60 to-slate-800/60 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-lg sm:rounded-xl'} overflow-hidden border border-slate-700/50 shadow-xl hover:border-indigo-500/50 hover:shadow-indigo-500/20 transition-all duration-300`}
+      className={`group relative bg-gradient-to-br from-slate-900/60 to-slate-800/60 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-lg sm:rounded-xl'} overflow-hidden border border-slate-700/50 shadow-xl hover:border-indigo-500/50 hover:shadow-indigo-500/30 transition-all duration-500`}
     >
+      {/* Glow effect on hover */}
+      <motion.div
+        className="absolute -inset-1 bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/30 group-hover:via-purple-500/30 group-hover:to-pink-500/30 rounded-xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100"
+        animate={isHovered ? {
+          scale: [1, 1.1, 1],
+        } : {}}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
       {/* Thumbnail avec vraie miniature vidéo */}
       <div className="relative aspect-video bg-gradient-to-br from-indigo-900/30 via-purple-900/30 to-pink-900/30 overflow-hidden">
         {/* Vraie miniature vidéo */}
@@ -131,15 +140,54 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
 
         {/* Badge "Aftermovie" avec animation */}
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={{ scale: 0.9, opacity: 0, x: -20 }}
+          animate={{ scale: 1, opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+          whileHover={{ scale: 1.1, rotate: 5 }}
           className="absolute top-2 left-2 z-10"
         >
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1 backdrop-blur-sm border border-white/20">
-            <Video className="w-3 h-3" />
-            <span>Aftermovie</span>
-          </div>
+          <motion.div 
+            className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1 backdrop-blur-sm border border-white/20 relative overflow-hidden"
+            animate={{
+              boxShadow: [
+                '0 10px 30px rgba(99, 102, 241, 0.3)',
+                '0 10px 40px rgba(168, 85, 247, 0.4)',
+                '0 10px 30px rgba(236, 72, 153, 0.3)',
+                '0 10px 30px rgba(99, 102, 241, 0.3)',
+              ],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
+              animate={{
+                x: ['-100%', '100%'],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'linear'
+              }}
+            />
+            <motion.div
+              animate={{ 
+                scale: [1, 1.2, 1],
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut'
+              }}
+              className="relative z-10"
+            >
+              <Video className="w-3 h-3" />
+            </motion.div>
+            <span className="relative z-10">Aftermovie</span>
+          </motion.div>
         </motion.div>
 
         {/* Durée en haut à droite */}
@@ -159,29 +207,55 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-black/50 backdrop-blur-sm flex items-center justify-center"
             >
               <motion.button
-                initial={{ scale: 0.8, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.8, y: 20 }}
+                initial={{ scale: 0.8, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.8, y: 20, opacity: 0 }}
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onDownload(aftermovie)}
                 disabled={isDownloading}
-                className={`${isMobile ? 'px-6 py-3 min-h-[48px] text-base' : 'px-5 py-2.5 text-sm'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-full font-semibold flex items-center gap-2 transition-all transform hover:scale-110 disabled:opacity-50 shadow-xl border border-white/20 touch-manipulation`}
+                className={`${isMobile ? 'px-6 py-3 min-h-[48px] text-base' : 'px-5 py-2.5 text-sm'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-full font-semibold flex items-center gap-2 transition-all disabled:opacity-50 shadow-xl border border-white/20 touch-manipulation relative overflow-hidden group`}
               >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                  animate={{
+                    x: ['-100%', '100%'],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'linear'
+                  }}
+                />
                 {isDownloading ? (
                   <>
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} border-2 border-white border-t-transparent rounded-full`}
+                      className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} border-2 border-white border-t-transparent rounded-full relative z-10`}
                     />
-                    <span>Téléchargement...</span>
+                    <span className="relative z-10">Téléchargement...</span>
                   </>
                 ) : (
                   <>
-                    <Download className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
-                    <span>Télécharger</span>
+                    <motion.div
+                      animate={{ 
+                        y: [0, -3, 0],
+                      }}
+                      transition={{ 
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut'
+                      }}
+                      className="relative z-10"
+                    >
+                      <Download className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
+                    </motion.div>
+                    <span className="relative z-10">Télécharger</span>
                   </>
                 )}
               </motion.button>
@@ -193,10 +267,15 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
         <motion.div
           className="absolute inset-0 pointer-events-none"
           animate={isHovered ? {
-            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+            background: [
+              'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+              'linear-gradient(225deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+              'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+            ],
             backgroundSize: '200% 200%',
+            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
           } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 1.5, repeat: Infinity }}
         />
       </div>
 

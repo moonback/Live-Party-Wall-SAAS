@@ -62,61 +62,147 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   }, [searchRef, isMobile]);
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? `bg-slate-900/90 backdrop-blur-xl border-b border-white/10 shadow-2xl ${isMobile ? 'py-2' : 'py-1.5 sm:py-2'}` 
-        : `bg-transparent ${isMobile ? 'py-3' : 'py-2.5 sm:py-4 md:py-6'}`
-    }`}>
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`sticky top-0 z-50 transition-all duration-500 ${
+        isScrolled 
+          ? `bg-slate-900/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl ${isMobile ? 'py-2' : 'py-1.5 sm:py-2'}` 
+          : `bg-transparent ${isMobile ? 'py-3' : 'py-2.5 sm:py-4 md:py-6'}`
+      }`}
+    >
       <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3' : 'px-2 sm:px-4 md:px-6 lg:px-8'}`}>
         <div className={`flex items-center justify-between ${isMobile ? 'gap-2' : 'gap-2 sm:gap-4'}`}>
           {/* Left: Back + Logo */}
           <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3 md:gap-4'}`}>
             <motion.button 
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={onBack} 
-              className={`${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 rounded-xl sm:rounded-2xl'} bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group touch-manipulation flex items-center justify-center`}
+              className={`${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 rounded-xl sm:rounded-2xl'} bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 group touch-manipulation flex items-center justify-center relative overflow-hidden`}
               aria-label="Retour"
             >
-              <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'} text-white group-hover:-translate-x-1 transition-transform`} />
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 transition-all duration-300" />
+              <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'} text-white group-hover:text-pink-400 relative z-10 transition-all duration-300`} />
             </motion.button>
             
-            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3'}`}>
-              <div className={`${isMobile ? 'hidden' : 'hidden sm:flex'} p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg`}>
-                <Image className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400" />
-              </div>
+            <motion.div 
+              className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3'}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <motion.div 
+                className={`${isMobile ? 'hidden' : 'hidden sm:flex'} p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg relative overflow-hidden`}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: 'spring', stiffness: 400 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 hover:from-pink-500/30 hover:via-purple-500/30 hover:to-indigo-500/30 transition-all duration-500" />
+                <Image className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400 relative z-10" />
+              </motion.div>
               <div>
-                <h1 className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl md:text-2xl'} font-black tracking-tight text-white`}>
-                  Le <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-indigo-400">Mur</span>
-                </h1>
-                {!isMobile && <p className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.2em]">Live Party Wall</p>}
+                <motion.h1 
+                  className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl md:text-2xl'} font-black tracking-tight text-white`}
+                  animate={{ 
+                    backgroundPosition: ['0%', '100%', '0%'],
+                  }}
+                  transition={{ 
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'linear'
+                  }}
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #fff, #ec4899, #a855f7, #6366f1, #fff)',
+                    backgroundSize: '200% auto',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Le <motion.span 
+                    className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-indigo-400"
+                    animate={{ 
+                      backgroundPosition: ['0%', '100%', '0%'],
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: 'linear'
+                    }}
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, #ec4899, #a855f7, #6366f1, #ec4899)',
+                      backgroundSize: '200% auto',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    Mur
+                  </motion.span>
+                </motion.h1>
+                {!isMobile && (
+                  <motion.p 
+                    className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.2em]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Live Party Wall
+                  </motion.p>
+                )}
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Center/Right: Actions */}
           <div className={`flex items-center ${isMobile ? 'gap-1.5' : 'gap-1.5 sm:gap-2 md:gap-3'} flex-1 justify-end`}>
             {/* Search Bar (Desktop) */}
             {!isMobile && (
-              <div className="relative max-w-xs w-full group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-pink-400 transition-colors pointer-events-none" />
+              <motion.div 
+                className="relative max-w-xs w-full group"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                >
+                  <Search className="w-4 h-4 text-slate-400 group-focus-within:text-pink-400 transition-colors duration-300" />
+                </motion.div>
                 <input
                   ref={searchRef}
                   type="text"
                   placeholder="Rechercher... (Ctrl+K)"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full pl-11 pr-11 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/30 transition-all shadow-inner"
+                  className="w-full pl-11 pr-11 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/30 transition-all shadow-inner hover:bg-white/10 hover:border-white/20"
                 />
-                {searchQuery && (
-                  <button
-                    onClick={() => onSearchChange('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 min-w-[32px] min-h-[32px] text-slate-400 hover:text-white transition-colors flex items-center justify-center touch-manipulation"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+                <AnimatePresence>
+                  {searchQuery && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      onClick={() => onSearchChange('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 min-w-[32px] min-h-[32px] text-slate-400 hover:text-white transition-colors flex items-center justify-center touch-manipulation rounded-full hover:bg-white/10"
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <X className="w-4 h-4" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             )}
 
             {/* Mobile Search Toggle */}
@@ -162,13 +248,25 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
 
             {/* Upload Button */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onUploadClick}
-              className={`bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white ${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 md:px-5 md:py-2.5 rounded-xl sm:rounded-2xl'} font-bold transition-all shadow-lg shadow-pink-500/20 flex items-center ${isMobile ? 'justify-center' : 'gap-1.5 sm:gap-2'} touch-manipulation`}
+              className={`bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white ${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 md:px-5 md:py-2.5 rounded-xl sm:rounded-2xl'} font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center ${isMobile ? 'justify-center' : 'gap-1.5 sm:gap-2'} touch-manipulation relative overflow-hidden group`}
             >
-              <Camera className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
-              <span className="hidden md:inline">Publier</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                animate={{
+                  x: ['-100%', '100%'],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1,
+                  ease: 'linear'
+                }}
+              />
+              <Camera className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'} relative z-10`} />
+              <span className="hidden md:inline relative z-10">Publier</span>
             </motion.button>
           </div>
         </div>
@@ -230,7 +328,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
           )}
         </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   );
 };
 
