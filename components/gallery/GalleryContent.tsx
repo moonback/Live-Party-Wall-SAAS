@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Photo, PhotoBattle } from '../../types';
 import { GuestPhotoCard } from './GuestPhotoCard';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
@@ -32,7 +33,203 @@ interface GalleryContentProps {
   selectionMode?: boolean;
   selectedIds?: Set<string>;
   onSelect?: (id: string) => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
+
+type ColumnItem = 
+  | { type: 'photo'; photo: Photo; originalIndex: number }
+  | { type: 'battle'; battle: PhotoBattle };
+
+interface VirtualColumnProps {
+  data: ColumnItem[];
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  allPhotos: Photo[];
+  likedPhotoIds: Set<string>;
+  downloadingIds: Set<string>;
+  userReactions: Map<string, ReactionType>;
+  photosReactions: Map<string, import('../../types').ReactionCounts>;
+  guestAvatars: Map<string, string>;
+  onLike: (id: string) => void;
+  onDownload: (photo: Photo) => void;
+  onReaction: (photoId: string, reactionType: ReactionType | null) => void;
+  onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
+  onPhotoClick?: (photo: Photo, index: number) => void;
+  onNavigatePhoto?: (direction: 'next' | 'prev', currentIndex: number) => void;
+  userId: string;
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+  onSelect?: (id: string) => void;
+  numColumns: number;
+  isMobile: boolean;
+}
+
+const VirtualColumn = React.memo(({ 
+  data, 
+  scrollContainerRef, 
+  allPhotos,
+  likedPhotoIds,
+  downloadingIds,
+  userReactions,
+  photosReactions,
+  guestAvatars,
+  onLike,
+  onDownload,
+  onReaction,
+  onBattleFinished,
+  onPhotoClick,
+  onNavigatePhoto,
+  userId,
+  selectionMode,
+  selectedIds,
+  onSelect,
+  numColumns,
+  isMobile
+}: VirtualColumnProps) => {
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  
+  useEffect(() => {
+    const updateViewportHeight = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', updateViewportHeight);
+    return () => window.removeEventListener('resize', updateViewportHeight);
+  }, []);
+
+  const overscan = useMemo(() => {
+    const MIN_PHOTOS_TOTAL = 100;
+    const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
+    
+    // Estimation moyenne de la hauteur basée sur les photos dans cette colonne
+    let avgHeight = 400;
+    if (data.length > 0) {
+      const heights = data.slice(0, Math.min(10, data.length)).map(item => {
+        if (item.type === 'battle') return 420;
+        const orientation = item.photo.orientation || 'unknown';
+        switch (orientation) {
+          case 'portrait': return 560;
+          case 'landscape': return 280;
+          case 'square': return 400;
+          default: return 400;
+        }
+      });
+      avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
+    }
+    
+    const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
+    
+    const overscanNeeded = Math.max(
+      photosPerColumn - visiblePhotosInViewport + 20,
+      Math.ceil(MIN_PHOTOS_TOTAL / numColumns)
+    );
+    
+    return Math.min(overscanNeeded, data.length);
+  }, [numColumns, data.length, viewportHeight, data]);
+
+  const virtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: (index) => {
+      const item = data[index];
+      if (item?.type === 'battle') return 420;
+      
+      if (item?.type === 'photo') {
+        const orientation = item.photo.orientation || 'unknown';
+        const baseHeight = 400;
+        
+        switch (orientation) {
+          case 'portrait':
+            return baseHeight * 1.4;
+          case 'landscape':
+            return baseHeight * 0.7;
+          case 'square':
+            return baseHeight;
+          default:
+            return baseHeight;
+        }
+      }
+      
+      return 400;
+    },
+    overscan: overscan,
+    scrollMargin: 0,
+    measureElement: (el) => {
+      if (!el) return 400;
+      const height = el.getBoundingClientRect().height;
+      return height > 0 ? height : 400;
+    },
+  });
+
+  return (
+    <div 
+      className="flex-1 flex flex-col"
+      style={{ 
+        height: `${virtualizer.getTotalSize()}px`, 
+        position: 'relative' 
+      }}
+    >
+      {virtualizer.getVirtualItems().map((virtualRow) => {
+        const item = data[virtualRow.index];
+        
+        return (
+          <div
+            key={
+              item.type === 'battle' 
+                ? `battle-${item.battle.id}` 
+                : `photo-${item.photo.id}`
+            }
+            ref={el => virtualRow && typeof virtualRow.index === 'number' ? virtualizer.measureElement(el) : undefined}
+            data-index={virtualRow.index}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+            className={isMobile ? 'pb-3' : 'pb-3 sm:pb-4 md:pb-6'}
+          >
+            {item.type === 'battle' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <PhotoBattleComponent
+                  battle={item.battle}
+                  userId={userId}
+                  compact={false}
+                  onBattleFinished={onBattleFinished}
+                  onPhotoClick={onPhotoClick ? (photo) => {
+                    const photoIndex = allPhotos.findIndex(p => p.id === photo.id);
+                    onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
+                  } : undefined}
+                />
+              </motion.div>
+            ) : (
+              <GuestPhotoCard
+                photo={item.photo}
+                isLiked={likedPhotoIds.has(item.photo.id)}
+                onLike={onLike}
+                onDownload={onDownload}
+                allPhotos={allPhotos}
+                index={item.originalIndex}
+                isDownloading={downloadingIds.has(item.photo.id)}
+                onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', item.originalIndex) : undefined}
+                onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', item.originalIndex) : undefined}
+                userReaction={userReactions.get(item.photo.id) || null}
+                onReaction={onReaction}
+                reactions={photosReactions.get(item.photo.id) || {}}
+                guestAvatars={guestAvatars}
+                selectionMode={selectionMode}
+                isSelected={selectedIds.has(item.photo.id)}
+                onSelect={onSelect}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+});
+
+VirtualColumn.displayName = 'VirtualColumn';
 
 export const GalleryContent: React.FC<GalleryContentProps> = ({
   loading,
@@ -57,24 +254,44 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   userId,
   selectionMode = false,
   selectedIds = new Set(),
-  onSelect
+  onSelect,
+  scrollContainerRef
 }) => {
   const isMobile = useIsMobile();
+  const defaultScrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = scrollContainerRef || defaultScrollRef;
 
   // Trier les battles par date de création (plus récentes en premier)
   const battlesForGrid = useMemo(() => {
     return [...battles].sort((a, b) => b.createdAt - a.createdAt);
   }, [battles]);
 
-  // Masonry layout logic
-  const columns = useMemo(() => {
-    if (isMobile) return [photos];
-    const cols: Photo[][] = [[], [], [], []];
-    photos.forEach((photo, i) => {
-      cols[i % 4].push(photo);
+  // Nombre de colonnes selon le breakpoint
+  const numColumns = isMobile ? 1 : 4;
+
+  // Préparer les données pour chaque colonne avec virtualisation
+  const columnsData = useMemo(() => {
+    const cols = Array.from({ length: numColumns }, () => [] as ColumnItem[]);
+    
+    // Ajouter les battles dans la première colonne si activées (desktop et mobile)
+    if (battleModeEnabled && showBattles) {
+      battlesForGrid.forEach((battle) => {
+        cols[0].push({ type: 'battle', battle });
+      });
+    }
+    
+    // Distribuer les photos dans les colonnes
+    photos.forEach((photo, index) => {
+      const colIndex = isMobile ? 0 : (index % numColumns);
+      cols[colIndex].push({ 
+        type: 'photo', 
+        photo, 
+        originalIndex: index 
+      });
     });
+    
     return cols;
-  }, [photos, isMobile]);
+  }, [photos, battlesForGrid, battleModeEnabled, showBattles, numColumns, isMobile]);
 
   if (loading) {
     return (
@@ -126,53 +343,32 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Grid de photos avec Masonry Style */}
+      {/* Grid de photos avec Masonry Style et Virtualisation */}
       <div className={`flex flex-col ${isMobile ? 'gap-3' : 'md:flex-row gap-3 sm:gap-4 md:gap-6'}`}>
-        {columns.map((colPhotos, colIdx) => (
-          <div key={colIdx} className={`flex-1 flex flex-col ${isMobile ? 'gap-3' : 'gap-3 sm:gap-4 md:gap-6'}`}>
-            {/* Show battles only in the first column on desktop, or top on mobile */}
-            {colIdx === 0 && battleModeEnabled && showBattles && battlesForGrid.map((battle) => (
-              <motion.div
-                key={`battle-${battle.id}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <PhotoBattleComponent
-                  battle={battle}
-                  userId={userId}
-                  compact={false}
-                  onBattleFinished={onBattleFinished}
-                  onPhotoClick={onPhotoClick ? (photo) => {
-                    const photoIndex = photos.findIndex(p => p.id === photo.id);
-                    onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
-                  } : undefined}
-                />
-              </motion.div>
-            ))}
-
-            <AnimatePresence mode="popLayout">
-              {colPhotos.map((photo, index) => (
-                <GuestPhotoCard
-                  key={photo.id}
-                  photo={photo}
-                  isLiked={likedPhotoIds.has(photo.id)}
-                  onLike={onLike}
-                  onDownload={onDownload}
-                  allPhotos={photos}
-                  index={index}
-                  isDownloading={downloadingIds.has(photo.id)}
-                  onSwipeLeft={onNavigatePhoto ? () => onNavigatePhoto('next', index) : undefined}
-                  onSwipeRight={onNavigatePhoto ? () => onNavigatePhoto('prev', index) : undefined}
-                  userReaction={userReactions.get(photo.id) || null}
-                  onReaction={onReaction}
-                  reactions={photosReactions.get(photo.id) || {}}
-                  guestAvatars={guestAvatars}
-                  selectionMode={selectionMode}
-                  isSelected={selectedIds.has(photo.id)}
-                  onSelect={onSelect}
-                />
-              ))}
-            </AnimatePresence>
+        {columnsData.map((colData, colIdx) => (
+          <div key={colIdx} className="flex-1 min-w-0">
+            <VirtualColumn
+              data={colData}
+              scrollContainerRef={scrollRef}
+              allPhotos={photos}
+              likedPhotoIds={likedPhotoIds}
+              downloadingIds={downloadingIds}
+              userReactions={userReactions}
+              photosReactions={photosReactions}
+              guestAvatars={guestAvatars}
+              onLike={onLike}
+              onDownload={onDownload}
+              onReaction={onReaction}
+              onBattleFinished={onBattleFinished}
+              onPhotoClick={onPhotoClick}
+              onNavigatePhoto={onNavigatePhoto}
+              userId={userId}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onSelect={onSelect}
+              numColumns={numColumns}
+              isMobile={isMobile}
+            />
           </div>
         ))}
       </div>

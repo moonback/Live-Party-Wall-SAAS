@@ -718,6 +718,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onSelect={handleSelect}
+            scrollContainerRef={parentRef}
           />
         </div>
       </div>
