@@ -181,7 +181,7 @@ const PhotoGridItem: React.FC<PhotoGridItemProps> = ({ photo, index, isInView })
          <div className="absolute bottom-0 left-0 right-0 p-1 md:p-2 bg-gradient-to-t from-black/90 to-transparent">
              <div className="flex items-center gap-1 mb-0.5">
                  <Sparkles size={6} className="text-pink-400" />
-                 <span className="text-[6px] md:text-[8px] text-gray-300 font-medium">AI generated</span>
+                 <span className="text-[6px] md:text-[8px] text-gray-300 font-medium">Amélioré par IA</span>
              </div>
              <p className="text-[7px] md:text-[9px] font-medium text-white leading-tight hidden sm:block">{photo.caption}</p>
          </div>
@@ -387,13 +387,13 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
         <div className="absolute top-0 left-0 right-0 h-10 sm:h-12 bg-black/60 backdrop-blur-sm z-25 flex items-center justify-between px-4 sm:px-6 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full animate-pulse shadow shadow-red-900" />
-            <span className="text-xs sm:text-sm font-bold text-pink-400 tracking-wide">LIVE FEED</span>
+            <span className="text-xs sm:text-sm font-bold text-pink-400 tracking-wide">LIVE WALL</span>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
           </div>
-          <div className="text-xs sm:text-sm font-mono text-gray-300 font-semibold drop-shadow">#WeddingSarahTom</div>
+          <div className="text-xs sm:text-sm font-mono text-gray-300 font-semibold drop-shadow">#LivePartyWall</div>
         </div>
         
         {/* PhotoGrid */}
@@ -590,7 +590,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
                 <Zap size={16} className="text-pink-400 drop-shadow-lg" />
                 <div className="px-2.5 py-1 sm:px-3.5 sm:py-1.5 bg-black/50 backdrop-blur-md rounded-full text-[9px] sm:text-xs font-semibold text-white border border-white/20 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                  <span className="hidden sm:inline">Party </span>Wall
+                  <span className="hidden sm:inline">Live Party </span>Wall
                 </div>
                 <RefreshCcw size={16} className="text-purple-400 drop-shadow-lg" />
               </div>
@@ -656,7 +656,7 @@ const SceneAnimation: React.FC<SceneAnimationProps> = ({ mode: _mode = 'demo' })
                 <div className="flex gap-3 sm:gap-4 text-[8px] sm:text-[10px] font-semibold text-white/80 uppercase tracking-widest">
                   <span>Vidéo</span>
                   <span className="text-yellow-300">Photo</span>
-                  <span>Portrait</span>
+                  <span>Portrait IA</span>
                 </div>
               </div>
             </div>
@@ -860,7 +860,18 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
   };
 
   return (
-    <section ref={containerRef} className="relative min-h-[100svh] flex items-center justify-center pt-24 sm:pt-28 lg:pt-20 pb-12 sm:pb-16 lg:pb-20 overflow-hidden bg-gradient-to-br from-fuchsia-900 via-black to-pink-900">
+    <section
+      ref={containerRef}
+      className="
+        relative min-h-[100svh] flex items-center justify-center 
+        pt-24 sm:pt-28 lg:pt-20 pb-12 sm:pb-16 lg:pb-20
+        overflow-hidden
+        bg-gradient-to-br from-fuchsia-950 via-black to-pink-900
+        before:content-[''] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top_left,_rgba(236,72,153,0.09)_0%,transparent_80%)] before:pointer-events-none
+        after:content-[''] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_bottom_right,_rgba(192,132,252,0.09)_0%,transparent_80%)] after:pointer-events-none
+        "
+      aria-label="Présentation Live Party Wall"
+    >
       
       {/* Mobile Background Image (remplace la scène 3D sur mobile) */}
       <div className="absolute inset-0 md:hidden pointer-events-none flex items-start justify-center overflow-hidden">
@@ -901,17 +912,17 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-pink-500"></span>
               </span>
               <span className="text-[11px] sm:text-xs font-bold text-pink-100 tracking-wider uppercase">
-                L'animation photo nouvelle génération
+                100% instantané, 0% app
               </span>
             </motion.div>
             
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.05] text-white"
+              className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.05] text-white"
             >
-              Le mur photo qui fait
+              Vos photos sur grand écran
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
-                participer tout le monde
+                en direct, sans app
               </span>
             </motion.h1>
             
@@ -919,8 +930,8 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               variants={itemVariants}
               className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light"
             >
-              Transformez chaque smartphone en appareil photo instantané. <br className="hidden sm:block" />
-              <span className="text-white font-medium">Vos invités capturent</span>, l'IA sublime, le mur diffuse en direct.
+              Vos invités prennent des photos, <strong className="text-white font-medium">l'IA les sublime</strong>, <strong className="text-white font-medium">elles apparaissent instantanément</strong> sur le mur. <br className="hidden sm:block" />
+              <span className="text-white font-medium">Aucune app à télécharger</span>, juste un lien à partager.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -935,7 +946,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
-                  Commencer gratuitement
+                  Créer mon mur gratuitement
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </button>
@@ -980,7 +991,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
                   ))}
                 </div>
                 <div className="text-sm text-gray-400 mt-0.5">
-                  Adopté par <span className="text-white font-semibold">500+ organisateurs</span>
+                  <strong className="text-white font-semibold">500+ événements</strong> déjà créés
                 </div>
               </div>
             </motion.div>

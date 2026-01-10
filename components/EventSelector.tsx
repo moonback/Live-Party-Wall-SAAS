@@ -368,7 +368,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       </div>
                       <p className="text-xs text-slate-500 flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                        L'URL sera : <span className="font-mono text-indigo-400">party-wall.com/?event={newEventSlug || '...'}</span>
+                        L'URL sera : <span className="font-mono text-indigo-400">livepartywall.com/?event={newEventSlug || '...'}</span>
                       </p>
                     </motion.div>
                   </div>
