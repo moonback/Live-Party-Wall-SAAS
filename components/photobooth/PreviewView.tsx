@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Frame, Palette, Sparkles, User, MessageSquare } from 'lucide-react';
+import { Download, Frame, Palette, Sparkles, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { FilterSelector } from './FilterSelector';
 import { FilterType, FrameType } from '../../utils/imageFilters';
 import { MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH } from '../../constants';
@@ -54,6 +54,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   const [isAuthorNameFocused, setIsAuthorNameFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showInputs, setShowInputs] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -162,7 +163,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         </div>
         
         {/* Inputs Container - Sur la même ligne en desktop, empilés en mobile */}
-        <div className={`absolute bottom-[140px] sm:bottom-[100px] left-0 w-full px-4 sm:px-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 z-40 transition-all duration-500 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+        {showInputs && (
+        <div className={`absolute bottom-[140px] sm:bottom-[100px] left-0 w-full px-4 sm:px-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 z-40 transition-all duration-500 ${
+          mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
+        }`}>
           {/* Author Name Input */}
           <div className={`relative w-full sm:flex-1 sm:max-w-md transition-all duration-300 ${
             isAuthorNameFocused ? 'scale-105' : 'scale-100'
@@ -228,10 +232,34 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité */}
       <div className={`absolute bottom-0 left-0 w-full p-4 sm:p-6 pb-6 sm:pb-8 bg-gradient-to-t from-black via-black/95 to-black/80 flex space-x-3 sm:space-x-4 z-40 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+        {/* Bouton pour cacher/afficher les inputs - Positionné en bas pour meilleure visibilité */}
+        <button 
+          onClick={() => setShowInputs(!showInputs)}
+          className={`group relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
+            showInputs 
+              ? 'bg-black/80 border-white/30 text-white hover:bg-black/90 hover:border-white/50' 
+              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/70 text-white shadow-blue-500/50'
+          }`}
+          title={showInputs ? "Masquer les champs" : "Afficher les champs"}
+          aria-label={showInputs ? "Masquer les champs" : "Afficher les champs"}
+        >
+          <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
+            showInputs 
+              ? 'bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100' 
+              : 'bg-gradient-to-br from-blue-400/20 to-blue-600/20 opacity-100'
+          }`} />
+          {showInputs ? (
+            <EyeOff className="w-6 h-6 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+          ) : (
+            <Eye className="w-6 h-6 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+          )}
+        </button>
+        
         <button
           onClick={onRetake}
           disabled={loading}
