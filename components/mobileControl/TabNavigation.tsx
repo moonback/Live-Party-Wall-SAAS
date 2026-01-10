@@ -1,12 +1,13 @@
 import React from 'react';
-import { BarChart2, Shield, Settings, Sword, Users, LayoutDashboard } from 'lucide-react';
+import { BarChart2, Shield, Settings, Sword, Users, LayoutDashboard, Video } from 'lucide-react';
 
-export type ControlTab = 'overview' | 'moderation' | 'analytics' | 'settings' | 'battles' | 'guests';
+export type ControlTab = 'overview' | 'moderation' | 'analytics' | 'settings' | 'battles' | 'guests' | 'aftermovies';
 
 interface TabNavigationProps {
   activeTab: ControlTab;
   onTabChange: (tab: ControlTab) => void;
   battleModeEnabled?: boolean;
+  aftermoviesEnabled?: boolean;
 }
 
 interface TabConfig {
@@ -21,13 +22,17 @@ const TABS: TabConfig[] = [
   { id: 'analytics', label: 'Stats', icon: BarChart2 },
   { id: 'battles', label: 'Battles', icon: Sword },
   { id: 'guests', label: 'Invités', icon: Users },
+  { id: 'aftermovies', label: 'Aftermovies', icon: Video },
   { id: 'settings', label: 'Paramètres', icon: Settings },
 ];
 
-const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, battleModeEnabled = true }) => {
+const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, battleModeEnabled = true, aftermoviesEnabled = true }) => {
   // Filtrer les onglets selon les fonctionnalités activées
   const visibleTabs = TABS.filter((tab) => {
     if (tab.id === 'battles' && !battleModeEnabled) {
+      return false;
+    }
+    if (tab.id === 'aftermovies' && aftermoviesEnabled === false) {
       return false;
     }
     return true;

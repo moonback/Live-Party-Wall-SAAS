@@ -6,6 +6,7 @@ export { default as OverviewTab } from './OverviewTab';
 export { default as ModerationTab } from './ModerationTab';
 export { default as BattlesTab } from './BattlesTab';
 export { default as GuestsTab } from './GuestsTab';
+export { default as AftermoviesTab } from './AftermoviesTab';
 export { default as SettingsTab } from './SettingsTab';
 export { default as CreateBattleForm } from './CreateBattleForm';
 

@@ -19,6 +19,7 @@ import OverviewTab from './mobileControl/OverviewTab';
 import ModerationTab from './mobileControl/ModerationTab';
 import BattlesTab from './mobileControl/BattlesTab';
 import GuestsTab from './mobileControl/GuestsTab';
+import AftermoviesTab from './mobileControl/AftermoviesTab';
 import SettingsTab from './mobileControl/SettingsTab';
 
 interface MobileControlProps {
@@ -37,7 +38,10 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     if (activeTab === 'battles' && settings.battle_mode_enabled === false) {
       setActiveTab('overview');
     }
-  }, [activeTab, settings.battle_mode_enabled]);
+    if (activeTab === 'aftermovies' && settings.aftermovies_enabled === false) {
+      setActiveTab('overview');
+    }
+  }, [activeTab, settings.battle_mode_enabled, settings.aftermovies_enabled]);
   const [isExporting, setIsExporting] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
@@ -378,6 +382,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         activeTab={activeTab} 
         onTabChange={setActiveTab}
         battleModeEnabled={settings.battle_mode_enabled !== false}
+        aftermoviesEnabled={settings.aftermovies_enabled !== false}
       />
 
       {/* Content */}
@@ -436,6 +441,11 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
             onRefresh={handleRefreshGuests}
             onDeleteGuest={handleDeleteGuest}
           />
+        )}
+
+        {/* Aftermovies */}
+        {activeTab === 'aftermovies' && (
+          <AftermoviesTab onRefresh={handleRefresh} />
         )}
 
         {/* Paramètres */}
