@@ -78,7 +78,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         <PhotoCardSkeletons count={8} columns={isMobile ? 1 : 4} />
       </div>
     );
@@ -89,17 +89,17 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-24 px-6"
+        className="text-center py-16 sm:py-20 md:py-24 px-4 sm:px-6"
       >
-        <div className="text-7xl mb-6">
+        <div className="text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6">
           {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
         </div>
-        <h3 className="text-2xl font-black text-white mb-2">
+        <h3 className="text-xl sm:text-2xl font-black text-white mb-1.5 sm:mb-2">
           {searchQuery || mediaFilter !== 'all' 
             ? 'Aucun résultat' 
             : 'Le mur est vide'}
         </h3>
-        <p className="text-slate-500 max-w-xs mx-auto text-sm">
+        <p className="text-slate-500 max-w-xs mx-auto text-xs sm:text-sm">
           {searchQuery || mediaFilter !== 'all' 
             ? 'Essayez de modifier vos filtres ou votre recherche.' 
             : 'Soyez le premier à capturer un moment magique !'}
