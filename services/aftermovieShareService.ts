@@ -85,7 +85,8 @@ export async function uploadAftermovieToStorage(
           filename: sanitizedFilename,
           file_size: blob.size,
           duration_seconds: durationSeconds || null,
-          created_by: createdBy || null
+          created_by: createdBy || null,
+          download_count: 0
         }
       ])
       .select()
@@ -111,7 +112,8 @@ export async function uploadAftermovieToStorage(
       file_size: aftermovieData.file_size || undefined,
       duration_seconds: aftermovieData.duration_seconds ? Number(aftermovieData.duration_seconds) : undefined,
       created_at: new Date(aftermovieData.created_at).getTime(),
-      created_by: aftermovieData.created_by || undefined
+      created_by: aftermovieData.created_by || undefined,
+      download_count: aftermovieData.download_count || 0
     } : {
       id: '', // Fallback si l'insertion a échoué
       event_id: eventId,
@@ -122,7 +124,8 @@ export async function uploadAftermovieToStorage(
       file_size: blob.size,
       duration_seconds: durationSeconds,
       created_at: Date.now(),
-      created_by: createdBy
+      created_by: createdBy,
+      download_count: 0
     };
 
     logger.info("Aftermovie uploaded successfully", {
@@ -235,7 +238,8 @@ export async function getAftermovies(eventId: string): Promise<Aftermovie[]> {
       file_size: row.file_size || undefined,
       duration_seconds: row.duration_seconds ? Number(row.duration_seconds) : undefined,
       created_at: new Date(row.created_at).getTime(),
-      created_by: row.created_by || undefined
+      created_by: row.created_by || undefined,
+      download_count: row.download_count || 0
     }));
 
   } catch (error) {
@@ -245,6 +249,84 @@ export async function getAftermovies(eventId: string): Promise<Aftermovie[]> {
       eventId
     });
     return [];
+  }
+}
+
+/**
+ * Incrémente le compteur de téléchargements d'un aftermovie
+ * @param aftermovieId - ID de l'aftermovie
+ * @returns Promise résolue avec le nouveau nombre de téléchargements
+ */
+export async function incrementAftermovieDownloadCount(aftermovieId: string): Promise<number> {
+  if (!isSupabaseConfigured()) {
+    return 0;
+  }
+
+  try {
+    // Utiliser la fonction SQL pour incrémenter de manière atomique
+    const { data, error } = await supabase.rpc('increment_aftermovie_download_count', {
+      aftermovie_id: aftermovieId
+    });
+
+    if (error) {
+      // Fallback : incrémenter manuellement si la fonction RPC n'existe pas
+      logger.warn("RPC function not available, using manual increment", {
+        component: 'aftermovieShareService',
+        action: 'incrementAftermovieDownloadCount',
+        aftermovieId,
+        error
+      });
+
+      const { data: aftermovieData, error: fetchError } = await supabase
+        .from('aftermovies')
+        .select('download_count')
+        .eq('id', aftermovieId)
+        .single();
+
+      if (fetchError || !aftermovieData) {
+        logger.error("Error fetching aftermovie for download count", fetchError, {
+          component: 'aftermovieShareService',
+          action: 'incrementAftermovieDownloadCount',
+          aftermovieId
+        });
+        return 0;
+      }
+
+      const newCount = (aftermovieData.download_count || 0) + 1;
+
+      const { error: updateError } = await supabase
+        .from('aftermovies')
+        .update({ download_count: newCount })
+        .eq('id', aftermovieId);
+
+      if (updateError) {
+        logger.error("Error updating download count", updateError, {
+          component: 'aftermovieShareService',
+          action: 'incrementAftermovieDownloadCount',
+          aftermovieId
+        });
+        return aftermovieData.download_count || 0;
+      }
+
+      return newCount;
+    }
+
+    logger.info("Download count incremented", {
+      component: 'aftermovieShareService',
+      action: 'incrementAftermovieDownloadCount',
+      aftermovieId,
+      newCount: data
+    });
+
+    return data || 0;
+
+  } catch (error) {
+    logger.error("Error in incrementAftermovieDownloadCount", error, {
+      component: 'aftermovieShareService',
+      action: 'incrementAftermovieDownloadCount',
+      aftermovieId
+    });
+    return 0;
   }
 }
 

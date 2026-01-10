@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Aftermovie } from '../../types';
-import { Video, Download, Calendar, Play, Clock, HardDrive } from 'lucide-react';
+import { Video, Download, Calendar, Play, Clock, HardDrive, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AftermovieCardProps {
@@ -191,6 +191,18 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               <Calendar className="w-3.5 h-3.5 text-purple-400" />
             </div>
             <span className="font-medium">{formatDate(aftermovie.created_at)}</span>
+          </div>
+
+          {/* Nombre de téléchargements */}
+          <div className="flex items-center gap-2.5 text-xs text-slate-400">
+            <div className="p-1.5 bg-slate-800/50 rounded-lg">
+              <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+            </div>
+            <span className="font-medium">
+              {aftermovie.download_count !== undefined && aftermovie.download_count > 0
+                ? `${aftermovie.download_count} téléchargement${aftermovie.download_count > 1 ? 's' : ''}`
+                : 'Aucun téléchargement'}
+            </span>
           </div>
         </div>
 

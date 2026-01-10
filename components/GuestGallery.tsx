@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { getActiveBattles, subscribeToNewBattles, subscribeToBattleUpdates } from '../services/battleService';
-import { getAftermovies } from '../services/aftermovieShareService';
+import { getAftermovies, incrementAftermovieDownloadCount } from '../services/aftermovieShareService';
 import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
@@ -378,6 +378,16 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      
+      // Incrémenter le compteur de téléchargements
+      const newCount = await incrementAftermovieDownloadCount(aftermovie.id);
+      
+      // Mettre à jour l'état local pour afficher le nouveau nombre
+      setAftermovies(prev => prev.map(a => 
+        a.id === aftermovie.id 
+          ? { ...a, download_count: newCount }
+          : a
+      ));
       
       addToast('Aftermovie téléchargé !', 'success');
     } catch (error) {

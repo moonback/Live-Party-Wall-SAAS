@@ -49,6 +49,7 @@ export interface Aftermovie {
   duration_seconds?: number;
   created_at: number; // Timestamp
   created_by?: string; // Nom de l'organisateur/admin
+  download_count?: number; // Nombre de téléchargements
 }
 
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'privacy' | 'data-management';
