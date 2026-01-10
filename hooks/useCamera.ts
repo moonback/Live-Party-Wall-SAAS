@@ -16,6 +16,8 @@ export const useCamera = (options: UseCameraOptions = {}) => {
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [currentDeviceId, setCurrentDeviceId] = useState<string>('');
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [flashEnabled, setFlashEnabled] = useState<boolean>(false);
+  const [flashSupported, setFlashSupported] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
@@ -59,6 +61,12 @@ export const useCamera = (options: UseCameraOptions = {}) => {
       setCameraError(false);
       
       const videoTrack = mediaStream.getVideoTracks()[0];
+      if (!videoTrack) {
+        setCameraError(true);
+        addToast("Impossible d'accéder à la caméra", 'error');
+        return;
+      }
+
       const settings = videoTrack.getSettings();
       
       if (settings.deviceId) {
@@ -82,21 +90,92 @@ export const useCamera = (options: UseCameraOptions = {}) => {
           logger.error("Error enumerating devices", e, { component: 'useCamera', action: 'startCamera' });
         }
       }
+
+      // Vérifier si le flash est supporté et réinitialiser si nécessaire
+      const capabilities = videoTrack.getCapabilities();
+      const supported = 'torch' in capabilities || 'fillLightMode' in capabilities;
+      setFlashSupported(supported);
+      // Réinitialiser le flash si la caméra change et que le flash était activé
+      if (flashEnabled && supported) {
+        try {
+          if ('torch' in capabilities) {
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: true } as MediaTrackConstraints]
+            });
+          } else if ('fillLightMode' in capabilities) {
+            await videoTrack.applyConstraints({
+              advanced: [{ fillLightMode: 'flash' } as MediaTrackConstraints]
+            });
+          }
+        } catch (e) {
+          // Ignorer les erreurs silencieusement si le flash ne peut pas être activé
+          logger.warn("Flash activation failed", e, { component: 'useCamera', action: 'startCamera' });
+          setFlashEnabled(false);
+        }
+      } else if (!supported) {
+        // Désactiver l'état si le flash n'est pas supporté
+        setFlashEnabled(false);
+      }
     } catch (err) {
       logger.error("Camera access error", err, { component: 'useCamera', action: 'startCamera' });
       setCameraError(true);
       addToast("Impossible d'accéder à la caméra", 'error');
     }
-  }, [stream, facingMode, videoDevices.length, preferredWidth, preferredHeight, addToast]);
+  }, [stream, facingMode, videoDevices.length, preferredWidth, preferredHeight, flashEnabled, addToast]);
 
-  const stopCamera = useCallback(() => {
+  const stopCamera = useCallback(async () => {
     if (stream) {
+      // Désactiver le flash avant d'arrêter la caméra
+      if (flashEnabled) {
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          try {
+            const capabilities = videoTrack.getCapabilities();
+            if ('torch' in capabilities) {
+              await videoTrack.applyConstraints({
+                advanced: [{ torch: false } as MediaTrackConstraints]
+              });
+            } else if ('fillLightMode' in capabilities) {
+              await videoTrack.applyConstraints({
+                advanced: [{ fillLightMode: 'off' } as MediaTrackConstraints]
+              });
+            }
+          } catch (e) {
+            // Ignorer les erreurs silencieusement
+            logger.warn("Flash deactivation failed", e, { component: 'useCamera', action: 'stopCamera' });
+          }
+        }
+        setFlashEnabled(false);
+      }
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
-  }, [stream]);
+  }, [stream, flashEnabled]);
 
-  const switchCamera = useCallback(() => {
+  const switchCamera = useCallback(async () => {
+    // Désactiver le flash avant de changer de caméra
+    if (stream && flashEnabled) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        try {
+          const capabilities = videoTrack.getCapabilities();
+          if ('torch' in capabilities) {
+            await videoTrack.applyConstraints({
+              advanced: [{ torch: false } as MediaTrackConstraints]
+            });
+          } else if ('fillLightMode' in capabilities) {
+            await videoTrack.applyConstraints({
+              advanced: [{ fillLightMode: 'off' } as MediaTrackConstraints]
+            });
+          }
+        } catch (e) {
+          // Ignorer les erreurs silencieusement
+          logger.warn("Flash deactivation failed", e, { component: 'useCamera', action: 'switchCamera' });
+        }
+      }
+      setFlashEnabled(false);
+    }
+
     if (videoDevices.length >= 2) {
       const currentIndex = videoDevices.findIndex(d => d.deviceId === currentDeviceId);
       const nextIndex = (currentIndex + 1) % videoDevices.length;
@@ -107,7 +186,44 @@ export const useCamera = (options: UseCameraOptions = {}) => {
     
     const nextFacingMode = facingMode === 'user' ? 'environment' : 'user';
     startCamera(undefined, nextFacingMode);
-  }, [videoDevices, currentDeviceId, facingMode, startCamera]);
+  }, [videoDevices, currentDeviceId, facingMode, startCamera, stream, flashEnabled]);
+
+  const toggleFlash = useCallback(async () => {
+    if (!stream || !flashSupported) return;
+
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) return;
+
+    const newFlashState = !flashEnabled;
+    
+    try {
+      const capabilities = videoTrack.getCapabilities();
+      // Essayer d'utiliser torch (Android/Chrome)
+      if ('torch' in capabilities) {
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: newFlashState } as MediaTrackConstraints]
+        });
+        setFlashEnabled(newFlashState);
+      } else if ('fillLightMode' in capabilities) {
+        // iOS Safari utilise fillLightMode
+        await videoTrack.applyConstraints({
+          advanced: [{ fillLightMode: newFlashState ? 'flash' : 'off' } as MediaTrackConstraints]
+        });
+        setFlashEnabled(newFlashState);
+      }
+    } catch (error) {
+      logger.error("Error toggling flash", error, { component: 'useCamera', action: 'toggleFlash' });
+      addToast("Impossible d'activer le flash", 'error');
+      setFlashEnabled(false);
+    }
+  }, [stream, flashEnabled, flashSupported, addToast]);
+
+  // Désactiver le flash quand la caméra s'arrête
+  useEffect(() => {
+    if (!stream && flashEnabled) {
+      setFlashEnabled(false);
+    }
+  }, [stream, flashEnabled]);
 
   return {
     stream,
@@ -116,9 +232,12 @@ export const useCamera = (options: UseCameraOptions = {}) => {
     currentDeviceId,
     facingMode,
     videoRef,
+    flashEnabled,
+    flashSupported,
     startCamera,
     stopCamera,
-    switchCamera
+    switchCamera,
+    toggleFlash
   };
 };
 
