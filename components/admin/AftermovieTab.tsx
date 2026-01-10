@@ -614,7 +614,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                                 return next;
                               });
                             }}
-                            className={`relative w-full rounded-lg overflow-hidden border transition-all aspect-square ${
+                            className={`relative group w-full rounded-lg overflow-hidden border transition-all aspect-square ${
                               selected
                                 ? 'border-indigo-500/60 ring-2 ring-indigo-500/30'
                                 : 'border-slate-800 hover:border-slate-700'
@@ -628,12 +628,43 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                               loading="lazy"
                             />
                             {selected && (
-                              <div className="absolute top-1 left-1">
+                              <div className="absolute top-1 left-1 z-10">
                                 <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black bg-indigo-500 text-white border border-indigo-400 shadow-lg">
                                   ✓
                                 </div>
                               </div>
                             )}
+                            {/* Overlay avec légende et tags au survol */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end">
+                              <div className="space-y-1">
+                                {/* Auteur */}
+                                <div className="text-[10px] font-semibold text-indigo-300 truncate">
+                                  {p.author}
+                                </div>
+                                {/* Légende */}
+                                <div className="text-xs font-medium text-white line-clamp-2 leading-tight">
+                                  {p.caption || 'Sans légende'}
+                                </div>
+                                {/* Tags */}
+                                {p.tags && p.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-0.5 pt-0.5">
+                                    {p.tags.slice(0, 2).map((tag, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="inline-flex items-center px-1 py-0.5 rounded text-[9px] font-bold text-pink-300 bg-pink-500/20 border border-pink-400/30 uppercase tracking-tight"
+                                      >
+                                        #{tag.replace(/\s+/g, '')}
+                                      </span>
+                                    ))}
+                                    {p.tags.length > 2 && (
+                                      <span className="inline-flex items-center px-1 py-0.5 rounded text-[9px] font-semibold text-slate-300 bg-slate-700/50">
+                                        +{p.tags.length - 2}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </button>
                         );
                       })}
@@ -737,13 +768,39 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-slate-100 truncate mb-1">
-                              {photo.caption || 'Sans légende'}
-                            </div>
-                            <div className="text-xs text-slate-400 truncate flex items-center gap-2">
-                              <span>{photo.author}</span>
-                              <span>•</span>
-                              <span>{new Date(photo.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <div className="space-y-1.5">
+                              {/* Auteur */}
+                              <div className="text-xs font-semibold text-indigo-300 truncate">
+                                {photo.author}
+                              </div>
+                              {/* Légende */}
+                              <div className="text-sm font-medium text-slate-100 line-clamp-2 leading-relaxed">
+                                {photo.caption || 'Sans légende'}
+                              </div>
+                              {/* Tags */}
+                              {photo.tags && photo.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 pt-0.5">
+                                  {photo.tags.slice(0, 3).map((tag, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-400/90 bg-pink-500/10 border border-pink-500/20 uppercase tracking-tight"
+                                    >
+                                      #{tag.replace(/\s+/g, '')}
+                                    </span>
+                                  ))}
+                                  {photo.tags.length > 3 && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold text-slate-400 bg-slate-800/50">
+                                      +{photo.tags.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {/* Timestamp */}
+                              <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
+                                <span>{new Date(photo.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span>•</span>
+                                <span>{new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                              </div>
                             </div>
                           </div>
                           <div className="flex-shrink-0 flex items-center gap-1.5">
@@ -1370,9 +1427,35 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                             </div>
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="text-xs text-white font-medium truncate">{p.caption || 'Sans légende'}</div>
-                          <div className="text-[10px] text-slate-300 truncate">{p.author}</div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="space-y-1.5">
+                            {/* Auteur */}
+                            <div className="text-xs font-semibold text-indigo-300 truncate">
+                              {p.author}
+                            </div>
+                            {/* Légende */}
+                            <div className="text-sm font-medium text-white line-clamp-2 leading-relaxed">
+                              {p.caption || 'Sans légende'}
+                            </div>
+                            {/* Tags */}
+                            {p.tags && p.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 pt-1">
+                                {p.tags.slice(0, 3).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold text-pink-300 bg-pink-500/20 border border-pink-400/30 uppercase tracking-tight"
+                                  >
+                                    #{tag.replace(/\s+/g, '')}
+                                  </span>
+                                ))}
+                                {p.tags.length > 3 && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-300 bg-slate-700/50">
+                                    +{p.tags.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </motion.button>
                     );
@@ -1428,8 +1511,40 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0 text-left">
-                          <div className="text-sm font-semibold text-white truncate">{p.caption || 'Sans légende'}</div>
-                          <div className="text-xs text-slate-400 truncate">{p.author} • {new Date(p.timestamp).toLocaleDateString('fr-FR')}</div>
+                          <div className="space-y-1.5">
+                            {/* Auteur */}
+                            <div className="text-xs font-semibold text-indigo-300 truncate">
+                              {p.author}
+                            </div>
+                            {/* Légende */}
+                            <div className="text-sm font-medium text-white line-clamp-2 leading-relaxed">
+                              {p.caption || 'Sans légende'}
+                            </div>
+                            {/* Tags */}
+                            {p.tags && p.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 pt-0.5">
+                                {p.tags.slice(0, 4).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-400/90 bg-pink-500/10 border border-pink-500/20 uppercase tracking-tight"
+                                  >
+                                    #{tag.replace(/\s+/g, '')}
+                                  </span>
+                                ))}
+                                {p.tags.length > 4 && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold text-slate-400 bg-slate-800/50">
+                                    +{p.tags.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {/* Timestamp */}
+                            <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
+                              <span>{new Date(p.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span>•</span>
+                              <span>{new Date(p.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                            </div>
+                          </div>
                         </div>
                         {selected && (
                           <div className="flex-shrink-0">
