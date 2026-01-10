@@ -8,6 +8,7 @@ import {
   loadImageFromBase64 
 } from '../services/faceRecognitionService';
 import { useToast } from '../context/ToastContext';
+import { useEvent } from '../context/EventContext';
 import { ArrowLeft, Camera, Search, Loader2, User, Image as ImageIcon, X, Sparkles, CheckCircle, AlertCircle, RefreshCw, Zap, ArrowRight, Download, Heart } from 'lucide-react';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { CAMERA_VIDEO_CONSTRAINTS } from '../constants';
@@ -21,6 +22,7 @@ interface FindMeProps {
 
 const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
   const isMobile = useIsMobile();
   
   // États de la caméra
@@ -79,9 +81,15 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   
   // Charger toutes les photos au montage
   useEffect(() => {
+    if (!currentEvent?.id) {
+      // Pas d'événement sélectionné, ne pas charger les photos
+      setAllPhotos([]);
+      return;
+    }
+
     const loadPhotos = async () => {
       try {
-        const photos = await getPhotos();
+        const photos = await getPhotos(currentEvent.id);
         setAllPhotos(photos);
       } catch (error) {
         logger.error('Error loading photos', error, { component: 'FindMe' });
@@ -90,7 +98,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
     };
     
     loadPhotos();
-  }, [addToast]);
+  }, [currentEvent?.id, addToast]);
   
   // Démarrer la caméra
   const startCamera = async (preferredFacingMode?: 'user' | 'environment') => {
