@@ -62,8 +62,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
 
   return (
     <div className={`absolute inset-0 z-10 bg-gradient-to-br from-black via-slate-900 to-black flex flex-col transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Toolbar Top - Visible uniquement en desktop */}
-      <div className="hidden sm:flex absolute top-4 sm:top-6 right-3 sm:right-6 z-50 flex-col gap-2.5 sm:gap-3 animate-fade-in-down">
+      {/* Toolbar Top - Visible uniquement en desktop, positionnée plus bas et centrée verticalement */}
+      <div className="hidden sm:flex absolute top-1/3 right-3 sm:right-6 z-50 flex-col gap-2.5 sm:gap-3 animate-fade-in-down -translate-y-1/2">
         {mediaType === 'photo' && (
           <>
             <button 
@@ -235,15 +235,15 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         )}
       </div>
 
-      {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité */}
-      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 pb-4 sm:pb-8 bg-gradient-to-t from-black via-black/95 to-black/80 flex flex-wrap gap-2 sm:gap-0 sm:space-x-3 sm:space-x-4 z-40 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+      {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité mobile */}
+      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 pb-4 sm:pb-8 bg-gradient-to-t from-black via-black/98 to-black/90 flex flex-nowrap sm:flex-wrap gap-2 sm:gap-0 sm:space-x-3 sm:space-x-4 z-50 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} overflow-x-auto sm:overflow-visible`}>
         {/* Bouton pour cacher/afficher les inputs - Toujours visible */}
         <button 
           onClick={() => setShowInputs(!showInputs)}
-          className={`group relative w-12 h-12 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
+          className={`group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
             showInputs 
-              ? 'bg-black/90 border-white/40 text-white hover:bg-black/95 hover:border-white/60' 
-              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/80 text-white shadow-blue-500/50'
+              ? 'bg-black/95 border-white/50 text-white hover:bg-black hover:border-white/70' 
+              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/90 text-white shadow-blue-500/60'
           }`}
           title={showInputs ? "Masquer les champs" : "Afficher les champs"}
           aria-label={showInputs ? "Masquer les champs" : "Afficher les champs"}
@@ -264,7 +264,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         {mediaType === 'photo' && (
           <button 
             onClick={onDownload}
-            className="group relative w-12 h-12 sm:hidden rounded-2xl bg-black/90 backdrop-blur-xl border-2 border-white/40 flex items-center justify-center hover:bg-black/95 hover:border-white/60 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl"
+            className="group relative flex-shrink-0 w-12 h-12 sm:hidden rounded-2xl bg-black/95 backdrop-blur-xl border-2 border-white/50 flex items-center justify-center hover:bg-black hover:border-white/70 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl"
             title="Télécharger"
             aria-label="Télécharger la photo"
           >
@@ -276,7 +276,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         <button
           onClick={onRetake}
           disabled={loading}
-          className="group relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-white/15 backdrop-blur-xl text-white rounded-2xl font-bold border-2 border-white/30 active:scale-95 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-white/20 backdrop-blur-xl text-white rounded-2xl font-bold border-2 border-white/40 active:scale-95 transition-all duration-300 hover:bg-white/30 hover:border-white/60 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refaire"
           aria-label="Refaire la photo"
         >
@@ -286,7 +286,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         <button
           onClick={onSubmit}
           disabled={loading}
-          className="group relative flex-1 py-4 sm:py-5 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl font-bold shadow-[0_0_30px_rgba(219,39,119,0.6)] hover:shadow-[0_0_50px_rgba(219,39,119,0.8)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border-2 border-pink-400/70 touch-manipulation overflow-hidden"
+          className="group relative flex-1 min-w-[120px] sm:min-w-0 py-4 sm:py-5 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl font-bold shadow-[0_0_30px_rgba(219,39,119,0.6)] hover:shadow-[0_0_50px_rgba(219,39,119,0.8)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border-2 border-pink-400/70 touch-manipulation overflow-hidden"
           aria-label={loading ? loadingStep : "Envoyer au mur"}
         >
           {/* Shimmer effect */}
