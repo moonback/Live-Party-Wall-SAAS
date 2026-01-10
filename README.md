@@ -1,7 +1,7 @@
 <div align="center">
-![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
 
-# 🎉 Live Party Wall
+# 
+![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
 
 ### Application SaaS de mur photo interactif en temps réel enrichie par l'IA
 
