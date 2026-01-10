@@ -394,6 +394,40 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
           <p className="text-xs text-white/60">
             Le logo remplacera le titre sur la page d'accueil (JPEG, PNG, WebP ou SVG - max 5MB)
           </p>
+          
+          {/* Option Filigrane */}
+          {settings.logo_url && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <label className="flex items-center justify-between cursor-pointer group">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-400" />
+                  <span className="text-sm md:text-base font-medium text-white">Afficher le logo en filigrane sur les photos</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={settings.logo_watermark_enabled ?? false}
+                    onChange={(e) => updateSettings({ logo_watermark_enabled: e.target.checked })}
+                    className="sr-only"
+                  />
+                  <div className={`w-11 h-6 md:w-12 md:h-7 rounded-full transition-colors duration-200 ${
+                    settings.logo_watermark_enabled 
+                      ? 'bg-indigo-500' 
+                      : 'bg-white/20'
+                  }`}>
+                    <div className={`w-5 h-5 md:w-6 md:h-6 bg-white rounded-full shadow-md transform transition-transform duration-200 mt-0.5 ${
+                      settings.logo_watermark_enabled 
+                        ? 'translate-x-5 md:translate-x-6' 
+                        : 'translate-x-0.5'
+                    }`} />
+                  </div>
+                </div>
+              </label>
+              <p className="text-xs text-white/60 mt-2">
+                Le logo apparaîtra en bas à gauche des photos dans la galerie et sur le mur
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

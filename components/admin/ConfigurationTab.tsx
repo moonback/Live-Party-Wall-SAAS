@@ -718,6 +718,42 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <Info className="w-3 h-3 text-slate-500" />
                     Logo de l'événement (JPEG, PNG, WebP ou SVG - max 5MB)
                   </p>
+                  
+                  {/* Option Filigrane */}
+                  {localConfig.logo_url && (
+                    <div className="mt-4 pt-4 border-t border-slate-800">
+                      <label className="flex items-center justify-between cursor-pointer group">
+                        <div className="flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4 text-indigo-400" />
+                          <span className="text-sm font-medium text-slate-200">Afficher le logo en filigrane sur les photos</span>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            name="logo_watermark_enabled"
+                            checked={localConfig.logo_watermark_enabled ?? false}
+                            onChange={handleConfigChange}
+                            className="sr-only"
+                          />
+                          <div className={`w-11 h-6 rounded-full transition-colors duration-200 ${
+                            localConfig.logo_watermark_enabled 
+                              ? 'bg-indigo-500' 
+                              : 'bg-slate-700'
+                          }`}>
+                            <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 mt-0.5 ${
+                              localConfig.logo_watermark_enabled 
+                                ? 'translate-x-5' 
+                                : 'translate-x-0.5'
+                            }`} />
+                          </div>
+                        </div>
+                      </label>
+                      <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                        <Info className="w-3 h-3 text-slate-500" />
+                        Le logo apparaîtra en bas à gauche des photos dans la galerie et sur le mur
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>

@@ -371,6 +371,20 @@ export const GuestPhotoCard = React.memo(({
             </div>
           )}
         </div>
+
+        {/* Logo Watermark */}
+        {settings.logo_url && settings.logo_watermark_enabled && (
+          <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-20 pointer-events-none">
+            <div className="bg-black/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 border border-white/10 shadow-lg">
+              <img
+                src={settings.logo_url}
+                alt="Logo événement"
+                className={`${isMobile ? 'h-6 w-auto max-w-[80px]' : 'h-8 sm:h-10 w-auto max-w-[120px]'} object-contain opacity-80`}
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Actions & Caption */}

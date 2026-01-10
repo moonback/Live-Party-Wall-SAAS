@@ -6,6 +6,7 @@ import { REACTIONS } from '../../constants';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
 import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
+import { useSettings } from '../../context/SettingsContext';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -25,6 +26,7 @@ export const PhotoCard = React.memo(({
   setHoveredPhoto, 
   reactions 
 }: PhotoCardProps) => {
+  const { settings } = useSettings();
   const photoBadge = useMemo(() => getPhotoBadge(photo, allPhotos), [photo.id, photo.likes_count, allPhotos.length]);
   const authorHasPhotographerBadge = useMemo(() => hasPhotographerBadge(photo.author, allPhotos), [photo.author, allPhotos.length]);
 
@@ -137,6 +139,20 @@ export const PhotoCard = React.memo(({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Logo Watermark */}
+        {settings.logo_url && settings.logo_watermark_enabled && (
+          <div className="absolute bottom-2 md:bottom-3 lg:bottom-4 left-2 md:left-3 lg:left-4 z-20 pointer-events-none">
+            <div className="bg-black/30 backdrop-blur-sm rounded-lg md:rounded-xl p-1 md:p-1.5 border border-white/10 shadow-lg">
+              <img
+                src={settings.logo_url}
+                alt="Logo événement"
+                className={`${isMobile ? 'h-6 w-auto max-w-[80px]' : 'h-8 md:h-10 lg:h-12 w-auto max-w-[120px] lg:max-w-[150px]'} object-contain opacity-80`}
+                loading="lazy"
+              />
+            </div>
           </div>
         )}
       </div>
