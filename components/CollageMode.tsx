@@ -4,7 +4,7 @@ import { addPhotoToWall } from '../services/photoService';
 import { generateImageCaption } from '../services/geminiService';
 import { isImageAppropriate } from '../services/aiModerationService';
 import { Photo } from '../types';
-import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
+import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
 import { validateAuthorName } from '../utils/validation';
@@ -25,6 +25,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
   const [selectedTemplate, setSelectedTemplate] = useState<CollageTemplate>('2x2');
   const [previewCollage, setPreviewCollage] = useState<string | null>(null);
   const [authorName, setAuthorName] = useState('');
+  const [userDescription, setUserDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [eventSettings, setEventSettings] = useState<EventSettings>(defaultSettings);
@@ -230,6 +231,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
     setPreviewCollage(null);
     setSelectedTemplate('2x2');
     setAuthorName('');
+    setUserDescription('');
     burstModeRef.current = false;
     setIsBurstMode(false);
     setBurstCount(0);
@@ -372,7 +374,14 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
         return;
       }
       setLoadingStep('Upload en cours...');
-      const photo = await addPhotoToWall(currentEvent.id, previewCollage, caption, authorName);
+      const photo = await addPhotoToWall(
+        currentEvent.id, 
+        previewCollage, 
+        caption, 
+        authorName,
+        undefined, // tags
+        userDescription.trim() || undefined
+      );
 
       addToast('Collage ajouté au mur ! 🎉', 'success');
       onCollageUploaded(photo);
@@ -798,6 +807,29 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
                 boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               }}
             />
+          </div>
+
+          {/* User Description Input - Optimisé mobile */}
+          <div className="mb-3 sm:mb-4">
+            <label className="block text-xs sm:text-sm font-medium text-white/80 mb-1.5 sm:mb-2">
+              Description (optionnel)
+            </label>
+            <textarea
+              value={userDescription}
+              onChange={(e) => setUserDescription(e.target.value)}
+              placeholder="Ajoutez une description..."
+              maxLength={MAX_USER_DESCRIPTION_LENGTH}
+              rows={3}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl backdrop-blur-xl bg-white/5 border border-white/10 focus:border-pink-500/50 text-sm sm:text-base text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500/30 transition-all duration-300 touch-manipulation resize-none"
+              style={{
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              }}
+            />
+            {userDescription.length > 0 && (
+              <div className="text-xs text-white/50 mt-1 text-right">
+                {userDescription.length}/{MAX_USER_DESCRIPTION_LENGTH}
+              </div>
+            )}
           </div>
 
           {/* Download Preview Button */}

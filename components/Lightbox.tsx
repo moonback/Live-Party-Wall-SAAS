@@ -142,12 +142,21 @@ const Lightbox: React.FC<LightboxProps> = ({
 
             {/* Info Panel - Design compact et thème sombre - Scrollable */}
             <div className="relative bg-slate-900 p-3 md:p-4 overflow-y-auto max-h-[35vh] md:max-h-[30vh] lg:max-h-[25vh]">
-              {/* Légende principale - Compacte */}
+              {/* Légende principale (IA) */}
               <div className="mb-3">
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white leading-tight mb-2 max-w-full break-words">
                   {photo.caption}
                 </h2>
               </div>
+              
+              {/* User Description (si présente) - En dessous */}
+              {photo.user_description && (
+                <div className="mb-3">
+                  <p className="text-base md:text-lg lg:text-xl text-white/80 font-medium italic leading-relaxed max-w-full break-words">
+                    {photo.user_description}
+                  </p>
+                </div>
+              )}
 
               {/* Grid d'informations - 2 colonnes - Compact */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">

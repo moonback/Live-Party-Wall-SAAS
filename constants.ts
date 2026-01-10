@@ -560,6 +560,9 @@ export type KiosqueTransitionType = typeof KIOSQUE_TRANSITION_TYPES[number];
 export const MAX_AUTHOR_NAME_LENGTH = 50;
 export const MIN_AUTHOR_NAME_LENGTH = 1;
 
+// User description constants
+export const MAX_USER_DESCRIPTION_LENGTH = 500;
+
 // Collage mode constants
 export const MIN_COLLAGE_PHOTOS = 2;
 export const MAX_COLLAGE_PHOTOS = 4;

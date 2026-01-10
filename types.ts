@@ -35,6 +35,7 @@ export interface Photo {
   orientation?: 'portrait' | 'landscape' | 'square' | 'unknown'; // ⚡ Précalculé pour performance
   reactions?: ReactionCounts; // Compteurs de réactions par type
   tags?: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
+  user_description?: string; // Description saisie par l'utilisateur lors de l'upload
 }
 
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile';
@@ -189,6 +190,7 @@ export interface PhotoRow {
   type: 'photo' | 'video';
   duration: number | null;
   tags: string[] | null; // Tags suggérés par l'IA (tableau JSON)
+  user_description: string | null; // Description saisie par l'utilisateur
 }
 
 export interface LikeRow {

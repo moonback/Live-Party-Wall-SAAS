@@ -34,6 +34,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const [authorName, setAuthorName] = useState(() => {
     return localStorage.getItem('party_user_name') || '';
   });
+  const [userDescription, setUserDescription] = useState('');
   
   const [mediaType, setMediaType] = useState<'photo' | 'video'>('photo');
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -246,6 +247,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     setBurstPhotos([]);
     setSelectedBurstIndex(null);
     setIsCapturingBurst(false);
+    setUserDescription(''); // Réinitialiser la description
     resetImageProcessing();
     resetVideoRecording();
     // Le preview vidéo est géré par le hook
@@ -401,6 +403,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         newPhoto = await submitVideo({
           videoBlob: recordedBlob,
           authorName,
+          userDescription: userDescription.trim() || undefined,
           eventId: currentEvent.id,
           videoDuration,
           eventSettings
@@ -413,6 +416,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         newPhoto = await submitPhoto({
           imageDataUrl: preview,
           authorName,
+          userDescription: userDescription.trim() || undefined,
           eventId: currentEvent.id,
           eventSettings,
           activeFilter,
@@ -501,6 +505,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             mediaType={mediaType}
             authorName={authorName}
             onAuthorNameChange={setAuthorName}
+            userDescription={userDescription}
+            onUserDescriptionChange={setUserDescription}
             onDownload={handleDownload}
             onRetake={handleRetake}
             onSubmit={handleSubmit}

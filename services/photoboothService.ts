@@ -11,6 +11,7 @@ import { saveUserAvatar, getCurrentUserAvatar } from '../utils/userAvatar';
 interface SubmitPhotoParams {
   imageDataUrl: string;
   authorName: string;
+  userDescription?: string;
   eventId: string;
   eventSettings: EventSettings;
   activeFilter: string;
@@ -20,6 +21,7 @@ interface SubmitPhotoParams {
 interface SubmitVideoParams {
   videoBlob: Blob;
   authorName: string;
+  userDescription?: string;
   eventId: string;
   videoDuration: number;
   eventSettings: EventSettings;
@@ -28,6 +30,7 @@ interface SubmitVideoParams {
 export const submitPhoto = async ({
   imageDataUrl,
   authorName,
+  userDescription,
   eventId,
   eventSettings,
   activeFilter,
@@ -84,7 +87,8 @@ export const submitPhoto = async ({
     finalImage,
     caption,
     finalAuthorName,
-    tags
+    tags,
+    userDescription
   );
 
   // Sauvegarder l'avatar si disponible
@@ -99,6 +103,7 @@ export const submitPhoto = async ({
 export const submitVideo = async ({
   videoBlob,
   authorName,
+  userDescription,
   eventId,
   videoDuration,
   eventSettings
@@ -114,7 +119,8 @@ export const submitVideo = async ({
     videoBlob,
     caption,
     finalAuthorName,
-    videoDuration
+    videoDuration,
+    userDescription
   );
 
   // Sauvegarder l'avatar si disponible

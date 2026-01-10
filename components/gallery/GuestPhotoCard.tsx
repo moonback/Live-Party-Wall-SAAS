@@ -466,10 +466,18 @@ export const GuestPhotoCard = React.memo(({
 
         {/* Caption */}
         <div className="space-y-2">
+          {/* Caption (légende IA) */}
           <p className="text-sm leading-relaxed text-slate-200">
             <span className="font-black text-white mr-2">{photo.author}</span>
             {photo.caption}
           </p>
+          
+          {/* User Description (si présente) - En dessous */}
+          {photo.user_description && (
+            <p className="text-sm leading-relaxed text-white/80 font-medium italic">
+              {photo.user_description}
+            </p>
+          )}
 
           {/* Tags */}
           {settings.tags_generation_enabled !== false && photo.tags && photo.tags.length > 0 && (
