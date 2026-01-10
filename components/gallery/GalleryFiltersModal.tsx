@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { SortOption, MediaFilter, Photo } from '../../types';
-import { Clock, Sparkles, Trophy, Image, Video, Filter, X, User, XCircle, Search, LayoutGrid } from 'lucide-react';
+import { Clock, Sparkles, X, XCircle, Search } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -123,31 +123,6 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
 
               {/* Body */}
               <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-4 space-y-6' : 'p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8'}`}>
-                {/* Media Type */}
-                <section>
-                  <h3 className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-black text-slate-500 uppercase tracking-widest ${isMobile ? 'mb-3' : 'mb-3 sm:mb-4'}`}>Contenu</h3>
-                  <div className={`grid ${videoEnabled ? 'grid-cols-3' : 'grid-cols-2'} ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3'}`}>
-                    {[
-                      { id: 'all', icon: LayoutGrid, label: 'Tout' },
-                      { id: 'photo', icon: Image, label: 'Photos' },
-                      ...(videoEnabled ? [{ id: 'video', icon: Video, label: 'Vidéos' }] : [])
-                    ].map(item => (
-                      <button
-                        key={item.id}
-                        onClick={() => onMediaFilterChange(item.id as MediaFilter)}
-                        className={`flex flex-col items-center ${isMobile ? 'gap-2 p-3 min-h-[80px] rounded-2xl' : 'gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl sm:rounded-3xl'} border transition-all touch-manipulation ${
-                          mediaFilter === item.id 
-                            ? 'bg-pink-500/10 border-pink-500/50 text-pink-400 shadow-lg shadow-pink-500/10' 
-                            : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:border-white/10'
-                        }`}
-                      >
-                        <item.icon className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
-                        <span className={`${isMobile ? 'text-xs' : 'text-[10px] sm:text-xs'} font-bold`}>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
                 {/* Sort Order */}
                 <section>
                   <h3 className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-black text-slate-500 uppercase tracking-widest ${isMobile ? 'mb-3' : 'mb-3 sm:mb-4'}`}>Tri</h3>
