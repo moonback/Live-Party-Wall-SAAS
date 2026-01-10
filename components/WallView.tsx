@@ -14,6 +14,7 @@ import { useWallBattles } from '../hooks/wall/useWallBattles';
 import { useWallSettings } from '../hooks/wall/useWallSettings';
 import { useAutoScroll } from '../hooks/wall/useAutoScroll';
 import { useReactionFlow } from '../hooks/wall/useReactionFlow';
+import { useAutoCarousel } from '../hooks/wall/useAutoCarousel';
 
 // Components
 import { WallBackground } from './wall/WallBackground';
@@ -92,6 +93,74 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   // --- Derived State ---
   const showBattles = settings.battle_mode_enabled !== false;
   const displayedPhotos = photos; // useWallData gère déjà l'ordre/filtrage si besoin
+
+  // Détection des nouveaux likes et réactions pour arrêter le carrousel
+  const lastLikesCountRef = useRef<Map<string, number>>(new Map());
+  const lastReactionsCountRef = useRef<Map<string, number>>(new Map());
+  const [hasNewLike, setHasNewLike] = useState(false);
+  const [hasNewReaction, setHasNewReaction] = useState(false);
+
+  // Détecter les nouveaux likes
+  useEffect(() => {
+    const currentLikes = new Map<string, number>();
+    photos.forEach(photo => {
+      currentLikes.set(photo.id, photo.likes_count || 0);
+    });
+
+    // Vérifier s'il y a eu un nouveau like
+    let newLikeDetected = false;
+    currentLikes.forEach((count, photoId) => {
+      const previousCount = lastLikesCountRef.current.get(photoId) || 0;
+      if (count > previousCount) {
+        newLikeDetected = true;
+      }
+    });
+
+    if (newLikeDetected) {
+      setHasNewLike(true);
+      setTimeout(() => setHasNewLike(false), 100); // Reset après un court délai
+    }
+
+    lastLikesCountRef.current = currentLikes;
+  }, [photos]);
+
+  // Détecter les nouvelles réactions
+  useEffect(() => {
+    const currentReactions = new Map<string, number>();
+    photosReactions.forEach((reactions, photoId) => {
+      const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
+      currentReactions.set(photoId, totalReactions);
+    });
+
+    // Vérifier s'il y a eu une nouvelle réaction
+    let newReactionDetected = false;
+    currentReactions.forEach((count, photoId) => {
+      const previousCount = lastReactionsCountRef.current.get(photoId) || 0;
+      if (count > previousCount) {
+        newReactionDetected = true;
+      }
+    });
+
+    if (newReactionDetected) {
+      setHasNewReaction(true);
+      setTimeout(() => setHasNewReaction(false), 100); // Reset après un court délai
+    }
+
+    lastReactionsCountRef.current = currentReactions;
+  }, [photosReactions]);
+
+  // Hook pour le carrousel automatique
+  useAutoCarousel({
+    photos: displayedPhotos,
+    lightboxIndex,
+    setLightboxIndex,
+    newPhotoIndicator,
+    hasNewLike,
+    hasNewReaction,
+    enabled: true,
+    inactivityDelay: 60 * 1000, // 1 minute
+    photoDisplayDuration: 3000 // 3 secondes par photo
+  });
   
   // Construire l'URL du QR code avec le slug de l'événement
   const uploadUrl = useMemo(() => {
