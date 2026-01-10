@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Timer, Zap, Flashlight, FlashlightOff } from 'lucide-react';
+import { Timer, Zap } from 'lucide-react';
 import { CaptureButton } from './CaptureButton';
 import { CountdownOverlay } from './CountdownOverlay';
 import { VideoTimer } from './VideoTimer';
@@ -23,9 +23,6 @@ interface CameraViewProps {
   burstMode?: boolean;
   onBurstModeToggle?: () => void;
   isCapturingBurst?: boolean;
-  flashEnabled?: boolean;
-  flashSupported?: boolean;
-  onToggleFlash?: () => void;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
@@ -45,10 +42,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
   onTimerSettingsClick,
   burstMode = false,
   onBurstModeToggle,
-  isCapturingBurst = false,
-  flashEnabled = false,
-  flashSupported = false,
-  onToggleFlash
+  isCapturingBurst = false
 }) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const showSwitchCamera = videoDevices.length > 1 || videoDevices.length === 0;
@@ -96,29 +90,6 @@ export const CameraView: React.FC<CameraViewProps> = ({
       {/* Boutons flottants de configuration */}
       {mediaType === 'photo' && !cameraError && (
         <div className="absolute top-20 sm:top-24 right-4 sm:right-6 z-40 flex flex-col gap-2 sm:gap-3">
-          {/* Bouton flash */}
-          {flashSupported && onToggleFlash && (
-            <button
-              onClick={onToggleFlash}
-              className={`backdrop-blur-md p-3 sm:p-4 rounded-full active:scale-95 transition-all duration-200 shadow-2xl border-2 group ${
-                flashEnabled
-                  ? 'bg-gradient-to-br from-yellow-400/95 to-yellow-600/95 hover:from-yellow-500 hover:to-yellow-700 border-yellow-300/50 hover:border-yellow-200/70 hover:shadow-yellow-400/50'
-                  : 'bg-gradient-to-br from-slate-500/95 to-slate-600/95 hover:from-slate-600 hover:to-slate-700 border-white/30 hover:border-white/50'
-              }`}
-              aria-label={flashEnabled ? 'Désactiver le flash' : 'Activer le flash'}
-              title={flashEnabled ? 'Flash activé' : 'Flash désactivé'}
-            >
-              {flashEnabled ? (
-                <Flashlight className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg group-hover:scale-110 transition-transform" strokeWidth={2.5} />
-              ) : (
-                <FlashlightOff className="w-5 h-5 sm:w-6 sm:h-6 text-white/70 drop-shadow-lg group-hover:scale-110 transition-transform" strokeWidth={2} />
-              )}
-              <div className={`absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse ${
-                flashEnabled ? 'bg-yellow-300/20' : 'bg-white/20'
-              }`}></div>
-            </button>
-          )}
-          
           {/* Bouton mode rafale */}
           {onBurstModeToggle && (
             <button
