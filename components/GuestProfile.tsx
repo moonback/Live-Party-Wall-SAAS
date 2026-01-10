@@ -98,8 +98,8 @@ const GuestProfile: React.FC<GuestProfileProps> = ({ onBack }) => {
     if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter de votre profil invité ?')) {
       disconnectUser();
       addToast('Vous avez été déconnecté de votre profil invité', 'info');
-      // Rediriger vers la landing page
-      window.location.href = '/?mode=landing';
+      // Rediriger vers la landing page de l'événement
+      onBack();
     }
   };
 
