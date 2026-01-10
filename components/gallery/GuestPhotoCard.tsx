@@ -354,9 +354,20 @@ export const GuestPhotoCard = React.memo(({
             </div>
           )}
           {photoBadge && (
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1 rounded-full shadow-lg border border-yellow-300/30 flex items-center gap-1.5">
-              <span className="text-sm">⭐</span>
-              <span className="text-[10px] font-black text-white uppercase tracking-tight">Star</span>
+            <div className="relative">
+              {/* Glow effect animé */}
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-yellow-400/60 via-orange-400/60 to-pink-500/60 blur-lg opacity-75 animate-pulse"></div>
+              
+              {/* Badge principal */}
+              <div className="relative bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 px-2 py-1 rounded-full shadow-lg border border-white/60 shadow-[0_0_15px_rgba(251,191,36,0.6)] flex items-center gap-1">
+                <span className="text-sm relative z-10 drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] animate-spin-slow" style={{ animationDuration: '3s' }}>⭐</span>
+                <span className="text-[10px] font-black text-white uppercase tracking-tight relative z-10 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]">Star</span>
+                
+                {/* Effet de scintillement */}
+                <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 animate-pulse">
+                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+                </div>
+              </div>
             </div>
           )}
         </div>
