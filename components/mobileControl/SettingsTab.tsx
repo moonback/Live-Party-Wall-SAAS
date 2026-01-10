@@ -402,6 +402,43 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
         </div>
       </div>
 
+      {/* Configuration du carrousel automatique */}
+      {settings.auto_carousel_enabled && (
+        <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-pink-500/20">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
+            <Play className="w-5 h-5 md:w-6 md:h-6" />
+            Configuration du carrousel automatique
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Délai d'activation (secondes): {settings.auto_carousel_delay || 20}
+              </label>
+              <input
+                type="range"
+                min="5"
+                max="120"
+                step="5"
+                value={settings.auto_carousel_delay || 20}
+                onChange={async (e) => {
+                  const value = parseInt(e.target.value, 10);
+                  await updateSettings({ auto_carousel_delay: value });
+                }}
+                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-pink-500"
+              />
+              <div className="flex justify-between text-xs text-white/60 mt-1">
+                <span>5s</span>
+                <span>60s</span>
+                <span>120s</span>
+              </div>
+              <p className="text-xs text-white/60 mt-2">
+                Le carrousel s'activera automatiquement après {settings.auto_carousel_delay || 20} secondes d'inactivité
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Déconnexion */}
       <button
         onClick={async () => {

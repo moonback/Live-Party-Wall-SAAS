@@ -926,9 +926,32 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                           <span className="px-2 py-0.5 ml-2 bg-slate-700 text-slate-400 text-xs rounded-full">Inactif</span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">Affiche automatiquement les photos en carrousel après 1 minute d'inactivité.</p>
+                      <p className="text-xs text-slate-400 mt-1">Affiche automatiquement les photos en carrousel après une période d'inactivité.</p>
                     </div>
                   </label>
+                  {/* Configuration du délai - visible uniquement si activé */}
+                  {localConfig.auto_carousel_enabled && (
+                    <div className="mt-4 pt-4 border-t border-slate-700">
+                      <label className="block text-xs font-medium text-slate-300 mb-2">
+                        Délai d'activation: {localConfig.auto_carousel_delay ?? 20} secondes
+                      </label>
+                      <input
+                        type="range"
+                        name="auto_carousel_delay"
+                        min="5"
+                        max="120"
+                        step="5"
+                        value={localConfig.auto_carousel_delay ?? 20}
+                        onChange={handleConfigChange}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                      <div className="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>5s</span>
+                        <span>60s</span>
+                        <span>120s</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
