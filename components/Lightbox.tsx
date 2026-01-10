@@ -240,8 +240,8 @@ const Lightbox: React.FC<LightboxProps> = ({
           
           {/* Footer avec compteur et QR Code - Fixe en bas */}
           <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex items-center justify-between z-50 px-2 md:px-4">
-            {/* Counter */}
-            {totalPhotos > 1 && (
+            {/* Counter - Masqué en mode automatique */}
+            {totalPhotos > 1 && !isAutoMode && (
               <div className="bg-white/10 backdrop-blur-xl px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20 text-white text-xs md:text-sm font-semibold shadow-xl">
                 {currentIndex + 1} / {totalPhotos}
               </div>
