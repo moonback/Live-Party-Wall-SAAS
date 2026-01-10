@@ -200,7 +200,8 @@ export const createCollage = async (
     );
   }
 
-  return canvas.toDataURL('image/jpeg', 0.9);
+  // Qualité maximale HD pour les collages
+  return canvas.toDataURL('image/jpeg', 1.0);
 };
 
 /**

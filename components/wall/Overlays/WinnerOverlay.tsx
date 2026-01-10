@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { Photo } from '../../../types';
+import { get4KImageUrl } from '../../../utils/imageUrl4K';
 
 interface WinnerOverlayProps {
   photo: Photo | null;
@@ -58,7 +59,7 @@ export const WinnerOverlay = React.memo(({ photo }: WinnerOverlayProps) => {
                   />
                 ) : (
                   <img
-                    src={photo.url}
+                    src={get4KImageUrl(photo.url, true)}
                     alt={photo.caption}
                     className="w-full max-h-[60vh] md:max-h-[70vh] lg:max-h-[75vh] xl:max-h-[80vh] object-contain"
                   />

@@ -56,8 +56,8 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
         const constraints: MediaStreamConstraints = {
           video: {
             facingMode: facingMode,
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 1920, min: 1280 }, // Full HD idéal, HD minimum
+            height: { ideal: 1080, min: 720 }  // Full HD idéal, HD minimum
           }
         };
 
@@ -138,7 +138,8 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    // Qualité maximale HD
+    const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
     setAvatarPhoto(dataUrl);
     setFlash(true);
     setTimeout(() => setFlash(false), 200);

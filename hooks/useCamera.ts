@@ -19,10 +19,10 @@ export const useCamera = (options: UseCameraOptions = {}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
-    preferredWidth = 1920,
-    preferredHeight = 1080,
-    fallbackWidth = 1280,
-    fallbackHeight = 720
+    preferredWidth = 1920,  // Full HD par défaut
+    preferredHeight = 1080, // Full HD par défaut
+    fallbackWidth = 1280,   // HD minimum en fallback
+    fallbackHeight = 720    // HD minimum en fallback
   } = options;
 
   const startCamera = useCallback(async (
@@ -38,8 +38,8 @@ export const useCamera = (options: UseCameraOptions = {}) => {
       }
       
       const constraints: MediaTrackConstraints = {
-        width: { ideal: preferredWidth, min: 640 },
-        height: { ideal: preferredHeight, min: 480 },
+        width: { ideal: preferredWidth, min: 1280 }, // HD minimum (1280px)
+        height: { ideal: preferredHeight, min: 720 }, // HD minimum (720px)
         aspectRatio: { ideal: 16 / 9 }
       };
 

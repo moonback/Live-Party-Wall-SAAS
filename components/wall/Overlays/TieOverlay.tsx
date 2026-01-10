@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Photo } from '../../../types';
+import { get4KImageUrl } from '../../../utils/imageUrl4K';
 
 interface TieOverlayProps {
   tieData: { photo1: Photo; photo2: Photo } | null;
@@ -46,7 +47,7 @@ export const TieOverlay = React.memo(({ tieData }: TieOverlayProps) => {
                         />
                       ) : (
                         <img
-                          src={photo.url}
+                          src={get4KImageUrl(photo.url, true)}
                           alt={photo.caption}
                           className="w-full max-h-[50vh] md:max-h-[60vh] lg:max-h-[65vh] xl:max-h-[70vh] object-contain"
                         />

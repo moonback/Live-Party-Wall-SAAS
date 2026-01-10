@@ -5,6 +5,7 @@ import { Photo, ReactionCounts } from '../../types';
 import { REACTIONS } from '../../constants';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
+import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -81,7 +82,9 @@ export const PhotoCard = React.memo(({
           />
         ) : (
           <img 
-            src={photo.url} 
+            src={get4KImageUrl(photo.url, true)} 
+            srcSet={get4KImageSrcSet(photo.url)}
+            sizes={get4KImageSizes()}
             alt={photo.caption} 
             className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="lazy"

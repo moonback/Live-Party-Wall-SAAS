@@ -464,6 +464,75 @@ export const subscribeToNewPhotos = (eventId: string, onNewPhoto: (photo: Photo)
 };
 
 /**
+ * Subscribe to photo deletions for Realtime updates for a specific event.
+ * Note: payload.old ne contient pas toujours toutes les colonnes lors d'un DELETE,
+ * donc on ne peut pas filtrer par event_id dans la subscription. On compte sur RLS
+ * et on vérifie si la photo existe dans la liste locale.
+ * @param eventId - ID de l'événement
+ * @param onPhotoDeleted - Callback appelé quand une photo est supprimée
+ */
+export const subscribeToPhotoDeletions = (
+  eventId: string,
+  onPhotoDeleted: (photoId: string) => void
+) => {
+  if (!isSupabaseConfigured()) {
+    return { unsubscribe: () => {} };
+  }
+
+  // Utiliser un nom de canal unique
+  const channelId = `public:photos:deletes:${eventId}:${Math.floor(Math.random() * 1000000)}`;
+  return supabase
+    .channel(channelId)
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: 'photos' },
+      (payload) => {
+        try {
+          // Le payload.old contient les données de la ligne supprimée
+          // Structure: { old: { id: string, ... } }
+          const deletedPhotoId = (payload.old as { id?: string })?.id;
+          
+          if (!deletedPhotoId) {
+            logger.warn('DELETE event received but no photo ID found', { 
+              component: 'photoService', 
+              action: 'subscribeToPhotoDeletions',
+              payload 
+            });
+            return;
+          }
+          
+          // RLS devrait déjà filtrer par event_id, mais on ne peut pas le vérifier
+          // car payload.old ne contient pas toujours toutes les colonnes
+          // On appelle le callback qui vérifiera si la photo existe dans la liste locale
+          onPhotoDeleted(deletedPhotoId);
+        } catch (error) {
+          logger.error('Error processing photo deletion event', error, {
+            component: 'photoService',
+            action: 'subscribeToPhotoDeletions',
+            payload
+          });
+        }
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        logger.info('Subscribed to photo deletions Realtime updates', {
+          component: 'photoService',
+          action: 'subscribeToPhotoDeletions',
+          eventId
+        });
+      } else if (status === 'CHANNEL_ERROR') {
+        logger.error('Error subscribing to photo deletions Realtime', {
+          component: 'photoService',
+          action: 'subscribeToPhotoDeletions',
+          eventId,
+          status
+        });
+      }
+    });
+};
+
+/**
  * Toggle like for a photo.
  * Returns the new like count and whether the user liked it.
  */

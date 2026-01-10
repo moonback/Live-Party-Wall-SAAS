@@ -7,7 +7,7 @@ import { useEvent } from '../context/EventContext';
 import { validateImageFile, validateAuthorName, validateVideoFile, validateVideoDuration } from '../utils/validation';
 import { logger } from '../utils/logger';
 import { drawPngOverlay } from '../utils/imageOverlay';
-import { IMAGE_QUALITY, MAX_IMAGE_WIDTH, BURST_DEFAULT_PHOTOS, BURST_CAPTURE_INTERVAL } from '../constants';
+import { BURST_DEFAULT_PHOTOS, BURST_CAPTURE_INTERVAL } from '../constants';
 import { useImageProcessing } from '../hooks/useImageProcessing';
 import { useVideoRecording } from '../hooks/useVideoRecording';
 import { useCamera } from '../hooks/useCamera';
@@ -150,14 +150,9 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      let width = video.videoWidth;
-      let height = video.videoHeight;
-      
-      if (width > MAX_IMAGE_WIDTH) {
-        const ratio = MAX_IMAGE_WIDTH / width;
-        width = MAX_IMAGE_WIDTH;
-        height = height * ratio;
-      }
+      // Utiliser les dimensions originales de la vidéo sans redimensionnement
+      const width = video.videoWidth;
+      const height = video.videoHeight;
 
       canvas.width = width;
       canvas.height = height;
@@ -173,7 +168,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             logger.warn('Overlay frame draw failed', { component: 'GuestUpload', action: 'capturePhoto' }, e);
           }
         }
-        const dataUrl = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
+        // Utiliser la qualité maximale (1.0) sans compression
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
         
         if (forBurst) {
           return dataUrl;

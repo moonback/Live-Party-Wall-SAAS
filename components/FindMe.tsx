@@ -169,8 +169,8 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
       // Dessiner l'image de la vidéo sur le canvas
       ctx.drawImage(video, 0, 0);
       
-      // Convertir en base64
-      const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+      // Convertir en base64 avec qualité maximale HD
+      const base64Image = canvas.toDataURL('image/jpeg', 1.0);
       setCapturedImage(base64Image);
       
       // Détecter le visage

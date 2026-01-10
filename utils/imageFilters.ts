@@ -105,7 +105,8 @@ export const applyImageFilter = (
         ctx.strokeRect(lineWidth/2, lineWidth/2, canvas.width - lineWidth, canvas.height - lineWidth);
       }
 
-      resolve(canvas.toDataURL('image/jpeg', 0.9));
+      // Qualité maximale HD pour les cadres
+      resolve(canvas.toDataURL('image/jpeg', 1.0));
     };
 
     img.onerror = reject;
@@ -258,17 +259,9 @@ export const enhanceImageQuality = (
     img.onload = () => {
       const canvas = document.createElement('canvas');
       
-      // Optimiser la résolution pour grand écran (max 4K, mais garder les proportions)
-      const maxWidth = 3840;
-      const maxHeight = 2160;
-      let width = img.width;
-      let height = img.height;
-      
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = Math.floor(width * ratio);
-        height = Math.floor(height * ratio);
-      }
+      // Utiliser les dimensions originales de l'image sans redimensionnement
+      const width = img.width;
+      const height = img.height;
       
       canvas.width = width;
       canvas.height = height;
@@ -372,9 +365,8 @@ export const enhanceImageQuality = (
         applySharpening(ctx, width, height, 0.6); // Intensité modérée pour éviter les artefacts
       }
       
-      // Qualité JPEG optimisée pour grand écran (0.92 = bon compromis qualité/taille)
-      // Pour projection, on privilégie la qualité
-      resolve(canvas.toDataURL('image/jpeg', 0.92));
+      // Qualité JPEG maximale (1.0) sans compression
+      resolve(canvas.toDataURL('image/jpeg', 1.0));
     };
 
     img.onerror = reject;
