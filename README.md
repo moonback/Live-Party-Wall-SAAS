@@ -13,7 +13,7 @@
 
 [🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](#) • [✨ Request Feature](#)
 
-![Banner](https://live-party-wall-saas.vercel.app/banner.png)
+![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
 
 </div>
 
