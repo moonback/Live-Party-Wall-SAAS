@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Photo } from '../types';
-import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates } from '../services/photoService';
-import { supabase } from '../services/supabaseClient';
+import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions } from '../services/photoService';
 import { logger } from '../utils/logger';
 import { useEvent } from './EventContext';
 
@@ -94,20 +93,11 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
 
     // Subscribe to photo deletions (via Realtime)
-    const channelId = `public:photos:deletes:${currentEvent.id}:${Math.floor(Math.random() * 1000000)}`;
-    const deleteSubscription = supabase
-      .channel(channelId)
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'photos' },
-        (payload: { old: { id: string; event_id?: string } }) => {
-          // Filtrer par event_id côté client (RLS devrait déjà le faire)
-          if (payload.old?.id && payload.old.event_id === currentEvent.id) {
-            removePhoto(payload.old.id);
-          }
-        }
-      )
-      .subscribe();
+    const deleteSubscription = subscribeToPhotoDeletions(currentEvent.id, (deletedPhotoId) => {
+      // Vérifier si la photo existe dans notre liste locale avant de la supprimer
+      // Cela évite de supprimer des photos d'autres événements (RLS filtre déjà)
+      removePhoto(deletedPhotoId);
+    });
 
     return () => {
       newPhotosSubscription.unsubscribe();

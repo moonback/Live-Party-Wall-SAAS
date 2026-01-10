@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Photo, SortOption, MediaFilter } from '../types';
-import { getPhotos, subscribeToNewPhotos, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
+import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
-import { getActiveBattles, subscribeToNewBattles } from '../services/battleService';
+import { getActiveBattles, subscribeToNewBattles, subscribeToBattleUpdates } from '../services/battleService';
 import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
@@ -114,11 +114,62 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
     loadData();
 
+    // Abonnement aux nouvelles photos en temps réel
     const sub = subscribeToNewPhotos(currentEvent.id, (newPhoto) => {
-      setPhotos(prev => [...prev, newPhoto]);
+      setPhotos(prev => {
+        // Vérifier si la photo n'existe pas déjà pour éviter les doublons
+        if (prev.some(p => p.id === newPhoto.id)) {
+          return prev;
+        }
+        return [newPhoto, ...prev];
+      });
       addToast("Nouvelle photo publiée !", 'info');
     });
 
+    // Abonnement aux suppressions de photos en temps réel
+    const deleteSub = subscribeToPhotoDeletions(currentEvent.id, (deletedPhotoId) => {
+      // Vérifier si la photo existe dans notre liste locale avant de la supprimer
+      // Cela évite de supprimer des photos d'autres événements (RLS filtre déjà)
+      setPhotos(prev => {
+        const photoExists = prev.some(p => p.id === deletedPhotoId);
+        if (photoExists) {
+          return prev.filter(p => p.id !== deletedPhotoId);
+        }
+        return prev;
+      });
+      
+      // Retirer aussi des réactions et likes si la photo existait
+      setPhotosReactions(prev => {
+        const next = new Map(prev);
+        next.delete(deletedPhotoId);
+        return next;
+      });
+      
+      setLikedPhotoIds(prev => {
+        const next = new Set(prev);
+        next.delete(deletedPhotoId);
+        return next;
+      });
+      
+      // Retirer aussi des battles si la photo était dans une battle
+      setBattles(prev => prev.filter(b => 
+        b.photo1.id !== deletedPhotoId && b.photo2.id !== deletedPhotoId
+      ));
+    });
+
+    // Abonnement aux mises à jour de likes en temps réel
+    const likesSub = subscribeToLikesUpdates(
+      (photoId, newLikesCount) => {
+        setPhotos(prev => prev.map(p => {
+          if (p.id === photoId) {
+            return { ...p, likes_count: newLikesCount };
+          }
+          return p;
+        }));
+      }
+    );
+
+    // Abonnement aux mises à jour de réactions en temps réel
     const reactionsSub = subscribeToReactionsUpdates((photoId, reactions) => {
       setPhotosReactions(prev => {
         const next = new Map(prev);
@@ -154,22 +205,70 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
 
     let battlesSub: { unsubscribe: () => void } | null = null;
+    const battleUpdatesSubs: Array<{ unsubscribe: () => void }> = [];
+    
     if (settings.battle_mode_enabled !== false && currentEvent?.id) {
+      // Abonnement aux nouvelles battles en temps réel
       battlesSub = subscribeToNewBattles(currentEvent.id, async (newBattle) => {
         setBattles(prev => {
           if (prev.some(b => b.id === newBattle.id)) {
             return prev;
           }
-          return [newBattle, ...prev];
+          const updated = [newBattle, ...prev];
+          
+          // S'abonner aux mises à jour de cette nouvelle battle
+          const updateSub = subscribeToBattleUpdates(newBattle.id, (updatedBattle) => {
+            setBattles(prevBattles => {
+              const index = prevBattles.findIndex(b => b.id === updatedBattle.id);
+              if (index !== -1) {
+                const next = [...prevBattles];
+                next[index] = updatedBattle;
+                return next;
+              }
+              return prevBattles;
+            });
+          });
+          battleUpdatesSubs.push(updateSub);
+          
+          return updated;
         });
       });
+      
+      // S'abonner aux mises à jour des battles existantes après le chargement initial
+      const setupBattleUpdates = async () => {
+        try {
+          const activeBattles = await getActiveBattles(currentEvent.id, userId);
+          activeBattles.forEach(battle => {
+            const updateSub = subscribeToBattleUpdates(battle.id, (updatedBattle) => {
+              setBattles(prevBattles => {
+                const index = prevBattles.findIndex(b => b.id === updatedBattle.id);
+                if (index !== -1) {
+                  const next = [...prevBattles];
+                  next[index] = updatedBattle;
+                  return next;
+                }
+                return prevBattles;
+              });
+            });
+            battleUpdatesSubs.push(updateSub);
+          });
+        } catch (error) {
+          console.error('Error setting up battle updates:', error);
+        }
+      };
+      
+      // Attendre un peu pour que les battles soient chargées
+      setTimeout(setupBattleUpdates, 500);
     }
 
     // Nettoyer tous les abonnements et intervals de manière sécurisée
     return combineCleanups([
       () => sub.unsubscribe(),
+      () => likesSub.unsubscribe(),
       () => reactionsSub.unsubscribe(),
+      () => deleteSub.unsubscribe(),
       battlesSub ? () => battlesSub.unsubscribe() : null,
+      ...battleUpdatesSubs.map(sub => () => sub.unsubscribe()),
       checkExpiredInterval ? () => clearInterval(checkExpiredInterval) : null,
     ]);
   }, [userId, addToast, settings.battle_mode_enabled, currentEvent?.id]);
