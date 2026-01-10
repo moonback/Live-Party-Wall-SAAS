@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
 import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
@@ -623,29 +624,52 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         className="flex-1 overflow-y-auto pb-24 md:pb-28 scroll-smooth relative z-10"
       >
         <div className="max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4 md:py-6">
-          {/* Section Aftermovies */}
+          {/* Section Aftermovies améliorée */}
           {settings.aftermovies_enabled !== false && aftermovies.length > 0 && (
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg border border-indigo-500/30">
-                  <Video className="w-5 h-5 text-indigo-400" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-white">Aftermovies</h2>
-                  <p className="text-sm text-slate-400">Vidéos souvenirs de l'événement</p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="mb-12"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.1, type: 'spring' }}
+                    className="p-3 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-xl border border-indigo-500/30 shadow-lg"
+                  >
+                    <Video className="w-6 h-6 text-indigo-400" />
+                  </motion.div>
+                  <div>
+                    <h2 className="text-3xl font-black text-white mb-1 flex items-center gap-3">
+                      Aftermovies
+                      <span className="text-lg font-normal text-slate-400">
+                        ({aftermovies.length})
+                      </span>
+                    </h2>
+                    <p className="text-sm text-slate-400">Vidéos souvenirs de l'événement à télécharger</p>
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {aftermovies.map((aftermovie) => (
-                  <AftermovieCard
+                {aftermovies.map((aftermovie, index) => (
+                  <motion.div
                     key={aftermovie.id}
-                    aftermovie={aftermovie}
-                    onDownload={handleDownloadAftermovie}
-                    isDownloading={downloadingAftermovieIds.has(aftermovie.id)}
-                  />
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                  >
+                    <AftermovieCard
+                      aftermovie={aftermovie}
+                      onDownload={handleDownloadAftermovie}
+                      isDownloading={downloadingAftermovieIds.has(aftermovie.id)}
+                    />
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           <GalleryContent

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Video, Zap, Star, Award, Sparkles, Settings, ChevronDown, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, Move, X, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check } from 'lucide-react';
+import { Video, Zap, Star, Award, Sparkles, ChevronDown, ChevronRight, ChevronUp, Move, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { QRCodeCanvas } from 'qrcode.react';
 import { usePhotos } from '../../context/PhotosContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -554,65 +555,86 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               )}
             </div>
 
-            {/* Réorganisation des photos sélectionnées */}
+            {/* Réorganisation des photos sélectionnées améliorée */}
             {aftermovieSelectedPhotos.length > 0 && (
-              <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div>
-                    <div className="text-sm font-semibold text-slate-100 flex items-center gap-2">
-                      <Move className="w-4 h-4 text-indigo-400" />
-                      Ordre des photos
+              <div className="bg-gradient-to-br from-slate-950/80 to-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-xl p-5 shadow-xl">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg border border-indigo-500/30">
+                      <Move className="w-5 h-5 text-indigo-400" />
                     </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      {aftermovieSelectedPhotos.length} photo{aftermovieSelectedPhotos.length > 1 ? 's' : ''} sélectionnée{aftermovieSelectedPhotos.length > 1 ? 's' : ''}
+                    <div>
+                      <div className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        Ordre des photos
+                        <span className="px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs rounded-full">
+                          {aftermovieSelectedPhotos.length}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        Réorganisez l'ordre d'apparition dans l'aftermovie
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setShowPhotoOrder(!showPhotoOrder)}
-                      className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+                      className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5"
                       disabled={isGeneratingAftermovie}
                     >
-                      {showPhotoOrder ? 'Masquer' : 'Afficher'}
+                      {showPhotoOrder ? (
+                        <>
+                          <ChevronUp className="w-3.5 h-3.5" />
+                          Masquer
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                          Afficher
+                        </>
+                      )}
                     </button>
                     <button
                       type="button"
                       onClick={resetToChronologicalOrder}
                       className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5"
                       disabled={isGeneratingAftermovie || aftermovieSelectedPhotos.length === 0}
+                      title="Réinitialiser à l'ordre chronologique"
                     >
-                      <RotateCcw className="w-3 h-3" />
+                      <RotateCcw className="w-3.5 h-3.5" />
                       Réinitialiser
                     </button>
                   </div>
                 </div>
 
                 {showPhotoOrder && (
-                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
                     {aftermovieSelectedPhotos.map((photo, index) => {
                       const isDragging = draggedIndex === index;
                       const isDragOver = dragOverIndex === index;
                       return (
-                        <div
+                        <motion.div
                           key={photo.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
                           draggable
                           onDragStart={() => handleDragStart(index)}
-                          onDragOver={(e) => handleDragOver(e, index)}
-                          onDrop={(e) => handleDrop(e, index)}
+                          onDragOver={(e: React.DragEvent) => handleDragOver(e, index)}
+                          onDrop={(e: React.DragEvent) => handleDrop(e, index)}
                           onDragEnd={handleDragEnd}
-                          className={`flex items-center gap-3 p-2 rounded-lg border transition-all ${
+                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-move ${
                             isDragging
-                              ? 'opacity-50 border-indigo-500 bg-indigo-500/10'
+                              ? 'opacity-50 border-indigo-500 bg-indigo-500/20 scale-95'
                               : isDragOver
-                              ? 'border-indigo-500 bg-indigo-500/20'
-                              : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                              ? 'border-indigo-500 bg-indigo-500/30 scale-105 shadow-lg'
+                              : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/50 hover:bg-slate-900/70 hover:shadow-md'
                           }`}
                         >
-                          <div className="flex-shrink-0 w-8 h-8 rounded-md bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xs font-semibold text-indigo-300">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border-2 border-indigo-500/40 flex items-center justify-center text-sm font-black text-indigo-200 shadow-lg">
                             {index + 1}
                           </div>
-                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-slate-800">
+                          <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-slate-700 shadow-lg">
                             <img
                               src={photo.url}
                               alt=""
@@ -621,18 +643,20 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium text-slate-100 truncate">
+                            <div className="text-sm font-semibold text-slate-100 truncate mb-1">
                               {photo.caption || 'Sans légende'}
                             </div>
-                            <div className="text-xs text-slate-400 truncate">
-                              {photo.author} • {new Date(photo.timestamp).toLocaleTimeString()}
+                            <div className="text-xs text-slate-400 truncate flex items-center gap-2">
+                              <span>{photo.author}</span>
+                              <span>•</span>
+                              <span>{new Date(photo.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                           </div>
-                          <div className="flex-shrink-0 flex items-center gap-1">
+                          <div className="flex-shrink-0 flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => movePhotoUp(index)}
-                              className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-2 rounded-lg bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                               disabled={isGeneratingAftermovie || index === 0}
                               title="Déplacer vers le haut"
                             >
@@ -641,46 +665,57 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                             <button
                               type="button"
                               onClick={() => movePhotoDown(index)}
-                              className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="p-2 rounded-lg bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                               disabled={isGeneratingAftermovie || index === aftermovieSelectedPhotos.length - 1}
                               title="Déplacer vers le bas"
                             >
                               <ArrowDown className="w-4 h-4" />
                             </button>
-                            <div className="w-6 h-6 flex items-center justify-center text-slate-500 cursor-move">
-                              <Move className="w-4 h-4" />
+                            <div className="w-8 h-8 flex items-center justify-center text-slate-500 cursor-move hover:text-indigo-400 transition-colors">
+                              <Move className="w-5 h-5" />
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
                 )}
 
                 {!showPhotoOrder && aftermovieSelectedPhotos.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {aftermovieSelectedPhotos.slice(0, 10).map((photo, index) => (
-                      <div
-                        key={photo.id}
-                        className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-800"
-                        title={`${index + 1}. ${photo.caption || 'Sans légende'}`}
-                      >
-                        <img
-                          src={photo.url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute top-0 left-0 w-4 h-4 bg-indigo-500/90 text-white text-[10px] font-bold flex items-center justify-center">
-                          {index + 1}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {aftermovieSelectedPhotos.slice(0, 12).map((photo, index) => (
+                        <motion.div
+                          key={photo.id}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="relative group"
+                        >
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden border-2 border-slate-700 group-hover:border-indigo-500/50 transition-all shadow-lg group-hover:shadow-indigo-500/20">
+                            <img
+                              src={photo.url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute top-1 left-1 w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border border-white/20">
+                              {index + 1}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                      {aftermovieSelectedPhotos.length > 12 && (
+                        <div className="w-14 h-14 rounded-xl border-2 border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-xs font-bold text-slate-300 shadow-lg">
+                          +{aftermovieSelectedPhotos.length - 12}
                         </div>
-                      </div>
-                    ))}
-                    {aftermovieSelectedPhotos.length > 10 && (
-                      <div className="w-12 h-12 rounded-lg border border-slate-800 bg-slate-900/50 flex items-center justify-center text-xs text-slate-400">
-                        +{aftermovieSelectedPhotos.length - 10}
-                      </div>
-                    )}
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                      <Move className="w-3 h-3" />
+                      Cliquez sur "Afficher" pour réorganiser l'ordre
+                    </p>
                   </div>
                 )}
               </div>
@@ -988,70 +1023,116 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               </div>
             )}
 
-            {/* Section Partage */}
+            {/* Section Partage améliorée */}
             {shareUrl && (
-              <div className="mt-6 bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Share2 className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-semibold text-slate-100">Lien de partage</h3>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-6 bg-gradient-to-br from-slate-950/80 to-slate-900/80 backdrop-blur-sm border border-indigo-500/30 rounded-xl p-6 shadow-2xl"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg border border-indigo-500/30">
+                    <Share2 className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">Lien de partage</h3>
+                    <p className="text-xs text-slate-400">Partagez l'aftermovie avec vos invités</p>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  {/* QR Code */}
+                <div className="space-y-6">
+                  {/* QR Code avec design amélioré */}
                   <div className="flex justify-center">
-                    <div className="relative bg-white p-4 rounded-xl shadow-lg">
+                    <motion.div
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className="relative bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl shadow-2xl border-2 border-indigo-200/50"
+                    >
+                      {/* Glow effect */}
+                      <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-20 blur-xl"></div>
+                      
                       <QRCodeCanvas
                         value={shareUrl}
-                        size={200}
+                        size={220}
                         level="H"
                         bgColor="#ffffff"
                         fgColor="#000000"
                         includeMargin={true}
                       />
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg border border-gray-200/30">
-                          <Video className="w-6 h-6 text-gray-800" />
-                        </div>
+                        <motion.div
+                          animate={{ scale: [1, 1.05, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="bg-white/95 backdrop-blur-sm rounded-full p-2.5 shadow-xl border-2 border-indigo-200/50"
+                        >
+                          <Video className="w-7 h-7 text-indigo-600" />
+                        </motion.div>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
 
-                  {/* Lien de partage */}
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-slate-300">Lien de téléchargement</label>
+                  {/* Lien de partage amélioré */}
+                  <div className="space-y-3">
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      Lien de téléchargement
+                    </label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={shareUrl}
                         readOnly
-                        className="flex-1 bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all font-mono"
+                        className="flex-1 bg-slate-900/70 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-mono text-xs"
+                        onClick={(e) => (e.target as HTMLInputElement).select()}
                       />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={handleCopyLink}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-2"
+                        className={`px-5 py-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
+                          copied
+                            ? 'bg-green-600 hover:bg-green-700 text-white border border-green-500/50'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-500/50'
+                        }`}
                         title="Copier le lien"
                       >
                         {copied ? (
                           <>
-                            <Check className="w-4 h-4 text-green-400" />
-                            Copié
+                            <Check className="w-5 h-5" />
+                            <span>Copié !</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-4 h-4" />
-                            Copier
+                            <Copy className="w-5 h-5" />
+                            <span>Copier</span>
                           </>
                         )}
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
 
-                  <div className="text-xs text-slate-400 text-center">
-                    Scannez le QR code ou partagez le lien pour télécharger l'aftermovie
+                  {/* Instructions améliorées */}
+                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-1.5 bg-indigo-500/20 rounded-lg">
+                        <Video className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-indigo-300 mb-1">
+                          Comment partager ?
+                        </p>
+                        <ul className="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                          <li>Scannez le QR code avec votre téléphone</li>
+                          <li>Ou copiez le lien et partagez-le</li>
+                          <li>L'aftermovie sera visible dans la galerie</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             <div className="text-xs text-slate-500">
