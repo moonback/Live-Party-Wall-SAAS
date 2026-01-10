@@ -81,3 +81,5 @@ export async function deleteBackgroundImage(eventId: string, path: string): Prom
   }
 }
 
+
+

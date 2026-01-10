@@ -165,135 +165,178 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
     editedIsActive !== event.is_active;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative">
-      {/* Arrière-plan sobre */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden">
+      {/* Arrière-plan amélioré avec effets de profondeur */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/3 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/3 blur-[120px] rounded-full"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/2 blur-[140px] rounded-full"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        {/* Header Section - Design sobre */}
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 mb-6">
+        {/* Header Section - Design premium avec ombres */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-slate-800/50 mb-6 shadow-2xl shadow-black/20"
+        >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-slate-800/50 border border-slate-700">
-                  <Settings className="w-5 h-5 text-slate-400" />
-                </div>
-                <div className="flex flex-col">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 flex items-center gap-2">
-                    <span className="truncate max-w-[320px] sm:max-w-[420px]">{event.name}</span>
-                    <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/80 text-white/90">
-                      Event ID: {event.slug}
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <motion.div 
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                className="p-3 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-lg shadow-indigo-500/10"
+              >
+                <Settings className="w-6 h-6 text-indigo-400" />
+              </motion.div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-100 flex items-center gap-3 flex-wrap">
+                  <span className="truncate max-w-[280px] sm:max-w-[400px] lg:max-w-none bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
+                    {event.name}
+                  </span>
+                  <motion.span 
+                    whileHover={{ scale: 1.05 }}
+                    className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-500/90 to-purple-500/90 text-white shadow-lg shadow-indigo-500/30 border border-indigo-400/30"
+                  >
+                    {event.slug}
+                  </motion.span>
+                </h1>
+                <p className="text-sm text-slate-400 mt-2 flex items-center gap-3 flex-wrap">
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                    Configuration de l'événement
+                  </span>
+                  {event.is_active ? (
+                    <motion.span 
+                      whileHover={{ scale: 1.05 }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-green-600/30 to-emerald-600/30 text-green-400 text-xs font-semibold border border-green-500/30 shadow-lg shadow-green-500/10"
+                    >
+                      <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse shadow-sm shadow-green-400"></span>
+                      Actif
+                    </motion.span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/50 text-slate-400 text-xs border border-slate-700/50">
+                      <span className="h-2 w-2 rounded-full bg-slate-500"></span>
+                      Inactif
                     </span>
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1 flex items-center gap-2">
-                    <span>Configuration de l’événement</span>
-                    {event.is_active ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-600/20 text-green-400 text-xs font-semibold">
-                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                        Actif
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-400 text-xs">
-                        <span className="h-2 w-2 rounded-full bg-slate-500" />
-                        Inactif
-                      </span>
-                    )}
-                  </p>
-                </div>
+                  )}
+                </p>
               </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
               <motion.button
-                whileHover={{ scale: 1.07, boxShadow: '0 2px 20px #ef444433' }}
-                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.05, x: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   clearEvent();
                   onBack();
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-800 bg-gradient-to-r from-slate-900/70 to-slate-900/30 hover:from-slate-800/60 hover:to-slate-800/20 transition-all duration-200 text-slate-200 hover:text-white font-semibold shadow-sm hover:shadow-[0_2px_16px_rgba(239,68,68,0.13)] focus:outline-none focus:ring-2 focus:ring-red-400/40 active:scale-95"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700/50 bg-gradient-to-r from-slate-800/80 to-slate-900/80 hover:from-slate-700/80 hover:to-slate-800/80 transition-all duration-200 text-slate-200 hover:text-white font-medium shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-400/40"
                 aria-label="Retour aux événements"
               >
-                <span className="flex items-center justify-center w-6 h-6 bg-red-500/10 rounded-full mr-1">
-                  <X className="w-4 h-4 text-red-400" />
+                <span className="flex items-center justify-center w-5 h-5 bg-red-500/20 rounded-full">
+                  <X className="w-3.5 h-3.5 text-red-400" />
                 </span>
-                <span className="hidden sm:inline">Retour aux événements</span>
-                <span className="inline sm:hidden">Mes Événements</span>
+                <span className="hidden sm:inline">Retour</span>
+                <span className="inline sm:hidden">×</span>
               </motion.button>
-            </div>
 
-            {canEdit && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSave}
-                disabled={!hasChanges || saving}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed rounded-lg transition-colors font-medium text-sm text-white"
-              >
-                {saving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                <span>{saving ? 'Sauvegarde...' : 'Enregistrer'}</span>
-              </motion.button>
-            )}
+              {canEdit && (
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSave}
+                  disabled={!hasChanges || saving}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed rounded-xl font-semibold text-sm text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all duration-200 disabled:shadow-none"
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  <span>{saving ? 'Sauvegarde...' : 'Enregistrer'}</span>
+                </motion.button>
+              )}
+            </div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Config Column */}
           <div className="lg:col-span-2 space-y-6">
             <motion.div 
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800"
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-slate-800/50 shadow-2xl shadow-black/20"
             >
-              <header className="mb-6 pb-6 border-b border-slate-800">
-                <h2 className="text-lg font-semibold text-slate-100 mb-1">Informations générales</h2>
-                <p className="text-sm text-slate-400">Configurez les détails de votre événement</p>
+              <header className="mb-8 pb-6 border-b border-slate-800/50">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-slate-100">Informations générales</h2>
+                </div>
+                <p className="text-sm text-slate-400 ml-4">Configurez les détails de votre événement</p>
               </header>
 
               <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
-                    Nom de l'événement
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-2"
+                >
+                  <label className="block text-sm font-semibold text-slate-300 flex items-center gap-2">
+                    <span>Nom de l'événement</span>
+                    <span className="text-xs font-normal text-slate-500">(requis)</span>
                   </label>
                   <input
                     type="text"
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
                     disabled={!canEdit}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                   />
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
                     Nom affiché sur le mur et dans les exports
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
-                    Slug (URL)
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="space-y-2"
+                >
+                  <label className="block text-sm font-semibold text-slate-300 flex items-center gap-2">
+                    <span>Slug (URL)</span>
+                    <span className="text-xs font-normal text-slate-500">(unique)</span>
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">/</span>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm group-focus-within:text-indigo-400 transition-colors">/</span>
                     <input
                       type="text"
                       value={editedSlug}
                       onChange={(e) => setEditedSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
                       disabled={!canEdit}
-                      className="w-full pl-8 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full pl-8 bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                     />
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Lien direct : party-wall.com/?event={editedSlug}
+                  <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+                    Lien direct : <span className="font-mono text-indigo-400">party-wall.com/?event={editedSlug}</span>
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-slate-300">
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-2"
+                >
+                  <label className="block text-sm font-semibold text-slate-300">
                     Description
                   </label>
                   <textarea
@@ -301,67 +344,99 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                     onChange={(e) => setEditedDescription(e.target.value.substring(0, 100))}
                     disabled={!canEdit}
                     rows={3}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 outline-none transition-all duration-200 resize-none disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                     placeholder="Un petit mot pour vos invités..."
                   />
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-slate-600"></span>
                       Description courte pour vos invités
                     </p>
-                    <p className="text-xs text-slate-500">{editedDescription.length}/100</p>
+                    <span className={`text-xs font-medium ${editedDescription.length >= 90 ? 'text-amber-400' : 'text-slate-500'}`}>
+                      {editedDescription.length}/100
+                    </span>
                   </div>
-                </div>
-
-                
+                </motion.div>
               </div>
             </motion.div>
 
             {/* Danger Zone */}
             {isEventOwner && (
               <motion.div 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-red-500/20"
+                transition={{ duration: 0.4, delay: 0.15 }}
+                className="bg-gradient-to-br from-red-950/20 via-slate-900/70 to-slate-900/70 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-red-500/30 shadow-2xl shadow-red-500/10"
               >
                 <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 flex-shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                  </div>
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 flex-shrink-0 shadow-lg shadow-red-500/20"
+                  >
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                  </motion.div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-red-400 mb-1">Zone de danger</h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-1 h-5 bg-gradient-to-b from-red-500 to-rose-500 rounded-full"></div>
+                      <h3 className="text-lg font-bold text-red-400">Zone de danger</h3>
+                    </div>
                     <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-                      La suppression de l'événement est irréversible. Toutes les photos, paramètres et données des invités seront définitivement effacés.
+                      La suppression de l'événement est <span className="font-semibold text-red-400">irréversible</span>. Toutes les photos, paramètres et données des invités seront définitivement effacés.
                     </p>
                     
-                    {!showDeleteConfirm ? (
-                      <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-500/30 rounded-lg font-medium text-sm transition-colors"
-                      >
-                        Supprimer cet événement
-                      </button>
-                    ) : (
-                      <div className="space-y-3">
-                        <p className="text-sm font-medium text-red-400">Confirmer la suppression ?</p>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <button
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-600/50 text-white rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
-                          >
-                            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                            Supprimer
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(false)}
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium text-sm transition-colors border border-slate-700"
-                          >
-                            Annuler
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {!showDeleteConfirm ? (
+                        <motion.button
+                          key="delete-button"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          whileHover={{ scale: 1.02, x: 2 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="px-5 py-2.5 bg-gradient-to-r from-red-600/20 to-rose-600/20 hover:from-red-600/30 hover:to-rose-600/30 text-red-400 border border-red-500/40 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-red-500/10 hover:shadow-xl hover:shadow-red-500/20"
+                        >
+                          Supprimer cet événement
+                        </motion.button>
+                      ) : (
+                        <motion.div 
+                          key="confirm-buttons"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="space-y-4"
+                        >
+                          <p className="text-sm font-semibold text-red-400 flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            Confirmer la suppression ?
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={handleDelete}
+                              disabled={deleting}
+                              className="flex-1 px-5 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 text-white rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 disabled:shadow-none"
+                            >
+                              {deleting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                              {deleting ? 'Suppression...' : 'Supprimer définitivement'}
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setShowDeleteConfirm(false)}
+                              className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 rounded-xl font-semibold text-sm transition-all duration-200 border border-slate-700/50 shadow-lg shadow-black/10"
+                            >
+                              Annuler
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </motion.div>
@@ -372,38 +447,44 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
           {/* Sidebar - Organizers */}
           <div className="space-y-6">
             <motion.div 
-              initial={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 }}
-              className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 h-fit"
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-slate-800/50 h-fit shadow-2xl shadow-black/20"
             >
-              <header className="mb-6 pb-6 border-b border-slate-800 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-100 mb-1">Accès</h2>
-                  <p className="text-sm text-slate-400">Gérez les permissions d'accès</p>
+              <header className="mb-6 pb-6 border-b border-slate-800/50 flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-1 h-6 bg-gradient-to-b from-teal-500 to-cyan-500 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-slate-100">Accès</h2>
+                  </div>
+                  <p className="text-sm text-slate-400 ml-4">Gérez les permissions d'accès</p>
                 </div>
                 {canEdit && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setShowAddOrganizer(!showAddOrganizer)}
-                    className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="p-2.5 rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:from-indigo-600/20 hover:to-purple-600/20 text-slate-400 hover:text-indigo-400 transition-all duration-200 shadow-lg shadow-black/10 hover:shadow-indigo-500/20"
                     title="Ajouter un organisateur"
                   >
-                    <UserPlus className="w-4 h-4" />
-                  </button>
+                    <UserPlus className="w-5 h-5" />
+                  </motion.button>
                 )}
               </header>
 
               <AnimatePresence>
                 {showAddOrganizer && (
                   <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mb-6 bg-slate-950/50 rounded-lg p-4 border border-slate-800 overflow-hidden"
+                    initial={{ opacity: 0, height: 0, y: -10 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-6 bg-gradient-to-br from-slate-950/80 to-slate-900/80 rounded-xl p-5 border border-indigo-500/30 overflow-hidden shadow-lg shadow-indigo-500/10"
                   >
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-slate-300">
+                        <label className="block text-sm font-semibold text-slate-300">
                           Email de l'invité
                         </label>
                         <input
@@ -411,88 +492,115 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                           value={newOrganizerEmail}
                           onChange={(e) => setNewOrganizerEmail(e.target.value)}
                           placeholder="admin@exemple.com"
-                          className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                          className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 shadow-inner"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-slate-300">
+                        <label className="block text-sm font-semibold text-slate-300">
                           Rôle
                         </label>
                         <select
                           value={newOrganizerRole}
                           onChange={(e) => setNewOrganizerRole(e.target.value as 'organizer' | 'viewer')}
-                          className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none cursor-pointer"
+                          className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-2.5 text-sm text-slate-100 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 transition-all duration-200 appearance-none cursor-pointer shadow-inner"
                         >
                           <option value="organizer">Organisateur</option>
                           <option value="viewer">Observateur</option>
                         </select>
                       </div>
-                      <div className="flex gap-2 pt-2">
-                        <button
+                      <div className="flex gap-3 pt-2">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={handleAddOrganizer}
                           disabled={!newOrganizerEmail.trim()}
-                          className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg font-medium text-sm transition-colors"
+                          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 disabled:shadow-none"
                         >
                           Ajouter
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1, rotate: 90 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => setShowAddOrganizer(false)}
-                          className="p-2 rounded-lg border border-slate-800 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
+                          className="p-2.5 rounded-xl border border-slate-700/50 bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 transition-all duration-200 shadow-lg shadow-black/10"
                         >
                           <X className="w-4 h-4" />
-                        </button>
+                        </motion.button>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {loadingOrganizers ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
                   </div>
                 ) : organizers.length === 0 ? (
-                  <p className="text-sm text-slate-500 text-center py-4">Seul vous avez accès</p>
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-800/50 border border-slate-700/50 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-slate-500" />
+                    </div>
+                    <p className="text-sm text-slate-500">Seul vous avez accès</p>
+                  </div>
                 ) : (
-                  organizers.map((org) => {
+                  organizers.map((org, index) => {
                     const isOwner = org.role === 'owner';
                     const isCurrentUser = user?.id === org.user_id;
                     const userIdShort = org.user_id.substring(0, 8) + '...';
                     
                     return (
-                      <div
+                      <motion.div
                         key={org.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + index * 0.05 }}
+                        whileHover={{ scale: 1.02, x: 4 }}
+                        className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 ${
                           isOwner 
-                            ? 'bg-indigo-500/5 border-indigo-500/20' 
-                            : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                            ? 'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30 shadow-lg shadow-indigo-500/10' 
+                            : 'bg-slate-950/50 border-slate-800/50 hover:border-slate-700/50 hover:bg-slate-950/80 shadow-sm'
                         }`}
                       >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isOwner ? 'bg-indigo-600' : 'bg-slate-800'
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                          isOwner 
+                            ? 'bg-gradient-to-br from-indigo-600 to-purple-600' 
+                            : 'bg-gradient-to-br from-slate-800 to-slate-900'
                         }`}>
-                          <Users className={`w-4 h-4 ${isOwner ? 'text-white' : 'text-slate-500'}`} />
+                          <Users className={`w-5 h-5 ${isOwner ? 'text-white' : 'text-slate-400'}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-100 truncate">
-                            {organizerEmails.get(org.user_id) || userIdShort}
-                            {isCurrentUser && <span className="ml-2 text-xs bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">Moi</span>}
+                          <p className="text-sm font-semibold text-slate-100 truncate flex items-center gap-2">
+                            <span>{organizerEmails.get(org.user_id) || userIdShort}</span>
+                            {isCurrentUser && (
+                              <span className="text-xs bg-gradient-to-r from-indigo-500/30 to-purple-500/30 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-medium">
+                                Moi
+                              </span>
+                            )}
                           </p>
-                          <p className={`text-xs ${isOwner ? 'text-indigo-400' : 'text-slate-500'}`}>
+                          <p className={`text-xs font-medium mt-0.5 ${
+                            isOwner 
+                              ? 'text-indigo-400' 
+                              : org.role === 'organizer' 
+                                ? 'text-teal-400' 
+                                : 'text-slate-500'
+                          }`}>
                             {isOwner ? 'Propriétaire' : org.role === 'organizer' ? 'Organisateur' : 'Observateur'}
                           </p>
                         </div>
                         {!isOwner && isEventOwner && (
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => handleRemoveOrganizer(org.id, org.user_id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                            className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
                             title="Retirer l'organisateur"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </motion.button>
                         )}
-                      </div>
+                      </motion.div>
                     );
                   })
                 )}
@@ -501,30 +609,47 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
 
             {/* Quick Stats Summary */}
             <motion.div 
-              initial={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 h-fit"
+              transition={{ duration: 0.4, delay: 0.15 }}
+              className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-slate-800/50 h-fit shadow-2xl shadow-black/20"
             >
-              <header className="mb-6 pb-6 border-b border-slate-800">
-                <h2 className="text-lg font-semibold text-slate-100 mb-1">Statut</h2>
-                <p className="text-sm text-slate-400">Informations sur l'événement</p>
+              <header className="mb-6 pb-6 border-b border-slate-800/50">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-1 h-6 bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-slate-100">Statut</h2>
+                </div>
+                <p className="text-sm text-slate-400 ml-4">Informations sur l'événement</p>
               </header>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/50 border border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm font-medium text-slate-300">Visibilité</span>
+                <motion.div 
+                  whileHover={{ scale: 1.02, x: 2 }}
+                  className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-slate-950/80 to-slate-900/80 border border-slate-800/50 shadow-sm hover:border-slate-700/50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                      <Globe className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-300">Visibilité</span>
                   </div>
-                  <span className="text-sm font-medium text-slate-100">Publique</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/50 border border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-teal-400" />
-                    <span className="text-sm font-medium text-slate-300">Sécurité</span>
+                  <span className="text-sm font-bold text-slate-100 px-3 py-1 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                    Publique
+                  </span>
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.02, x: 2 }}
+                  className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-slate-950/80 to-slate-900/80 border border-slate-800/50 shadow-sm hover:border-teal-500/30 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500/20 to-cyan-500/20 border border-teal-500/30">
+                      <Shield className="w-4 h-4 text-teal-400" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-300">Sécurité</span>
                   </div>
-                  <span className="text-sm font-medium text-teal-400">IA active</span>
-                </div>
+                  <span className="text-sm font-bold text-teal-400 px-3 py-1 rounded-lg bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/30">
+                    IA active
+                  </span>
+                </motion.div>
               </div>
             </motion.div>
           </div>
