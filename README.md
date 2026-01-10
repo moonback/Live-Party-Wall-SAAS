@@ -51,7 +51,8 @@ Créer une animation collective et engageante où chaque photo devient un moment
 - ❤️ **Likes & réactions** - 6 types d'émojis disponibles
 - 🔍 **Recherche IA "Retrouve-moi"** - Reconnaissance faciale
 - 📥 **Téléchargement** - Export individuel ou ZIP groupé
-- 🏆 **Gamification** - Badges et classements
+- 🏆 **Gamification avancée** - 12 badges, système de points, milestones, classements dynamiques
+- 🛡️ **Conformité RGPD** - Gestion des cookies, politique de confidentialité, droits des utilisateurs
 
 </td>
 <td width="50%">
@@ -106,6 +107,8 @@ Créer une animation collective et engageante où chaque photo devient un moment
 | **Performance** | @tanstack/react-virtual 3.13 |
 | **Validation** | Zod 4.3 |
 | **Desktop** | Electron 39.2 |
+| **Gamification** | Système de badges, points et milestones intégré |
+| **RGPD** | Gestion complète du consentement et des droits |
 
 </details>
 
@@ -122,12 +125,15 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── wall/              # Mur interactif
 │   ├── stats/             # Analytics
 │   ├── admin/             # Dashboard admin
-│   └── photobooth/        # Photobooth avec caméra
+│   ├── photobooth/        # Photobooth avec caméra
+│   └── rgpd/              # Composants RGPD (consentement, politique, gestion données)
 │
 ├── 🔧 services/            # Logique métier isolée
 │   ├── supabaseClient.ts  # Configuration Supabase
 │   ├── photoService.ts    # CRUD photos, likes
 │   ├── geminiService.ts   # Intégration IA
+│   ├── gamificationService.ts  # Badges, points, classements
+│   ├── rgpdService.ts     # Gestion consentement RGPD
 │   └── ...
 │
 ├── 🌐 context/             # État global React Context
@@ -320,9 +326,12 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 
 ### Profil & Gamification
 - 👤 Profil avec nom et avatar
-- 📊 Statistiques personnelles
-- 🏆 Badges automatiques
-- 📈 Classements
+- 📊 Statistiques personnelles détaillées
+- 🏆 **12 badges différents** (Photographe, Star, Oiseau matinal, Populaire, Régulier, Qualité, Papillon social, Viral, Dévoué, Influenceur, Maître des réactions)
+- ⚡ **Système de points** - Calcul basé sur photos, likes, réactions, qualité et variété
+- 🎯 **Milestones/Achievements** - 20+ objectifs à débloquer (photos, likes, réactions, score, moyenne)
+- 📈 **Classements dynamiques** - Mis à jour en temps réel avec score de gamification
+- 📊 **Progression** - Barre de progression pour le prochain milestone
 
 ### Recherche IA
 - 👤 "Retrouve-moi" avec reconnaissance faciale
@@ -371,7 +380,9 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 👥 Invités inscrits
 - 🏆 Top photographes
 - ⭐ Photos les plus likées
-- 🎖️ Badges attribués
+- 🎖️ Badges attribués (12 types différents)
+- ⚡ Scores de gamification
+- 📈 Classements avec système de points
 - ⚔️ Résultats battles
 
 ### Battles photos
@@ -412,9 +423,9 @@ Toutes ces fonctionnalités utilisent **Supabase Realtime** (WebSockets) :
 
 ---
 
-## 🔒 Sécurité
+## 🔒 Sécurité & Conformité RGPD
 
-### ✅ Mesures implémentées
+### ✅ Mesures de sécurité implémentées
 
 - 🛡️ **Row Level Security (RLS)** - Politiques granulaires
 - ✅ **Validation côté client** - Taille, type, longueur
@@ -423,6 +434,34 @@ Toutes ces fonctionnalités utilisent **Supabase Realtime** (WebSockets) :
 - 🔑 **Variables d'environnement** - Secrets protégés
 - 🔒 **HTTPS** - Toutes communications chiffrées
 - 🧹 **Sanitization** - Nettoyage des inputs
+
+### 🛡️ Conformité RGPD
+
+Live Party Wall est **100% conforme au RGPD** avec :
+
+#### 🍪 Gestion des cookies
+- ✅ **Banner de consentement** - Affichage automatique au premier chargement
+- ✅ **4 catégories de cookies** - Essentiels, analytiques, marketing, fonctionnels
+- ✅ **Préférences personnalisables** - L'utilisateur choisit ce qu'il accepte
+- ✅ **Cookies essentiels** - Toujours activés (nécessaires au fonctionnement)
+
+#### 📋 Politique de confidentialité
+- ✅ **Page dédiée** - Accessible depuis l'aide et le footer
+- ✅ **Informations complètes** - Données collectées, utilisation, stockage, droits
+- ✅ **Mise à jour automatique** - Nouveau consentement requis si politique change
+
+#### 🔐 Droits des utilisateurs
+- ✅ **Droit d'accès** - Consultation de toutes les données
+- ✅ **Droit à la portabilité** - Export des données en JSON
+- ✅ **Droit à l'effacement** - Suppression complète des données locales
+- ✅ **Droit d'opposition** - Révocation du consentement à tout moment
+- ✅ **Gestion des données** - Page dédiée pour exercer ses droits
+
+#### 🛠️ Fonctionnalités techniques
+- ✅ **Versioning du consentement** - Suivi des versions de la politique
+- ✅ **Stockage sécurisé** - Consentement stocké localement avec version
+- ✅ **Suppression sélective** - Conservation des cookies essentiels
+- ✅ **Export structuré** - Format JSON avec timestamp
 
 ### 💻 Bonnes pratiques
 
@@ -462,6 +501,48 @@ Toutes ces fonctionnalités utilisent **Supabase Realtime** (WebSockets) :
 - 🎨 Système de thèmes
 - 🔌 API REST publique
 - 🪝 Webhooks
+
+---
+
+## 🏆 Système de Gamification
+
+Live Party Wall inclut un système de gamification complet pour encourager l'engagement :
+
+### 🎖️ Badges (12 types)
+- **📸 Photographe** - Avoir posté le plus de photos
+- **⭐ Star** - Avoir la photo la plus likée
+- **🐦 Oiseau matinal** - Avoir posté la première photo
+- **🔥 Populaire** - Avoir reçu le plus de likes au total
+- **📅 Régulier** - Avoir posté régulièrement tout au long de l'événement
+- **💎 Qualité** - Meilleure moyenne de likes par photo
+- **🦋 Papillon social** - Avoir reçu le plus de réactions variées
+- **🚀 Viral** - Photo avec énormément de réactions
+- **💪 Dévoué** - Avoir posté beaucoup de photos rapidement
+- **👑 Influenceur** - Meilleur ratio likes/photos
+- **🎭 Maître des réactions** - Avoir reçu tous les types de réactions
+- **📈 Tendance** - Photo en forte hausse de popularité
+
+### ⚡ Système de points
+Le score de gamification est calculé selon :
+- **10 points** par photo postée
+- **5 points** par like reçu
+- **3 points** par réaction reçue
+- **20 points** de bonus pour une bonne moyenne de likes
+- **15 points** de bonus pour la variété de réactions
+
+### 🎯 Milestones/Achievements
+Plus de **20 milestones** à débloquer :
+- Photos : Première photo, 5, 10, 25, 50 photos
+- Likes : 10, 50, 100, 250 likes
+- Réactions : 20, 50, 100 réactions
+- Score : 100, 500, 1000, 2500 points
+- Qualité : Moyenne de 5 ou 10 likes par photo
+
+### 📊 Classements
+- Classement en temps réel basé sur le score
+- Podium des 3 meilleurs participants
+- Affichage des badges obtenus
+- Statistiques détaillées (photos, likes, réactions, score)
 
 ---
 

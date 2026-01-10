@@ -758,10 +758,35 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
         </div>
 
         {/* Footer */}
-        <div className="text-center py-8 text-slate-400 text-sm">
+        <div className="text-center py-8 text-slate-400 text-sm space-y-2">
           <p>
             Besoin d'aide supplémentaire ? Contactez l'organisateur de l'événement.
           </p>
+          <div className="flex items-center justify-center gap-4 text-xs">
+            <button
+              onClick={() => {
+                // Navigation vers la politique de confidentialité
+                const event = new CustomEvent('navigate', { detail: 'privacy' });
+                window.dispatchEvent(event);
+                onBack(); // Fermer la page d'aide
+              }}
+              className="text-blue-400 hover:text-blue-300 underline transition-colors"
+            >
+              Politique de confidentialité
+            </button>
+            <span className="text-slate-600">•</span>
+            <button
+              onClick={() => {
+                // Navigation vers la gestion des données
+                const event = new CustomEvent('navigate', { detail: 'data-management' });
+                window.dispatchEvent(event);
+                onBack(); // Fermer la page d'aide
+              }}
+              className="text-blue-400 hover:text-blue-300 underline transition-colors"
+            >
+              Gestion de mes données
+            </button>
+          </div>
           <p className="mt-2 text-xs text-slate-500">
             Live Party Wall © 2026
           </p>

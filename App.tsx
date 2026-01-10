@@ -28,9 +28,14 @@ const BattleResultsProjection = lazy(() => import('./components/BattleResultsPro
 const GuestProfile = lazy(() => import('./components/GuestProfile')); // Profil de l'invité
 const EventSelector = lazy(() => import('./components/EventSelector')); // Sélection d'événements
 const Accueil = lazy(() => import('./components/Accueil')); // Page d'accueil
+const PrivacyPolicy = lazy(() => import('./components/rgpd/PrivacyPolicy')); // Politique de confidentialité
+const DataManagement = lazy(() => import('./components/rgpd/DataManagement')); // Gestion des données
+const ConsentBanner = lazy(() => import('./components/rgpd/ConsentBanner')); // Banner de consentement
+const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePreferences')); // Préférences cookies
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
+  const [showCookiePreferences, setShowCookiePreferences] = useState(false);
   
   // Contexts
   const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
@@ -52,6 +57,22 @@ const AppContent: React.FC = () => {
     
     return true;
   };
+
+  // Écouter les événements de navigation depuis HelpPage
+  useEffect(() => {
+    const handleNavigate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const target = customEvent.detail as ViewMode;
+      if (['privacy', 'data-management'].includes(target)) {
+        setViewMode(target);
+      }
+    };
+
+    window.addEventListener('navigate', handleNavigate);
+    return () => {
+      window.removeEventListener('navigate', handleNavigate);
+    };
+  }, []);
 
   // Vérifier et restaurer la session invité depuis la BDD si nécessaire
   useEffect(() => {
@@ -482,10 +503,47 @@ const AppContent: React.FC = () => {
                 />
               </TransitionWrapper>
             )}
+
+            {viewMode === 'privacy' && (
+              <TransitionWrapper type="slide-left" duration={600}>
+                <PrivacyPolicy 
+                  onBack={() => setViewMode('landing')}
+                />
+              </TransitionWrapper>
+            )}
+
+            {viewMode === 'data-management' && (
+              <TransitionWrapper type="slide-left" duration={600}>
+                <DataManagement 
+                  onBack={() => setViewMode('landing')}
+                />
+              </TransitionWrapper>
+            )}
               </>
             )}
           </>
         </Suspense>
+        )}
+
+        {/* RGPD Consent Banner */}
+        <Suspense fallback={null}>
+          <ConsentBanner
+            onPreferencesClick={() => setShowCookiePreferences(true)}
+            onPrivacyClick={() => setViewMode('privacy')}
+          />
+        </Suspense>
+
+        {/* Cookie Preferences Modal */}
+        {showCookiePreferences && (
+          <Suspense fallback={null}>
+            <CookiePreferencesModal
+              onClose={() => setShowCookiePreferences(false)}
+              onPrivacyClick={() => {
+                setShowCookiePreferences(false);
+                setViewMode('privacy');
+              }}
+            />
+          </Suspense>
         )}
       </div>
     </div>
