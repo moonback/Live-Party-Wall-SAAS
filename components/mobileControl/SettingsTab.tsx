@@ -5,7 +5,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { logger } from '../../utils/logger';
-import { uploadBackgroundImage } from '../../services/backgroundService';
+import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
 
 interface SettingsTabProps {
   onBack: () => void;
@@ -18,8 +18,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const { currentEvent } = useEvent();
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const featureConfigs = [
     { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false },
@@ -90,6 +92,49 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     await updateSettings({ [fieldName]: null });
     addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} supprimée`, 'success');
     logger.info('Background image cleared', { component: 'SettingsTab', action: 'clearBackground', type });
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    setUploadingLogo(true);
+
+    try {
+      const { publicUrl } = await uploadLogoImage(currentEvent.id, file);
+      await updateSettings({ logo_url: publicUrl });
+      addToast('Logo uploadé avec succès', 'success');
+      logger.info('Logo uploaded', { component: 'SettingsTab', action: 'uploadLogo', eventId: currentEvent.id });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('Error uploading logo', error, { component: 'SettingsTab', action: 'uploadLogo' });
+      if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
+        addToast('❌ Policies Supabase manquantes. Vérifiez la configuration du bucket party-backgrounds', 'error');
+      } else {
+        addToast(`Erreur: ${errorMsg}`, 'error');
+      }
+    } finally {
+      setUploadingLogo(false);
+      // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+      if (logoInputRef.current) {
+        logoInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleLogoUpload(file);
+    }
+  };
+
+  const clearLogo = async () => {
+    await updateSettings({ logo_url: null });
+    addToast('Logo supprimé', 'success');
+    logger.info('Logo cleared', { component: 'SettingsTab', action: 'clearLogo' });
   };
 
   return (
@@ -278,6 +323,77 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               />
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Logo */}
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+          Logo de l'événement
+        </h2>
+        <div className="space-y-4">
+          {settings.logo_url ? (
+            <div className="relative">
+              <div className="bg-white/5 rounded-lg p-4 flex items-center justify-center border border-white/20">
+                <img
+                  src={settings.logo_url}
+                  alt="Logo de l'événement"
+                  className="max-w-full max-h-32 object-contain"
+                />
+              </div>
+              <button
+                onClick={clearLogo}
+                className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                title="Supprimer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+              <p className="text-sm text-white/60 mb-3">Aucun logo</p>
+              <button
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadingLogo}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload className="w-4 h-4" />
+                {uploadingLogo ? 'Upload en cours...' : 'Uploader un logo'}
+              </button>
+            </div>
+          )}
+          {!settings.logo_url && (
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+              onChange={handleLogoChange}
+              className="hidden"
+            />
+          )}
+          {settings.logo_url && (
+            <button
+              onClick={() => logoInputRef.current?.click()}
+              disabled={uploadingLogo}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Upload className="w-4 h-4" />
+              {uploadingLogo ? 'Remplacement en cours...' : 'Remplacer'}
+            </button>
+          )}
+          {settings.logo_url && (
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/svg+xml"
+              onChange={handleLogoChange}
+              className="hidden"
+            />
+          )}
+          <p className="text-xs text-white/60">
+            Le logo remplacera le titre sur la page d'accueil (JPEG, PNG, WebP ou SVG - max 5MB)
+          </p>
         </div>
       </div>
 
