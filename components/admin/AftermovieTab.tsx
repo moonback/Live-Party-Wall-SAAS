@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { generateTimelapseAftermovie } from '../../services/aftermovieService';
 import { uploadAftermovieToStorage, getAftermovies, deleteAftermovie } from '../../services/aftermovieShareService';
+import { smartSelectPhotos } from '../../services/aftermovieAIService';
 import { 
   AFTERMOVIE_PRESETS, 
   AFTERMOVIE_DEFAULT_TARGET_SECONDS, 
@@ -50,6 +51,10 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const [aftermovieEnableSmartDuration, setAftermovieEnableSmartDuration] = useState<boolean>(true);
   const [aftermovieEnableIntroOutro, setAftermovieEnableIntroOutro] = useState<boolean>(true);
   const [aftermovieEnableComicsStyle, setAftermovieEnableComicsStyle] = useState<boolean>(false);
+  const [aftermovieEnableAIEnhancement, setAftermovieEnableAIEnhancement] = useState<boolean>(false);
+  const [aftermovieEnableSmartSelection, setAftermovieEnableSmartSelection] = useState<boolean>(false);
+  const [aftermovieEnableSmartTransitions, setAftermovieEnableSmartTransitions] = useState<boolean>(false);
+  const [isAnalyzingPhotos, setIsAnalyzingPhotos] = useState<boolean>(false);
   const [aftermovieAudioFile, setAftermovieAudioFile] = useState<File | null>(null);
   const [aftermovieAudioLoop, setAftermovieAudioLoop] = useState<boolean>(true);
   const [aftermovieAudioVolume, setAftermovieAudioVolume] = useState<number>(0.8);
@@ -403,8 +408,50 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
     addToast('Génération de la vidéo en cours… (ne pas fermer l\'onglet)', 'info');
 
     try {
+      // Sélection intelligente via IA si activée
+      let photosToUse = aftermovieSelectedPhotos;
+      if (aftermovieEnableAIEnhancement && aftermovieEnableSmartSelection) {
+        setIsAnalyzingPhotos(true);
+        setAftermovieProgress({ stage: 'analyzing', processed: 0, total: aftermovieSelectedPhotos.length, message: 'Analyse IA des photos en cours…' });
+        addToast('Analyse IA des photos en cours…', 'info');
+        
+        try {
+          const smartResult = await smartSelectPhotos(
+            aftermovieSelectedPhotos,
+            {
+              minScore: 30,
+              preferKeyMoments: true,
+              maxPhotos: AFTERMOVIE_MAX_PHOTOS_RECOMMENDED,
+              diversityWeight: 0.3,
+              qualityWeight: 0.7
+            },
+            config.event_title || undefined,
+            (current, total) => {
+              setAftermovieProgress({ 
+                stage: 'analyzing', 
+                processed: current, 
+                total, 
+                message: `Analyse IA : ${current}/${total} photos analysées…` 
+              });
+            }
+          );
+          
+          photosToUse = smartResult.selectedPhotos;
+          addToast(
+            `IA : ${smartResult.selectedPhotos.length} photos sélectionnées (${smartResult.excludedPhotos.length} exclues, ${smartResult.keyMoments.length} moments clés)`,
+            'success'
+          );
+        } catch (aiError) {
+          const msg = aiError instanceof Error ? aiError.message : String(aiError);
+          addToast(`Erreur analyse IA, utilisation de la sélection manuelle: ${msg}`, 'error');
+          // Continuer avec la sélection manuelle
+        } finally {
+          setIsAnalyzingPhotos(false);
+        }
+      }
+
       const result = await generateTimelapseAftermovie(
-        aftermovieSelectedPhotos,
+        photosToUse,
         {
           width: preset.width,
           height: preset.height,
@@ -417,12 +464,15 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
           decorativeFrameUrl: config.decorative_frame_url,
           backgroundColor: '#000000',
           enableKenBurns: aftermovieEnableKenBurns,
-          enableSmartDuration: aftermovieEnableSmartDuration,
+          enableSmartDuration: aftermovieEnableSmartDuration || (aftermovieEnableAIEnhancement && aftermovieEnableSmartDuration),
           enableIntroOutro: aftermovieEnableIntroOutro,
           enableComicsStyle: aftermovieEnableComicsStyle,
-          transitionType: aftermovieRandomTransitions ? undefined : aftermovieTransitionType,
-          transitionDuration: (aftermovieTransitionType !== 'none' || aftermovieRandomTransitions) ? Math.min(AFTERMOVIE_MAX_TRANSITION_DURATION, Math.max(AFTERMOVIE_MIN_TRANSITION_DURATION, aftermovieTransitionDuration)) : undefined,
-          randomTransitions: aftermovieRandomTransitions
+          enableAIEnhancement: aftermovieEnableAIEnhancement,
+          enableSmartSelection: aftermovieEnableSmartSelection,
+          enableSmartTransitions: aftermovieEnableSmartTransitions,
+          transitionType: (aftermovieEnableAIEnhancement && aftermovieEnableSmartTransitions) ? undefined : (aftermovieRandomTransitions ? undefined : aftermovieTransitionType),
+          transitionDuration: (aftermovieTransitionType !== 'none' || aftermovieRandomTransitions || (aftermovieEnableAIEnhancement && aftermovieEnableSmartTransitions)) ? Math.min(AFTERMOVIE_MAX_TRANSITION_DURATION, Math.max(AFTERMOVIE_MIN_TRANSITION_DURATION, aftermovieTransitionDuration)) : undefined,
+          randomTransitions: aftermovieRandomTransitions || (aftermovieEnableAIEnhancement && aftermovieEnableSmartTransitions)
         },
         aftermovieAudioFile
           ? {
@@ -1179,6 +1229,74 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                   <div className="text-xs text-slate-400">Affiche les légendes dans des bulles style bande dessinée.</div>
                 </div>
               </label>
+
+              {/* Section Amélioration IA */}
+              <div className="pt-2 border-t border-slate-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <h4 className="text-sm font-semibold text-slate-100">Amélioration IA 🤖</h4>
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={aftermovieEnableAIEnhancement}
+                    onChange={(e) => setAftermovieEnableAIEnhancement(e.target.checked)}
+                    className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                    disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                  />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-slate-100">Activer l'amélioration IA</div>
+                    <div className="text-xs text-slate-400">Utilise l'IA pour rendre l'aftermovie plus interactif et optimisé.</div>
+                  </div>
+                </label>
+
+                {aftermovieEnableAIEnhancement && (
+                  <div className="pl-6 space-y-3 border-l-2 border-purple-500/30">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={aftermovieEnableSmartSelection}
+                        onChange={(e) => setAftermovieEnableSmartSelection(e.target.checked)}
+                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-slate-100">Sélection intelligente</div>
+                        <div className="text-xs text-slate-400">Sélectionne automatiquement les meilleures photos (qualité, moments clés, diversité).</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={aftermovieEnableSmartTransitions}
+                        onChange={(e) => setAftermovieEnableSmartTransitions(e.target.checked)}
+                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-slate-100">Transitions intelligentes</div>
+                        <div className="text-xs text-slate-400">Choisit la meilleure transition selon le contenu de chaque photo.</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={aftermovieEnableSmartDuration}
+                        onChange={(e) => setAftermovieEnableSmartDuration(e.target.checked)}
+                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-slate-100">Durées intelligentes</div>
+                        <div className="text-xs text-slate-400">Ajuste la durée selon l'importance des moments (plus long pour moments clés).</div>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
 
               {/* Section Transitions */}
               <div className="pt-2 border-t border-slate-800">

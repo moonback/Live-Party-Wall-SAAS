@@ -145,7 +145,7 @@ export interface VirtualColumnProps {
 }
 
 // Aftermovie (timelapse) Types
-export type AftermovieStage = 'idle' | 'loading' | 'rendering' | 'encoding' | 'done';
+export type AftermovieStage = 'idle' | 'loading' | 'analyzing' | 'rendering' | 'encoding' | 'done';
 
 export interface AftermovieProgress {
   stage: AftermovieStage;
@@ -159,10 +159,26 @@ export interface AftermovieOptions {
   height: number;
   fps: number;
   /**
-   * Durée d’affichage par photo, en millisecondes.
+   * Durée d'affichage par photo, en millisecondes.
    * La durée totale finale vaut: photos.length * msPerPhoto.
    */
   msPerPhoto: number;
+  /**
+   * Options d'amélioration IA
+   */
+  enableAIEnhancement?: boolean;
+  /**
+   * Utiliser la sélection intelligente de photos via IA
+   */
+  enableSmartSelection?: boolean;
+  /**
+   * Utiliser les transitions intelligentes basées sur le contenu
+   */
+  enableSmartTransitions?: boolean;
+  /**
+   * Utiliser les durées intelligentes basées sur l'importance des moments
+   */
+  enableSmartDurations?: boolean;
   /**
    * Bitrate vidéo cible (bps). Exemple: 12_000_000 pour ~12 Mbps.
    */
