@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Video, Zap, Star, Award, Sparkles, ChevronDown, ChevronRight, ChevronUp, Move, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check } from 'lucide-react';
+import { Video, Zap, Star, Award, Sparkles, ChevronDown, ChevronRight, ChevronUp, Move, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check, Maximize2, X, Search, Grid3x3, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { QRCodeCanvas } from 'qrcode.react';
 import { usePhotos } from '../../context/PhotosContext';
@@ -73,6 +73,9 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [lastGeneratedBlob, setLastGeneratedBlob] = useState<Blob | null>(null);
+  const [isFullscreenSelection, setIsFullscreenSelection] = useState<boolean>(false);
+  const [selectionViewMode, setSelectionViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectionSearchQuery, setSelectionSearchQuery] = useState<string>('');
 
   // Initialiser la plage Aftermovie
   useEffect(() => {
@@ -406,7 +409,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-12xl mx-auto">
       <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
@@ -555,6 +558,16 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                 <div className="flex gap-2">
                   <button
                     type="button"
+                    onClick={() => setIsFullscreenSelection(true)}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border border-indigo-500/50 text-white text-xs font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isGeneratingAftermovie || aftermovieRangePhotos.length === 0}
+                    title="Ouvrir en plein écran pour sélectionner les photos"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                    <span>Plein écran</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)))}
                     className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
                     disabled={isGeneratingAftermovie || aftermovieRangePhotos.length === 0}
@@ -577,44 +590,53 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               ) : (
                 <div className="max-h-64 overflow-y-auto pr-1">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                    {aftermovieRangePhotos.map((p) => {
-                      const selected = aftermovieSelectedPhotoIds.has(p.id);
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onDoubleClick={(e) => {
-                            e.preventDefault();
-                            setAftermovieSelectedPhotoIds((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(p.id)) next.delete(p.id);
-                              else next.add(p.id);
-                              return next;
-                            });
-                          }}
-                          className={`relative w-full rounded-lg overflow-hidden border transition-all aspect-square ${
-                            selected
-                              ? 'border-indigo-500/60'
-                              : 'border-slate-800 hover:border-slate-700'
-                          }`}
-                          disabled={isGeneratingAftermovie}
-                        >
-                          <img
-                            src={p.url}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                          {selected && (
-                            <div className="absolute top-1 left-1">
-                              <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black bg-indigo-500 text-white border border-indigo-400">
-                                ✓
+                    {aftermovieRangePhotos
+                      .filter((p) => {
+                        if (!selectionSearchQuery) return true;
+                        const query = selectionSearchQuery.toLowerCase();
+                        return (
+                          p.caption?.toLowerCase().includes(query) ||
+                          p.author?.toLowerCase().includes(query)
+                        );
+                      })
+                      .map((p) => {
+                        const selected = aftermovieSelectedPhotoIds.has(p.id);
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onDoubleClick={(e) => {
+                              e.preventDefault();
+                              setAftermovieSelectedPhotoIds((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(p.id)) next.delete(p.id);
+                                else next.add(p.id);
+                                return next;
+                              });
+                            }}
+                            className={`relative w-full rounded-lg overflow-hidden border transition-all aspect-square ${
+                              selected
+                                ? 'border-indigo-500/60 ring-2 ring-indigo-500/30'
+                                : 'border-slate-800 hover:border-slate-700'
+                            }`}
+                            disabled={isGeneratingAftermovie}
+                          >
+                            <img
+                              src={p.url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            {selected && (
+                              <div className="absolute top-1 left-1">
+                                <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black bg-indigo-500 text-white border border-indigo-400 shadow-lg">
+                                  ✓
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
+                            )}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -1221,6 +1243,209 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal plein écran pour sélection de photos */}
+      {isFullscreenSelection && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-bold text-white">Sélection des photos</h2>
+              <div className="text-sm text-slate-400">
+                {aftermovieSelectedPhotoIds.size} / {aftermovieRangePhotos.length} sélectionnée{aftermovieSelectedPhotoIds.size > 1 ? 's' : ''}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Recherche */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={selectionSearchQuery}
+                  onChange={(e) => setSelectionSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 outline-none"
+                />
+              </div>
+              {/* Vue grille/liste */}
+              <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+                <button
+                  onClick={() => setSelectionViewMode('grid')}
+                  className={`p-2 rounded transition-colors ${
+                    selectionViewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setSelectionViewMode('list')}
+                  className={`p-2 rounded transition-colors ${
+                    selectionViewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+              <button
+                onClick={() => setIsFullscreenSelection(false)}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Actions rapides */}
+          <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/30">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)))}
+                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+              >
+                Tout sélectionner
+              </button>
+              <button
+                onClick={() => setAftermovieSelectedPhotoIds(new Set())}
+                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm font-medium transition-colors"
+              >
+                Tout désélectionner
+              </button>
+            </div>
+            <div className="text-sm text-slate-400">
+              Double-cliquez sur une photo pour la sélectionner/désélectionner
+            </div>
+          </div>
+
+          {/* Grille de photos */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {selectionViewMode === 'grid' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                {aftermovieRangePhotos
+                  .filter((p) => {
+                    if (!selectionSearchQuery) return true;
+                    const query = selectionSearchQuery.toLowerCase();
+                    return (
+                      p.caption?.toLowerCase().includes(query) ||
+                      p.author?.toLowerCase().includes(query)
+                    );
+                  })
+                  .map((p) => {
+                    const selected = aftermovieSelectedPhotoIds.has(p.id);
+                    return (
+                      <motion.button
+                        key={p.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        type="button"
+                        onDoubleClick={() => {
+                          setAftermovieSelectedPhotoIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(p.id)) next.delete(p.id);
+                            else next.add(p.id);
+                            return next;
+                          });
+                        }}
+                        className={`relative group rounded-xl overflow-hidden border-2 transition-all aspect-square ${
+                          selected
+                            ? 'border-indigo-500 ring-4 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
+                            : 'border-slate-700 hover:border-slate-600'
+                        }`}
+                        disabled={isGeneratingAftermovie}
+                      >
+                        <img
+                          src={p.url}
+                          alt={p.caption || ''}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        {selected && (
+                          <div className="absolute inset-0 bg-indigo-500/20 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xl font-black shadow-xl border-4 border-white">
+                              ✓
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="text-xs text-white font-medium truncate">{p.caption || 'Sans légende'}</div>
+                          <div className="text-[10px] text-slate-300 truncate">{p.author}</div>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+              </div>
+            ) : (
+              <div className="space-y-2 max-w-4xl mx-auto">
+                {aftermovieRangePhotos
+                  .filter((p) => {
+                    if (!selectionSearchQuery) return true;
+                    const query = selectionSearchQuery.toLowerCase();
+                    return (
+                      p.caption?.toLowerCase().includes(query) ||
+                      p.author?.toLowerCase().includes(query)
+                    );
+                  })
+                  .map((p) => {
+                    const selected = aftermovieSelectedPhotoIds.has(p.id);
+                    return (
+                      <motion.button
+                        key={p.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        type="button"
+                        onDoubleClick={() => {
+                          setAftermovieSelectedPhotoIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(p.id)) next.delete(p.id);
+                            else next.add(p.id);
+                            return next;
+                          });
+                        }}
+                        className={`w-full flex items-center gap-4 p-3 rounded-lg border-2 transition-all ${
+                          selected
+                            ? 'border-indigo-500 bg-indigo-500/10'
+                            : 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
+                        }`}
+                        disabled={isGeneratingAftermovie}
+                      >
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={p.url}
+                            alt={p.caption || ''}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          {selected && (
+                            <div className="absolute inset-0 bg-indigo-500/30 flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-black">
+                                ✓
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="text-sm font-semibold text-white truncate">{p.caption || 'Sans légende'}</div>
+                          <div className="text-xs text-slate-400 truncate">{p.author} • {new Date(p.timestamp).toLocaleDateString('fr-FR')}</div>
+                        </div>
+                        {selected && (
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black">
+                              {Array.from(aftermovieSelectedPhotoIds).indexOf(p.id) + 1}
+                            </div>
+                          </div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

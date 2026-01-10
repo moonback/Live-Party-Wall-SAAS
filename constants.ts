@@ -632,6 +632,11 @@ export const AFTERMOVIE_DEFAULT_TRANSITION_DURATION = 1500; // 1500ms par défau
 export const AFTERMOVIE_MIN_TRANSITION_DURATION = 100;
 export const AFTERMOVIE_MAX_TRANSITION_DURATION = 5000;
 
+// Limites de performance pour prévenir les crashes
+export const AFTERMOVIE_MAX_PHOTOS_RECOMMENDED = 200; // Nombre recommandé de photos max
+export const AFTERMOVIE_MAX_PHOTOS_HARD_LIMIT = 500; // Limite absolue (avertissement fort)
+export const AFTERMOVIE_WARNING_PHOTOS_THRESHOLD = 100; // Seuil d'avertissement (performance peut être lente)
+
 // Camera constants - Configuration HD/Full HD
 export const CAMERA_VIDEO_CONSTRAINTS = {
   facingMode: 'user' as const,
