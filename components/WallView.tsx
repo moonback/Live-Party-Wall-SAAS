@@ -150,7 +150,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   }, [photosReactions]);
 
   // Hook pour le carrousel automatique
-  useAutoCarousel({
+  const { isCarouselActive } = useAutoCarousel({
     photos: displayedPhotos,
     lightboxIndex,
     setLightboxIndex,
@@ -444,6 +444,8 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             currentIndex={lightboxIndex ?? 0}
             totalPhotos={displayedPhotos.length}
             downloadUrl={lightboxPhoto.url}
+            reactions={photosReactions.get(lightboxPhoto.id)}
+            isAutoMode={isCarouselActive}
           />
         </Suspense>
       )}
