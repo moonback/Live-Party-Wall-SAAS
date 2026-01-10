@@ -3,7 +3,6 @@ import { enhanceImageQuality } from '../utils/imageFilters';
 import { addPhotoToWall, addVideoToWall } from './photoService';
 import { composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
 import { Photo } from '../types';
-import { IMAGE_QUALITY } from '../constants';
 import { EventSettings } from './settingsService';
 import { logger } from '../utils/logger';
 import { saveUserAvatar, getCurrentUserAvatar } from '../utils/userAvatar';
@@ -44,7 +43,7 @@ export const submitPhoto = async ({
       imageForAnalysis = await composeDataUrlWithPngOverlay(
         imageForAnalysis,
         eventSettings.decorative_frame_url,
-        IMAGE_QUALITY
+        1.0 // Qualité maximale sans compression
       );
     } catch (e) {
       logger.warn('Overlay composition failed', { component: 'photoboothService', action: 'submitPhoto' }, e);

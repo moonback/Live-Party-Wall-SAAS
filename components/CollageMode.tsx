@@ -4,7 +4,7 @@ import { addPhotoToWall } from '../services/photoService';
 import { generateImageCaption } from '../services/geminiService';
 import { isImageAppropriate } from '../services/aiModerationService';
 import { Photo } from '../types';
-import { MAX_IMAGE_WIDTH, IMAGE_QUALITY, CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
+import { CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
 import { validateAuthorName } from '../utils/validation';
@@ -151,14 +151,9 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
-      let width = video.videoWidth;
-      let height = video.videoHeight;
-
-      if (width > MAX_IMAGE_WIDTH) {
-        const ratio = MAX_IMAGE_WIDTH / width;
-        width = MAX_IMAGE_WIDTH;
-        height = height * ratio;
-      }
+      // Utiliser les dimensions originales de la vidéo sans redimensionnement
+      const width = video.videoWidth;
+      const height = video.videoHeight;
 
       canvas.width = width;
       canvas.height = height;
@@ -174,7 +169,8 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             console.warn('Overlay frame draw failed:', e);
           }
         }
-        const dataUrl = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
+        // Utiliser la qualité maximale (1.0) sans compression
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
         const newImages = [...capturedImages, dataUrl];
         const newImageCount = newImages.length;
         setCapturedImages(newImages);

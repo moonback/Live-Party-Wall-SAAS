@@ -583,10 +583,15 @@ export const MIN_PHOTOS_DISPLAYED = 200;
 export const PLACEHOLDER_AVATAR = "https://picsum.photos/50/50";
 
 // Image processing constants
-export const MAX_IMAGE_WIDTH = 1000;
-export const IMAGE_QUALITY = 0.9;
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_IMAGE_WIDTH = 1000; // Non utilisé (conservé pour compatibilité)
+export const IMAGE_QUALITY = 0.9; // Non utilisé (conservé pour compatibilité)
+export const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB (augmenté pour supporter HD/Full HD)
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+// Résolutions HD minimales
+export const MIN_HD_WIDTH = 1280;
+export const MIN_HD_HEIGHT = 720;
+export const MIN_FULL_HD_WIDTH = 1920;
+export const MIN_FULL_HD_HEIGHT = 1080;
 
 // Video processing constants
 export const MAX_VIDEO_DURATION = 20; // 20 secondes max
@@ -620,11 +625,11 @@ export const AFTERMOVIE_DEFAULT_TRANSITION_DURATION = 1500; // 1500ms par défau
 export const AFTERMOVIE_MIN_TRANSITION_DURATION = 100;
 export const AFTERMOVIE_MAX_TRANSITION_DURATION = 5000;
 
-// Camera constants
+// Camera constants - Configuration HD/Full HD
 export const CAMERA_VIDEO_CONSTRAINTS = {
   facingMode: 'user' as const,
-  width: { ideal: 1920 },
-  height: { ideal: 1080 }
+  width: { ideal: 1920, min: 1280 }, // Full HD idéal, HD minimum
+  height: { ideal: 1080, min: 720 }   // Full HD idéal, HD minimum
 };
 
 // Auto-scroll constants

@@ -4,7 +4,7 @@ export { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES, MAX_AUTHOR_NAME_LENGTH, MIN_AUTHOR_
 
 /**
  * Valide un fichier image avant l'upload
- * Vérifie la taille (max 10MB) et le type MIME (JPEG, PNG, WebP)
+ * Vérifie la taille (max 20MB pour HD/Full HD) et le type MIME (JPEG, PNG, WebP)
  * 
  * @param file - Le fichier à valider
  * @returns Objet avec valid (boolean) et error (string optionnel)
@@ -15,7 +15,8 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    return { valid: false, error: 'Le fichier est trop volumineux (max 10MB)' };
+    const maxSizeMB = MAX_FILE_SIZE / (1024 * 1024);
+    return { valid: false, error: `Le fichier est trop volumineux (max ${maxSizeMB}MB)` };
   }
   
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -27,7 +28,7 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 
 /**
  * Valide une image en base64 avant l'upload
- * Vérifie la taille approximative (max 10MB) et le type MIME
+ * Vérifie la taille approximative (max 20MB pour HD/Full HD) et le type MIME
  * 
  * @param base64Image - Image en base64 (data URL ou base64 pur)
  * @returns Objet avec valid (boolean) et error (string optionnel)
@@ -62,7 +63,8 @@ export const validateBase64Image = (base64Image: string): { valid: boolean; erro
   const actualSize = sizeInBytes - padding;
 
   if (actualSize > MAX_FILE_SIZE) {
-    return { valid: false, error: 'Le fichier est trop volumineux (max 10MB)' };
+    const maxSizeMB = MAX_FILE_SIZE / (1024 * 1024);
+    return { valid: false, error: `Le fichier est trop volumineux (max ${maxSizeMB}MB)` };
   }
 
   return { valid: true };
@@ -70,7 +72,7 @@ export const validateBase64Image = (base64Image: string): { valid: boolean; erro
 
 /**
  * Valide un Blob d'image avant l'upload
- * Vérifie la taille (max 10MB) et le type MIME
+ * Vérifie la taille (max 20MB pour HD/Full HD) et le type MIME
  * 
  * @param blob - Le blob à valider
  * @param expectedMimeType - Type MIME attendu (optionnel, sera vérifié depuis le blob si disponible)
@@ -82,7 +84,8 @@ export const validateImageBlob = (blob: Blob, expectedMimeType?: string): { vali
   }
 
   if (blob.size > MAX_FILE_SIZE) {
-    return { valid: false, error: 'Le fichier est trop volumineux (max 10MB)' };
+    const maxSizeMB = MAX_FILE_SIZE / (1024 * 1024);
+    return { valid: false, error: `Le fichier est trop volumineux (max ${maxSizeMB}MB)` };
   }
 
   // Vérifier le type MIME

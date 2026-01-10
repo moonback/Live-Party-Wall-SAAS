@@ -49,11 +49,12 @@ export async function drawPngOverlay(
 
 /**
  * Compose une image (dataURL) + un overlay PNG (URL) en une nouvelle image (JPEG dataURL).
+ * Qualité maximale HD par défaut (1.0)
  */
 export async function composeDataUrlWithPngOverlay(
   baseImageDataUrl: string,
   overlayUrl: string,
-  quality = 0.9
+  quality = 1.0
 ): Promise<string> {
   const baseImg = new Image();
   baseImg.src = baseImageDataUrl;
