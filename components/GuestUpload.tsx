@@ -78,7 +78,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     reset: resetImageProcessing
   } = useImageProcessing();
   
-  const { stream, videoRef, stopCamera, switchCamera, cameraError, videoDevices, startCamera } = useCamera();
+  const { stream, videoRef, stopCamera, switchCamera, cameraError, videoDevices, startCamera, flashEnabled, flashSupported, toggleFlash } = useCamera();
   
   const {
     isRecording,
@@ -498,6 +498,9 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
               addToast(newBurstMode ? 'Mode rafale activé' : 'Mode rafale désactivé', 'success');
             }}
             isCapturingBurst={isCapturingBurst}
+            flashEnabled={flashEnabled}
+            flashSupported={flashSupported}
+            onToggleFlash={toggleFlash}
           />
         ) : (
           <PreviewView
