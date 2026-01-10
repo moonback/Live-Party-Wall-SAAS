@@ -373,27 +373,85 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
 
   // Instructions spécifiques pour utiliser le contexte
   const contextUsageInstructions = `
-   UTILISATION DU CONTEXTE "${contextRaw}" :
+   ═══════════════════════════════════════════════════════════════
+   UTILISATION INTELLIGENTE DU CONTEXTE HUMORISTIQUE
+   ═══════════════════════════════════════════════════════════════
+   
+   CONTEXTE FOURNI : "${contextRaw}"
+   
    ${contextIntegration}
    
-   - ADAPTATION INTELLIGENTE : 
-     → Si le contexte mentionne un type d'événement spécifique, adapte tes légendes en conséquence
-     → Si le contexte a un ton humoristique, reprends ce ton dans tes légendes
-     → Si le contexte mentionne des noms, utilise-les naturellement quand pertinent
-     → Si le contexte contient des détails spécifiques (âge, type d'événement, etc.), intègre-les subtilement
+   STRATÉGIE D'INTÉGRATION DU CONTEXTE :
    
-   - EXEMPLES D'INTÉGRATION :
-     → Contexte : "Mariage de Sophie et Marc - Union de deux âmes qui s'aiment (et qui aiment faire la fête !)"
-       Photo avec couple : "Sophie et Marc, amour et fête réunis ! 💍🎉"
-       Photo avec gâteau : "Gâteau d'amour pour Sophie et Marc ! 🎂💕"
-     
-     → Contexte : "Anniversaire 30 ans de Marie - Trente ans de folie et ça continue !"
-       Photo avec gâteau : "30 bougies pour 30 ans de folie ! 🎂🎉"
-       Photo avec groupe : "30 ans de bonheur partagé ! 🎈✨"
-     
-     → Contexte : "Soirée entreprise - Parce que le succès se célèbre en équipe (et avec style !)"
-       Photo avec groupe : "Équipe unie, succès partagé ! 👥✨"
-       Photo avec toast : "Toast au succès de l'équipe ! 🥂🎯"`;
+   1. ANALYSE DU TON DU CONTEXTE :
+      → Identifie si le contexte est humoristique, romantique, festif, décontracté, professionnel
+      → Repère les expressions clés, les jeux de mots, les touches humoristiques
+      → Note l'énergie et le style du contexte (léger, épique, complice, tendre, etc.)
+      → Le contexte a été créé pour être humoristique et festif - reprends ce ton dans tes légendes !
+   
+   2. EXTRACTION DES ÉLÉMENTS CLÉS :
+      → Noms des personnes (si présents dans le contexte)
+      → Type d'événement (mariage, anniversaire, soirée, etc.)
+      → Détails spécifiques (âge, thème, ambiance)
+      → Expressions humoristiques ou festives à reprendre
+      → Mots-clés qui capturent l'esprit de l'événement
+   
+   3. ADAPTATION INTELLIGENTE :
+      → Si le contexte a un ton humoristique, reprends ce ton dans tes légendes (jeux de mots, légèreté, complice)
+      → Si le contexte mentionne des noms, utilise-les naturellement quand pertinent à la photo
+      → Si le contexte contient des détails spécifiques (âge, type d'événement), intègre-les subtilement
+      → Si le contexte utilise des expressions festives ("folie", "fête", "magique", "épique"), reprends cette énergie
+      → Transforme et adapte le contexte, ne le répète pas mot pour mot
+   
+   4. CRÉATION DE LÉGENDES HUMORISTIQUES BASÉES SUR LE CONTEXTE :
+      → Utilise le vocabulaire et le style du contexte pour enrichir tes légendes
+      → Fais des références subtiles aux expressions du contexte quand elles sont pertinentes
+      → Crée des jeux de mots ou des expressions complices qui reprennent l'esprit du contexte
+      → Adapte le ton humoristique du contexte à chaque photo unique
+   
+   EXEMPLES D'INTÉGRATION INTELLIGENTE ET HUMORISTIQUE :
+   
+   Exemple 1 - Contexte humoristique "Mariage" :
+   Contexte : "Mariage de Sophie et Marc - Union de deux âmes qui s'aiment (et qui aiment faire la fête jusqu'au bout de la nuit !) 💍✨"
+   → Photo avec couple : "Sophie et Marc, amour et fête réunis ! 💍🎉"
+   → Photo avec gâteau : "Gâteau d'amour pour Sophie et Marc ! 🎂💕"
+   → Photo avec toast : "Toast à l'amour et à la fête ! 🥂✨"
+   → Photo avec danse : "La fête continue, amour en mouvement ! 💃💕"
+   
+   Exemple 2 - Contexte humoristique "Anniversaire" :
+   Contexte : "Anniversaire 30 ans de Marie - Trente ans de folie, de rires et de moments magiques (et ça continue !) 🎂🎉"
+   → Photo avec gâteau : "30 bougies pour 30 ans de folie ! 🎂🎉"
+   → Photo avec groupe : "30 ans de bonheur, la folie continue ! 🎈✨"
+   → Photo avec rires : "Rires garantis, la magie opère ! 😂🎉"
+   → Photo avec toast : "Toast aux 30 ans de folie ! 🥂🎂"
+   
+   Exemple 3 - Contexte humoristique "Entreprise" :
+   Contexte : "Soirée entreprise - Parce que le succès se célèbre en équipe (et avec style !) 👥✨"
+   → Photo avec groupe : "Équipe unie, succès avec style ! 👥✨"
+   → Photo avec toast : "Toast au succès de l'équipe ! 🥂🎯"
+   → Photo avec sourires : "Succès partagé, style assuré ! 😊👥"
+   
+   Exemple 4 - Contexte humoristique "Famille" :
+   Contexte : "Fête de famille - Réunion annuelle où on refait le monde, on partage des fous rires et on crée des souvenirs inoubliables 👨‍👩‍👧‍👦💕"
+   → Photo avec groupe famille : "Fous rires en famille, souvenirs inoubliables ! 👨‍👩‍👧‍👦😂"
+   → Photo avec moment tendre : "Liens familiaux, moments précieux ! 💕✨"
+   → Photo avec repas : "Réunion familiale, bonheur partagé ! 🍽️💕"
+   
+   Exemple 5 - Contexte avec expression humoristique :
+   Contexte : "Soirée entre amis - Où l'amitié se célèbre, les rires résonnent et les souvenirs se forgent 🍻🎉"
+   → Photo avec groupe : "Amitié célébrée, rires résonnent ! 👯‍♀️😂"
+   → Photo avec toast : "Toast à l'amitié, souvenirs se forgent ! 🍻✨"
+   → Photo avec danse : "Rires et danse, amitié en mouvement ! 💃🎉"
+   
+   RÈGLES D'OR POUR L'INTÉGRATION :
+   ✅ Reprends le ton humoristique et festif du contexte
+   ✅ Utilise les expressions clés du contexte de manière naturelle
+   ✅ Adapte le vocabulaire au style du contexte
+   ✅ Fais des références subtiles aux éléments du contexte
+   ✅ Crée des légendes qui reflètent l'énergie du contexte
+   ❌ Ne répète pas le contexte mot pour mot
+   ❌ Ne force pas des références si elles ne sont pas naturelles
+   ❌ Ne sacrifie pas la pertinence à la photo pour intégrer le contexte`;
 
   return `${basePrompt}
 
@@ -420,27 +478,34 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
    - Détecte si des personnes visibles correspondent aux noms mentionnés dans le contexte (si applicable)
    - Liste mentalement 3-5 éléments clés observés avant de passer à l'étape suivante
    
-   ÉTAPE 2 - ANALYSE DU CONTEXTE (ENRICHIT L'ANALYSE DE LA PHOTO) :
+   ÉTAPE 2 - ANALYSE DU CONTEXTE HUMORISTIQUE (ENRICHIT L'ANALYSE DE LA PHOTO) :
    - Relis attentivement le contexte : "${contextRaw}"
-   - Identifie le ton (humoristique, formel, festif, romantique, décontracté, etc.)
+   - Identifie le ton (humoristique, formel, festif, romantique, décontracté, etc.) - le contexte est conçu pour être humoristique !
    - Repère les informations clés : noms, type d'événement, détails spécifiques, âge, thème, etc.
-   - Note le style et l'énergie du contexte pour les reprendre dans ta légende
-   - Identifie les mots-clés du contexte qui pourraient enrichir la légende
+   - Note le style et l'énergie du contexte (léger, épique, complice, tendre, etc.) pour les reprendre dans ta légende
+   - Identifie les mots-clés et expressions humoristiques du contexte qui pourraient enrichir la légende
+   - Repère les jeux de mots, les expressions festives, les touches humoristiques à reprendre
+   - Note les émojis utilisés dans le contexte pour maintenir la cohérence
    
-   ÉTAPE 3 - COMBINAISON INTELLIGENTE PHOTO + CONTEXTE (CRÉATIVITÉ) :
+   ÉTAPE 3 - COMBINAISON INTELLIGENTE PHOTO + CONTEXTE HUMORISTIQUE (CRÉATIVITÉ) :
    - Utilise le vocabulaire et le ton adaptés au type d'événement détecté (${eventType})
+   - REPRENDS LE TON HUMORISTIQUE DU CONTEXTE : le contexte a été créé pour être humoristique et festif, 
+     donc tes légendes doivent refléter cette énergie (jeux de mots, légèreté, complice, festif)
    - Si tu vois dans la photo des éléments qui correspondent au contexte (ex: gâteau pour anniversaire, bouquet pour mariage), 
-     mentionne-les explicitement dans la légende avec créativité
+     mentionne-les explicitement dans la légende avec créativité et humour
    - Si le contexte mentionne des noms et que tu vois des personnes correspondantes dans la photo, fais une référence naturelle
      MAIS ne force pas si tu n'es pas sûr que ce sont bien ces personnes
-   - Si le contexte a un ton humoristique, reprends ce ton dans ta légende (jeux de mots, légèreté)
-   - Si la photo montre des personnes, adapte ton compliment selon le type d'événement ET le contexte spécifique
-   - Si la photo montre de la nourriture/boisson, adapte le vocabulaire selon le contexte :
+   - Si le contexte contient des expressions humoristiques ("folie", "fête", "magique", "épique", "ça continue", etc.), 
+     reprends ces expressions de manière naturelle dans ta légende quand elles sont pertinentes
+   - Si la photo montre des personnes, adapte ton compliment selon le type d'événement ET le contexte spécifique, 
+     en reprenant le ton humoristique du contexte
+   - Si la photo montre de la nourriture/boisson, adapte le vocabulaire selon le contexte avec une touche humoristique :
      * Mariage : "Toast à l'amour", "Champagne de l'union", "Gâteau d'amour"
-     * Anniversaire : "Cocktail de célébration", "Gâteau aux bougies", "Toast aux années"
-     * Entreprise : "Toast au succès", "Cocktail d'équipe", "Célébration professionnelle"
+     * Anniversaire : "Cocktail de célébration", "Gâteau aux bougies", "Toast aux années de folie"
+     * Entreprise : "Toast au succès", "Cocktail d'équipe", "Célébration professionnelle avec style"
    - Fais des références subtiles et naturelles au contexte sans être trop explicite ou répétitif
-   - Évite de répéter le contexte mot pour mot : transforme-le, adapte-le, enrichis-le
+   - Évite de répéter le contexte mot pour mot : transforme-le, adapte-le, enrichis-le avec créativité
+   - Crée des légendes qui capturent l'esprit humoristique et festif du contexte tout en restant pertinentes à la photo
    
    ÉTAPE 4 - SYNTHÈSE FINALE (CRÉATION DE LA LÉGENDE) :
    - La légende DOIT combiner : [Élément visible dans la photo] + [Vocabulaire adapté au type d'événement] + [Référence subtile au contexte]
@@ -449,46 +514,62 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
    - Vérifie que les émojis sont pertinents (1-3 max)
    - Vérifie que le ton correspond au type d'événement
    
-   EXEMPLES CONCRETS DE COMBINAISON :
+   EXEMPLES CONCRETS DE COMBINAISON INTELLIGENTE ET HUMORISTIQUE :
    
-   Exemple 1 - Mariage "Sophie et Marc" :
+   Exemple 1 - Mariage avec contexte humoristique :
+   Contexte : "Mariage de Sophie et Marc - Union de deux âmes qui s'aiment (et qui aiment faire la fête jusqu'au bout de la nuit !) 💍✨"
    Photo : Couple qui sourit, tient des verres à champagne
    Analyse photo : Couple, sourires, verres à champagne, moment de célébration
-   Analyse contexte : Mariage, noms Sophie et Marc, union romantique
-   Légende : "Sophie et Marc, toast à l'amour ! 💍🥂"
-   (noms = contexte, toast = action visible, amour = vocabulaire mariage)
+   Analyse contexte : Mariage, noms Sophie et Marc, ton humoristique "fête jusqu'au bout de la nuit"
+   Légende : "Sophie et Marc, toast à l'amour et à la fête ! 💍🥂"
+   (noms = contexte, toast = action visible, "fête" = expression du contexte, amour = vocabulaire mariage)
    
-   Exemple 2 - Anniversaire "30 ans de Marie" :
+   Exemple 2 - Anniversaire avec contexte humoristique :
+   Contexte : "Anniversaire 30 ans de Marie - Trente ans de folie, de rires et de moments magiques (et ça continue !) 🎂🎉"
    Photo : Gâteau avec 30 bougies allumées, personnes autour qui sourient
    Analyse photo : Gâteau, 30 bougies, groupe souriant, célébration
-   Analyse contexte : Anniversaire, 30 ans, nom Marie, célébration
-   Légende : "30 bougies pour Marie, 30 ans de joie ! 🎂🎉"
-   (bougies/gâteau = photo, nom et âge = contexte, joie = vocabulaire anniversaire)
+   Analyse contexte : Anniversaire, 30 ans, nom Marie, ton humoristique "folie", "ça continue"
+   Légende : "30 bougies pour 30 ans de folie ! 🎂🎉"
+   (bougies/gâteau = photo, "folie" = expression du contexte, nom et âge = contexte, joie = vocabulaire anniversaire)
    
-   Exemple 3 - Contexte humoristique "folie et ça continue" :
+   Exemple 3 - Contexte très humoristique "folie et ça continue" :
+   Contexte : "Anniversaire 30 ans de Marie - Trente ans de folie, de rires et de moments magiques (et ça continue !) 🎂🎉"
    Photo : Groupe de personnes qui rient, bras levés
    Analyse photo : Groupe, rires, gestes festifs, énergie
-   Analyse contexte : Ton humoristique, "folie", "ça continue"
+   Analyse contexte : Ton très humoristique, "folie", "ça continue", "rires"
    Légende : "La folie continue, rires garantis ! 🎉😂"
-   (groupe/rires = photo, "folie continue" = référence contexte, ton humoristique)
+   (groupe/rires = photo, "folie continue" = référence directe au contexte, ton humoristique reprendu)
    
-   Exemple 4 - Entreprise "Soirée équipe" :
+   Exemple 4 - Entreprise avec contexte humoristique :
+   Contexte : "Soirée entreprise - Parce que le succès se célèbre en équipe (et avec style !) 👥✨"
    Photo : Groupe en tenue professionnelle, toast
    Analyse photo : Groupe, tenues formelles, toast, ambiance conviviale
-   Analyse contexte : Entreprise, équipe, professionnel mais festif
-   Légende : "Équipe unie, toast au succès ! 👥🥂"
-   (groupe/toast = photo, équipe = contexte, succès = vocabulaire entreprise)
+   Analyse contexte : Entreprise, équipe, ton humoristique "avec style"
+   Légende : "Équipe unie, succès avec style ! 👥🥂"
+   (groupe/toast = photo, "avec style" = expression du contexte, équipe = contexte, succès = vocabulaire entreprise)
+   
+   Exemple 5 - Famille avec contexte humoristique :
+   Contexte : "Fête de famille - Réunion annuelle où on refait le monde, on partage des fous rires et on crée des souvenirs inoubliables 👨‍👩‍👧‍👦💕"
+   Photo : Groupe familial qui rit autour d'une table
+   Analyse photo : Groupe famille, rires, moment convivial, table
+   Analyse contexte : Famille, ton humoristique "refait le monde", "fous rires"
+   Légende : "Fous rires en famille, souvenirs inoubliables ! 👨‍👩‍👧‍👦😂"
+   (groupe/rires = photo, "fous rires" = expression du contexte, famille = contexte)
    
    RÈGLE D'OR FINALE : 
-   La légende = [Ce que je vois dans la photo] + [Ton/vocabulaire adapté à ${eventType}] + [Référence naturelle au contexte "${contextRaw}"]
+   La légende = [Ce que je vois dans la photo] + [Ton/vocabulaire adapté à ${eventType}] + [Référence naturelle et humoristique au contexte "${contextRaw}"]
    
    ⚠️ IMPORTANT : 
+   - Le contexte a été créé pour être humoristique et festif - REPRENDS CE TON dans tes légendes !
    - Le contexte est là pour enrichir et personnaliser, pas pour être répété mot pour mot
-   - Sois créatif et adapte le contexte à chaque photo unique
-   - Si la photo ne contient pas d'éléments liés à l'événement, utilise quand même le vocabulaire adapté et le ton du contexte, 
+   - Sois créatif et adapte le contexte à chaque photo unique avec une touche humoristique
+   - Si le contexte contient des expressions humoristiques ("folie", "fête", "magique", "ça continue", etc.), 
+     utilise-les naturellement dans tes légendes quand elles sont pertinentes
+   - Si la photo ne contient pas d'éléments liés à l'événement, utilise quand même le vocabulaire adapté et le ton humoristique du contexte, 
      mais base-toi sur ce qui est réellement visible
    - Ne force JAMAIS des références au contexte si elles ne sont pas naturelles
    - Une légende générique est pire qu'une légende simple mais authentique
+   - MAIS une légende qui reprend l'énergie humoristique du contexte est toujours meilleure qu'une légende plate
 `;
 };
 

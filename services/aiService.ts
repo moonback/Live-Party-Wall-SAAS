@@ -178,6 +178,8 @@ ${captionPrompt}
 - Utilise 1-3 émojis pertinents maximum
 - Base-toi sur ce que tu vois réellement, jamais d'invention
 - Le champ "caption" doit contenir UNIQUEMENT la légende, rien d'autre
+- Si un contexte d'événement est fourni, REPRENDS SON TON HUMORISTIQUE ET FESTIF dans ta légende
+- Le contexte a été créé pour être humoristique - adapte cette énergie à chaque photo unique
 
 ═══════════════════════════════════════════════════════════════
 RÈGLES DE TAGS (MÉTADONNÉES)
