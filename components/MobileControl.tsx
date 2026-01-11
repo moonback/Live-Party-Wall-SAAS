@@ -3,7 +3,7 @@ import { useToast } from '../context/ToastContext';
 import { usePhotos } from '../context/PhotosContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
-import { deletePhoto, deleteAllPhotos, getPhotoReactions, getPhotosByAuthor, getPhotosReactions } from '../services/photoService';
+import { deletePhoto, deleteAllPhotos, getPhotoReactions } from '../services/photoService';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
 import { exportPhotosToZip } from '../services/exportService';
 import { Photo, ReactionCounts, PhotoBattle, Guest } from '../types';
@@ -54,7 +54,6 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
   // Guests state
   const [guests, setGuests] = useState<Guest[]>([]);
   const [guestsLoading, setGuestsLoading] = useState(false);
-  const [guestStats, setGuestStats] = useState<Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>>(new Map());
 
   // Photos triées par date (plus récentes en premier)
   const sortedPhotos = useMemo(() => {
@@ -133,36 +132,6 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       try {
         const allGuests = await getAllGuests(currentEvent.id);
         setGuests(allGuests);
-        
-        // Charger les statistiques pour chaque invité
-        const statsMap = new Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>();
-        
-        for (const guest of allGuests) {
-          try {
-            const guestPhotos = await getPhotosByAuthor(currentEvent.id, guest.name);
-            const photosCount = guestPhotos.length;
-            const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
-            
-            // Calculer les réactions totales
-            let totalReactions = 0;
-            if (guestPhotos.length > 0) {
-              const photoIds = guestPhotos.map(p => p.id);
-              const reactionsMap = await getPhotosReactions(photoIds);
-              reactionsMap.forEach((reactions) => {
-                Object.values(reactions).forEach((count) => {
-                  totalReactions += count || 0;
-                });
-              });
-            }
-            
-            statsMap.set(guest.id, { photosCount, totalLikes, totalReactions });
-          } catch (error) {
-            logger.error('Error loading guest stats', error, { guestId: guest.id, guestName: guest.name });
-            statsMap.set(guest.id, { photosCount: 0, totalLikes: 0, totalReactions: 0 });
-          }
-        }
-        
-        setGuestStats(statsMap);
       } catch (error) {
         logger.error('Error loading guests', error, { component: 'MobileControl', action: 'loadGuests' });
         addToast('Erreur lors du chargement des invités', 'error');
@@ -318,36 +287,6 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     try {
       const allGuests = await getAllGuests(currentEvent.id);
       setGuests(allGuests);
-      
-      // Charger les statistiques pour chaque invité
-      const statsMap = new Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>();
-      
-      for (const guest of allGuests) {
-        try {
-          const guestPhotos = await getPhotosByAuthor(currentEvent.id, guest.name);
-          const photosCount = guestPhotos.length;
-          const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
-          
-          // Calculer les réactions totales
-          let totalReactions = 0;
-          if (guestPhotos.length > 0) {
-            const photoIds = guestPhotos.map(p => p.id);
-            const reactionsMap = await getPhotosReactions(photoIds);
-            reactionsMap.forEach((reactions) => {
-              Object.values(reactions).forEach((count) => {
-                totalReactions += count || 0;
-              });
-            });
-          }
-          
-          statsMap.set(guest.id, { photosCount, totalLikes, totalReactions });
-        } catch (error) {
-          logger.error('Error loading guest stats', error, { guestId: guest.id, guestName: guest.name });
-          statsMap.set(guest.id, { photosCount: 0, totalLikes: 0, totalReactions: 0 });
-        }
-      }
-      
-      setGuestStats(statsMap);
       addToast('Invités actualisés', 'success');
     } catch (error) {
       logger.error('Error loading guests', error, { component: 'MobileControl', action: 'handleRefreshGuests' });
@@ -451,7 +390,6 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         {activeTab === 'guests' && (
           <GuestsTab
             guests={guests}
-            guestStats={guestStats}
             isLoading={guestsLoading}
             onRefresh={handleRefreshGuests}
             onDeleteGuest={handleDeleteGuest}

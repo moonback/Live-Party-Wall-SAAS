@@ -2,15 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Users, RefreshCw, Trash2, Check, X } from 'lucide-react';
 import { Guest } from '../../types';
 
-interface GuestStats {
-  photosCount: number;
-  totalLikes: number;
-  totalReactions: number;
-}
-
 interface GuestsTabProps {
   guests: Guest[];
-  guestStats: Map<string, GuestStats>;
   isLoading: boolean;
   onRefresh: () => Promise<void>;
   onDeleteGuest: (guestId: string, guestName: string) => Promise<void>;
@@ -24,7 +17,6 @@ interface SwipeState {
 
 const GuestsTab: React.FC<GuestsTabProps> = ({
   guests,
-  guestStats,
   isLoading,
   onRefresh,
   onDeleteGuest,
