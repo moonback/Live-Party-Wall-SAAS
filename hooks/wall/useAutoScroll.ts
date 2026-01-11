@@ -23,18 +23,23 @@ export const useAutoScroll = ({ enabled, speed, containerRef, hasContent }: UseA
     const scrollContainer = containerRef.current;
     let lastTime = Date.now();
 
+    // ⚡ OPTIMISATION : Optimiser le scroll pour réduire les violations de performance
     const scroll = () => {
       const now = Date.now();
       const delta = now - lastTime;
 
+      // ⚡ OPTIMISATION : Utiliser delta time pour un scroll fluide et éviter les reflows
       if (delta >= 16 && scrollContainer) {
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
 
         if (isAtBottom) {
-          scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+          // ⚡ OPTIMISATION : Utiliser scrollTo avec behavior: 'auto' pour éviter les animations coûteuses
+          scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
         } else {
-          scrollContainer.scrollTop += speed;
+          // ⚡ OPTIMISATION : Calculer le scroll avec delta time normalisé pour éviter les reflows
+          const scrollAmount = speed * (delta / 16); // Normaliser par rapport à 60fps
+          scrollContainer.scrollTop += scrollAmount;
         }
 
         lastTime = now;

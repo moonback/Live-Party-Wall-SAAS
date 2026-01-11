@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { Photo, ReactionCounts } from '../../types';
@@ -9,35 +9,75 @@ import { get4KImageUrl, get4KImageUrlSync, get4KImageSrcSet, get4KImageSrcSetSyn
 import { useSettings } from '../../context/SettingsContext';
 import { useSmartLazyImage } from '../../hooks/useSmartLazyImage'; // ⚡ OPTIMISATION : Lazy loading intelligent
 
-// ⚡ OPTIMISATION : Composant pour image optimisée avec formats modernes
-const OptimizedImage: React.FC<{
+// ⚡ OPTIMISATION : Composant pour image optimisée avec formats modernes (mémorisé)
+const OptimizedImage = React.memo<{
   photo: Photo;
   imageOrientation: ImageOrientation;
   isMobile: boolean;
   index: number;
   imageLoaded: boolean;
   setImageLoaded: (loaded: boolean) => void;
-}> = ({ photo, imageOrientation, isMobile, index, imageLoaded, setImageLoaded }) => {
-  const [optimizedUrl, setOptimizedUrl] = useState<string>(get4KImageUrlSync(photo.url, true));
+}>(({ photo, imageOrientation, isMobile, index, imageLoaded, setImageLoaded }) => {
+  // ⚡ OPTIMISATION : Initialiser avec la valeur synchrone et charger async seulement si nécessaire
+  const initialUrl = useMemo(() => get4KImageUrlSync(photo.url, true), [photo.url]);
+  const [optimizedUrl, setOptimizedUrl] = useState<string>(initialUrl);
   const [optimizedSrcSet, setOptimizedSrcSet] = useState<string>('');
 
   useEffect(() => {
-    // ⚡ OPTIMISATION : Charger les formats optimisés de manière asynchrone
+    // ⚡ OPTIMISATION : Charger les formats optimisés seulement pour les images prioritaires
+    if (index >= 20) {
+      // Pour les images non prioritaires, utiliser la version synchrone
+      return;
+    }
+
+    let cancelled = false;
     const loadOptimized = async () => {
       try {
         const [url, srcSet] = await Promise.all([
           get4KImageUrl(photo.url, true, 'avif'),
           get4KImageSrcSet(photo.url),
         ]);
-        setOptimizedUrl(url);
-        setOptimizedSrcSet(srcSet);
+        if (!cancelled) {
+          setOptimizedUrl(url);
+          setOptimizedSrcSet(srcSet);
+        }
       } catch (error) {
-        // Fallback vers version synchrone en cas d'erreur
-        setOptimizedUrl(get4KImageUrlSync(photo.url, true));
-        setOptimizedSrcSet(get4KImageSrcSetSync(photo.url));
+        if (!cancelled) {
+          // ⚡ OPTIMISATION : Si AVIF échoue, marquer comme échoué et utiliser l'original
+          if (photo.url.includes('.avif')) {
+            const { markAvifFailed } = await import('../../utils/imageFormatSupport');
+            markAvifFailed(photo.url);
+          }
+          setOptimizedUrl(get4KImageUrlSync(photo.url, true));
+          setOptimizedSrcSet(get4KImageSrcSetSync(photo.url));
+        }
       }
     };
     loadOptimized();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [photo.url, index]);
+
+  const imageClasses = useMemo(() => 
+    `${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`,
+    [imageOrientation, isMobile, imageLoaded]
+  );
+
+  // ⚡ OPTIMISATION : Gérer les erreurs de chargement AVIF
+  const handleImageError = useCallback(async (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const src = img.src;
+    
+    // Si c'est une image AVIF qui échoue, marquer comme échouée et charger l'original
+    if (src.includes('.avif')) {
+      const { markAvifFailed } = await import('../../utils/imageFormatSupport');
+      markAvifFailed(src);
+      // Charger l'URL originale sans AVIF
+      const originalUrl = get4KImageUrlSync(photo.url, true);
+      setOptimizedUrl(originalUrl);
+    }
   }, [photo.url]);
 
   return (
@@ -46,15 +86,16 @@ const OptimizedImage: React.FC<{
       srcSet={optimizedSrcSet || undefined}
       sizes={get4KImageSizes()}
       alt={photo.caption} 
-      className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={imageClasses}
       loading="lazy"
       decoding="async"
-      fetchPriority={index < 20 ? "high" : "low"} // ⚡ OPTIMISATION : Priorité de chargement
+      fetchPriority={index < 20 ? "high" : "low"}
       onLoad={() => setImageLoaded(true)}
+      onError={handleImageError}
       style={{ maxWidth: '100%', height: 'auto' }}
     />
   );
-};
+});
 
 interface PhotoCardProps {
   photo: Photo;
@@ -75,21 +116,35 @@ export const PhotoCard = React.memo(({
   reactions 
 }: PhotoCardProps) => {
   const { settings } = useSettings();
+  
+  // ⚡ OPTIMISATION : Mémoriser les badges pour éviter les recalculs
   const photoBadge = useMemo(() => getPhotoBadge(photo, allPhotos), [photo.id, photo.likes_count, allPhotos.length]);
   const authorHasPhotographerBadge = useMemo(() => hasPhotographerBadge(photo.author, allPhotos), [photo.author, allPhotos.length]);
 
-  const imageOrientation: ImageOrientation = photo.type === 'photo' 
-    ? (photo.orientation || 'unknown')
-    : 'unknown';
+  const imageOrientation: ImageOrientation = useMemo(() => 
+    photo.type === 'photo' ? (photo.orientation || 'unknown') : 'unknown',
+    [photo.type, photo.orientation]
+  );
     
   const [isMobile, setIsMobile] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
+  // ⚡ OPTIMISATION : Debounce resize avec useMemo pour éviter trop de listeners
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    const checkMobile = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setIsMobile(window.innerWidth < 768);
+      }, 150);
+    };
+    
+    setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+    };
   }, []);
 
   // ⚡ OPTIMISATION : Lazy loading intelligent avec priorisation
@@ -100,20 +155,27 @@ export const PhotoCard = React.memo(({
     threshold: 0.1,
   });
 
+  // ⚡ OPTIMISATION : Mémoriser les handlers pour éviter les re-renders
+  const handleMouseEnter = useCallback(() => setHoveredPhoto(photo.id), [photo.id, setHoveredPhoto]);
+  const handleMouseLeave = useCallback(() => setHoveredPhoto(null), [setHoveredPhoto]);
+  
+  // ⚡ OPTIMISATION : Réduire les animations pour les performances
+  const shouldAnimate = index < 50; // Animer seulement les 50 premières photos
+
   return (
     <motion.div 
-      layoutId={`photo-${photo.id}`}
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: (index % 10) * 0.05 }}
+      layoutId={shouldAnimate ? `photo-${photo.id}` : undefined}
+      initial={shouldAnimate ? { opacity: 0, scale: 0.8, y: 20 } : false}
+      animate={shouldAnimate ? { opacity: 1, scale: 1, y: 0 } : false}
+      transition={shouldAnimate ? { duration: 0.3, delay: Math.min((index % 10) * 0.03, 0.3) } : undefined}
       className={`group relative break-inside-avoid bg-slate-900/80 backdrop-blur-sm rounded-none overflow-hidden shadow-none transition-all duration-500 hover:z-[25] border-2 border-white
         ${onClick ? 'cursor-zoom-in' : 'cursor-default'}
         ${index === 0 ? 'z-[15]' : 'z-[10]'}
       `}
-      whileHover={onClick ? { scale: 1.05 } : undefined}
+      whileHover={onClick && index < 100 ? { scale: 1.05 } : undefined}
       onClick={onClick}
-      onMouseEnter={() => setHoveredPhoto(photo.id)}
-      onMouseLeave={() => setHoveredPhoto(null)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Glow effect au hover */}
       <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-none blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>

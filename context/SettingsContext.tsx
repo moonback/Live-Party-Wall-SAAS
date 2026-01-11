@@ -19,9 +19,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [error, setError] = useState<Error | null>(null);
   const { currentEvent } = useEvent();
 
-  // Load settings from Supabase for the current event
+  // ⚡ OPTIMISATION : Load settings from Supabase for the current event
   const refresh = useCallback(async () => {
-    if (!currentEvent) {
+    if (!currentEvent?.id) { // ⚡ OPTIMISATION : Vérifier que currentEvent.id existe
       setSettings(defaultSettings);
       setLoading(false);
       return;
@@ -39,7 +39,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     } finally {
       setLoading(false);
     }
-  }, [currentEvent]);
+  }, [currentEvent?.id]); // ⚡ OPTIMISATION : Dépendre de currentEvent.id au lieu de currentEvent
 
   // Update settings
   const updateSettings = useCallback(async (newSettings: Partial<EventSettings>) => {
@@ -93,9 +93,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [currentEvent]);
 
-  // Initial load and subscription
+  // ⚡ OPTIMISATION : Initial load and subscription
   useEffect(() => {
-    if (!currentEvent) {
+    if (!currentEvent?.id) { // ⚡ OPTIMISATION : Vérifier que currentEvent.id existe
       setSettings(defaultSettings);
       return;
     }
@@ -126,10 +126,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       setSettings(() => normalizedSettings);
     });
 
-    // Polling de secours toutes les 5 secondes si Realtime ne fonctionne pas
-    // Cela garantit que les mises à jour sont détectées même sans Realtime
+    // ⚡ OPTIMISATION : Polling de secours toutes les 30 secondes (au lieu de 5) si Realtime ne fonctionne pas
+    // Cela garantit que les mises à jour sont détectées même sans Realtime, mais avec moins de requêtes
     const pollingInterval = setInterval(async () => {
-      if (!currentEvent) return;
+      if (!currentEvent?.id) return; // ⚡ OPTIMISATION : Vérifier que currentEvent.id existe
       
       try {
         const latestSettings = await getSettings(currentEvent.id);
@@ -152,13 +152,13 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       } catch (error) {
         logger.error('Error polling settings', error, { component: 'SettingsContext', action: 'polling' });
       }
-    }, 5000); // Poll toutes les 5 secondes
+    }, 30000); // ⚡ OPTIMISATION : Poll toutes les 30 secondes au lieu de 5
 
     return () => {
       subscription.unsubscribe();
       clearInterval(pollingInterval);
     };
-  }, [currentEvent, refresh]);
+  }, [currentEvent?.id, refresh]); // ⚡ OPTIMISATION : Dépendre de currentEvent.id au lieu de currentEvent
 
   return (
     <SettingsContext.Provider

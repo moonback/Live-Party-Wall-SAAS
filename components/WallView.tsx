@@ -78,13 +78,9 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   // --- Event Context ---
   const { currentEvent } = useEvent();
   
-  // Debug: Log quand alert_text change
-  useEffect(() => {
-    logger.info('WallView: alert_text changed', { 
-      component: 'WallView', 
-      alert_text: settings.alert_text,
-      has_alert: !!(settings.alert_text && settings.alert_text.trim())
-    });
+  // ⚡ OPTIMISATION : Mémoriser l'état de l'alerte pour éviter les re-renders
+  const hasAlert = useMemo(() => {
+    return !!(settings.alert_text && settings.alert_text.trim());
   }, [settings.alert_text]);
   
   const { 
@@ -112,63 +108,63 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   const { flyingReactions } = useReactionFlow();
 
   // --- Derived State ---
-  const showBattles = settings.battle_mode_enabled !== false;
-  const displayedPhotos = photos; // useWallData gère déjà l'ordre/filtrage si besoin
+  const showBattles = useMemo(() => settings.battle_mode_enabled !== false, [settings.battle_mode_enabled]);
+  const displayedPhotos = useMemo(() => photos, [photos]); // ⚡ OPTIMISATION : Mémoriser pour éviter les re-renders
 
-  // Détection des nouveaux likes et réactions pour arrêter le carrousel
+  // ⚡ OPTIMISATION : Détection optimisée des nouveaux likes/réactions avec debounce
   const lastLikesCountRef = useRef<Map<string, number>>(new Map());
   const lastReactionsCountRef = useRef<Map<string, number>>(new Map());
   const [hasNewLike, setHasNewLike] = useState(false);
   const [hasNewReaction, setHasNewReaction] = useState(false);
+  const detectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Détecter les nouveaux likes
+  // ⚡ OPTIMISATION : Détecter les nouveaux likes et réactions en une seule passe avec debounce
   useEffect(() => {
-    const currentLikes = new Map<string, number>();
-    photos.forEach(photo => {
-      currentLikes.set(photo.id, photo.likes_count || 0);
-    });
-
-    // Vérifier s'il y a eu un nouveau like
-    let newLikeDetected = false;
-    currentLikes.forEach((count, photoId) => {
-      const previousCount = lastLikesCountRef.current.get(photoId) || 0;
-      if (count > previousCount) {
-        newLikeDetected = true;
-      }
-    });
-
-    if (newLikeDetected) {
-      setHasNewLike(true);
-      setTimeout(() => setHasNewLike(false), 100); // Reset après un court délai
+    if (detectionTimeoutRef.current) {
+      clearTimeout(detectionTimeoutRef.current);
     }
 
-    lastLikesCountRef.current = currentLikes;
-  }, [photos]);
+    // Debounce pour éviter trop de recalculs
+    detectionTimeoutRef.current = setTimeout(() => {
+      let newLikeDetected = false;
+      let newReactionDetected = false;
 
-  // Détecter les nouvelles réactions
-  useEffect(() => {
-    const currentReactions = new Map<string, number>();
-    photosReactions.forEach((reactions, photoId) => {
-      const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
-      currentReactions.set(photoId, totalReactions);
-    });
+      // Vérifier les likes
+      photos.forEach(photo => {
+        const currentCount = photo.likes_count || 0;
+        const previousCount = lastLikesCountRef.current.get(photo.id) || 0;
+        if (currentCount > previousCount) {
+          newLikeDetected = true;
+        }
+        lastLikesCountRef.current.set(photo.id, currentCount);
+      });
 
-    // Vérifier s'il y a eu une nouvelle réaction
-    let newReactionDetected = false;
-    currentReactions.forEach((count, photoId) => {
-      const previousCount = lastReactionsCountRef.current.get(photoId) || 0;
-      if (count > previousCount) {
-        newReactionDetected = true;
+      // Vérifier les réactions
+      photosReactions.forEach((reactions, photoId) => {
+        const totalReactions = Object.values(reactions).reduce((sum, count) => sum + count, 0);
+        const previousCount = lastReactionsCountRef.current.get(photoId) || 0;
+        if (totalReactions > previousCount) {
+          newReactionDetected = true;
+        }
+        lastReactionsCountRef.current.set(photoId, totalReactions);
+      });
+
+      if (newLikeDetected) {
+        setHasNewLike(true);
+        setTimeout(() => setHasNewLike(false), 100);
       }
-    });
+      if (newReactionDetected) {
+        setHasNewReaction(true);
+        setTimeout(() => setHasNewReaction(false), 100);
+      }
+    }, 50); // Debounce de 50ms
 
-    if (newReactionDetected) {
-      setHasNewReaction(true);
-      setTimeout(() => setHasNewReaction(false), 100); // Reset après un court délai
-    }
-
-    lastReactionsCountRef.current = currentReactions;
-  }, [photosReactions]);
+    return () => {
+      if (detectionTimeoutRef.current) {
+        clearTimeout(detectionTimeoutRef.current);
+      }
+    };
+  }, [photos, photosReactions]);
 
   // Hook pour le carrousel automatique
   const { isCarouselActive } = useAutoCarousel({
@@ -195,26 +191,34 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
 
   // --- Effects ---
 
-  // Idle Detection
+  // ⚡ OPTIMISATION : Idle Detection avec debounce pour réduire les événements
   useEffect(() => {
+    let debounceTimeout: NodeJS.Timeout | null = null;
+    
     const resetIdle = () => {
       setIsIdle(false);
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
-      idleTimeoutRef.current = setTimeout(() => {
-        if (!lightboxIndex && displayedPhotos.length > 0) {
+      
+      // Debounce les événements pour éviter trop de timeouts
+      if (debounceTimeout) clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        idleTimeoutRef.current = setTimeout(() => {
+          if (!lightboxIndex && displayedPhotos.length > 0) {
             setIsIdle(true);
-        }
-      }, 5 * 60 * 1000); // 5 minutes d'inactivité
+          }
+        }, 5 * 60 * 1000); // 5 minutes d'inactivité
+      }, 200); // Debounce de 200ms
     };
 
     const events = ['mousemove', 'keydown', 'click', 'touchstart'];
-    events.forEach(e => window.addEventListener(e, resetIdle));
+    events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
     
     resetIdle();
 
     return () => {
       events.forEach(e => window.removeEventListener(e, resetIdle));
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+      if (debounceTimeout) clearTimeout(debounceTimeout);
     };
   }, [lightboxIndex, displayedPhotos.length]);
 
@@ -230,9 +234,11 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     }
   }, [newPhotoIndicator]);
 
-  // Auto-hide controls
+  // ⚡ OPTIMISATION : Auto-hide controls avec debounce et passive listeners
   useEffect(() => {
     if (isKiosqueMode || !showControls) return;
+
+    let debounceTimeout: NodeJS.Timeout | null = null;
 
     const hideControlsAfterDelay = () => {
       if (hideControlsTimeoutRef.current) clearTimeout(hideControlsTimeoutRef.current);
@@ -243,17 +249,23 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
 
     const handleInteraction = () => {
       if (!showControls) setShowControls(true);
-      hideControlsAfterDelay();
+      
+      // Debounce pour éviter trop de timeouts
+      if (debounceTimeout) clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        hideControlsAfterDelay();
+      }, 100);
     };
 
-    window.addEventListener('mousemove', handleInteraction);
-    window.addEventListener('keydown', handleInteraction);
+    window.addEventListener('mousemove', handleInteraction, { passive: true });
+    window.addEventListener('keydown', handleInteraction, { passive: true });
     hideControlsAfterDelay();
 
     return () => {
       window.removeEventListener('mousemove', handleInteraction);
       window.removeEventListener('keydown', handleInteraction);
       if (hideControlsTimeoutRef.current) clearTimeout(hideControlsTimeoutRef.current);
+      if (debounceTimeout) clearTimeout(debounceTimeout);
     };
   }, [isKiosqueMode, showControls, isHoveringControls]);
 
@@ -429,7 +441,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
 
       {/* Alerte texte */}
       <AnimatePresence mode="wait">
-        {settings.alert_text && settings.alert_text.trim() && (
+        {hasAlert && (
           <motion.div
             key="alert-banner"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -468,7 +480,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
                   <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] break-words leading-relaxed tracking-normal max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
                     <span className="relative inline-block">
                       <span className="absolute inset-0 bg-gradient-to-r from-white via-yellow-100 to-white opacity-30 blur-xl animate-pulse"></span>
-                      <span className="relative">{settings.alert_text}</span>
+                      <span className="relative">{settings.alert_text || ''}</span>
                     </span>
                   </p>
                 </motion.div>

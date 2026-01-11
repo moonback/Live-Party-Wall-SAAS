@@ -66,6 +66,12 @@ export const defaultSettings: EventSettings = {
  * @returns Promise résolue avec les paramètres de l'événement
  */
 export const getSettings = async (eventId: string): Promise<EventSettings> => {
+  // ⚡ OPTIMISATION : Vérifier que eventId est valide avant de faire la requête
+  if (!eventId || eventId === 'undefined') {
+    logger.warn('Invalid eventId in getSettings', { component: 'settingsService', action: 'getSettings', eventId });
+    return defaultSettings;
+  }
+
   try {
     const { data, error } = await supabase
       .from('event_settings')

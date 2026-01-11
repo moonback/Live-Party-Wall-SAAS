@@ -32,10 +32,20 @@ const VirtualColumn = React.memo(({
 }: VirtualColumnProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
+  // ⚡ OPTIMISATION : Debounce resize pour éviter trop de recalculs
   useEffect(() => {
-    const updateViewportHeight = () => setViewportHeight(window.innerHeight);
-    window.addEventListener('resize', updateViewportHeight);
-    return () => window.removeEventListener('resize', updateViewportHeight);
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    const updateViewportHeight = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setViewportHeight(window.innerHeight);
+      }, 200);
+    };
+    window.addEventListener('resize', updateViewportHeight, { passive: true });
+    return () => {
+      window.removeEventListener('resize', updateViewportHeight);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+    };
   }, []);
 
   // ⚡ OPTIMISATION : Overscan adaptatif (max 20 photos au lieu de 100+)
@@ -184,6 +194,7 @@ export const WallMasonry = React.memo(({
 }: WallMasonryProps) => {
   const [numColumns, setNumColumns] = useState(1);
 
+  // ⚡ OPTIMISATION : Calculer le nombre de colonnes avec debounce
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
@@ -200,11 +211,11 @@ export const WallMasonry = React.memo(({
         else if (w >= 768) setNumColumns(3); // Tablettes portrait
         else if (w >= 640) setNumColumns(2); // Grands mobiles
         else setNumColumns(1); // Petits mobiles
-      }, 100); // Réduction du délai pour une réactivité plus rapide
+      }, 150); // ⚡ OPTIMISATION : Augmenter le debounce pour réduire les recalculs
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => {
       clearTimeout(timeoutId);
       window.removeEventListener('resize', handleResize);

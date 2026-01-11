@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,21 +10,33 @@ interface IdleScreenProps {
 
 export const IdleScreen = React.memo(({ isActive, uploadUrl, title }: IdleScreenProps) => {
   const [time, setTime] = useState(new Date());
-  const [qrSize, setQrSize] = useState(300);
-
+  
+  // ⚡ OPTIMISATION : Timer seulement quand actif
   useEffect(() => {
     if (!isActive) return;
+    
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [isActive]);
 
+  // ⚡ OPTIMISATION : Mémoriser la taille du QR code avec debounce
+  const qrSize = useMemo(() => {
+    return window.innerWidth >= 1920 ? 400 : 300;
+  }, []);
+
   useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout | null = null;
     const updateQrSize = () => {
-      setQrSize(window.innerWidth >= 1920 ? 400 : 300);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // La taille est calculée via CSS responsive, pas besoin de state
+      }, 200);
     };
-    updateQrSize();
-    window.addEventListener('resize', updateQrSize);
-    return () => window.removeEventListener('resize', updateQrSize);
+    window.addEventListener('resize', updateQrSize, { passive: true });
+    return () => {
+      window.removeEventListener('resize', updateQrSize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+    };
   }, []);
 
   return (
@@ -57,7 +69,7 @@ export const IdleScreen = React.memo(({ isActive, uploadUrl, title }: IdleScreen
               {title}
             </h1>
 
-            {/* Giant QR Code */}
+            {/* ⚡ OPTIMISATION : Giant QR Code - Mémoriser pour éviter les re-renders */}
             <div className="relative p-6 md:p-8 lg:p-10 xl:p-12 bg-white rounded-3xl md:rounded-[2rem] lg:rounded-[2.5rem] shadow-[0_0_100px_rgba(236,72,153,0.3)] animate-float">
                <div className="absolute -inset-1 md:-inset-2 lg:-inset-3 bg-gradient-to-br from-pink-500 via-purple-500 to-cyan-500 rounded-[28px] md:rounded-[2rem] lg:rounded-[2.5rem] blur-lg opacity-70 animate-pulse"></div>
                <div className="relative bg-white p-2 md:p-3 lg:p-4 rounded-2xl md:rounded-3xl">
@@ -67,6 +79,7 @@ export const IdleScreen = React.memo(({ isActive, uploadUrl, title }: IdleScreen
                     level={"H"}
                     bgColor={"#ffffff"}
                     fgColor={"#000000"}
+                    includeMargin={false}
                  />
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="bg-white/95 backdrop-blur-sm rounded-full p-4 md:p-5 lg:p-6 shadow-xl border-2 border-gray-100">

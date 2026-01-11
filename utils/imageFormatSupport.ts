@@ -7,6 +7,9 @@
 let webpSupport: boolean | null = null;
 let avifSupport: boolean | null = null;
 
+// ⚡ OPTIMISATION : Cache des URLs qui ont échoué en AVIF pour éviter de réessayer
+const failedAvifUrls = new Set<string>();
+
 /**
  * ⚡ OPTIMISATION : Détecter le support WebP
  * @returns Promise résolue avec true si WebP est supporté
@@ -78,11 +81,16 @@ export const getOptimalImageUrl = async (
     return originalUrl;
   }
 
+  // ⚡ OPTIMISATION : Si cette URL a déjà échoué en AVIF, ne plus essayer
+  if (failedAvifUrls.has(originalUrl)) {
+    preferFormat = preferFormat === 'avif' ? 'webp' : preferFormat;
+  }
+
   // ⚡ OPTIMISATION : Détecter le support des formats
   const { avif, webp } = await detectImageFormatSupport();
 
   // ⚡ OPTIMISATION : Choisir le meilleur format selon le support
-  if (preferFormat === 'avif' && avif) {
+  if (preferFormat === 'avif' && avif && !failedAvifUrls.has(originalUrl)) {
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.avif');
   }
 
@@ -90,7 +98,7 @@ export const getOptimalImageUrl = async (
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.webp');
   }
 
-  if (avif) {
+  if (avif && !failedAvifUrls.has(originalUrl)) {
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.avif');
   }
 
@@ -100,6 +108,16 @@ export const getOptimalImageUrl = async (
 
   // Fallback vers l'original
   return originalUrl;
+};
+
+/**
+ * ⚡ OPTIMISATION : Marquer une URL comme ayant échoué en AVIF
+ * @param url - URL qui a échoué
+ */
+export const markAvifFailed = (url: string): void => {
+  // Extraire l'URL de base sans l'extension AVIF
+  const baseUrl = url.replace(/\.avif(\?.*)?$/i, '');
+  failedAvifUrls.add(baseUrl);
 };
 
 /**
@@ -115,24 +133,27 @@ export const generateOptimizedSrcSet = async (
   const { avif, webp } = await detectImageFormatSupport();
   const srcsetParts: string[] = [];
 
-  // ⚡ OPTIMISATION : Générer srcset pour chaque format supporté
-  if (avif) {
+  // ⚡ OPTIMISATION : Générer srcset pour chaque format supporté, en évitant AVIF si déjà échoué
+  const baseUrlWithoutExt = baseUrl.replace(/\.(jpg|jpeg|png|avif|webp)(\?.*)?$/i, '');
+  const shouldUseAvif = avif && !failedAvifUrls.has(baseUrlWithoutExt);
+
+  if (shouldUseAvif) {
     widths.forEach((width) => {
-      const url = baseUrl.replace(/\.(jpg|jpeg|png)$/i, `.avif?w=${width}`);
+      const url = baseUrl.replace(/\.(jpg|jpeg|png)(\?.*)?$/i, `.avif?w=${width}`);
       srcsetParts.push(`${url} ${width}w`);
     });
   }
 
   if (webp) {
     widths.forEach((width) => {
-      const url = baseUrl.replace(/\.(jpg|jpeg|png)$/i, `.webp?w=${width}`);
+      const url = baseUrl.replace(/\.(jpg|jpeg|png)(\?.*)?$/i, `.webp?w=${width}`);
       srcsetParts.push(`${url} ${width}w`);
     });
   }
 
   // Fallback vers original
   widths.forEach((width) => {
-    const url = `${baseUrl}?w=${width}`;
+    const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}w=${width}`;
     srcsetParts.push(`${url} ${width}w`);
   });
 
