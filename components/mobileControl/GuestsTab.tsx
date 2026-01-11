@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Users, RefreshCw, Trash2, Check, X } from 'lucide-react';
 import { Guest } from '../../types';
 
@@ -25,6 +25,8 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [swipeStates, setSwipeStates] = useState<Map<string, SwipeState>>(new Map());
   const touchStartRef = useRef<{ guestId: string; startX: number; startY: number } | null>(null);
+  const swipeElementRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const cleanupFunctionsRef = useRef<Map<string, () => void>>(new Map());
 
   const handleDelete = async (guestId: string, guestName: string) => {
     setIsDeleting(guestId);
@@ -42,83 +44,125 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
     }
   };
 
-  // Gestion du swipe
-  const handleTouchStart = (e: React.TouchEvent, guestId: string) => {
-    const touch = e.touches[0];
-    touchStartRef.current = {
-      guestId,
-      startX: touch.clientX,
-      startY: touch.clientY,
+  // Nettoyage des listeners lors du démontage
+  useEffect(() => {
+    return () => {
+      cleanupFunctionsRef.current.forEach(cleanup => cleanup());
+      cleanupFunctionsRef.current.clear();
+      swipeElementRefs.current.clear();
     };
-    setSwipeStates(prev => {
-      const next = new Map(prev);
-      next.set(guestId, { startX: touch.clientX, currentX: touch.clientX, isSwiping: false });
-      return next;
-    });
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent, guestId: string) => {
-    if (!touchStartRef.current || touchStartRef.current.guestId !== guestId) return;
-    
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartRef.current.startX;
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.startY);
-    
-    // Détecter un swipe horizontal (deltaX > deltaY * 1.5 pour être plus strict)
-    // Seulement pour les swipes vers la gauche (deltaX < 0)
-    if (deltaX < -10 && Math.abs(deltaX) > deltaY * 1.5) {
-      e.preventDefault(); // Empêcher le scroll pendant le swipe
-      
+  // Gestion du swipe avec listeners non-passifs
+  const setupSwipeListeners = (element: HTMLDivElement | null, guestId: string) => {
+    // Nettoyer les anciens listeners pour cet invité
+    const existingCleanup = cleanupFunctionsRef.current.get(guestId);
+    if (existingCleanup) {
+      existingCleanup();
+    }
+
+    if (!element) {
+      swipeElementRefs.current.delete(guestId);
+      cleanupFunctionsRef.current.delete(guestId);
+      return;
+    }
+
+    swipeElementRefs.current.set(guestId, element);
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        guestId,
+        startX: touch.clientX,
+        startY: touch.clientY,
+      };
       setSwipeStates(prev => {
         const next = new Map(prev);
-        const state = next.get(guestId);
-        if (state) {
-          // Limiter le swipe à -200px maximum
-          const limitedX = Math.max(touch.clientX, state.startX - 200);
-          next.set(guestId, {
-            ...state,
-            currentX: limitedX,
-            isSwiping: true,
-          });
-        }
+        next.set(guestId, { startX: touch.clientX, currentX: touch.clientX, isSwiping: false });
         return next;
       });
-    } else if (deltaX > 10 && Math.abs(deltaX) > deltaY * 1.5) {
-      // Swipe vers la droite : réinitialiser
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartRef.current || touchStartRef.current.guestId !== guestId) return;
+      
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchStartRef.current.startX;
+      const deltaY = Math.abs(touch.clientY - touchStartRef.current.startY);
+      
+      // Détecter un swipe horizontal (deltaX > deltaY * 1.5 pour être plus strict)
+      // Seulement pour les swipes vers la gauche (deltaX < 0)
+      if (deltaX < -10 && Math.abs(deltaX) > deltaY * 1.5) {
+        e.preventDefault(); // Empêcher le scroll pendant le swipe
+        
+        setSwipeStates(prev => {
+          const next = new Map(prev);
+          const state = next.get(guestId);
+          if (state) {
+            // Limiter le swipe à -200px maximum
+            const limitedX = Math.max(touch.clientX, state.startX - 200);
+            next.set(guestId, {
+              ...state,
+              currentX: limitedX,
+              isSwiping: true,
+            });
+          }
+          return next;
+        });
+      } else if (deltaX > 10 && Math.abs(deltaX) > deltaY * 1.5) {
+        // Swipe vers la droite : réinitialiser
+        setSwipeStates(prev => {
+          const next = new Map(prev);
+          next.delete(guestId);
+          return next;
+        });
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartRef.current || touchStartRef.current.guestId !== guestId) return;
+      
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.startX;
+      
+      // Utiliser une fonction de callback pour accéder à l'état actuel
       setSwipeStates(prev => {
+        const swipeState = prev.get(guestId);
+        
+        // Si swipe gauche suffisant (> 120px), supprimer directement
+        if (swipeState && deltaX < -120) {
+          const guest = guests.find(g => g.id === guestId);
+          if (guest) {
+            handleDelete(guestId, guest.name);
+          }
+        } else if (swipeState && deltaX < -80) {
+          // Si swipe entre 80px et 120px, afficher la confirmation
+          setShowDeleteConfirm(guestId);
+        }
+        
+        // Réinitialiser le swipe
         const next = new Map(prev);
         next.delete(guestId);
         return next;
       });
-    }
-  };
+      
+      touchStartRef.current = null;
+    };
 
-  const handleTouchEnd = (e: React.TouchEvent, guestId: string) => {
-    if (!touchStartRef.current || touchStartRef.current.guestId !== guestId) return;
+    element.addEventListener('touchstart', handleTouchStart, { passive: true });
+    element.addEventListener('touchmove', handleTouchMove, { passive: false });
+    element.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    // Stocker la fonction de nettoyage
+    const cleanup = () => {
+      element.removeEventListener('touchstart', handleTouchStart);
+      element.removeEventListener('touchmove', handleTouchMove);
+      element.removeEventListener('touchend', handleTouchEnd);
+      swipeElementRefs.current.delete(guestId);
+      cleanupFunctionsRef.current.delete(guestId);
+    };
     
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStartRef.current.startX;
-    const swipeState = swipeStates.get(guestId);
-    
-    // Si swipe gauche suffisant (> 120px), supprimer directement
-    if (swipeState && deltaX < -120) {
-      const guest = guests.find(g => g.id === guestId);
-      if (guest) {
-        handleDelete(guestId, guest.name);
-      }
-    } else if (swipeState && deltaX < -80) {
-      // Si swipe entre 80px et 120px, afficher la confirmation
-      setShowDeleteConfirm(guestId);
-    }
-    
-    // Réinitialiser le swipe
-    setSwipeStates(prev => {
-      const next = new Map(prev);
-      next.delete(guestId);
-      return next;
-    });
-    
-    touchStartRef.current = null;
+    cleanupFunctionsRef.current.set(guestId, cleanup);
   };
 
   return (
@@ -177,10 +221,8 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
             return (
               <div
                 key={guest.id}
+                ref={(el) => setupSwipeListeners(el, guest.id)}
                 className="relative overflow-hidden rounded-xl touch-none md:touch-auto"
-                onTouchStart={(e) => handleTouchStart(e, guest.id)}
-                onTouchMove={(e) => handleTouchMove(e, guest.id)}
-                onTouchEnd={(e) => handleTouchEnd(e, guest.id)}
               >
                 {/* Zone de suppression (visible lors du swipe) */}
                 <div 

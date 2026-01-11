@@ -298,8 +298,12 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
   // Supprimer un invité
   const handleDeleteGuest = async (guestId: string, guestName: string) => {
+    if (!currentEvent?.id) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
     try {
-      await deleteGuest(guestId, guestName);
+      await deleteGuest(currentEvent.id, guestId, guestName);
       addToast('Invité supprimé', 'success');
       await handleRefreshGuests();
     } catch (error) {
