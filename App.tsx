@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { ViewMode } from './types';
 import Toast from './components/Toast';
 import { ToastProvider, useToast } from './context/ToastContext';
@@ -7,6 +7,7 @@ import { PhotosProvider, usePhotos } from './context/PhotosContext';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import TransitionWrapper from './components/TransitionWrapper';
+import SplashScreen from './components/SplashScreen';
 import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
 import { logger } from './utils/logger';
@@ -37,6 +38,10 @@ const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePrefer
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
   const [showCookiePreferences, setShowCookiePreferences] = useState(false);
+  const [showSplashScreen, setShowSplashScreen] = useState(false);
+  const previousViewModeRef = useRef<ViewMode | null>(null);
+  const splashScreenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMountRef = useRef(true);
   
   // Contexts
   const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
@@ -138,7 +143,7 @@ const AppContent: React.FC = () => {
     return () => clearInterval(interval);
   }, [viewMode, addToast, currentEvent]);
 
-  // Fonction wrapper pour changer le viewMode avec vérification du profil
+  // Fonction wrapper pour changer le viewMode avec vérification du profil et affichage du splash screen
   const handleViewModeChange = (newMode: ViewMode) => {
     // Les modes qui nécessitent un profil utilisateur
     const modesRequiringProfile: ViewMode[] = ['guest', 'gallery', 'collage', 'findme'];
@@ -150,6 +155,42 @@ const AppContent: React.FC = () => {
       setViewMode(newMode);
     }
   };
+
+  // Détecter les changements de viewMode et afficher le splash screen
+  useEffect(() => {
+    // Ignorer le premier montage - le splash screen initial dans index.html gère déjà le premier chargement
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      previousViewModeRef.current = viewMode;
+      return;
+    }
+
+    // Afficher le splash screen uniquement si on change vraiment de page
+    if (previousViewModeRef.current !== null && previousViewModeRef.current !== viewMode) {
+      setShowSplashScreen(true);
+      
+      // Nettoyer le timeout précédent s'il existe
+      if (splashScreenTimeoutRef.current) {
+        clearTimeout(splashScreenTimeoutRef.current);
+      }
+
+      // Masquer le splash screen après une durée minimale (800ms)
+      // Cela permet d'avoir une transition fluide même si le composant charge rapidement
+      splashScreenTimeoutRef.current = setTimeout(() => {
+        setShowSplashScreen(false);
+      }, 800);
+    }
+
+    // Mettre à jour la référence
+    previousViewModeRef.current = viewMode;
+
+    // Cleanup
+    return () => {
+      if (splashScreenTimeoutRef.current) {
+        clearTimeout(splashScreenTimeoutRef.current);
+      }
+    };
+  }, [viewMode]);
 
   // Check URL params and routing
   useEffect(() => {
@@ -237,6 +278,9 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="font-sans min-h-screen text-white relative overflow-hidden">
+      {/* Splash Screen pour les changements de page */}
+      <SplashScreen isVisible={showSplashScreen} />
+      
       {/* Ambient overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.08] mix-blend-overlay z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.28),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.18),transparent_45%)]"></div>
