@@ -117,6 +117,13 @@ function drawImageWithKenBurns(
   ctx.restore();
 }
 
+/**
+ * Charge une image depuis une URL en utilisant createImageBitmap() pour réduire l'empreinte mémoire
+ * Utilise toujours createImageBitmap() si disponible (meilleure performance et moins de mémoire)
+ * @param url - URL de l'image à charger
+ * @param signal - Signal d'annulation optionnel
+ * @returns Promise résolue avec ImageBitmap ou HTMLImageElement (fallback)
+ */
 async function loadImageSourceFromUrl(url: string, signal?: AbortSignal): Promise<ImageBitmap | HTMLImageElement> {
   const res = await fetch(url, { mode: 'cors', signal });
   if (!res.ok) {
@@ -125,10 +132,21 @@ async function loadImageSourceFromUrl(url: string, signal?: AbortSignal): Promis
   const blob = await res.blob();
   assertNotAborted(signal);
 
+  // Toujours utiliser createImageBitmap() si disponible (meilleure gestion mémoire)
+  // createImageBitmap() est plus efficace que HTMLImageElement car :
+  // - Moins de mémoire utilisée
+  // - Pas besoin de décoder l'image dans le DOM
+  // - Meilleure performance pour le traitement
   if ('createImageBitmap' in window) {
-    return await createImageBitmap(blob);
+    try {
+      return await createImageBitmap(blob);
+    } catch (error) {
+      // Si createImageBitmap échoue, fallback vers Image
+      console.warn('createImageBitmap échoué, utilisation du fallback Image:', error);
+    }
   }
 
+  // Fallback vers HTMLImageElement uniquement si createImageBitmap n'est pas disponible
   const objectUrl = URL.createObjectURL(blob);
   const img = new Image();
   img.src = objectUrl;
@@ -1068,24 +1086,102 @@ export async function generateTimelapseAftermovie(
   const mediaCache = new Map<string, ImageBitmap | HTMLImageElement | HTMLVideoElement>();
   const frameOverlayCache = new Map<string, ImageBitmap | HTMLImageElement>();
   
-  // Préchargement des images en parallèle (améliore les performances)
+  // Helper pour utiliser le Web Worker pour le préchargement (si disponible)
+  let worker: Worker | null = null;
+  const useWorker = typeof Worker !== 'undefined';
+  
+  // Gérer l'annulation du worker si le signal est annulé
+  const cleanupWorker = () => {
+    if (worker) {
+      try {
+        worker.postMessage({ type: 'cancel' } as any);
+        worker.terminate();
+      } catch (error) {
+        console.warn('Erreur lors de l\'annulation du worker:', error);
+      }
+      worker = null;
+    }
+  };
+  
+  if (signal) {
+    signal.addEventListener('abort', cleanupWorker, { once: true });
+  }
+  
+  if (useWorker) {
+    try {
+      worker = new Worker(
+        new URL('./aftermovieWorker.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+      
+      // Gérer les messages du worker
+      worker.onmessage = (event) => {
+        const response = event.data;
+        if (response.type === 'imageLoaded') {
+          // L'ImageBitmap a été transféré depuis le worker
+          mediaCache.set(response.id, response.bitmap);
+        } else if (response.type === 'imageError') {
+          console.warn(`Erreur chargement image ${response.id} dans worker:`, response.error);
+        } else if (response.type === 'batchProgress') {
+          // Mettre à jour le progrès si nécessaire
+          onProgress?.({
+            stage: 'loading',
+            processed: response.loaded,
+            total: response.total,
+            message: `Préchargement : ${response.loaded}/${response.total} images…`
+          });
+        }
+      };
+      
+      worker.onerror = (error) => {
+        console.warn('Erreur Web Worker aftermovie:', error);
+        // Désactiver le worker en cas d'erreur
+        worker?.terminate();
+        worker = null;
+      };
+    } catch (error) {
+      console.warn('Impossible de créer le Web Worker, utilisation du mode synchrone:', error);
+      worker = null;
+    }
+  }
+  
+  // Préchargement optimisé avec createImageBitmap() (toujours utilisé si disponible)
   const preloadMedia = async (photoUrls: string[], signal?: AbortSignal): Promise<void> => {
-    const loadPromises = photoUrls.slice(0, 10).map(async (url) => { // Précharger les 10 premières
+    const loadPromises = photoUrls.map(async (url) => {
       if (mediaCache.has(url)) return; // Déjà en cache
       try {
         const response = await fetch(url, { signal });
         if (!response.ok) return;
         const blob = await response.blob();
+        
+        // Toujours utiliser createImageBitmap() si disponible (meilleure gestion mémoire)
         if ('createImageBitmap' in window) {
-          const bitmap = await createImageBitmap(blob);
-          mediaCache.set(url, bitmap);
+          try {
+            const bitmap = await createImageBitmap(blob);
+            mediaCache.set(url, bitmap);
+          } catch (bitmapError) {
+            // Fallback vers Image si createImageBitmap échoue
+            console.warn('createImageBitmap échoué, fallback Image:', bitmapError);
+            const objectUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            img.src = objectUrl;
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = () => reject(new Error("Impossible de charger l'image"));
+            });
+            URL.revokeObjectURL(objectUrl);
+            mediaCache.set(url, img);
+          }
         } else {
+          // Fallback si createImageBitmap n'est pas disponible
+          const objectUrl = URL.createObjectURL(blob);
           const img = new Image();
-          img.src = url;
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
+          img.src = objectUrl;
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error("Impossible de charger l'image"));
           });
+          URL.revokeObjectURL(objectUrl);
           mediaCache.set(url, img);
         }
       } catch (err) {
@@ -1098,9 +1194,29 @@ export async function generateTimelapseAftermovie(
     await Promise.all(loadPromises);
   };
   
-  // Précharger les premières photos en arrière-plan
-  if (photos.length > 0) {
-    const firstPhotos = photos.slice(0, Math.min(10, photos.length)).map(p => p.url);
+  // Précharger les photos en utilisant le Web Worker si disponible (non-bloquant)
+  if (photos.length > 0 && worker) {
+    try {
+      // Précharger les premières photos via le worker (non-bloquant pour l'UI)
+      const firstPhotos = photos.slice(0, Math.min(20, photos.length));
+      const photosToPreload = firstPhotos
+        .filter(p => p.type === 'image') // Seulement les images (pas les vidéos)
+        .map(p => ({ id: p.url, url: p.url, type: p.type as 'image' | 'video' }));
+      
+      if (photosToPreload.length > 0) {
+        worker.postMessage({
+          type: 'loadImageBatch',
+          photos: photosToPreload
+        } as any);
+      }
+    } catch (error) {
+      console.warn('Erreur préchargement via worker:', error);
+    }
+  } else if (photos.length > 0) {
+    // Fallback : préchargement synchrone (mais optimisé avec createImageBitmap)
+    const firstPhotos = photos.slice(0, Math.min(10, photos.length))
+      .filter(p => p.type === 'image')
+      .map(p => p.url);
     preloadMedia(firstPhotos, signal).catch(() => {
       // Ignorer les erreurs de préchargement
     });
@@ -1498,5 +1614,23 @@ export async function generateTimelapseAftermovie(
     try { if (recorder.state !== 'inactive') recorder.stop(); } catch {}
     try { videoTrack.stop(); } catch {}
     audioCleanup?.();
+    
+    // Nettoyer le Web Worker
+    cleanupWorker();
+    
+    // Nettoyer les ImageBitmap du cache pour libérer la mémoire
+    for (const [url, media] of mediaCache.entries()) {
+      if (media instanceof ImageBitmap) {
+        media.close(); // Libérer la mémoire de l'ImageBitmap
+      }
+    }
+    mediaCache.clear();
+    
+    for (const [url, overlay] of frameOverlayCache.entries()) {
+      if (overlay instanceof ImageBitmap) {
+        overlay.close(); // Libérer la mémoire de l'ImageBitmap
+      }
+    }
+    frameOverlayCache.clear();
   }
 }
