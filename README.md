@@ -2,7 +2,7 @@
 
 # 🎉 Partywall
 
-![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
+![Banner](https://Partywall-saas.vercel.app/banner.jpg)
 
 ### Transformez chaque événement en une expérience mémorable et interactive
 
@@ -15,7 +15,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE.md)
 
-[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](https://github.com/moonback/Live-Party-Wall-SAAS/issues) • [✨ Request Feature](https://github.com/moonback/Live-Party-Wall-SAAS/issues)
+[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](https://github.com/moonback/Partywall-SAAS/issues) • [✨ Request Feature](https://github.com/moonback/Partywall-SAAS/issues)
 
 </div>
 
@@ -129,7 +129,7 @@ Créer une animation collective et engageante où chaque photo devient un moment
 ## 🏗️ Architecture
 
 ```
-📁 Live-Party-Wall-SAAS/
+📁 Partywall-SAAS/
 ├── 🎨 components/          # Composants React par fonctionnalité
 │   ├── landing/           # Landing page SaaS
 │   ├── gallery/           # Galerie avec filtres
@@ -197,8 +197,8 @@ Clé API Google Gemini
 
 ```bash
 # 1. Cloner le projet
-git clone https://github.com/moonback/Live-Party-Wall-SAAS.git
-cd Live-Party-Wall-SAAS
+git clone https://github.com/moonback/Partywall-SAAS.git
+cd Partywall-SAAS
 
 # 2. Installer les dépendances
 npm install
@@ -683,7 +683,7 @@ Plus de **20 milestones** à débloquer :
 ## 🏗️ Structure du projet
 
 ```
-Live-Party-Wall-SAAS/
+Partywall-SAAS/
 ├── components/          # Composants React par fonctionnalité
 │   ├── landing/        # Landing page SaaS
 │   ├── gallery/        # Galerie avec filtres
@@ -763,7 +763,7 @@ Les fichiers de distribution sont dans `release/`.
 
 ## 🐛 Signaler un bug
 
-Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec :
+Ouvrez une [issue](https://github.com/moonback/Partywall-SAAS/issues) avec :
 - Description du bug
 - Étapes pour reproduire
 - Comportement attendu vs actuel
@@ -771,7 +771,7 @@ Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec
 
 ## ✨ Proposer une fonctionnalité
 
-Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec le label `enhancement` :
+Ouvrez une [issue](https://github.com/moonback/Partywall-SAAS/issues) avec le label `enhancement` :
 - Description détaillée
 - Cas d'usage
 - Bénéfices attendus
@@ -782,7 +782,7 @@ Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec
 
 Si ce projet vous est utile, n'hésitez pas à ⭐ le repo !
 
-**[⬆ Retour en haut](#-live-party-wall)**
+**[⬆ Retour en haut](#-Partywall)**
 
 Made with ❤️ by [moonback](https://github.com/moonback)
 
@@ -798,7 +798,7 @@ Ce projet est sous licence MIT. Voir [LICENSE.md](./LICENSE.md) pour plus de dé
 
 <div align="center">
 
-**[⬆ Retour en haut](#-live-party-wall)**
+**[⬆ Retour en haut](#-Partywall)**
 
 Made with ❤️ by [moonback](https://github.com/moonback)
 

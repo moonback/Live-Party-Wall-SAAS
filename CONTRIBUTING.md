@@ -47,7 +47,7 @@ Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à 
 
 ### Signaler un bug
 
-1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/moonback/Live-Party-Wall-SAAS/issues)
+1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/moonback/Partywall-SAAS/issues)
 2. **Créer une nouvelle issue** avec le template suivant :
 
 ```markdown
@@ -121,8 +121,8 @@ Toute autre information pertinente.
 
 ```bash
 # Cloner votre fork
-git clone https://github.com/moonback/Live-Party-Wall-SAAS.git
-cd Live-Party-Wall-SAAS
+git clone https://github.com/moonback/Partywall-SAAS.git
+cd Partywall-SAAS
 
 # Installer les dépendances
 npm install

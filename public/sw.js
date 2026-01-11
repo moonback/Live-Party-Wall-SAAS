@@ -4,7 +4,7 @@
  */
 
 const CACHE_VERSION = 'v1.0.0';
-const CACHE_NAME = `live-party-wall-${CACHE_VERSION}`;
+const CACHE_NAME = `Partywall-${CACHE_VERSION}`;
 
 // Ressources critiques à mettre en cache immédiatement
 const CRITICAL_RESOURCES = [

@@ -402,12 +402,12 @@ Vérifiez :
 - **Documentation** : Consultez les guides dans `/docs`
   - [Guide Organisateur](./GUIDE_ORGANISATEUR.md)
   - [Guide Invité](./GUIDE_INVITE.md)
-- **GitHub** : Ouvrez une issue sur [GitHub](https://github.com/moonback/Live-Party-Wall-SAAS/issues)
+- **GitHub** : Ouvrez une issue sur [GitHub](https://github.com/moonback/Partywall-SAAS/issues)
 - **Organisateur** : Contactez l'organisateur de l'événement
 
 ### Comment signaler un bug ?
 
-Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec :
+Ouvrez une [issue](https://github.com/moonback/Partywall-SAAS/issues) avec :
 - Description du bug
 - Étapes pour reproduire
 - Comportement attendu vs actuel
@@ -415,7 +415,7 @@ Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec
 
 ### Comment proposer une fonctionnalité ?
 
-Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec le label `enhancement` :
+Ouvrez une [issue](https://github.com/moonback/Partywall-SAAS/issues) avec le label `enhancement` :
 - Description détaillée
 - Cas d'usage
 - Bénéfices attendus
