@@ -25,6 +25,7 @@ import { ProjectionStats } from './projection/ProjectionStats';
 import { MediaDisplay } from './projection/MediaDisplay';
 import { useReactionFlow } from '../hooks/wall/useReactionFlow';
 import { FlyingReactions } from './wall/Overlays/FlyingReactions';
+import { LiveStreamViewer } from './liveStream/LiveStreamViewer';
 
 interface ProjectionWallProps {
   photos: Photo[];
@@ -792,14 +793,23 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Media principal avec transition et gestion d'erreur */}
-      <MediaDisplay
-        photo={currentPhoto}
-        transitionDuration={transitionDuration}
-        transitionType={transitionType}
-        isTransitioning={isTransitioning}
-        onError={handleMediaError}
+      {/* Stream Live - Priorité sur les photos si actif */}
+      <LiveStreamViewer
+        className={`fixed inset-0 z-[100] ${isLiveStreamActive ? '' : 'hidden'}`}
+        onStreamEnd={() => setIsLiveStreamActive(false)}
+        onStreamStart={() => setIsLiveStreamActive(true)}
       />
+
+      {/* Media principal avec transition et gestion d'erreur - masqué si stream actif */}
+      {!isLiveStreamActive && (
+        <MediaDisplay
+          photo={currentPhoto}
+          transitionDuration={transitionDuration}
+          transitionType={transitionType}
+          isTransitioning={isTransitioning}
+          onError={handleMediaError}
+        />
+      )}
 
       {/* Overlay gradient pour améliorer la lisibilité du texte */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />

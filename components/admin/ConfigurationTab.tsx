@@ -14,6 +14,8 @@ import { generateEventContextSuggestion } from '../../services/eventContextServi
 import { EventSettings } from '../../services/settingsService';
 import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
 import { Monitor, Smartphone } from 'lucide-react';
+import { LiveStreamBroadcaster } from '../liveStream/LiveStreamBroadcaster';
+import { StreamRecordingsList } from '../liveStream/StreamRecordingsList';
 
 interface ConfigurationTabProps {
   // Props si nécessaire
@@ -1150,6 +1152,25 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   )}
                 </div>
               </div>
+            </section>
+
+            {/* Section Streaming Live */}
+            <section className="bg-slate-950/50 border border-slate-800 rounded-xl p-6">
+              <header className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-pink-500/10 rounded-lg border border-pink-500/20">
+                  <Video className="w-5 h-5 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-100">Diffusion Live</h3>
+                  <p className="text-sm text-slate-400">Diffusez la soirée en direct via une caméra déportée</p>
+                </div>
+              </header>
+              <LiveStreamBroadcaster />
+            </section>
+
+            {/* Section Replays */}
+            <section className="bg-slate-950/50 border border-slate-800 rounded-xl p-6 mt-6">
+              <StreamRecordingsList />
             </section>
           </aside>
         </div>

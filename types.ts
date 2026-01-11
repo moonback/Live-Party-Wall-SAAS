@@ -390,3 +390,32 @@ export interface AftermovieRow {
   created_by: string | null;
   download_count?: number;
 }
+
+// Live Stream Types
+export interface LiveStream {
+  id: string;
+  event_id: string;
+  stream_key: string;
+  title: string | null;
+  is_active: boolean;
+  started_at: string;
+  ended_at: string | null;
+  created_by: string | null;
+  viewer_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LiveStreamRow {
+  id: string;
+  event_id: string;
+  stream_key: string;
+  title: string | null;
+  is_active: boolean;
+  started_at: string;
+  ended_at: string | null;
+  created_by: string | null;
+  viewer_count: number;
+  created_at: string;
+  updated_at: string;
+}
