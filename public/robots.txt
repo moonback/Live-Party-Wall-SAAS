@@ -1,11 +1,11 @@
 # robots.txt pour Partywall
-# https://www.partywall.fr/robots.txt
+# https://www.live.partywall.fr/robots.txt
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://www.partywall.fr/sitemap.xml
+Sitemap: https://www.live.partywall.fr/sitemap.xml
 
 # Désactiver l'indexation des fichiers de modèles IA (trop volumineux)
 Disallow: /models/

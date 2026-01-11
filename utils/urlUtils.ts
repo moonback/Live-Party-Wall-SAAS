@@ -6,7 +6,7 @@
  * URL de production pour les QR codes
  * Tous les QR codes pointent vers cette URL pour permettre l'accès depuis n'importe quel appareil
  */
-const PRODUCTION_URL = 'https://Partywall.fr';
+const PRODUCTION_URL = 'https://live.partywall.fr';
 
 /**
  * Détecte si l'application s'exécute dans Electron

@@ -326,7 +326,7 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
                   </div>
                   <p className="text-xs text-slate-500 flex items-center gap-1.5">
                     <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                    Lien direct : <span className="font-mono text-indigo-400">Partywall.fr/?event={editedSlug}</span>
+                    Lien direct : <span className="font-mono text-indigo-400">live.partywall.fr/?event={editedSlug}</span>
                   </p>
                 </motion.div>
 
