@@ -10,6 +10,11 @@ let avifSupport: boolean | null = null;
 // ⚡ OPTIMISATION : Cache des URLs qui ont échoué en AVIF pour éviter de réessayer
 const failedAvifUrls = new Set<string>();
 
+// ⚡ OPTIMISATION : Compteur d'échecs AVIF globaux - si trop d'échecs, désactiver AVIF complètement
+let avifFailureCount = 0;
+const MAX_AVIF_FAILURES = 5; // Après 5 échecs, désactiver AVIF pour toutes les images
+let avifGloballyDisabled = false;
+
 /**
  * ⚡ OPTIMISATION : Détecter le support WebP
  * @returns Promise résolue avec true si WebP est supporté
@@ -81,16 +86,16 @@ export const getOptimalImageUrl = async (
     return originalUrl;
   }
 
-  // ⚡ OPTIMISATION : Si cette URL a déjà échoué en AVIF, ne plus essayer
-  if (failedAvifUrls.has(originalUrl)) {
+  // ⚡ OPTIMISATION : Si AVIF est désactivé globalement ou cette URL a échoué, ne plus essayer
+  if (avifGloballyDisabled || failedAvifUrls.has(originalUrl)) {
     preferFormat = preferFormat === 'avif' ? 'webp' : preferFormat;
   }
 
   // ⚡ OPTIMISATION : Détecter le support des formats
   const { avif, webp } = await detectImageFormatSupport();
 
-  // ⚡ OPTIMISATION : Choisir le meilleur format selon le support
-  if (preferFormat === 'avif' && avif && !failedAvifUrls.has(originalUrl)) {
+  // ⚡ OPTIMISATION : Choisir le meilleur format selon le support (sauf si AVIF désactivé globalement)
+  if (preferFormat === 'avif' && avif && !avifGloballyDisabled && !failedAvifUrls.has(originalUrl)) {
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.avif');
   }
 
@@ -98,7 +103,7 @@ export const getOptimalImageUrl = async (
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.webp');
   }
 
-  if (avif && !failedAvifUrls.has(originalUrl)) {
+  if (avif && !avifGloballyDisabled && !failedAvifUrls.has(originalUrl)) {
     return originalUrl.replace(/\.(jpg|jpeg|png)$/i, '.avif');
   }
 
@@ -118,6 +123,39 @@ export const markAvifFailed = (url: string): void => {
   // Extraire l'URL de base sans l'extension AVIF
   const baseUrl = url.replace(/\.avif(\?.*)?$/i, '');
   failedAvifUrls.add(baseUrl);
+  
+  // ⚡ OPTIMISATION : Incrémenter le compteur d'échecs globaux
+  avifFailureCount++;
+  
+  // ⚡ OPTIMISATION : Si trop d'échecs, désactiver AVIF globalement
+  if (avifFailureCount >= MAX_AVIF_FAILURES && !avifGloballyDisabled) {
+    avifGloballyDisabled = true;
+    console.warn('[Performance] AVIF désactivé globalement après', avifFailureCount, 'échecs');
+  }
+};
+
+/**
+ * ⚡ OPTIMISATION : Vérifier si AVIF est désactivé globalement
+ * @returns true si AVIF est désactivé globalement
+ */
+export const isAvifGloballyDisabled = (): boolean => {
+  return avifGloballyDisabled;
+};
+
+/**
+ * ⚡ OPTIMISATION : Filtrer les URLs AVIF d'un srcSet existant
+ * @param srcSet - srcSet string à filtrer
+ * @returns srcSet sans URLs AVIF
+ */
+export const filterAvifFromSrcSet = (srcSet: string): string => {
+  if (!srcSet || avifGloballyDisabled) {
+    // Si AVIF est désactivé, retirer toutes les URLs AVIF du srcSet
+    return srcSet
+      .split(', ')
+      .filter((part) => !part.includes('.avif'))
+      .join(', ');
+  }
+  return srcSet;
 };
 
 /**
@@ -130,12 +168,34 @@ export const generateOptimizedSrcSet = async (
   baseUrl: string,
   widths: number[] = [400, 800, 1200, 1600, 2000]
 ): Promise<string> => {
+  // ⚡ OPTIMISATION : Vérifier d'abord si AVIF est désactivé globalement (sans async pour éviter les appels inutiles)
+  if (avifGloballyDisabled) {
+    // Si AVIF est désactivé, générer seulement WebP et original
+    const { webp } = await detectImageFormatSupport();
+    const srcsetParts: string[] = [];
+
+    if (webp) {
+      widths.forEach((width) => {
+        const url = baseUrl.replace(/\.(jpg|jpeg|png)(\?.*)?$/i, `.webp?w=${width}`);
+        srcsetParts.push(`${url} ${width}w`);
+      });
+    }
+
+    // Fallback vers original
+    widths.forEach((width) => {
+      const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}w=${width}`;
+      srcsetParts.push(`${url} ${width}w`);
+    });
+
+    return srcsetParts.join(', ');
+  }
+
   const { avif, webp } = await detectImageFormatSupport();
   const srcsetParts: string[] = [];
 
-  // ⚡ OPTIMISATION : Générer srcset pour chaque format supporté, en évitant AVIF si déjà échoué
+  // ⚡ OPTIMISATION : Générer srcset pour chaque format supporté, en évitant AVIF si désactivé ou déjà échoué
   const baseUrlWithoutExt = baseUrl.replace(/\.(jpg|jpeg|png|avif|webp)(\?.*)?$/i, '');
-  const shouldUseAvif = avif && !failedAvifUrls.has(baseUrlWithoutExt);
+  const shouldUseAvif = avif && !avifGloballyDisabled && !failedAvifUrls.has(baseUrlWithoutExt);
 
   if (shouldUseAvif) {
     widths.forEach((width) => {

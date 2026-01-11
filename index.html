@@ -33,12 +33,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     
-    <!-- Preload des ressources critiques -->
-    <link rel="preload" href="/index.css" as="style" />
+    <!-- ⚡ OPTIMISATION : Preload CSS avec onload pour éviter l'avertissement -->
+    <link rel="preload" href="/index.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/index.css" /></noscript>
     
     <!-- Fonts Google -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Pacifico&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/index.css">
     
     <!-- DNS prefetch pour les APIs externes -->
     <link rel="dns-prefetch" href="https://esm.sh" />

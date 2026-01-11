@@ -33,8 +33,12 @@ const OptimizedImage = React.memo<{
     let cancelled = false;
     const loadOptimized = async () => {
       try {
+        // ⚡ OPTIMISATION : Vérifier si AVIF est désactivé globalement avant d'essayer
+        const imageFormatSupport = await import('../../utils/imageFormatSupport');
+        const preferFormat = 'avif'; // On essaie AVIF d'abord, mais getOptimalImageUrl gère la désactivation
+        
         const [url, srcSet] = await Promise.all([
-          get4KImageUrl(photo.url, true, 'avif'),
+          get4KImageUrl(photo.url, true, preferFormat),
           get4KImageSrcSet(photo.url),
         ]);
         if (!cancelled) {
@@ -72,13 +76,26 @@ const OptimizedImage = React.memo<{
     
     // Si c'est une image AVIF qui échoue, marquer comme échouée et charger l'original
     if (src.includes('.avif')) {
-      const { markAvifFailed } = await import('../../utils/imageFormatSupport');
+      const { markAvifFailed, filterAvifFromSrcSet } = await import('../../utils/imageFormatSupport');
       markAvifFailed(src);
       // Charger l'URL originale sans AVIF
       const originalUrl = get4KImageUrlSync(photo.url, true);
       setOptimizedUrl(originalUrl);
+      // ⚡ OPTIMISATION : Filtrer AVIF du srcSet existant ou régénérer sans AVIF
+      if (optimizedSrcSet) {
+        const filteredSrcSet = filterAvifFromSrcSet(optimizedSrcSet);
+        setOptimizedSrcSet(filteredSrcSet);
+      } else {
+        // Si pas de srcSet, régénérer sans AVIF
+        try {
+          const newSrcSet = await get4KImageSrcSet(photo.url);
+          setOptimizedSrcSet(newSrcSet);
+        } catch {
+          setOptimizedSrcSet('');
+        }
+      }
     }
-  }, [photo.url]);
+  }, [photo.url, optimizedSrcSet]);
 
   return (
     <img 

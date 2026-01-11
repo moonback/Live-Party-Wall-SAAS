@@ -29,7 +29,10 @@ export const useAutoScroll = ({ enabled, speed, containerRef, hasContent }: UseA
       const delta = now - lastTime;
 
       // ⚡ OPTIMISATION : Utiliser delta time pour un scroll fluide et éviter les reflows
-      if (delta >= 16 && scrollContainer) {
+      // Limiter le delta max à 100ms pour éviter les sauts lors de pauses
+      const clampedDelta = Math.min(delta, 100);
+      
+      if (clampedDelta >= 16 && scrollContainer) {
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
 
@@ -38,8 +41,11 @@ export const useAutoScroll = ({ enabled, speed, containerRef, hasContent }: UseA
           scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
         } else {
           // ⚡ OPTIMISATION : Calculer le scroll avec delta time normalisé pour éviter les reflows
-          const scrollAmount = speed * (delta / 16); // Normaliser par rapport à 60fps
-          scrollContainer.scrollTop += scrollAmount;
+          // Utiliser Math.round pour éviter les calculs flottants coûteux
+          const scrollAmount = Math.round(speed * (clampedDelta / 16)); // Normaliser par rapport à 60fps
+          if (scrollAmount > 0) {
+            scrollContainer.scrollTop += scrollAmount;
+          }
         }
 
         lastTime = now;

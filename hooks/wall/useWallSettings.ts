@@ -1,52 +1,34 @@
-import { useState, useEffect, useMemo } from 'react';
-import { getSettings, subscribeToSettings, defaultSettings } from '../../services/settingsService';
+import { useMemo } from 'react';
+import { defaultSettings } from '../../services/settingsService';
 import { AUTO_SCROLL_SPEED, KiosqueTransitionType } from '../../constants';
 import { useSettings } from '../../context/SettingsContext';
 
+/**
+ * ⚡ OPTIMISATION : Hook simplifié qui utilise uniquement le context Settings
+ * Le SettingsProvider gère déjà le chargement et la souscription Realtime
+ */
 export const useWallSettings = () => {
+  // ⚡ OPTIMISATION : Utiliser uniquement le context, pas d'appels directs au service
   const { settings: globalSettings } = useSettings();
-  const [uiConfig, setUiConfig] = useState({
-    title: defaultSettings.event_title,
-    subtitle: defaultSettings.event_subtitle,
-    scrollSpeed: AUTO_SCROLL_SPEED,
-    transition: defaultSettings.slide_transition as KiosqueTransitionType
-  });
 
   const isKiosqueMode = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('kiosque') === 'true' || localStorage.getItem('kiosqueMode') === 'true';
   }, []);
 
-  useEffect(() => {
-    const loadConfig = async () => {
-      const settings = await getSettings();
-      updateUiConfig(settings);
+  // ⚡ OPTIMISATION : Calculer uiConfig à partir des settings du context (mémorisé)
+  const uiConfig = useMemo(() => {
+    let speedValue = AUTO_SCROLL_SPEED;
+    if (globalSettings.scroll_speed === 'slow') speedValue = 0.15;
+    if (globalSettings.scroll_speed === 'fast') speedValue = 0.6;
+
+    return {
+      title: globalSettings.event_title || defaultSettings.event_title,
+      subtitle: globalSettings.event_subtitle || defaultSettings.event_subtitle,
+      scrollSpeed: speedValue,
+      transition: (globalSettings.slide_transition || defaultSettings.slide_transition) as KiosqueTransitionType
     };
-
-    const updateUiConfig = (settings: any) => {
-       let speedValue = AUTO_SCROLL_SPEED;
-       if (settings.scroll_speed === 'slow') speedValue = 0.15;
-       if (settings.scroll_speed === 'fast') speedValue = 0.6;
-
-       setUiConfig(prev => ({
-         ...prev,
-         title: settings.event_title,
-         subtitle: settings.event_subtitle,
-         scrollSpeed: speedValue,
-         transition: settings.slide_transition
-       }));
-    };
-
-    loadConfig();
-
-    const subscription = subscribeToSettings((newSettings) => {
-        updateUiConfig(newSettings);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  }, [globalSettings.event_title, globalSettings.event_subtitle, globalSettings.scroll_speed, globalSettings.slide_transition]);
 
   return {
     uiConfig,
