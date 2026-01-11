@@ -307,11 +307,11 @@
 ## 📞 Contact & Support
 
 **Pour les particuliers :**
-- Email : support@livepartywall.com
+- Email : support@Partywall.fr
 - Réponse sous 24h
 
 **Pour les prestataires :**
-- Email : pro@livepartywall.com
+- Email : pro@Partywall.fr
 - Téléphone : [À définir]
 - Réponse sous 2h (heures ouvrées)
 

@@ -219,7 +219,7 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
               </p>
               <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                 <p className="text-sm">
-                  <strong className="text-white">Email :</strong> privacy@livepartywall.com
+                  <strong className="text-white">Email :</strong> privacy@Partywall.fr
                 </p>
                 <p className="text-sm mt-2">
                   <strong className="text-white">Délégué à la protection des données :</strong> 
