@@ -68,36 +68,64 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
 
   return (
     <header className="mb-6">
-      <div className="bg-gradient-to-r from-slate-950/80 via-slate-900/80 to-slate-800/90 backdrop-blur-2xl rounded-2xl px-8 py-6 border border-slate-800 shadow-xl">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-950/95 via-slate-900/95 to-slate-800/95 backdrop-blur-2xl rounded-3xl px-6 sm:px-8 py-6 border border-slate-700/50 shadow-2xl">
+        {/* Effet de brillance animé en arrière-plan */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+        
+        {/* Bordure lumineuse */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 opacity-50"></div>
+        
+        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           {/* Section gauche - Branding & Titre */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="relative flex flex-col">
-              <h1 className="flex items-center text-2xl sm:text-3xl font-extrabold text-slate-50 tracking-tight gap-2">
-                <span>
-                  <span className="inline-block align-middle">
-                    <ImageIcon className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400 drop-shadow" />
-                  </span>
+              {/* Logo avec effet glow */}
+              <div className="relative inline-flex items-center mb-2">
+                <div className="absolute inset-0 bg-indigo-500/30 blur-xl rounded-full"></div>
+                <div className="relative bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-2.5 rounded-2xl border border-indigo-400/30 backdrop-blur-sm">
+                  <ImageIcon className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-300 drop-shadow-lg" />
+                </div>
+              </div>
+              
+              <h1 className="flex items-center text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight gap-2.5 mb-2">
+                <span className="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-200 bg-clip-text text-transparent drop-shadow-lg">
+                  Live
                 </span>
-                <span>
-                  Live <span className="text-indigo-400">Party</span>  Wall
+                <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
+                  Party
+                </span>
+                <span className="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-200 bg-clip-text text-transparent drop-shadow-lg">
+                  Wall
                 </span>
               </h1>
-              <div className="flex items-center gap-3 flex-wrap mt-1">
-                <p className="text-base text-slate-400 font-medium flex items-center gap-1">
+              
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-sm sm:text-base text-slate-300 font-medium flex items-center gap-1.5">
                   <span>Gérez vos murs en</span>
-                  <span className="inline-block text-indigo-400 font-bold animate-pulse">live</span>
-                  <span className="hidden sm:inline">🎉</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg border border-indigo-400/30">
+                    <span className="text-indigo-300 font-bold animate-pulse">live</span>
+                    <span className="hidden sm:inline text-lg">🎉</span>
+                  </span>
                 </p>
                 {currentEventName && (
                   <>
-                    <span className="text-slate-600 text-xs">•</span>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-700/10 border border-indigo-400/20 backdrop-blur-[2px] shadow-inner rounded-full">
-                      <div className="w-[8px] h-[8px] bg-teal-400 animate-pulse rounded-full shadow" aria-label="Événement actif"></div>
-                      <span className="text-xs font-semibold text-indigo-200 truncate max-w-[140px]" title={currentEventName}>
+                    <span className="text-slate-600 text-lg">•</span>
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 border border-indigo-400/40 backdrop-blur-md shadow-lg rounded-full group hover:border-indigo-400/60 transition-all"
+                    >
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-teal-400 rounded-full blur-sm opacity-75 animate-pulse"></div>
+                        <div className="relative w-2.5 h-2.5 bg-teal-400 rounded-full shadow-lg shadow-teal-400/50" aria-label="Événement actif"></div>
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-indigo-200 truncate max-w-[160px] sm:max-w-[200px] group-hover:text-indigo-100 transition-colors" title={currentEventName}>
                         {currentEventName}
                       </span>
-                    </div>
+                    </motion.div>
                   </>
                 )}
               </div>
@@ -119,59 +147,63 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
               </motion.button>
             )} */}
             {isElectron() && currentEvent?.slug && (
-              <>
+              <div className="flex items-center gap-2 flex-wrap">
                 <motion.button
-                  whileHover={{ scale: 1.07 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleOpenEventLink}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-green-400/30 bg-gradient-to-r from-green-800/30 to-green-700/20 hover:bg-green-600/25 transition-all duration-150 text-green-300 hover:text-green-100 group shadow"
+                  className="relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-green-400/40 bg-gradient-to-r from-green-600/30 via-emerald-600/30 to-teal-600/30 hover:from-green-500/40 hover:via-emerald-500/40 hover:to-teal-500/40 transition-all duration-200 text-green-200 hover:text-green-100 group shadow-lg shadow-green-500/20 hover:shadow-green-500/30 overflow-hidden"
                   aria-label="Ouvrir l'événement dans le navigateur"
                   title="Ouvrir l'événement dans le navigateur"
                 >
-                  <Globe className="w-5 h-5 transition-transform group-hover:scale-110" />
-                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                  <span className="text-xs sm:text-sm font-bold hidden sm:inline uppercase tracking-wide relative z-10">
                     Ouvrir
                   </span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.07 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowEventLink(!showEventLink)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-blue-400/30 bg-gradient-to-r from-blue-800/30 to-blue-700/20 hover:bg-blue-600/25 transition-all duration-150 text-blue-300 hover:text-blue-100 group shadow"
+                  className="relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-blue-400/40 bg-gradient-to-r from-blue-600/30 via-cyan-600/30 to-sky-600/30 hover:from-blue-500/40 hover:via-cyan-500/40 hover:to-sky-500/40 transition-all duration-200 text-blue-200 hover:text-blue-100 group shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 overflow-hidden"
                   aria-label="Afficher le QRcode de l'événement"
                   title="Afficher le QRcode de l'événement"
                 >
-                  <ExternalLink className="w-5 h-5 transition-transform group-hover:scale-110" />
-                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                  <span className="text-xs sm:text-sm font-bold hidden sm:inline uppercase tracking-wide relative z-10">
                     Qrcode
                   </span>
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.07 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleCloseApp}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-400/30 bg-gradient-to-r from-red-800/30 to-red-700/20 hover:bg-red-600/25 transition-all duration-150 text-red-300 hover:text-red-100 group shadow"
+                  className="relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-400/40 bg-gradient-to-r from-red-600/30 via-rose-600/30 to-pink-600/30 hover:from-red-500/40 hover:via-rose-500/40 hover:to-pink-500/40 transition-all duration-200 text-red-200 hover:text-red-100 group shadow-lg shadow-red-500/20 hover:shadow-red-500/30 overflow-hidden"
                   aria-label="Fermer l'application"
                   title="Fermer l'application"
                 >
-                  <Power className="w-5 h-5 transition-transform group-hover:rotate-90" />
-                  <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  <Power className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:rotate-90" />
+                  <span className="text-xs sm:text-sm font-bold hidden sm:inline uppercase tracking-wide relative z-10">
                     Fermer
                   </span>
                 </motion.button>
-              </>
+              </div>
             )}
             {!isElectron() && currentEventName && (
               <motion.button
-                whileHover={{ scale: 1.07 }}
+                whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onBack}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-green-400/30 bg-gradient-to-r from-green-800/30 to-green-700/20 hover:bg-green-600/25 transition-all duration-150 text-green-300 hover:text-green-100 group shadow"
+                className="relative flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-green-400/40 bg-gradient-to-r from-green-600/30 via-emerald-600/30 to-teal-600/30 hover:from-green-500/40 hover:via-emerald-500/40 hover:to-teal-500/40 transition-all duration-200 text-green-200 hover:text-green-100 group shadow-lg shadow-green-500/20 hover:shadow-green-500/30 overflow-hidden"
                 aria-label="Retour à l'application"
                 title="Retour à la sélection d'événements"
               >
-                <Home className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-                <span className="text-sm font-bold hidden sm:inline uppercase tracking-wide">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:-translate-x-1" />
+                <span className="text-xs sm:text-sm font-bold hidden sm:inline uppercase tracking-wide relative z-10">
                   Application
                 </span>
               </motion.button>
@@ -179,95 +211,124 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           </div>
 
           {/* Section droite - Actions & Profil */}
-          <div className="flex items-center gap-2 sm:gap-4 w-full lg:w-auto flex-wrap">
+          <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto flex-wrap">
             {/* Actions */}
             {photos.length > 0 && (
-              <div className="flex items-center gap-2 p-2 bg-slate-950/70 rounded-xl border border-slate-800 shadow-lg">
+              <div className="relative flex items-center gap-2 p-2.5 bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/90 rounded-2xl border border-slate-700/50 shadow-xl backdrop-blur-sm">
+                {/* Effet de brillance */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+                
                 <motion.button
-                  whileHover={{ scale: 1.10 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.08, y: -1 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={onDeleteAll}
-                  className="flex items-center gap-2 px-3 py-2 bg-transparent hover:bg-red-900/20 text-red-400 border border-red-500/30 rounded-lg font-semibold text-sm transition-all duration-150 shadow-sm disabled:opacity-60"
+                  className="relative flex items-center gap-2 px-3.5 py-2.5 bg-transparent hover:bg-gradient-to-r hover:from-red-900/30 hover:to-rose-900/30 text-red-400 hover:text-red-300 border border-red-500/40 hover:border-red-400/60 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-red-500/20 group overflow-hidden"
                   title="Tout vider"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Vider</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500"></div>
+                  <Trash2 className="w-4 h-4 relative z-10" />
+                  <span className="hidden sm:inline relative z-10">Vider</span>
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.10 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.08, y: -1 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={onExport}
                   disabled={isExporting}
-                  className={`flex items-center gap-2 px-3 py-2 bg-indigo-700 hover:bg-indigo-800 rounded-lg font-semibold text-sm text-white border-none shadow-sm transition-all duration-150 
+                  className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white border-none shadow-lg transition-all duration-200 overflow-hidden group
                     ${
                       isExporting
-                        ? 'bg-slate-800 text-indigo-400 cursor-wait'
-                        : ''
-                    } disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed`}
+                        ? 'bg-gradient-to-r from-slate-800 to-slate-700 text-indigo-400 cursor-wait'
+                        : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/30'
+                    } disabled:opacity-60 disabled:cursor-not-allowed`}
                   title="Télécharger en ZIP"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                   {isExporting ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin relative z-10" />
                   ) : (
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4 relative z-10" />
                   )}
-                  <span className="hidden sm:inline">ZIP</span>
+                  <span className="hidden sm:inline relative z-10">ZIP</span>
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.10 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.08, y: -1 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={onExportWithMetadata}
                   disabled={isExportingWithMetadata}
-                  className={`flex items-center gap-2 px-3 py-2 bg-teal-700 hover:bg-teal-800 rounded-lg font-semibold text-sm text-white relative shadow-sm border-none transition-all duration-150 
+                  className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white border-none shadow-lg transition-all duration-200 overflow-hidden group
                     ${
                       isExportingWithMetadata
-                        ? 'bg-slate-800 text-teal-300 cursor-wait'
-                        : ''
-                    } disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed`}
+                        ? 'bg-gradient-to-r from-slate-800 to-slate-700 text-teal-300 cursor-wait'
+                        : 'bg-gradient-to-r from-teal-600 via-cyan-600 to-teal-700 hover:from-teal-500 hover:via-cyan-500 hover:to-teal-600 hover:shadow-xl hover:shadow-teal-500/30'
+                    } disabled:opacity-60 disabled:cursor-not-allowed`}
                   title="Export PNG avec métadonnées"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                   {isExportingWithMetadata ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin relative z-10" />
                   ) : (
-                    <ImageIcon className="w-4 h-4" />
+                    <ImageIcon className="w-4 h-4 relative z-10" />
                   )}
                   {isExportingWithMetadata && exportProgress && (
-                    <span className="absolute -top-1.5 -right-1.5 text-[10px] font-extrabold bg-teal-400 text-white rounded-full w-5 h-5 flex items-center justify-center border-2 border-slate-950 shadow">
+                    <span className="absolute -top-2 -right-2 text-[10px] font-extrabold bg-gradient-to-r from-teal-400 to-cyan-400 text-white rounded-full w-6 h-6 flex items-center justify-center border-2 border-slate-950 shadow-lg shadow-teal-400/50 animate-pulse">
                       {exportProgress.processed}
                     </span>
                   )}
-                  <span className="hidden sm:inline">PNG</span>
+                  <span className="hidden sm:inline relative z-10">PNG</span>
                 </motion.button>
               </div>
             )}
 
             {/* Export PNG Progress Bar */}
             {isExportingWithMetadata && exportProgress && (
-              <div className="w-full lg:w-auto min-w-[200px] bg-gradient-to-r from-teal-900/80 via-teal-800/90 to-slate-900/80 rounded-xl p-3 border border-teal-500/30 shadow flex flex-col gap-1">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full lg:w-auto min-w-[240px] bg-gradient-to-br from-teal-900/90 via-cyan-900/90 to-slate-900/90 rounded-2xl p-4 border border-teal-400/40 shadow-2xl backdrop-blur-sm flex flex-col gap-2"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-teal-300">
+                  <span className="text-xs font-bold text-teal-200 flex items-center gap-2">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
                     {exportProgress.message || 'Traitement en cours...'}
                   </span>
-                  <span className="text-xs font-bold text-teal-200 tabular-nums">
+                  <span className="text-xs font-extrabold text-teal-100 tabular-nums bg-teal-500/20 px-2 py-0.5 rounded-lg border border-teal-400/30">
                     {exportProgress.processed} / {exportProgress.total}
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-slate-800/95 rounded-full overflow-hidden mt-1.5">
-                  <div
-                    className="h-full bg-gradient-to-r from-teal-400 to-teal-500 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${exportProgress.total > 0 ? (exportProgress.processed / exportProgress.total) * 100 : 0}%`,
+                <div className="w-full h-2 bg-slate-800/95 rounded-full overflow-hidden shadow-inner">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ 
+                      width: `${exportProgress.total > 0 ? (exportProgress.processed / exportProgress.total) * 100 : 0}%`
                     }}
-                  ></div>
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-500 rounded-full shadow-lg shadow-teal-400/50 relative overflow-hidden"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                      animate={{
+                        x: ['-100%', '200%'],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'linear',
+                        repeatDelay: 0.5
+                      }}
+                    />
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Profil administrateur */}
-            <div className="ml-auto lg:ml-0">
-              <AdminProfile onLogout={onLogout} />
+            <div className="ml-auto lg:ml-0 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-2xl blur-xl opacity-50"></div>
+              <div className="relative">
+                <AdminProfile onLogout={onLogout} />
+              </div>
             </div>
           </div>
         </div>
