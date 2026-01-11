@@ -139,7 +139,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         
         for (const guest of allGuests) {
           try {
-            const guestPhotos = await getPhotosByAuthor(guest.name);
+            const guestPhotos = await getPhotosByAuthor(currentEvent.id, guest.name);
             const photosCount = guestPhotos.length;
             const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
             
@@ -177,7 +177,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     const interval = setInterval(loadGuests, 15000);
 
     return () => clearInterval(interval);
-  }, [activeTab, addToast]);
+  }, [activeTab, currentEvent?.id, addToast]);
 
   // Statistiques en temps réel
   const stats = useMemo(() => {
@@ -236,8 +236,12 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
   // Supprimer toutes les photos
   const handleDeleteAll = async () => {
+    if (!currentEvent?.id) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
     try {
-      await deleteAllPhotos();
+      await deleteAllPhotos(currentEvent.id);
       // Supprimer tous les invités (sans les bloquer)
       try {
         await deleteAllGuests();
@@ -315,34 +319,42 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       const allGuests = await getAllGuests(currentEvent.id);
       setGuests(allGuests);
       
-                    const statsMap = new Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>();
-                    for (const guest of allGuests) {
-                      try {
-                        const guestPhotos = await getPhotosByAuthor(guest.name);
-                        const photosCount = guestPhotos.length;
-                        const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
-                        let totalReactions = 0;
-                        if (guestPhotos.length > 0) {
-                          const photoIds = guestPhotos.map(p => p.id);
-                          const reactionsMap = await getPhotosReactions(photoIds);
-                          reactionsMap.forEach((reactions) => {
-                            Object.values(reactions).forEach((count) => {
-                              totalReactions += count || 0;
-                            });
-                          });
-                        }
-                        statsMap.set(guest.id, { photosCount, totalLikes, totalReactions });
-                      } catch (error) {
-                        statsMap.set(guest.id, { photosCount: 0, totalLikes: 0, totalReactions: 0 });
-                      }
-                    }
-                    setGuestStats(statsMap);
-                    addToast('Invités actualisés', 'success');
-                  } catch (error) {
-                    addToast('Erreur lors de l\'actualisation', 'error');
-                  } finally {
-                    setGuestsLoading(false);
-                  }
+      // Charger les statistiques pour chaque invité
+      const statsMap = new Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>();
+      
+      for (const guest of allGuests) {
+        try {
+          const guestPhotos = await getPhotosByAuthor(currentEvent.id, guest.name);
+          const photosCount = guestPhotos.length;
+          const totalLikes = guestPhotos.reduce((sum, photo) => sum + (photo.likes_count || 0), 0);
+          
+          // Calculer les réactions totales
+          let totalReactions = 0;
+          if (guestPhotos.length > 0) {
+            const photoIds = guestPhotos.map(p => p.id);
+            const reactionsMap = await getPhotosReactions(photoIds);
+            reactionsMap.forEach((reactions) => {
+              Object.values(reactions).forEach((count) => {
+                totalReactions += count || 0;
+              });
+            });
+          }
+          
+          statsMap.set(guest.id, { photosCount, totalLikes, totalReactions });
+        } catch (error) {
+          logger.error('Error loading guest stats', error, { guestId: guest.id, guestName: guest.name });
+          statsMap.set(guest.id, { photosCount: 0, totalLikes: 0, totalReactions: 0 });
+        }
+      }
+      
+      setGuestStats(statsMap);
+      addToast('Invités actualisés', 'success');
+    } catch (error) {
+      logger.error('Error loading guests', error, { component: 'MobileControl', action: 'handleRefreshGuests' });
+      addToast('Erreur lors de l\'actualisation', 'error');
+    } finally {
+      setGuestsLoading(false);
+    }
   };
 
   // Supprimer un invité
@@ -369,8 +381,8 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     const days = Math.floor(hours / 24);
     return `${days}j`;
   };
-                  
-                  return (
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 text-white pb-20">
       {/* Header */}
       <MobileControlHeader
@@ -418,9 +430,9 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
 
         {/* Analytics */}
         {activeTab === 'analytics' && (
-                <div>
+          <div>
             <AnalyticsView photos={photos} />
-                </div>
+          </div>
         )}
 
         {/* Battles */}

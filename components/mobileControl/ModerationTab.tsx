@@ -70,7 +70,7 @@ const ModerationTab: React.FC<ModerationTabProps> = ({
           {sortedPhotos.map((photo) => (
             <div
               key={photo.id}
-              className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm md:hover:bg-white/15 transition-colors"
+              className="bg-white/10 rounded-xl p-3.5 md:p-4 backdrop-blur-sm border border-white/10 md:hover:bg-white/15 md:hover:border-white/20 transition-all shadow-sm"
             >
               <div className="flex gap-3 md:gap-4">
                 <div
@@ -112,7 +112,7 @@ const ModerationTab: React.FC<ModerationTabProps> = ({
                   <button
                     onClick={() => setShowDeleteConfirm(photo.id)}
                     disabled={isDeleting === photo.id}
-                    className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 transition-colors text-sm disabled:opacity-50 touch-manipulation"
+                    className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 transition-all text-sm disabled:opacity-50 touch-manipulation border border-red-500/30 shadow-sm"
                   >
                     <Trash2 className="w-4 h-4" />
                     {isDeleting === photo.id ? 'Suppression...' : 'Supprimer'}
@@ -125,14 +125,14 @@ const ModerationTab: React.FC<ModerationTabProps> = ({
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleDelete(photo.id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 active:bg-red-700 transition-colors text-sm touch-manipulation"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-500 hover:bg-red-600 active:bg-red-700 active:scale-95 transition-all text-sm touch-manipulation shadow-sm"
                     >
                       <Check className="w-4 h-4" />
                       Confirmer
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(null)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm touch-manipulation"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm touch-manipulation border border-white/20 shadow-sm"
                     >
                       <X className="w-4 h-4" />
                       Annuler

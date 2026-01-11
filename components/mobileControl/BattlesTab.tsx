@@ -112,7 +112,7 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
         <div className="flex gap-2">
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 active:bg-pink-500/40 transition-colors text-sm touch-manipulation"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 active:bg-pink-500/40 active:scale-95 transition-all text-sm touch-manipulation border border-pink-500/30 shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Créer
@@ -176,7 +176,7 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
             return (
               <div
                 key={battle.id}
-                className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/20 md:hover:bg-white/15 transition-colors"
+                className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/20 md:hover:bg-white/15 md:hover:border-white/30 transition-all shadow-sm"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ const BattlesTab: React.FC<BattlesTabProps> = ({
                   <button
                     onClick={() => handleFinish(battle.id)}
                     disabled={isFinishing === battle.id || battle.status !== 'active'}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 active:bg-orange-500/40 transition-colors disabled:opacity-50 text-sm touch-manipulation"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 active:bg-orange-500/40 active:scale-95 transition-all disabled:opacity-50 text-sm touch-manipulation border border-orange-500/30 shadow-sm"
                   >
                     <Square className="w-4 h-4" />
                     {isFinishing === battle.id ? 'Terminaison...' : 'Terminer'}

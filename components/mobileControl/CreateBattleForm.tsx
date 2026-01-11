@@ -34,9 +34,9 @@ const CreateBattleForm: React.FC<CreateBattleFormProps> = ({
   onCreate,
 }) => {
   return (
-    <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/20">
+    <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/20 shadow-lg">
       <div className="flex items-center justify-between mb-4 md:mb-6">
-        <h3 className="text-md md:text-lg font-semibold">Créer une battle</h3>
+        <h3 className="text-md md:text-lg font-semibold text-white">Créer une battle</h3>
         <button
           onClick={onClose}
           className="p-1 md:p-2 rounded-lg hover:bg-white/10 active:bg-white/20 md:hover:scale-110 transition-all touch-manipulation"
@@ -170,7 +170,7 @@ const CreateBattleForm: React.FC<CreateBattleFormProps> = ({
           <button
             onClick={onCreateRandom}
             disabled={isCreating || photos.length < 2}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 transition-colors disabled:opacity-50 text-sm touch-manipulation"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 active:scale-95 transition-all disabled:opacity-50 text-sm touch-manipulation border border-purple-500/30 shadow-sm"
           >
             <Zap className="w-4 h-4" />
             Aléatoire
@@ -178,7 +178,7 @@ const CreateBattleForm: React.FC<CreateBattleFormProps> = ({
           <button
             onClick={onCreate}
             disabled={isCreating || !selectedPhoto1 || !selectedPhoto2 || selectedPhoto1.id === selectedPhoto2.id}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 active:bg-pink-500/40 transition-colors disabled:opacity-50 text-sm touch-manipulation"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 active:bg-pink-500/40 active:scale-95 transition-all disabled:opacity-50 text-sm touch-manipulation border border-pink-500/30 shadow-sm"
           >
             <Check className="w-4 h-4" />
             Créer

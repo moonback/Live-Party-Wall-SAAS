@@ -121,7 +121,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
         <p className="text-white/60">Aucun aftermovie pour le moment</p>
         <button
           onClick={loadAftermovies}
-          className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+          className="mt-4 px-4 py-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 rounded-xl text-sm transition-all border border-white/20 shadow-sm touch-manipulation"
         >
           <RefreshCw className="w-4 h-4 inline mr-2" />
           Actualiser
@@ -141,7 +141,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
         <button
           onClick={loadAftermovies}
           disabled={loading}
-          className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+          className="p-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 rounded-xl transition-all disabled:opacity-50 border border-white/20 shadow-sm touch-manipulation"
           title="Actualiser"
         >
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -157,7 +157,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+              className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
                   <a
                     href={aftermovie.url}
                     download={aftermovie.filename}
-                    className="p-2 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg transition-colors"
+                    className="p-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 active:bg-indigo-500/40 active:scale-95 rounded-xl transition-all border border-indigo-500/30 shadow-sm touch-manipulation"
                     title="Télécharger"
                   >
                     <Download className="w-5 h-5 text-indigo-400" />
@@ -214,7 +214,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
                   <button
                     onClick={() => handleDelete(aftermovie)}
                     disabled={deletingIds.has(aftermovie.id)}
-                    className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2.5 bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 rounded-xl transition-all disabled:opacity-50 border border-red-500/30 shadow-sm touch-manipulation"
                     title="Supprimer"
                   >
                     {deletingIds.has(aftermovie.id) ? (

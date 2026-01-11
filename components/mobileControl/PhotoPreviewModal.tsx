@@ -12,13 +12,13 @@ interface PhotoPreviewModalProps {
 const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({ photo, reactions, onClose }) => {
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-8"
+      className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
       onClick={onClose}
     >
       <div className="relative max-w-full max-h-full md:max-w-4xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 md:top-6 md:right-6 p-2 md:p-3 rounded-full bg-white/20 hover:bg-white/30 md:hover:scale-110 transition-all z-10 touch-manipulation"
+          className="absolute top-4 right-4 md:top-6 md:right-6 p-2.5 md:p-3 rounded-full bg-white/20 hover:bg-white/30 active:bg-white/40 active:scale-95 md:hover:scale-110 transition-all z-10 touch-manipulation shadow-lg"
           aria-label="Fermer"
         >
           <X className="w-6 h-6 md:w-7 md:h-7" />

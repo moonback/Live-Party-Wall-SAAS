@@ -138,10 +138,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6 pb-4">
       {/* Configuration de l'événement */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">Configuration de l'événement</h2>
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-white">Configuration de l'événement</h2>
         <div className="space-y-4">
           {/* Titre */}
           <div>
@@ -150,7 +150,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               type="text"
               value={settings.event_title || ''}
               onChange={(e) => updateSettings({ event_title: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
               placeholder="Titre de l'événement"
             />
           </div>
@@ -164,7 +164,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               onChange={async (e) => {
                 await updateSettings({ event_subtitle: e.target.value });
               }}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
               placeholder="Sous-titre"
             />
           </div>
@@ -179,7 +179,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               onChange={async (e) => {
                 await updateSettings({ scroll_speed: e.target.value as 'slow' | 'normal' | 'fast' });
               }}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
             >
               <option value="slow">Lente</option>
               <option value="normal">Normale</option>
@@ -190,9 +190,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
       </div>
 
       {/* Images de fond */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
+          <div className="p-1.5 rounded-lg bg-white/10">
+            <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+          </div>
           Images de fond
         </h2>
         <div className="space-y-4">
@@ -223,7 +225,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                 <button
                   onClick={() => desktopInputRef.current?.click()}
                   disabled={uploadingDesktop}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
                   {uploadingDesktop ? 'Upload en cours...' : 'Uploader une image'}
@@ -243,7 +245,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <button
                 onClick={() => desktopInputRef.current?.click()}
                 disabled={uploadingDesktop}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
               >
                 <Upload className="w-4 h-4" />
                 {uploadingDesktop ? 'Remplacement en cours...' : 'Remplacer'}
@@ -287,7 +289,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                 <button
                   onClick={() => mobileInputRef.current?.click()}
                   disabled={uploadingMobile}
-                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
                 >
                   <Upload className="w-4 h-4" />
                   {uploadingMobile ? 'Upload en cours...' : 'Uploader une image'}
@@ -307,7 +309,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <button
                 onClick={() => mobileInputRef.current?.click()}
                 disabled={uploadingMobile}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
               >
                 <Upload className="w-4 h-4" />
                 {uploadingMobile ? 'Remplacement en cours...' : 'Remplacer'}
@@ -327,9 +329,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
       </div>
 
       {/* Logo */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
+          <div className="p-1.5 rounded-lg bg-white/10">
+            <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+          </div>
           Logo de l'événement
         </h2>
         <div className="space-y-4">
@@ -356,7 +360,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <button
                 onClick={() => logoInputRef.current?.click()}
                 disabled={uploadingLogo}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
               >
                 <Upload className="w-4 h-4" />
                 {uploadingLogo ? 'Upload en cours...' : 'Uploader un logo'}
@@ -376,7 +380,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
             <button
               onClick={() => logoInputRef.current?.click()}
               disabled={uploadingLogo}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
             >
               <Upload className="w-4 h-4" />
               {uploadingLogo ? 'Remplacement en cours...' : 'Remplacer'}
@@ -432,9 +436,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
       </div>
 
       {/* Alerte texte */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-yellow-500/20">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
-          <Bell className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border-2 border-yellow-500/30 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
+          <div className="p-1.5 rounded-lg bg-yellow-500/20">
+            <Bell className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+          </div>
           Alerte pour les invités
         </h2>
         <div className="space-y-3">
@@ -479,7 +485,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                 await updateSettings({ alert_text: value });
                 logger.info('Alert text updated', { component: 'SettingsTab', action: 'updateAlert', alert_text: value, has_alert: !!value });
               }}
-              className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500 min-h-[100px] resize-y"
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500/50 min-h-[100px] resize-y transition-all"
               placeholder="Ex: ⚠️ Pause de 15 minutes - Retour dans quelques instants !"
               maxLength={200}
             />
@@ -499,7 +505,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                 logger.info('Alert text deleted', { component: 'SettingsTab', action: 'deleteAlert' });
                 addToast('Alerte supprimée', 'success');
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 transition-colors text-sm text-red-400 touch-manipulation"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 transition-all text-sm text-red-400 touch-manipulation border border-red-500/30 shadow-sm"
             >
               <X className="w-4 h-4" />
               Supprimer l'alerte
@@ -509,8 +515,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
       </div>
 
       {/* Fonctionnalités */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">Fonctionnalités</h2>
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-white">Fonctionnalités</h2>
         <div className="space-y-3">
           {featureConfigs.map(({ key, label, icon: Icon, disabled }) => {
             const isModeration = key === 'content_moderation_enabled';
@@ -519,8 +525,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
             return (
               <label
                 key={key}
-                className={`flex items-center justify-between p-3 rounded-lg bg-white/5 transition-colors touch-manipulation ${
-                  disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-white/10 active:bg-white/15 cursor-pointer'
+                className={`flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 transition-all touch-manipulation ${
+                  disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-white/10 hover:border-white/20 active:bg-white/15 active:scale-[0.98] cursor-pointer'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -596,7 +602,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
           await signOut();
           onBack();
         }}
-        className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 transition-colors touch-manipulation"
+        className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 transition-all touch-manipulation border border-red-500/30 shadow-sm"
       >
         <LogOut className="w-5 h-5" />
         <span>Déconnexion</span>
