@@ -107,7 +107,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                 />
               </div>
               <span className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Live <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Party</span> Wall
+               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Party</span> Wall
               </span>
             </button>
 
