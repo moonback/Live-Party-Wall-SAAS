@@ -148,7 +148,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-Le mur social
+Votre mur social interactif
                   </motion.p>
                 )}
               </div>
