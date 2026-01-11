@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { logger } from '../utils/logger';
-import { Aftermovie } from '../types';
+import { Aftermovie, AftermovieRow } from '../types';
 
 export interface AftermovieShareResult {
   publicUrl: string;
@@ -332,7 +332,7 @@ export async function getAftermovies(eventId: string): Promise<Aftermovie[]> {
       return [];
     }
 
-    return data.map((row: any) => ({
+    return data.map((row: AftermovieRow) => ({
       id: row.id,
       event_id: row.event_id,
       url: row.url,

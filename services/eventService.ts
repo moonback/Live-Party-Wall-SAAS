@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { Event, EventRow, EventOrganizer, EventOrganizerRow } from '../types';
+import { Event, EventRow, EventOrganizer, EventOrganizerRow, EventUpdate } from '../types';
 import { logger } from '../utils/logger';
 
 /**

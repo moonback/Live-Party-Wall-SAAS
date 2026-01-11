@@ -13,6 +13,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
 import { combineCleanups } from '../utils/subscriptionHelper';
+import { logger } from '../utils/logger';
 import { GalleryHeader } from './gallery/GalleryHeader';
 import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
@@ -115,7 +116,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         const reactionsMap = await getPhotosReactions(photoIds);
         setPhotosReactions(reactionsMap);
       } catch (error) {
-        console.error(error);
+        logger.error('Error loading photos reactions', error, { component: 'GuestGallery', action: 'loadPhotosReactions' });
         addToast("Erreur de chargement", 'error');
       } finally {
         setLoading(false);
@@ -201,7 +202,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         const activeBattles = await getActiveBattles(currentEvent.id, userId);
         setBattles(activeBattles);
       } catch (error) {
-        console.error('Error loading battles:', error);
+        logger.error('Error loading battles', error, { component: 'GuestGallery', action: 'loadBattles' });
       }
     };
 
@@ -263,7 +264,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             battleUpdatesSubs.push(updateSub);
           });
         } catch (error) {
-          console.error('Error setting up battle updates:', error);
+          logger.error('Error setting up battle updates', error, { component: 'GuestGallery', action: 'setupBattleUpdates' });
         }
       };
       
@@ -357,7 +358,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         return next;
       });
     } catch (error) {
-      console.error("Erreur lors de la réaction:", error);
+      logger.error("Erreur lors de la réaction", error, { component: 'GuestGallery', action: 'handleReaction', photoId });
       addToast("Erreur lors de la réaction", 'error');
     }
   }, [userId, addToast, selectionMode]);
@@ -393,7 +394,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       addToast('Aftermovie téléchargé !', 'success');
     } catch (error) {
-      console.error('Error downloading aftermovie:', error);
+      logger.error('Error downloading aftermovie', error, { component: 'GuestGallery', action: 'downloadAftermovie', aftermovieId: aftermovie.id });
       addToast('Erreur lors du téléchargement', 'error');
     } finally {
       setDownloadingAftermovieIds(prev => {
@@ -434,7 +435,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       addToast("Média téléchargé !", 'success');
     } catch (error) {
-      console.error("Erreur de téléchargement:", error);
+      logger.error("Erreur de téléchargement", error, { component: 'GuestGallery', action: 'downloadPhoto', photoId });
       addToast("Erreur lors du téléchargement", 'error');
     } finally {
       setTimeout(() => {
@@ -479,7 +480,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       setSelectionMode(false);
       setSelectedIds(new Set());
     } catch (error) {
-      console.error("Erreur batch download:", error);
+      logger.error("Erreur batch download", error, { component: 'GuestGallery', action: 'batchDownload', count: selectedIds.size });
       addToast("Erreur lors de la création de l'archive", 'error');
     }
   };

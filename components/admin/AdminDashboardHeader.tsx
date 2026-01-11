@@ -7,6 +7,7 @@ import { Photo } from '../../types';
 import { isElectron } from '../../utils/electronPaths';
 import { useEvent } from '../../context/EventContext';
 import { getBaseUrl } from '../../utils/urlUtils';
+import { logger } from '../../utils/logger';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -41,7 +42,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
       try {
         await window.electronAPI.closeApp();
       } catch (error) {
-        console.error('Erreur lors de la fermeture de l\'application:', error);
+        logger.error('Erreur lors de la fermeture de l\'application', error, { component: 'AdminDashboardHeader', action: 'closeApp' });
       }
     }
   };
