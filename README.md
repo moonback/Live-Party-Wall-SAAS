@@ -1,9 +1,12 @@
 <div align="center">
 
-# 
+# 🎉 Live Party Wall
+
 ![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
 
-### Application SaaS de mur photo interactif en temps réel enrichie par l'IA
+### Transformez chaque événement en une expérience mémorable et interactive
+
+**Application SaaS de mur photo interactif en temps réel enrichie par l'IA**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -12,9 +15,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE.md)
 
-[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](#) • [✨ Request Feature](#)
-
-
+[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) • [✨ Request Feature](https://github.com/votre-username/Live-Party-Wall-SAAS/issues)
 
 </div>
 
@@ -22,7 +23,9 @@
 
 ## ✨ Présentation
 
-**Live Party Wall** transforme chaque événement en une expérience mémorable et interactive. Vos invités deviennent créateurs de contenu : leurs photos apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle.
+**Live Party Wall** est une plateforme SaaS moderne qui transforme chaque événement en une expérience mémorable et interactive. Vos invités deviennent créateurs de contenu : leurs photos apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle pour générer des légendes personnalisées et garantir un contenu approprié.
+
+**En quelques mots** : Une solution complète pour créer un mur photo interactif en temps réel, avec modération IA, gamification, battles photos, et génération automatique d'aftermovies.
 
 ### 🎯 Cas d'usage
 
@@ -195,37 +198,55 @@ cd Live-Party-Wall-SAAS
 npm install
 
 # 3. Configurer les variables d'environnement
-cp .env.example .env
-# Éditer .env avec vos clés
+# Créer un fichier .env à la racine (voir section Variables d'environnement)
 ```
 
 ### 🔑 Variables d'environnement
 
-Créez un fichier `.env` à la racine :
+Créez un fichier `.env` à la racine du projet avec les variables suivantes :
 
 ```env
-# Supabase (Dashboard > Settings > API)
+# Supabase Configuration
+# Récupérez ces valeurs dans votre Dashboard Supabase > Settings > API
 VITE_SUPABASE_URL=https://votre-projet.supabase.co
 VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
 
-# Google Gemini (https://makersuite.google.com/app/apikey)
+# Google Gemini API
+# Obtenez votre clé sur https://makersuite.google.com/app/apikey
 GEMINI_API_KEY=votre_cle_api_gemini
 ```
 
+**Note** : Les variables préfixées par `VITE_` sont accessibles côté client. La clé Gemini est utilisée côté client pour les appels API directs.
+
 ### 🗄️ Configuration de la base de données
 
-1. Ouvrez votre [Dashboard Supabase](https://app.supabase.com)
-2. Allez dans **SQL Editor**
-3. Exécutez le script complet :
+1. **Créer un projet Supabase** :
+   - Allez sur [supabase.com](https://supabase.com)
+   - Créez un nouveau projet
+   - Notez l'URL et la clé anonyme (à mettre dans `.env`)
 
-```sql
--- Copiez et exécutez : supabase/supabase_complete_setup.sql
-```
+2. **Exécuter le script de setup** :
+   - Ouvrez votre [Dashboard Supabase](https://app.supabase.com)
+   - Allez dans **SQL Editor**
+   - Copiez et exécutez le contenu de `supabase/supabase_complete_setup.sql`
+   - Ce script crée toutes les tables, politiques RLS, indexes et buckets Storage
 
-4. Activez **Realtime** pour les tables :
-   - `photos`, `likes`, `reactions`, `event_settings`, `guests`, `photo_battles`, `aftermovies`
+3. **Activer Realtime** :
+   - Allez dans **Database > Replication**
+   - Activez la réplication pour les tables suivantes :
+     - `photos`
+     - `likes`
+     - `reactions`
+     - `event_settings`
+     - `guests`
+     - `photo_battles`
+     - `aftermovies`
+     - `event_organizers`
 
-5. Créez votre compte admin dans **Authentication > Users**
+4. **Créer un compte administrateur** :
+   - Allez dans **Authentication > Users**
+   - Créez un nouvel utilisateur avec email/password
+   - Ce compte sera le propriétaire de vos événements
 
 ### 🎬 Lancement
 
@@ -248,22 +269,22 @@ npm run electron:pack
 
 ## 📊 Base de données
 
-<details>
-<summary><b>🗂️ Tables principales (cliquez pour développer)</b></summary>
+La base de données utilise **PostgreSQL** via Supabase avec une architecture multi-tenant SaaS.
 
-### Tables core
+### 🗂️ Tables principales
 
 | Table | Description | Relations |
 |-------|-------------|-----------|
-| **events** | Événements (SaaS multi-tenant) | → photos, guests, settings |
-| **photos** | Photos/vidéos partagées | ← events, → likes, reactions |
+| **events** | Événements (SaaS multi-tenant) | → photos, guests, settings, organizers |
+| **photos** | Photos/vidéos partagées | ← events, → likes, reactions, battles |
 | **guests** | Invités inscrits | ← events |
 | **likes** | Likes sur photos | ← photos |
-| **reactions** | Réactions émojis | ← photos |
-| **event_settings** | Configuration par événement | ← events |
+| **reactions** | Réactions émojis (6 types) | ← photos |
+| **event_settings** | Configuration par événement | ← events (1-1) |
 | **event_organizers** | Organisateurs avec rôles | ← events, auth.users |
 | **photo_battles** | Duels entre photos | ← events, photos |
 | **aftermovies** | Vidéos timelapse générées | ← events |
+| **blocked_guests** | Invités temporairement bloqués | ← events |
 
 ### 🔒 Sécurité
 
@@ -271,17 +292,18 @@ npm run electron:pack
 - ✅ **Politiques granulaires** par rôle (owner, organizer, viewer)
 - ✅ **Lecture publique** pour photos et événements actifs
 - ✅ **Modifications authentifiées** pour admin uniquement
+- ✅ **Validation côté client et serveur**
 
 ### 💾 Storage Buckets
 
 | Bucket | Usage | Politique |
 |--------|-------|-----------|
 | `party-photos` | Photos invités + Aftermovies | Public lecture, upload public (photos), upload admin (aftermovies) |
-| `party-frames` | Cadres décoratifs | Public lecture, upload admin |
+| `party-frames` | Cadres décoratifs | Public lecture, upload admin uniquement |
 | `party-avatars` | Avatars invités | Public lecture, upload public |
-| `party-backgrounds` | Images de fond + Logos | Public lecture, upload admin |
+| `party-backgrounds` | Images de fond + Logos | Public lecture, upload admin uniquement |
 
-</details>
+Pour plus de détails, consultez [DB_SCHEMA.md](./DB_SCHEMA.md).
 
 ---
 
@@ -616,23 +638,117 @@ Plus de **20 milestones** à débloquer :
 
 | Document | Description |
 |----------|-------------|
-| [📐 ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture détaillée du système |
-| [🔌 API_DOCS.md](./API_DOCS.md) | Documentation complète des services |
-| [🗄️ DB_SCHEMA.md](./DB_SCHEMA.md) | Schéma de la base de données |
+| [📐 ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture détaillée du système (frontend, backend, flux de données) |
+| [🔌 API_DOCS.md](./API_DOCS.md) | Documentation complète des services et fonctions disponibles |
+| [🗄️ DB_SCHEMA.md](./DB_SCHEMA.md) | Schéma complet de la base de données (tables, relations, RLS) |
 | [🗺️ ROADMAP.md](./ROADMAP.md) | Feuille de route et futures fonctionnalités |
-| [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Guide de contribution |
+| [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Guide de contribution au projet |
+
+## 🏗️ Structure du projet
+
+```
+Live-Party-Wall-SAAS/
+├── components/          # Composants React par fonctionnalité
+│   ├── landing/        # Landing page SaaS
+│   ├── gallery/        # Galerie avec filtres
+│   ├── projection/     # Mode grand écran
+│   ├── wall/          # Mur interactif
+│   ├── stats/         # Analytics
+│   ├── admin/         # Dashboard admin
+│   ├── photobooth/    # Photobooth avec caméra
+│   └── rgpd/          # Composants RGPD
+│
+├── services/           # Logique métier isolée
+│   ├── photoService.ts
+│   ├── eventService.ts
+│   ├── geminiService.ts
+│   └── ...
+│
+├── context/            # État global React Context
+│   ├── AuthContext.tsx
+│   ├── EventContext.tsx
+│   └── ...
+│
+├── hooks/              # Hooks personnalisés
+├── utils/              # Utilitaires
+├── types.ts            # Types TypeScript partagés
+├── supabase/           # Scripts SQL de migration
+└── electron/           # Application desktop (optionnel)
+```
+
+Pour plus de détails, consultez [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./CONTRIBUTING.md) pour commencer.
+Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines complètes.
+
+### Comment contribuer
+
+1. Fork le projet
+2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'feat: Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+Pour plus de détails, voir [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## 📝 Prérequis
+
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+- **Compte Supabase** (gratuit disponible)
+- **Clé API Google Gemini** (gratuite disponible)
+
+## 🚀 Déploiement
+
+### Production Web
+
+```bash
+# Build pour production
+npm run build
+
+# Les fichiers sont dans dist/
+# Déployez sur Vercel, Netlify, ou votre CDN préféré
+```
+
+### Application Desktop (Electron)
+
+```bash
+# Build Electron
+npm run electron:build
+
+# Package pour distribution
+npm run electron:pack
+```
+
+Les fichiers de distribution sont dans `release/`.
+
+## 🐛 Signaler un bug
+
+Ouvrez une [issue](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) avec :
+- Description du bug
+- Étapes pour reproduire
+- Comportement attendu vs actuel
+- Environnement (OS, navigateur, version)
+
+## ✨ Proposer une fonctionnalité
+
+Ouvrez une [issue](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) avec le label `enhancement` :
+- Description détaillée
+- Cas d'usage
+- Bénéfices attendus
 
 <div align="center">
 
 ### 💖 Fait avec passion
 
 Si ce projet vous est utile, n'hésitez pas à ⭐ le repo !
+
+**[⬆ Retour en haut](#-live-party-wall)**
+
+Made with ❤️ by [Votre Nom](https://github.com/votre-username)
 
 </div>
 

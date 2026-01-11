@@ -379,4 +379,3 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 ---
 
 **Dernière mise à jour** : 2026-01-15
-

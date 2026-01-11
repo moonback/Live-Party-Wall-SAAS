@@ -18,25 +18,56 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
 
 ### Fonctionnalités implémentées
 
+#### Core
 - ✅ **Upload de photos** : Prise de photo, galerie, collage
 - ✅ **Modération IA** : Google Gemini pour filtrer le contenu
 - ✅ **Légendes IA** : Génération automatique de légendes personnalisées
 - ✅ **Affichage temps réel** : Synchronisation via Supabase Realtime
+- ✅ **Multi-événements** : Architecture SaaS complète
+- ✅ **Gestion d'équipe** : Organisateurs avec rôles (owner, organizer, viewer)
+
+#### Interactions sociales
 - ✅ **Système de likes** : Interactions sociales
-- ✅ **Galerie interactive** : Parcourir toutes les photos
+- ✅ **Réactions émojis** : 6 types (❤️, 😂, 😢, 🔥, 😮, 👍)
+- ✅ **Galerie interactive** : Parcourir toutes les photos avec filtres
+- ✅ **Recherche IA** : Reconnaissance faciale "Retrouve-moi"
+
+#### Affichage
 - ✅ **Mode projection** : Affichage optimisé grand écran
-- ✅ **Gamification** : Badges, classements, battles photos
-- ✅ **Multi-événements** : Architecture SaaS
-- ✅ **Gestion d'équipe** : Organisateurs avec rôles
+- ✅ **Mode collage** : Assembler jusqu'à 4 photos
+- ✅ **Cadres décoratifs** : Polaroid, néon, or
+- ✅ **Photobooth** : Capture photo/vidéo avec filtres et cadres
+
+#### Gamification
+- ✅ **Badges** : 12 types différents
+- ✅ **Classements** : Système de points et leaderboard
+- ✅ **Battles photos** : Duels entre photos avec votes
+- ✅ **Milestones** : 20+ achievements à débloquer
+
+#### Export & Partage
 - ✅ **Export HD** : Téléchargement individuel et ZIP
 - ✅ **Aftermovie** : Génération automatique de vidéos timelapse
-- ✅ **Recherche IA** : Reconnaissance faciale
-- ✅ **Cadres décoratifs** : Polaroid, néon, or
-- ✅ **Mode collage** : Assembler plusieurs photos
-- ✅ **Capture vidéo** : Support vidéos courtes
-- ✅ **Réactions émojis** : ❤️, 😂, 🔥, etc.
+  - ✅ 3 presets (HD, Full HD, Story 9:16)
+  - ✅ Audio personnalisé
+  - ✅ Réorganisation des photos
+  - ✅ Partage avec QR code et lien
+  - ✅ Compteur de téléchargements
+
+#### Administration
+- ✅ **Dashboard temps réel** : Statistiques live
+- ✅ **Modération** : Suppression photos, blocage invités
+- ✅ **Paramètres granulaires** : Activation/désactivation de fonctionnalités
+- ✅ **Personnalisation** : Fond, logo, contexte IA
 - ✅ **Statistiques** : Analytics en temps réel
+
+#### Conformité
+- ✅ **RGPD complet** : Consentement, politique, gestion des données
+- ✅ **Gestion des cookies** : 4 catégories avec préférences
+- ✅ **Droits utilisateurs** : Accès, portabilité, effacement
+
+#### Infrastructure
 - ✅ **Landing page SaaS** : Page d'accueil professionnelle
+- ✅ **Application Electron** : Version desktop (optionnel)
 
 ---
 
@@ -44,35 +75,79 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
 
 **Objectif** : Stabiliser le MVP et corriger les bugs critiques.
 
+**Timeline** : 2-3 mois
+
 ### Priorités
 
-- [ ] **Tests automatisés**
-  - [ ] Tests unitaires (Jest/Vitest)
-  - [ ] Tests d'intégration
-  - [ ] Tests E2E (Playwright)
+#### Tests automatisés
+- [ ] **Tests unitaires** (Jest/Vitest)
+  - [ ] Services (photoService, geminiService, etc.)
+  - [ ] Utilitaires (validation, compression, etc.)
+  - [ ] Hooks personnalisés
+- [ ] **Tests d'intégration**
+  - [ ] Flux upload complet
+  - [ ] Génération aftermovie
+  - [ ] Système de battles
+- [ ] **Tests E2E** (Playwright)
+  - [ ] Parcours invité (upload → affichage)
+  - [ ] Parcours admin (création événement → modération)
+  - [ ] Tests responsive (mobile, tablette, desktop)
 
-- [ ] **Performance**
-  - [ ] Optimisation du chargement initial
-  - [ ] Lazy loading amélioré
-  - [ ] Cache des images
-  - [ ] Compression optimale
+#### Performance
+- [ ] **Optimisation du chargement initial**
+  - [ ] Code splitting amélioré
+  - [ ] Preload des ressources critiques
+  - [ ] Lazy loading des composants lourds
+- [ ] **Cache des images**
+  - [ ] Service Worker pour cache offline
+  - [ ] Compression optimale des images
+  - [ ] Lazy loading des images
+- [ ] **Optimisation Realtime**
+  - [ ] Réduction des abonnements inutiles
+  - [ ] Debounce des mises à jour
+  - [ ] Pagination côté serveur
 
-- [ ] **Sécurité**
-  - [ ] Audit de sécurité
-  - [ ] Rate limiting côté serveur
-  - [ ] Validation renforcée
-  - [ ] Protection CSRF
+#### Sécurité
+- [ ] **Audit de sécurité**
+  - [ ] Review des politiques RLS
+  - [ ] Validation des inputs serveur
+  - [ ] Protection XSS/CSRF
+- [ ] **Rate limiting**
+  - [ ] Limitation uploads par utilisateur
+  - [ ] Limitation appels Gemini API
+  - [ ] Protection contre spam
+- [ ] **Validation renforcée**
+  - [ ] Validation côté serveur (Edge Functions)
+  - [ ] Sanitization des inputs
+  - [ ] Vérification des types MIME
 
-- [ ] **Documentation**
-  - [ ] Guide utilisateur complet
-  - [ ] Vidéos tutoriels
-  - [ ] FAQ
-  - [ ] Documentation API complète
+#### Documentation
+- [ ] **Guide utilisateur complet**
+  - [ ] Guide organisateur
+  - [ ] Guide invité
+  - [ ] FAQ complète
+- [ ] **Vidéos tutoriels**
+  - [ ] Création d'un événement
+  - [ ] Upload de photos
+  - [ ] Génération d'aftermovie
+- [ ] **Documentation technique**
+  - [ ] API_DOCS.md complet
+  - [ ] ARCHITECTURE.md avec diagrammes
+  - [ ] Guide de déploiement
 
-- [ ] **Bugs critiques**
-  - [ ] Correction des bugs connus
-  - [ ] Amélioration de la gestion d'erreurs
-  - [ ] Logging amélioré
+#### Bugs critiques
+- [ ] **Correction des bugs connus**
+  - [ ] Issues GitHub prioritaires
+  - [ ] Bugs de performance
+  - [ ] Bugs d'affichage mobile
+- [ ] **Amélioration de la gestion d'erreurs**
+  - [ ] Messages d'erreur utilisateur-friendly
+  - [ ] Retry automatique pour erreurs réseau
+  - [ ] Fallbacks pour services IA
+- [ ] **Logging amélioré**
+  - [ ] Logging structuré (JSON)
+  - [ ] Niveaux de log (error, warn, info, debug)
+  - [ ] Intégration Sentry (optionnel)
 
 ---
 

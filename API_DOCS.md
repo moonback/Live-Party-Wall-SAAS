@@ -642,6 +642,184 @@ generateAftermovie(
 
 ---
 
+## 📤 Service Partage Aftermovie
+
+**Fichier** : `services/aftermovieShareService.ts`
+
+Gère l'upload, le partage et le téléchargement des aftermovies.
+
+### `uploadAftermovie`
+
+Upload un aftermovie vers Supabase Storage.
+
+```typescript
+uploadAftermovie(
+  videoBlob: Blob,
+  eventId: string,
+  filename: string,
+  title?: string
+): Promise<Aftermovie>
+```
+
+**Paramètres** :
+- `videoBlob` : Blob de la vidéo
+- `eventId` : ID de l'événement
+- `filename` : Nom du fichier
+- `title` : Titre optionnel de l'aftermovie
+
+**Retour** : Objet Aftermovie créé
+
+### `getAftermoviesByEvent`
+
+Récupère tous les aftermovies d'un événement.
+
+```typescript
+getAftermoviesByEvent(eventId: string): Promise<Aftermovie[]>
+```
+
+### `incrementDownloadCount`
+
+Incrémente le compteur de téléchargements d'un aftermovie.
+
+```typescript
+incrementDownloadCount(aftermovieId: string): Promise<void>
+```
+
+### `generateShareLink`
+
+Génère un lien de partage pour télécharger un aftermovie.
+
+```typescript
+generateShareLink(aftermovieId: string): string
+```
+
+**Retour** : URL publique pour téléchargement
+
+### `generateQRCode`
+
+Génère un QR code pour télécharger un aftermovie.
+
+```typescript
+generateQRCode(shareLink: string): Promise<string>
+```
+
+**Retour** : Data URL du QR code (base64)
+
+---
+
+## 🛡️ Service RGPD
+
+**Fichier** : `services/rgpdService.ts`
+
+Gère la conformité RGPD (consentement, politique de confidentialité, gestion des données).
+
+### `getConsent`
+
+Récupère le consentement actuel de l'utilisateur.
+
+```typescript
+getConsent(): ConsentData | null
+```
+
+**Retour** : Données de consentement ou `null` si pas de consentement
+
+### `saveConsent`
+
+Enregistre le consentement de l'utilisateur.
+
+```typescript
+saveConsent(consent: ConsentData): void
+```
+
+**Paramètres** :
+- `consent` : Objet avec les préférences de consentement (essentiels, analytiques, marketing, fonctionnels)
+
+### `exportUserData`
+
+Exporte toutes les données utilisateur en JSON.
+
+```typescript
+exportUserData(eventId: string, userName: string): Promise<string>
+```
+
+**Retour** : JSON stringifié avec toutes les données de l'utilisateur
+
+### `deleteUserData`
+
+Supprime toutes les données utilisateur locales.
+
+```typescript
+deleteUserData(): void
+```
+
+**Note** : Supprime uniquement les données locales (localStorage). Les données serveur doivent être supprimées via l'interface admin.
+
+---
+
+## 🎨 Service Backgrounds
+
+**Fichier** : `services/backgroundService.ts`
+
+Gère les images de fond personnalisées pour les événements.
+
+### `uploadBackground`
+
+Upload une image de fond (desktop ou mobile).
+
+```typescript
+uploadBackground(
+  file: File,
+  eventId: string,
+  type: 'desktop' | 'mobile'
+): Promise<string>
+```
+
+**Retour** : URL publique de l'image uploadée
+
+### `getBackgroundUrl`
+
+Récupère l'URL de l'image de fond pour un événement.
+
+```typescript
+getBackgroundUrl(
+  eventId: string,
+  type: 'desktop' | 'mobile'
+): Promise<string | null>
+```
+
+---
+
+## 🎯 Service Event Context
+
+**Fichier** : `services/eventContextService.ts`
+
+Gère le contexte des événements pour la personnalisation IA.
+
+### `getEventContext`
+
+Récupère le contexte d'un événement.
+
+```typescript
+getEventContext(eventId: string): Promise<string | null>
+```
+
+**Retour** : Contexte de l'événement (ex: "Mariage de Sophie et Marc") ou `null`
+
+### `updateEventContext`
+
+Met à jour le contexte d'un événement.
+
+```typescript
+updateEventContext(
+  eventId: string,
+  context: string
+): Promise<void>
+```
+
+**Note** : Le contexte est utilisé pour personnaliser les légendes IA générées.
+
+---
+
 ## 📸 Service Photobooth
 
 **Fichier** : `services/photoboothService.ts`

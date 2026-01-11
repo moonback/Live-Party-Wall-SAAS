@@ -265,6 +265,47 @@ Intégration pour :
 
 3. **Amélioration d'images** : Analyse de qualité et suggestions
 
+4. **Génération de tags** : Tags sémantiques pour améliorer la recherche
+
+---
+
+## 🎬 Génération d'Aftermovies
+
+Les aftermovies sont générés côté client avec les technologies suivantes :
+
+### Technologies utilisées
+
+- **Canvas API** : Dessin des frames vidéo
+- **MediaRecorder API** : Encodage vidéo
+- **Web Workers** : Traitement en arrière-plan pour ne pas bloquer l'UI
+- **JSZip** : Compression si nécessaire
+
+### Processus de génération
+
+```typescript
+1. Sélection des photos
+   ↓
+2. Chargement et redimensionnement des images
+   ↓
+3. Création d'un canvas pour chaque frame
+   ↓
+4. Application des transitions (fade, slide, etc.)
+   ↓
+5. Encodage vidéo avec MediaRecorder
+   ↓
+6. Upload vers Supabase Storage
+   ↓
+7. Insertion dans la table aftermovies
+```
+
+### Options de personnalisation
+
+- **Résolution** : HD (720p), Full HD (1080p), Story (9:16)
+- **Durée par photo** : 0.5s à 5s
+- **Transitions** : fade, slide, zoom, etc.
+- **Audio** : Musique de fond avec contrôle volume
+- **Cadres décoratifs** : Overlay PNG optionnel
+
 ---
 
 ## 🗄️ Base de données
@@ -290,6 +331,8 @@ photos (Photos)
 ├── type (TEXT) -- 'photo' | 'video'
 ├── duration (NUMERIC) -- Pour les vidéos
 ├── likes_count (INTEGER)
+├── tags (TEXT[]) -- Tags suggérés par l'IA
+├── user_description (TEXT) -- Description utilisateur
 └── created_at (TIMESTAMPTZ)
 
 guests (Invités)
@@ -302,7 +345,14 @@ guests (Invités)
 likes (Likes)
 ├── id (UUID, PK)
 ├── photo_id (UUID, FK → photos)
-├── guest_name (TEXT)
+├── user_identifier (TEXT) -- Nom invité
+└── created_at (TIMESTAMPTZ)
+
+reactions (Réactions)
+├── id (UUID, PK)
+├── photo_id (UUID, FK → photos)
+├── user_identifier (TEXT)
+├── reaction_type (TEXT) -- 'heart' | 'laugh' | 'cry' | 'fire' | 'wow' | 'thumbsup'
 └── created_at (TIMESTAMPTZ)
 
 event_settings (Paramètres)
@@ -311,6 +361,8 @@ event_settings (Paramètres)
 ├── frame_enabled (BOOLEAN)
 ├── battle_mode_enabled (BOOLEAN)
 ├── collage_mode_enabled (BOOLEAN)
+├── event_context (TEXT) -- Contexte pour IA
+├── alert_text (TEXT) -- Message d'alerte
 └── ... (autres paramètres)
 
 event_organizers (Organisateurs)
@@ -318,6 +370,27 @@ event_organizers (Organisateurs)
 ├── event_id (UUID, FK → events)
 ├── user_id (UUID, FK → auth.users)
 └── role (TEXT) -- 'owner' | 'organizer' | 'viewer'
+
+photo_battles (Battles)
+├── id (UUID, PK)
+├── event_id (UUID, FK → events)
+├── photo_a_id (UUID, FK → photos)
+├── photo_b_id (UUID, FK → photos)
+├── votes_a (INTEGER)
+├── votes_b (INTEGER)
+├── status (TEXT) -- 'active' | 'completed' | 'cancelled'
+└── created_at (TIMESTAMPTZ)
+
+aftermovies (Aftermovies)
+├── id (UUID, PK)
+├── event_id (UUID, FK → events)
+├── url (TEXT) -- URL Supabase Storage
+├── storage_path (TEXT)
+├── filename (TEXT)
+├── file_size (BIGINT)
+├── duration_seconds (NUMERIC)
+├── download_count (INTEGER)
+└── created_at (TIMESTAMPTZ)
 ```
 
 ### Relations
@@ -325,7 +398,10 @@ event_organizers (Organisateurs)
 - **events** → **photos** : 1-N (un événement a plusieurs photos)
 - **events** → **guests** : 1-N (un événement a plusieurs invités)
 - **events** → **event_settings** : 1-1 (un événement a un seul paramètre)
+- **events** → **aftermovies** : 1-N (un événement a plusieurs aftermovies)
 - **photos** → **likes** : 1-N (une photo a plusieurs likes)
+- **photos** → **reactions** : 1-N (une photo a plusieurs réactions)
+- **photos** → **photo_battles** : N-N (une photo peut être dans plusieurs battles)
 - **events** → **event_organizers** : 1-N (un événement a plusieurs organisateurs)
 
 ### Indexes

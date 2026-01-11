@@ -212,6 +212,48 @@ Table pour les battles (duels) entre photos.
 
 ---
 
+### `battle_votes` - Votes sur les battles
+
+Table pour enregistrer les votes des utilisateurs sur les battles.
+
+| Colonne | Type | Description | Contraintes |
+|---------|------|-------------|-------------|
+| `id` | UUID | Identifiant unique | PRIMARY KEY, DEFAULT gen_random_uuid() |
+| `battle_id` | UUID | Battle associée | FK → photo_battles, ON DELETE CASCADE, NOT NULL |
+| `user_identifier` | TEXT | Identifiant utilisateur (nom invité) | NOT NULL |
+| `voted_for_photo_id` | UUID | ID de la photo pour laquelle l'utilisateur a voté | NOT NULL |
+| `created_at` | TIMESTAMPTZ | Date du vote | DEFAULT now() |
+
+**Contrainte unique** : `UNIQUE(battle_id, user_identifier)` - Un utilisateur ne peut voter qu'une fois par battle.
+
+---
+
+### `aftermovies` - Vidéos timelapse générées
+
+Table pour stocker les aftermovies (vidéos timelapse) générés à partir des photos d'un événement.
+
+| Colonne | Type | Description | Contraintes |
+|---------|------|-------------|-------------|
+| `id` | UUID | Identifiant unique | PRIMARY KEY, DEFAULT gen_random_uuid() |
+| `event_id` | UUID | Événement associé | FK → events, ON DELETE CASCADE, NOT NULL |
+| `url` | TEXT | URL publique dans Supabase Storage | NOT NULL |
+| `storage_path` | TEXT | Chemin dans Supabase Storage | NOT NULL |
+| `title` | TEXT | Titre de l'aftermovie | NULL |
+| `filename` | TEXT | Nom du fichier vidéo | NOT NULL |
+| `file_size` | BIGINT | Taille du fichier en octets | NULL |
+| `duration_seconds` | NUMERIC | Durée de la vidéo en secondes | NULL |
+| `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now() |
+| `created_by` | TEXT | Nom de l'organisateur qui a créé l'aftermovie | NULL |
+| `download_count` | INTEGER | Nombre de téléchargements | DEFAULT 0 |
+
+**Exemple** :
+```sql
+INSERT INTO aftermovies (event_id, url, storage_path, filename, created_by)
+VALUES ('event-uuid', 'https://.../aftermovie.mp4', 'aftermovies/event-uuid/video.mp4', 'aftermovie.mp4', 'Sophie');
+```
+
+---
+
 ## 🔗 Relations
 
 ### Diagramme des relations
@@ -225,14 +267,20 @@ auth.users
     │     │     │
     │     │     ├─── likes (photo_id)
     │     │     ├─── reactions (photo_id)
-    │     │     └─── photo_battles (photo_a_id, photo_b_id)
+    │     │     ├─── photo_battles (photo_a_id, photo_b_id)
+    │     │     └─── battle_votes (voted_for_photo_id)
     │     │
     │     ├─── guests (event_id)
     │     ├─── event_settings (event_id) [1-1]
     │     ├─── blocked_guests (event_id)
+    │     ├─── aftermovies (event_id)
     │     └─── event_organizers (event_id)
     │           │
     │           └─── auth.users (user_id)
+    
+photo_battles
+    │
+    └─── battle_votes (battle_id)
 ```
 
 ### Relations détaillées
@@ -260,6 +308,14 @@ auth.users
 6. **events → event_organizers** : 1-N
    - Un événement a plusieurs organisateurs
    - `UNIQUE(event_id, user_id)` : Un utilisateur ne peut être organisateur qu'une fois par événement
+
+7. **events → aftermovies** : 1-N
+   - Un événement a plusieurs aftermovies
+   - `ON DELETE CASCADE` : Supprimer un événement supprime tous ses aftermovies
+
+8. **photo_battles → battle_votes** : 1-N
+   - Une battle a plusieurs votes
+   - `UNIQUE(battle_id, user_identifier)` : Un utilisateur ne peut voter qu'une fois par battle
 
 ---
 
@@ -296,6 +352,19 @@ CREATE INDEX idx_guests_name ON guests(name);
 -- Event Organizers
 CREATE INDEX idx_event_organizers_event_id ON event_organizers(event_id);
 CREATE INDEX idx_event_organizers_user_id ON event_organizers(user_id);
+
+-- Photo Battles
+CREATE INDEX idx_photo_battles_event_id ON photo_battles(event_id);
+CREATE INDEX idx_photo_battles_status ON photo_battles(status);
+CREATE INDEX idx_photo_battles_created_at ON photo_battles(created_at DESC);
+
+-- Battle Votes
+CREATE INDEX idx_battle_votes_battle_id ON battle_votes(battle_id);
+CREATE INDEX idx_battle_votes_user_identifier ON battle_votes(user_identifier);
+
+-- Aftermovies
+CREATE INDEX idx_aftermovies_event_id ON aftermovies(event_id);
+CREATE INDEX idx_aftermovies_created_at ON aftermovies(created_at DESC);
 ```
 
 ---
@@ -439,6 +508,9 @@ Les tables suivantes ont la réplication Realtime activée pour la synchronisati
 - ✅ `reactions` : Réactions en temps réel
 - ✅ `event_settings` : Changements de paramètres en temps réel
 - ✅ `guests` : Nouveaux invités en temps réel
+- ✅ `photo_battles` : Nouvelles battles et mises à jour de votes
+- ✅ `battle_votes` : Votes en temps réel
+- ✅ `aftermovies` : Nouveaux aftermovies disponibles
 
 ### Activation Realtime
 
@@ -485,6 +557,35 @@ SELECT EXISTS(
   WHERE photo_id = 'photo-uuid'
   AND user_identifier = 'Sophie'
 );
+```
+
+### Récupérer les aftermovies d'un événement
+
+```sql
+SELECT * FROM aftermovies
+WHERE event_id = 'event-uuid'
+ORDER BY created_at DESC;
+```
+
+### Compter les votes d'une battle
+
+```sql
+SELECT 
+  battle_id,
+  COUNT(*) FILTER (WHERE voted_for_photo_id = photo_a_id) as votes_a,
+  COUNT(*) FILTER (WHERE voted_for_photo_id = photo_b_id) as votes_b
+FROM battle_votes
+WHERE battle_id = 'battle-uuid'
+GROUP BY battle_id;
+```
+
+### Récupérer les battles actives d'un événement
+
+```sql
+SELECT * FROM photo_battles
+WHERE event_id = 'event-uuid'
+AND status = 'active'
+ORDER BY created_at DESC;
 ```
 
 ---

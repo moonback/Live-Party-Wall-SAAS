@@ -48,33 +48,70 @@ Merci de votre intérêt pour contribuer à Live Party Wall ! Ce guide vous aide
 ### Signaler un bug
 
 1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/votre-repo/issues)
-2. **Créer une nouvelle issue** avec :
-   - Titre clair et descriptif
-   - Description détaillée du bug
-   - Étapes pour reproduire
-   - Comportement attendu vs comportement actuel
-   - Captures d'écran si applicable
-   - Environnement (OS, navigateur, version)
+2. **Créer une nouvelle issue** avec le template suivant :
+
+```markdown
+## Description du bug
+Description claire et concise du bug.
+
+## Étapes pour reproduire
+1. Aller à '...'
+2. Cliquer sur '...'
+3. Scroller jusqu'à '...'
+4. Voir l'erreur
+
+## Comportement attendu
+Ce qui devrait se passer.
+
+## Comportement actuel
+Ce qui se passe réellement.
+
+## Captures d'écran
+Si applicable, ajouter des captures d'écran.
+
+## Environnement
+- OS: [ex: Windows 11, macOS 14, Ubuntu 22.04]
+- Navigateur: [ex: Chrome 120, Firefox 121, Safari 17]
+- Version de l'app: [ex: 1.0.0]
+
+## Informations supplémentaires
+Toute autre information pertinente.
+```
 
 ### Proposer une fonctionnalité
 
 1. **Vérifier** que la fonctionnalité n'a pas déjà été proposée
 2. **Créer une nouvelle issue** avec le label `enhancement` :
-   - Titre clair
-   - Description détaillée
-   - Cas d'usage
-   - Bénéfices attendus
-   - Mockups/wireframes si applicable
+
+```markdown
+## Description de la fonctionnalité
+Description claire et concise de la fonctionnalité proposée.
+
+## Cas d'usage
+Décrire quand et comment cette fonctionnalité serait utilisée.
+
+## Bénéfices attendus
+Pourquoi cette fonctionnalité serait utile.
+
+## Mockups/Wireframes
+Si applicable, ajouter des mockups ou wireframes.
+
+## Alternatives considérées
+Décrire les alternatives que vous avez considérées.
+
+## Informations supplémentaires
+Toute autre information pertinente.
+```
 
 ### Contribuer au code
 
 1. **Fork** le projet
 2. **Créer une branche** pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
 3. **Développer** votre fonctionnalité en suivant les standards
-4. **Tester** votre code
-5. **Commit** vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. **Tester** votre code manuellement
+5. **Commit** vos changements avec [Conventional Commits](https://www.conventionalcommits.org/)
 6. **Push** vers la branche (`git push origin feature/AmazingFeature`)
-7. **Ouvrir une Pull Request**
+7. **Ouvrir une Pull Request** avec une description détaillée
 
 ---
 
@@ -100,11 +137,14 @@ npm run dev
 
 ### 2. Structure des branches
 
-- `main` : Branche principale (production)
-- `develop` : Branche de développement
-- `feature/*` : Nouvelles fonctionnalités
-- `bugfix/*` : Corrections de bugs
-- `hotfix/*` : Corrections urgentes
+- `main` : Branche principale (production) - **Ne jamais commit directement**
+- `develop` : Branche de développement (si applicable)
+- `feature/*` : Nouvelles fonctionnalités (ex: `feature/add-dark-mode`)
+- `bugfix/*` : Corrections de bugs (ex: `bugfix/fix-upload-error`)
+- `hotfix/*` : Corrections urgentes pour production (ex: `hotfix/security-patch`)
+- `docs/*` : Améliorations de documentation (ex: `docs/update-readme`)
+
+**Convention de nommage** : Utiliser des noms descriptifs en kebab-case.
 
 ### 3. Workflow Git
 
@@ -205,11 +245,11 @@ const Component: React.FC<ComponentProps> = ({ name, onAction }) => {
 
 ## 🧪 Tests
 
-### Tests à implémenter
+### Tests à implémenter (Roadmap)
 
-- [ ] **Tests unitaires** : Services avec mocks
-- [ ] **Tests d'intégration** : Flux complets
-- [ ] **Tests E2E** : Scénarios utilisateur
+- [ ] **Tests unitaires** : Services avec mocks (Jest/Vitest)
+- [ ] **Tests d'intégration** : Flux complets (upload → affichage)
+- [ ] **Tests E2E** : Scénarios utilisateur (Playwright)
 
 ### Structure de tests (future)
 
@@ -217,19 +257,57 @@ const Component: React.FC<ComponentProps> = ({ name, onAction }) => {
 tests/
 ├── unit/
 │   ├── services/
+│   │   ├── photoService.test.ts
+│   │   ├── geminiService.test.ts
+│   │   └── ...
 │   └── utils/
+│       ├── validation.test.ts
+│       └── ...
 ├── integration/
 │   └── flows/
+│       ├── upload-flow.test.ts
+│       └── aftermovie-flow.test.ts
 └── e2e/
     └── scenarios/
+        ├── guest-journey.spec.ts
+        └── admin-journey.spec.ts
 ```
 
 ### Bonnes pratiques
 
-- Tester les cas d'erreur
-- Mocker les appels externes (Supabase, Gemini)
-- Tester les edge cases
-- Maintenir une couverture de code > 80%
+- ✅ **Tester les cas d'erreur** : API down, validation échouée, réseau lent
+- ✅ **Mocker les appels externes** : Supabase, Gemini API
+- ✅ **Tester les edge cases** : Fichiers très gros, images corrompues, timeout
+- ✅ **Maintenir une couverture > 80%** : Objectif pour la v1.0
+- ✅ **Tests isolés** : Chaque test doit être indépendant
+- ✅ **Nommage clair** : `describe('photoService', () => { it('should upload photo successfully', ...) })`
+
+### Exemple de test unitaire (future)
+
+```typescript
+// tests/unit/services/photoService.test.ts
+import { uploadPhotoToStorage } from '@/services/photoService';
+import { supabase } from '@/services/supabaseClient';
+
+jest.mock('@/services/supabaseClient');
+
+describe('photoService', () => {
+  it('should upload photo successfully', async () => {
+    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+    const eventId = 'test-event-id';
+    
+    // Mock Supabase response
+    (supabase.storage.from as jest.Mock).mockReturnValue({
+      upload: jest.fn().mockResolvedValue({ data: { path: 'test.jpg' } })
+    });
+    
+    const url = await uploadPhotoToStorage(file, eventId);
+    
+    expect(url).toBeDefined();
+    expect(url).toContain('test.jpg');
+  });
+});
+```
 
 ---
 
