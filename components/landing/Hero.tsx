@@ -920,9 +920,9 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               variants={itemVariants}
               className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.05] text-white"
             >
-              Vos photos sur grand écran
+              Transformez vos événements en
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 animate-gradient-x pb-2">
-                en direct, sans app
+                expérience interactive en temps réel
               </span>
             </motion.h1>
             
@@ -930,8 +930,8 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
               variants={itemVariants}
               className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light"
             >
-              Vos invités prennent des photos, <strong className="text-white font-medium">l'IA les sublime</strong>, <strong className="text-white font-medium">elles apparaissent instantanément</strong> sur le mur. <br className="hidden sm:block" />
-              <span className="text-white font-medium">Aucune app à télécharger</span>, juste un lien à partager.
+              Un mur photo live qui engage tous vos invités, instantanément. <br className="hidden sm:block" />
+              <strong className="text-white font-medium">Aucune app à télécharger</strong> — vos invités partagent leurs photos, elles s'affichent sur grand écran en quelques secondes.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -941,12 +941,12 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
             >
               <button 
                 onClick={onAdminClick}
-                aria-label="Créer un événement maintenant"
+                aria-label="Démarrer un événement"
                 className="group relative px-8 py-4 bg-white text-black rounded-2xl font-bold text-base sm:text-lg hover:scale-105 transition-all duration-300 w-full sm:w-auto overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)]"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
-                  Créer mon mur gratuitement
+                  Démarrer un événement
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </button>

@@ -16,6 +16,7 @@ import { Testimonials } from './landing/Testimonials';
 import { TrustBadges } from './landing/TrustBadges';
 import { ScrollToTop } from './landing/ScrollToTop';
 import { SkipLinks } from './landing/SkipLinks';
+import { UsageGuide } from './landing/UsageGuide';
 
 interface AccueilProps {
   onAdminClick: () => void;
@@ -62,6 +63,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
         <Testimonials />
         <Advantages />
         <UseCases />
+        <UsageGuide onAdminClick={onAdminClick} />
         <GuestMessage />
         <Pricing onAdminClick={onAdminClick} />
         <PhotoboothComparison />

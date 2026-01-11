@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import { STEPS } from './landingData';
 import { StepCard } from './StepCard';
 
@@ -21,7 +22,7 @@ export const HowItWorks: React.FC = () => {
             viewport={{ once: true }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
           >
-            La magie opère en <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">4 étapes</span>
+            Comment ça marche ?
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -30,7 +31,7 @@ export const HowItWorks: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-300 max-w-2xl mx-auto"
           >
-            Une expérience fluide pour l'organisateur comme pour les invités. <br/>
+            En 4 étapes simples, transformez n'importe quel événement en expérience interactive. <br/>
             Simplicité radicale, impact maximal.
           </motion.p>
         </div>
@@ -52,6 +53,30 @@ export const HowItWorks: React.FC = () => {
             />
           ))}
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5 }}
+          className="mt-16 text-center"
+        >
+          <a
+            href="#main-content"
+            onClick={(e) => {
+              e.preventDefault();
+              const element = document.getElementById('main-content');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/30 transition-all"
+          >
+            Tester en live
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </motion.div>
       </div>
     </section>
   );

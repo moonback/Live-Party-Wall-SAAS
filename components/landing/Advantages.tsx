@@ -24,7 +24,8 @@ export const Advantages: React.FC = () => {
             Pourquoi Live Party Wall ?
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mt-4">
-            Simple, rapide, viral. <strong className="text-pink-400">TV/PC + téléphones.</strong> Engagement garanti.
+            Tous les avantages qui font de Live Party Wall la solution idéale pour vos événements. <br/>
+            <strong className="text-pink-400">Simple, rapide, sécurisé.</strong>
           </p>
         </div>
 
