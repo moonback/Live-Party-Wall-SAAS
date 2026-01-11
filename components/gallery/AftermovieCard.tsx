@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Aftermovie } from '../../types';
-import { Video, Download, Calendar, Play, Clock, HardDrive, TrendingUp } from 'lucide-react';
+import { Video, Download, Calendar, Play, Clock, HardDrive, TrendingUp, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateVideoThumbnail } from '../../utils/videoThumbnailGenerator';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useToast } from '../../context/ToastContext';
+import { shareAftermovie, copyToClipboard } from '../../services/socialShareService';
 
 interface AftermovieCardProps {
   aftermovie: Aftermovie;
@@ -17,9 +19,11 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
   isDownloading = false
 }) => {
   const isMobile = useIsMobile();
+  const { addToast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -81,6 +85,33 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      const success = await shareAftermovie(
+        aftermovie.url,
+        aftermovie.title || 'Aftermovie',
+        `Regardez notre aftermovie ! ${aftermovie.title ? `- ${aftermovie.title}` : ''}`
+      );
+      
+      if (success) {
+        addToast('Partage réussi !', 'success');
+      } else {
+        // Fallback: copier le lien dans le presse-papier
+        const copied = await copyToClipboard(aftermovie.url);
+        if (copied) {
+          addToast('Lien copié dans le presse-papier !', 'success');
+        } else {
+          addToast('Impossible de partager ou copier le lien', 'error');
+        }
+      }
+    } catch (error) {
+      addToast('Erreur lors du partage', 'error');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -208,8 +239,49 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-black/50 backdrop-blur-sm flex items-center justify-center"
+              className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-black/50 backdrop-blur-sm flex items-center justify-center gap-3"
             >
+              {/* Bouton Partager */}
+              <motion.button
+                initial={{ scale: 0.8, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.8, y: 20, opacity: 0 }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleShare}
+                disabled={isSharing}
+                className={`${isMobile ? 'px-5 py-2.5 min-h-[48px] text-sm' : 'px-4 py-2 text-xs'} bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-full font-semibold flex items-center gap-2 transition-all disabled:opacity-50 shadow-xl border border-white/20 touch-manipulation relative overflow-hidden group`}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                  animate={{
+                    x: ['-100%', '100%'],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'linear'
+                  }}
+                />
+                {isSharing ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5'} border-2 border-white border-t-transparent rounded-full relative z-10`}
+                    />
+                    <span className="relative z-10">Partage...</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5'} relative z-10`} />
+                    <span className="relative z-10">Partager</span>
+                  </>
+                )}
+              </motion.button>
+
+              {/* Bouton Télécharger */}
               <motion.button
                 initial={{ scale: 0.8, y: 20, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -310,25 +382,44 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
           </div>
         </div>
 
-        {/* Bouton de téléchargement visible sur mobile */}
+        {/* Boutons d'action visibles sur mobile */}
         <div className={`${isMobile ? 'mt-3 pt-3' : 'mt-2 sm:mt-3 pt-2 sm:pt-3'} border-t border-slate-700/50 md:hidden`}>
-          <button
-            onClick={() => onDownload(aftermovie)}
-            disabled={isDownloading}
-            className={`w-full ${isMobile ? 'px-4 py-3 min-h-[48px] rounded-xl text-sm' : 'px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold flex items-center justify-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} transition-all disabled:opacity-50 touch-manipulation`}
-          >
-            {isDownloading ? (
-              <>
-                <div className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'} border-2 border-white border-t-transparent rounded-full animate-spin`} />
-                <span>Téléchargement...</span>
-              </>
-            ) : (
-              <>
-                <Download className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'}`} />
-                <span>Télécharger</span>
-              </>
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleShare}
+              disabled={isSharing}
+              className={`flex-1 ${isMobile ? 'px-4 py-3 min-h-[48px] rounded-xl text-sm' : 'px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs'} bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold flex items-center justify-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} transition-all disabled:opacity-50 touch-manipulation`}
+            >
+              {isSharing ? (
+                <>
+                  <div className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'} border-2 border-white border-t-transparent rounded-full animate-spin`} />
+                  <span>Partage...</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'}`} />
+                  <span>Partager</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => onDownload(aftermovie)}
+              disabled={isDownloading}
+              className={`flex-1 ${isMobile ? 'px-4 py-3 min-h-[48px] rounded-xl text-sm' : 'px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold flex items-center justify-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} transition-all disabled:opacity-50 touch-manipulation`}
+            >
+              {isDownloading ? (
+                <>
+                  <div className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'} border-2 border-white border-t-transparent rounded-full animate-spin`} />
+                  <span>Téléchargement...</span>
+                </>
+              ) : (
+                <>
+                  <Download className={`${isMobile ? 'w-4 h-4' : 'w-3 h-3 sm:w-3.5 sm:h-3.5'}`} />
+                  <span>Télécharger</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>

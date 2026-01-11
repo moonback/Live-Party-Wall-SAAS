@@ -9,6 +9,8 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import { useSwipe } from '../../hooks/useSwipe';
 import { getUserAvatar } from '../../utils/userAvatar';
 import { useSettings } from '../../context/SettingsContext';
+import { useToast } from '../../context/ToastContext';
+import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface GuestPhotoCardProps {
@@ -49,11 +51,13 @@ export const GuestPhotoCard = React.memo(({
   onSelect
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
+  const { addToast } = useToast();
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showReactionsMenu, setShowReactionsMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const likeButtonRef = useRef<HTMLButtonElement>(null);
   const reactionsMenuRef = useRef<HTMLDivElement>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -224,20 +228,42 @@ export const GuestPhotoCard = React.memo(({
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Photo de ${photo.author}`,
-          text: photo.caption,
-          url: photo.url,
-        });
-      } catch (error) {
-        console.error('Erreur de partage:', error);
+    if (selectionMode) return;
+    
+    setIsSharing(true);
+    try {
+      const filename = photo.type === 'video' 
+        ? `video-${photo.id}.mp4`
+        : `photo-${photo.id}.jpg`;
+      
+      const mimeType = photo.type === 'video' ? 'video/mp4' : 'image/jpeg';
+      const title = photo.type === 'video' 
+        ? `Vidéo de ${photo.author}`
+        : `Photo de ${photo.author}`;
+      
+      const success = await sharePhotoOrVideo(
+        photo.url,
+        title,
+        photo.caption || `Partagé par ${photo.author}`,
+        filename,
+        mimeType
+      );
+      
+      if (success) {
+        addToast('Partage réussi !', 'success');
+      } else {
+        // Fallback: copier le lien dans le presse-papier
+        const copied = await copyToClipboard(photo.url);
+        if (copied) {
+          addToast('Lien copié dans le presse-papier !', 'success');
+        } else {
+          addToast('Impossible de partager ou copier le lien', 'error');
+        }
       }
-    } else {
-      // Fallback: copier le lien
-      navigator.clipboard.writeText(photo.url);
-      alert('Lien copié dans le presse-papier !');
+    } catch (error) {
+      addToast('Erreur lors du partage', 'error');
+    } finally {
+      setIsSharing(false);
     }
   };
   
@@ -441,10 +467,14 @@ export const GuestPhotoCard = React.memo(({
             {/* Share */}
             <button
               onClick={handleShare}
-              disabled={selectionMode}
-              className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} text-slate-400 hover:text-indigo-400 transition-colors touch-manipulation flex items-center justify-center ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+              disabled={selectionMode || isSharing}
+              className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} transition-all touch-manipulation flex items-center justify-center ${isSharing ? 'text-indigo-400' : 'text-slate-400 hover:text-indigo-400'} ${selectionMode || isSharing ? 'opacity-50' : 'active:scale-90'}`}
             >
-              <Share2 className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'}`} />
+              {isSharing ? (
+                <div className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} border-2 border-indigo-400 border-t-transparent rounded-full animate-spin`} />
+              ) : (
+                <Share2 className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'}`} />
+              )}
             </button>
 
             {/* Download */}
