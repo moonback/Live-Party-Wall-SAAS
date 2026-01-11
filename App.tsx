@@ -10,6 +10,7 @@ import TransitionWrapper from './components/TransitionWrapper';
 import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
 import { logger } from './utils/logger';
+import QuickAccessButtons from './components/QuickAccessButtons';
 
 // Lazy loading components
 const Landing = lazy(() => import('./components/Landing'));
@@ -258,6 +259,15 @@ const AppContent: React.FC = () => {
            ))}
         </div>
       </div>
+
+      {/* Quick Access Buttons - Visible quand admin authentifié */}
+      {isAdminAuthenticated && (
+        <QuickAccessButtons
+          onSelectMode={handleViewModeChange}
+          isAdminAuthenticated={isAdminAuthenticated}
+          statsEnabled={eventSettings.stats_enabled}
+        />
+      )}
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
