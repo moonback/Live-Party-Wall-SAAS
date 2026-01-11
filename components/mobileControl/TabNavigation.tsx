@@ -1,7 +1,7 @@
 import React from 'react';
-import { BarChart2, Shield, Settings, Sword, Users, LayoutDashboard, Video } from 'lucide-react';
+import { BarChart2, Shield, Settings, Sword, Users, LayoutDashboard, Video, Key } from 'lucide-react';
 
-export type ControlTab = 'overview' | 'moderation' | 'analytics' | 'settings' | 'battles' | 'guests' | 'aftermovies';
+export type ControlTab = 'overview' | 'moderation' | 'analytics' | 'settings' | 'battles' | 'guests' | 'aftermovies' | 'license';
 
 interface TabNavigationProps {
   activeTab: ControlTab;
@@ -23,6 +23,7 @@ const TABS: TabConfig[] = [
   { id: 'battles', label: 'Battles', icon: Sword },
   { id: 'guests', label: 'Invités', icon: Users },
   { id: 'aftermovies', label: 'Aftermovies', icon: Video },
+  { id: 'license', label: 'Licence', icon: Key },
   { id: 'settings', label: 'Paramètres', icon: Settings },
 ];
 
