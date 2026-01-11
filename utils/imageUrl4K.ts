@@ -1,7 +1,10 @@
 /**
- * Utilitaires pour forcer le chargement d'images en qualité 4K (3840x2160)
+ * ⚡ OPTIMISATION : Utilitaires pour forcer le chargement d'images en qualité 4K (3840x2160)
+ * avec support des formats modernes (WebP, AVIF)
  * pour l'affichage sur le mur
  */
+
+import { getOptimalImageUrl } from './imageFormatSupport';
 
 // Résolution 4K standard
 export const RESOLUTION_4K = {
@@ -10,16 +13,19 @@ export const RESOLUTION_4K = {
 };
 
 /**
- * Génère une URL d'image optimisée pour 4K
- * Charge l'image originale en pleine résolution (sans transformation)
- * Supabase Storage ne supporte pas les transformations d'image par défaut,
- * donc on charge directement l'image originale qui est déjà en haute qualité
+ * ⚡ OPTIMISATION : Génère une URL d'image optimisée pour 4K avec formats modernes
+ * Charge l'image originale en pleine résolution avec le meilleur format supporté (AVIF > WebP > Original)
  * 
  * @param originalUrl - URL originale de l'image
  * @param force4K - Forcer le 4K même si l'image est plus petite (défaut: true)
- * @returns URL de l'image originale en pleine résolution
+ * @param preferFormat - Format préféré ('avif' | 'webp' | 'original')
+ * @returns URL de l'image optimisée en pleine résolution
  */
-export function get4KImageUrl(originalUrl: string, force4K: boolean = true): string {
+export async function get4KImageUrl(
+  originalUrl: string, 
+  force4K: boolean = true,
+  preferFormat: 'avif' | 'webp' | 'original' = 'avif'
+): Promise<string> {
   if (!originalUrl) return originalUrl;
 
   // Si l'URL est déjà une data URL (base64), retourner tel quel
@@ -41,7 +47,10 @@ export function get4KImageUrl(originalUrl: string, force4K: boolean = true): str
     url.searchParams.delete('resize');
     url.searchParams.delete('transform');
     
-    return url.toString();
+    const cleanUrl = url.toString();
+    
+    // ⚡ OPTIMISATION : Utiliser le meilleur format supporté
+    return await getOptimalImageUrl(cleanUrl, preferFormat);
   } catch {
     // Si l'URL n'est pas valide, retourner tel quel
     return originalUrl;
@@ -49,21 +58,53 @@ export function get4KImageUrl(originalUrl: string, force4K: boolean = true): str
 }
 
 /**
- * Génère un srcset pour différentes résolutions (responsive images)
- * Pour le mur, on charge toujours l'image originale en 4K
- * Le navigateur choisira automatiquement la meilleure résolution disponible
+ * ⚡ OPTIMISATION : Version synchrone (fallback si async non disponible)
+ * Génère une URL d'image optimisée pour 4K sans détection de format
+ */
+export function get4KImageUrlSync(originalUrl: string, force4K: boolean = true): string {
+  if (!originalUrl) return originalUrl;
+
+  if (originalUrl.startsWith('data:')) {
+    return originalUrl;
+  }
+
+  try {
+    const url = new URL(originalUrl);
+    url.searchParams.delete('width');
+    url.searchParams.delete('height');
+    url.searchParams.delete('quality');
+    url.searchParams.delete('resize');
+    url.searchParams.delete('transform');
+    return url.toString();
+  } catch {
+    return originalUrl;
+  }
+}
+
+/**
+ * ⚡ OPTIMISATION : Génère un srcset optimisé avec formats modernes
+ * Pour le mur, on charge toujours l'image originale en 4K avec le meilleur format
  * 
  * @param originalUrl - URL originale de l'image
- * @returns String srcset pour l'attribut srcset (vide car on charge toujours l'original)
+ * @returns Promise résolue avec srcset string optimisé
  */
-export function get4KImageSrcSet(originalUrl: string): string {
+export async function get4KImageSrcSet(originalUrl: string): Promise<string> {
   if (!originalUrl || originalUrl.startsWith('data:')) {
     return '';
   }
 
-  // Pour le mur, on charge toujours l'image originale en pleine résolution
-  // Le navigateur gérera automatiquement l'affichage selon la taille de l'écran
-  // On retourne une chaîne vide car on utilise directement l'URL 4K dans src
+  // ⚡ OPTIMISATION : Générer srcset avec formats multiples
+  const { generateOptimizedSrcSet } = await import('./imageFormatSupport');
+  return await generateOptimizedSrcSet(originalUrl, [800, 1600, 2400, 3840]);
+}
+
+/**
+ * ⚡ OPTIMISATION : Version synchrone (fallback)
+ */
+export function get4KImageSrcSetSync(originalUrl: string): string {
+  if (!originalUrl || originalUrl.startsWith('data:')) {
+    return '';
+  }
   return '';
 }
 

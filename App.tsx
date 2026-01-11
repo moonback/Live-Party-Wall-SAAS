@@ -11,6 +11,20 @@ import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
 import { logger } from './utils/logger';
 
+// ⚡ OPTIMISATION : Enregistrer le Service Worker pour cache images
+if ('serviceWorker' in navigator && !isElectron()) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        logger.info('Service Worker registered', { scope: registration.scope });
+      })
+      .catch((error) => {
+        logger.warn('Service Worker registration failed', error);
+      });
+  });
+}
+
 // Lazy loading components
 const Landing = lazy(() => import('./components/Landing'));
 const GuestUpload = lazy(() => import('./components/GuestUpload'));

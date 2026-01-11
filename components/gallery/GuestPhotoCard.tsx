@@ -12,6 +12,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSmartLazyImage } from '../../hooks/useSmartLazyImage'; // ⚡ OPTIMISATION : Lazy loading intelligent
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -71,6 +72,14 @@ export const GuestPhotoCard = React.memo(({
     ? (photo.orientation || 'unknown')
     : 'unknown';
   const isMobile = useIsMobile();
+  
+  // ⚡ OPTIMISATION : Lazy loading intelligent avec priorisation
+  const { containerRef, shouldLoad, isLoading } = useSmartLazyImage({
+    loadDelay: index < 10 ? 0 : 100, // Charger immédiatement les 10 premières
+    rootMargin: '200px', // Précharger 200px avant
+    priority: index < 10 ? 'high' : 'low',
+    threshold: 0.1,
+  });
   
   const lastClickTime = useRef<number>(0);
   const lastTapTime = useRef<number>(0);
@@ -325,6 +334,7 @@ export const GuestPhotoCard = React.memo(({
 
       {/* Media Container */}
       <div 
+        ref={containerRef}
         className="relative overflow-hidden bg-black/40"
         onDoubleClick={handleDoubleClick}
         onTouchEnd={handleTouchEnd}
@@ -342,31 +352,43 @@ export const GuestPhotoCard = React.memo(({
           )}
         </AnimatePresence>
 
-        {photo.type === 'video' ? (
-          videoError ? (
-            <div className="aspect-[4/5] flex items-center justify-center bg-slate-800/50">
-              <Video className="w-12 h-12 text-slate-600" />
-            </div>
+        {shouldLoad ? (
+          photo.type === 'video' ? (
+            videoError ? (
+              <div className="aspect-[4/5] flex items-center justify-center bg-slate-800/50">
+                <Video className="w-12 h-12 text-slate-600" />
+              </div>
+            ) : (
+              <video
+                src={photo.url}
+                className="w-full h-auto object-contain max-h-[60vh] md:max-h-[500px]"
+                controls={!selectionMode}
+                playsInline
+                preload="metadata"
+                controlsList="nodownload"
+                loading="lazy"
+                onError={() => setVideoError(true)}
+              />
+            )
           ) : (
-            <video
-              src={photo.url}
-              className="w-full h-auto object-contain max-h-[60vh] md:max-h-[500px]"
-              controls={!selectionMode}
-              playsInline
-              preload="metadata"
-              controlsList="nodownload"
-              onError={() => setVideoError(true)}
+            <img 
+              src={photo.url} 
+              alt={photo.caption} 
+              className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
+              loading="lazy"
+              decoding="async"
+              fetchPriority={index < 10 ? "high" : "low"} // ⚡ OPTIMISATION : Priorité de chargement
+              style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
+              onError={() => setImageError(true)}
             />
           )
         ) : (
-          <img 
-            src={photo.url} 
-            alt={photo.caption} 
-            className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
-            loading="lazy"
-            style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
-            onError={() => setImageError(true)}
-          />
+          // ⚡ OPTIMISATION : Placeholder pendant chargement
+          <div className={`${imageOrientation === 'portrait' ? 'aspect-[3/4]' : imageOrientation === 'landscape' ? 'aspect-[4/3]' : 'aspect-[4/5]'} bg-slate-800/50 flex items-center justify-center`}>
+            {isLoading && (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+            )}
+          </div>
         )}
 
         {/* Media Badges */}

@@ -221,6 +221,28 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
     }
   }, [photos]);
 
+  // Fonction pour changer vers une photo spécifique (utilisée pour les likes/réactions)
+  const switchToPhoto = useCallback(
+    (photoId: string) => {
+      const photoIndex = displayedPhotos.findIndex((p) => p.id === photoId);
+      if (photoIndex === -1 || photoIndex === currentIndex) {
+        return; // Photo non trouvée ou déjà affichée
+      }
+
+      setIsTransitioning(true);
+      setProgress(100);
+
+      setTimeout(() => {
+        setCurrentIndex(photoIndex);
+        setProgress(0);
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 50);
+      }, transitionDuration);
+    },
+    [displayedPhotos, currentIndex, transitionDuration]
+  );
+
   // ⚡ OPTIMISATION : Subscription unifiée pour toutes les mises à jour temps réel
   useEffect(() => {
     if (!currentEvent?.id) return;
@@ -358,28 +380,6 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
       loadReactions();
     }
   }, [displayedPhotos.length]);
-
-  // Fonction pour changer vers une photo spécifique (utilisée pour les likes/réactions)
-  const switchToPhoto = useCallback(
-    (photoId: string) => {
-      const photoIndex = displayedPhotos.findIndex((p) => p.id === photoId);
-      if (photoIndex === -1 || photoIndex === currentIndex) {
-        return; // Photo non trouvée ou déjà affichée
-      }
-
-      setIsTransitioning(true);
-      setProgress(100);
-
-      setTimeout(() => {
-        setCurrentIndex(photoIndex);
-        setProgress(0);
-        setTimeout(() => {
-          setIsTransitioning(false);
-        }, 50);
-      }, transitionDuration);
-    },
-    [displayedPhotos, currentIndex, transitionDuration]
-  );
 
   // ⚡ OPTIMISATION : Les subscriptions likes et réactions sont maintenant dans le useEffect unifié ci-dessus
   // Plus besoin de subscriptions séparées - tout est géré par createUnifiedPhotoSubscription

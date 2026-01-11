@@ -1,247 +1,231 @@
 /**
- * Service Worker pour Live Party Wall
- * Gère le cache offline des images et ressources statiques
+ * ⚡ OPTIMISATION : Service Worker pour cache des images
+ * 
+ * Stratégie de cache :
+ * - Cache-First pour les images (performance maximale)
+ * - Network-First pour les API calls (données à jour)
+ * - Stale-While-Revalidate pour les assets statiques
  */
 
-const CACHE_VERSION = 'v1.0.0';
-const CACHE_NAME = `live-party-wall-${CACHE_VERSION}`;
+const CACHE_NAME = 'live-party-wall-v1';
+const IMAGE_CACHE_NAME = 'live-party-wall-images-v1';
+const MAX_CACHE_SIZE = 100 * 1024 * 1024; // 100MB max pour images
+const MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
-// Ressources critiques à mettre en cache immédiatement
-const CRITICAL_RESOURCES = [
-  '/',
-  '/index.html',
-  '/index.css',
-  '/manifest.json',
-  '/favicon.svg',
-];
-
-// Stratégie de cache : Cache First pour les images, Network First pour le reste
-const CACHE_FIRST_PATTERNS = [
-  /\.(jpg|jpeg|png|gif|webp|svg)$/i,
-  /\/party-photos\//,
-  /\/party-frames\//,
-  /\/party-avatars\//,
-];
-
-// Taille maximale du cache (50MB)
-const MAX_CACHE_SIZE = 50 * 1024 * 1024;
-
-/**
- * Installation du Service Worker
- */
+// ⚡ OPTIMISATION : Installer le Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker', CACHE_VERSION);
-  
+  console.log('[SW] Installing Service Worker...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
-      })
-      .then(() => {
-        // Forcer l'activation immédiate
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('[SW] Error during installation:', error);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Cache opened');
+      return cache.addAll([
+        '/',
+        '/index.html',
+        // ⚡ OPTIMISATION : Ne pas pré-cacher les images (trop volumineux)
+        // Elles seront mises en cache à la demande
+      ]);
+    })
   );
+  self.skipWaiting(); // Activer immédiatement
 });
 
-/**
- * Activation du Service Worker
- */
+// ⚡ OPTIMISATION : Activer le Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker');
-  
+  console.log('[SW] Activating Service Worker...');
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((name) => name !== CACHE_NAME)
-            .map((name) => {
-              console.log('[SW] Deleting old cache:', name);
-              return caches.delete(name);
-            })
-        );
-      })
-      .then(() => {
-        // Prendre le contrôle de toutes les pages
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // Supprimer les anciens caches
+          if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
+  return self.clients.claim(); // Prendre contrôle immédiatement
 });
 
-/**
- * Gestion des requêtes
- */
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Ignorer les requêtes non-GET
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Ignorer les requêtes de développement Vite (HMR, etc.)
-  if (url.pathname.startsWith('/@') || url.pathname.includes('vite')) {
-    return;
-  }
-
-  // Ignorer les requêtes vers des domaines externes (sauf images)
-  if (url.origin !== location.origin && !isImageRequest(request)) {
-    return;
-  }
-
-  // Stratégie Cache First pour les images
-  if (isImageRequest(request) || isCachedResource(request)) {
-    event.respondWith(cacheFirst(request));
-  } else {
-    // Stratégie Network First pour le reste
-    event.respondWith(networkFirst(request));
-  }
-});
-
-/**
- * Vérifie si la requête est pour une image
- */
-function isImageRequest(request) {
-  return CACHE_FIRST_PATTERNS.some((pattern) => pattern.test(request.url));
-}
-
-/**
- * Vérifie si la ressource doit être mise en cache
- */
-function isCachedResource(request) {
-  return CACHE_FIRST_PATTERNS.some((pattern) => pattern.test(request.url));
-}
-
-/**
- * Stratégie Cache First : vérifie le cache d'abord, puis le réseau
- */
-async function cacheFirst(request) {
-  try {
-    const cachedResponse = await caches.match(request);
-    
-    if (cachedResponse) {
-      // Vérifier si le cache est encore valide (optionnel : vérifier l'âge)
-      return cachedResponse;
+// ⚡ OPTIMISATION : Nettoyer le cache images si trop volumineux
+const cleanImageCache = async () => {
+  const cache = await caches.open(IMAGE_CACHE_NAME);
+  const keys = await cache.keys();
+  
+  if (keys.length === 0) return;
+  
+  // Calculer la taille totale du cache
+  let totalSize = 0;
+  const entries = [];
+  
+  for (const key of keys) {
+    const response = await cache.match(key);
+    if (response) {
+      const blob = await response.blob();
+      const size = blob.size;
+      const date = parseInt(response.headers.get('sw-cache-date') || '0', 10);
+      totalSize += size;
+      entries.push({ key, size, date });
     }
-
-    // Si pas en cache, récupérer depuis le réseau
-    const networkResponse = await fetch(request);
-    
-    // Mettre en cache si la réponse est valide
-    if (networkResponse && networkResponse.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      
-      // Vérifier la taille du cache avant d'ajouter
-      await manageCacheSize(cache);
-      
-      // Cloner la réponse car elle ne peut être utilisée qu'une fois
-      cache.put(request, networkResponse.clone());
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.error('[SW] Error in cacheFirst:', error);
-    // En cas d'erreur, retourner une réponse de fallback si disponible
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    // Sinon, retourner une réponse d'erreur
-    return new Response('Network error', { status: 408 });
-  }
-}
-
-/**
- * Stratégie Network First : essaie le réseau d'abord, puis le cache
- */
-async function networkFirst(request) {
-  try {
-    const networkResponse = await fetch(request);
-    
-    // Si la requête réussit, mettre à jour le cache
-    if (networkResponse && networkResponse.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      await manageCacheSize(cache);
-      cache.put(request, networkResponse.clone());
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('[SW] Network failed, trying cache:', error);
-    // Si le réseau échoue, essayer le cache
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    // Si pas de cache non plus, retourner une erreur
-    return new Response('Network error and no cache available', { status: 408 });
-  }
-}
-
-/**
- * Gère la taille du cache en supprimant les entrées les plus anciennes
- */
-async function manageCacheSize(cache) {
-  try {
-    const keys = await cache.keys();
-    
-    // Calculer la taille totale du cache
-    let totalSize = 0;
-    const entries = [];
-    
-    for (const key of keys) {
-      const response = await cache.match(key);
-      if (response) {
-        const blob = await response.blob();
-        const size = blob.size;
-        totalSize += size;
-        entries.push({ key, size, response });
-      }
-    }
-    
-    // Si la taille dépasse la limite, supprimer les entrées les plus anciennes
-    if (totalSize > MAX_CACHE_SIZE) {
-      // Trier par taille (les plus grandes d'abord) et supprimer jusqu'à ce que la taille soit acceptable
-      entries.sort((a, b) => b.size - a.size);
-      
-      let sizeToRemove = totalSize - MAX_CACHE_SIZE;
-      for (const entry of entries) {
-        if (sizeToRemove <= 0) break;
-        await cache.delete(entry.key);
-        sizeToRemove -= entry.size;
-        console.log('[SW] Removed from cache:', entry.key);
-      }
-    }
-  } catch (error) {
-    console.error('[SW] Error managing cache size:', error);
-  }
-}
-
-/**
- * Message handler pour communication avec l'application
- */
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
   }
   
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    event.waitUntil(
-      caches.delete(CACHE_NAME).then(() => {
-        console.log('[SW] Cache cleared');
-        return self.clients.matchAll().then((clients) => {
-          clients.forEach((client) => {
-            client.postMessage({ type: 'CACHE_CLEARED' });
-          });
-        });
-      })
-    );
+  // Si le cache dépasse la taille max, supprimer les plus anciens
+  if (totalSize > MAX_CACHE_SIZE) {
+    // Trier par date (plus ancien en premier)
+    entries.sort((a, b) => a.date - b.date);
+    
+    // Supprimer jusqu'à ce que la taille soit acceptable
+    let currentSize = totalSize;
+    for (const entry of entries) {
+      if (currentSize <= MAX_CACHE_SIZE * 0.8) break; // Garder 80% du max
+      await cache.delete(entry.key);
+      currentSize -= entry.size;
+    }
+    
+    console.log('[SW] Cleaned image cache, new size:', currentSize);
   }
+};
+
+// ⚡ OPTIMISATION : Intercepter les requêtes
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // ⚡ OPTIMISATION : Cache-First pour les images
+  if (isImageRequest(event.request)) {
+    event.respondWith(handleImageRequest(event.request));
+    return;
+  }
+  
+  // ⚡ OPTIMISATION : Network-First pour les API calls
+  if (isApiRequest(event.request)) {
+    event.respondWith(handleApiRequest(event.request));
+    return;
+  }
+  
+  // ⚡ OPTIMISATION : Stale-While-Revalidate pour les assets statiques
+  if (isStaticAsset(event.request)) {
+    event.respondWith(handleStaticAsset(event.request));
+    return;
+  }
+  
+  // ⚡ OPTIMISATION : Network-First par défaut
+  event.respondWith(fetch(event.request));
 });
 
+// ⚡ OPTIMISATION : Détecter si c'est une requête image
+const isImageRequest = (request: Request): boolean => {
+  const url = new URL(request.url);
+  return (
+    url.pathname.match(/\.(jpg|jpeg|png|gif|webp|avif|svg)$/i) !== null ||
+    url.searchParams.has('image') ||
+    request.headers.get('accept')?.includes('image')
+  );
+};
+
+// ⚡ OPTIMISATION : Détecter si c'est une requête API
+const isApiRequest = (request: Request): boolean => {
+  const url = new URL(request.url);
+  return (
+    url.hostname.includes('supabase') ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.includes('rest/v1/')
+  );
+};
+
+// ⚡ OPTIMISATION : Détecter si c'est un asset statique
+const isStaticAsset = (request: Request): boolean => {
+  const url = new URL(request.url);
+  return (
+    url.pathname.match(/\.(js|css|woff|woff2|ttf|eot)$/i) !== null ||
+    url.pathname.startsWith('/assets/')
+  );
+};
+
+// ⚡ OPTIMISATION : Gérer les requêtes images (Cache-First)
+const handleImageRequest = async (request: Request): Promise<Response> => {
+  const cache = await caches.open(IMAGE_CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  
+  // Si en cache et pas trop vieux, retourner le cache
+  if (cachedResponse) {
+    const cacheDate = parseInt(
+      cachedResponse.headers.get('sw-cache-date') || '0',
+      10
+    );
+    const age = Date.now() - cacheDate;
+    
+    if (age < MAX_CACHE_AGE) {
+      // ⚡ OPTIMISATION : Retourner le cache et mettre à jour en arrière-plan
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clonedResponse = response.clone();
+            clonedResponse.headers.set('sw-cache-date', Date.now().toString());
+            cache.put(request, clonedResponse);
+          }
+        })
+        .catch(() => {
+          // Ignorer les erreurs de mise à jour
+        });
+      
+      return cachedResponse;
+    }
+  }
+  
+  // Sinon, récupérer du réseau et mettre en cache
+  try {
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      const clonedResponse = response.clone();
+      clonedResponse.headers.set('sw-cache-date', Date.now().toString());
+      await cache.put(request, clonedResponse);
+      
+      // ⚡ OPTIMISATION : Nettoyer le cache si nécessaire
+      cleanImageCache().catch(() => {
+        // Ignorer les erreurs de nettoyage
+      });
+    }
+    
+    return response;
+  } catch (error) {
+    // Si erreur réseau et cache disponible, retourner le cache même s'il est vieux
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+};
+
+// ⚡ OPTIMISATION : Gérer les requêtes API (Network-First)
+const handleApiRequest = async (request: Request): Promise<Response> => {
+  try {
+    const response = await fetch(request);
+    return response;
+  } catch (error) {
+    // En cas d'erreur, essayer le cache
+    const cache = await caches.open(CACHE_NAME);
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+};
+
+// ⚡ OPTIMISATION : Gérer les assets statiques (Stale-While-Revalidate)
+const handleStaticAsset = async (request: Request): Promise<Response> => {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  
+  // Retourner le cache immédiatement
+  const fetchPromise = fetch(request).then((response) => {
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  });
+  
+  return cachedResponse || fetchPromise;
+};

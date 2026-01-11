@@ -87,6 +87,7 @@ export const MediaDisplay: React.FC<MediaDisplayProps> = ({
           playsInline
           autoPlay
           loop
+          preload="auto" // ⚡ OPTIMISATION : Précharger pour projection (priorité maximale)
           onError={handleMediaError}
           onLoadedData={() => {
             if (videoRef.current) {
@@ -102,6 +103,9 @@ export const MediaDisplay: React.FC<MediaDisplayProps> = ({
           alt={photo.caption}
           className={`w-full h-full object-contain ${transitionClasses}`}
           style={transitionStyle}
+          loading="eager" // ⚡ OPTIMISATION : Charger immédiatement pour projection (priorité maximale)
+          decoding="async"
+          fetchPriority="high" // ⚡ OPTIMISATION : Priorité haute pour projection
           onError={handleMediaError}
           onLoad={() => {
             if (imageRef.current) {

@@ -5,8 +5,56 @@ import { Photo, ReactionCounts } from '../../types';
 import { REACTIONS } from '../../constants';
 import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
-import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
+import { get4KImageUrl, get4KImageUrlSync, get4KImageSrcSet, get4KImageSrcSetSync, get4KImageSizes } from '../../utils/imageUrl4K';
 import { useSettings } from '../../context/SettingsContext';
+import { useSmartLazyImage } from '../../hooks/useSmartLazyImage'; // ⚡ OPTIMISATION : Lazy loading intelligent
+
+// ⚡ OPTIMISATION : Composant pour image optimisée avec formats modernes
+const OptimizedImage: React.FC<{
+  photo: Photo;
+  imageOrientation: ImageOrientation;
+  isMobile: boolean;
+  index: number;
+  imageLoaded: boolean;
+  setImageLoaded: (loaded: boolean) => void;
+}> = ({ photo, imageOrientation, isMobile, index, imageLoaded, setImageLoaded }) => {
+  const [optimizedUrl, setOptimizedUrl] = useState<string>(get4KImageUrlSync(photo.url, true));
+  const [optimizedSrcSet, setOptimizedSrcSet] = useState<string>('');
+
+  useEffect(() => {
+    // ⚡ OPTIMISATION : Charger les formats optimisés de manière asynchrone
+    const loadOptimized = async () => {
+      try {
+        const [url, srcSet] = await Promise.all([
+          get4KImageUrl(photo.url, true, 'avif'),
+          get4KImageSrcSet(photo.url),
+        ]);
+        setOptimizedUrl(url);
+        setOptimizedSrcSet(srcSet);
+      } catch (error) {
+        // Fallback vers version synchrone en cas d'erreur
+        setOptimizedUrl(get4KImageUrlSync(photo.url, true));
+        setOptimizedSrcSet(get4KImageSrcSetSync(photo.url));
+      }
+    };
+    loadOptimized();
+  }, [photo.url]);
+
+  return (
+    <img 
+      src={optimizedUrl}
+      srcSet={optimizedSrcSet || undefined}
+      sizes={get4KImageSizes()}
+      alt={photo.caption} 
+      className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+      loading="lazy"
+      decoding="async"
+      fetchPriority={index < 20 ? "high" : "low"} // ⚡ OPTIMISATION : Priorité de chargement
+      onLoad={() => setImageLoaded(true)}
+      style={{ maxWidth: '100%', height: 'auto' }}
+    />
+  );
+};
 
 interface PhotoCardProps {
   photo: Photo;
@@ -44,6 +92,14 @@ export const PhotoCard = React.memo(({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // ⚡ OPTIMISATION : Lazy loading intelligent avec priorisation
+  const { containerRef, shouldLoad, isLoading } = useSmartLazyImage({
+    loadDelay: index < 20 ? 0 : 150, // Charger immédiatement les 20 premières (wall visible)
+    rootMargin: '300px', // Précharger 300px avant (wall scroll)
+    priority: index < 20 ? 'high' : 'low',
+    threshold: 0.1,
+  });
+
   return (
     <motion.div 
       layoutId={`photo-${photo.id}`}
@@ -71,29 +127,39 @@ export const PhotoCard = React.memo(({
       <div className="absolute inset-0 border-2 border-white pointer-events-none"></div>
 
       {/* Media Container */}
-      <div className={`relative overflow-hidden bg-slate-800 rounded-none ${
-        isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
-          ? 'min-h-[250px]' 
-          : 'aspect-auto'
-      }`}>
-        {photo.type === 'video' ? (
-          <video
-            src={photo.url}
-            className="w-full h-auto object-contain max-h-[40vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            preload="metadata"
-          />
+      <div 
+        ref={containerRef}
+        className={`relative overflow-hidden bg-slate-800 rounded-none ${
+          isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
+            ? 'min-h-[250px]' 
+            : 'aspect-auto'
+        }`}
+      >
+        {shouldLoad ? (
+          photo.type === 'video' ? (
+            <video
+              src={photo.url}
+              className="w-full h-auto object-contain max-h-[40vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+              preload="metadata"
+              loading="lazy"
+            />
+          ) : (
+            <OptimizedImage
+              photo={photo}
+              imageOrientation={imageOrientation}
+              isMobile={isMobile}
+              index={index}
+              imageLoaded={imageLoaded}
+              setImageLoaded={setImageLoaded}
+            />
+          )
         ) : (
-          <img 
-            src={get4KImageUrl(photo.url, true)} 
-            srcSet={get4KImageSrcSet(photo.url)}
-            sizes={get4KImageSizes()}
-            alt={photo.caption} 
-            className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            loading="lazy"
-            decoding="async"
-            onLoad={() => setImageLoaded(true)}
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
+          // ⚡ OPTIMISATION : Placeholder pendant chargement
+          <div className={`${imageOrientation === 'portrait' ? 'aspect-[3/4]' : imageOrientation === 'landscape' ? 'aspect-[4/3]' : 'aspect-square'} bg-slate-800/50 flex items-center justify-center`}>
+            {isLoading && (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
+            )}
+          </div>
         )}
         
         {/* Shine Effect */}
