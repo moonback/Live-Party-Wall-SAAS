@@ -1,1116 +1,723 @@
-# 📡 Documentation API - Partywall
+# 🔌 Documentation API - Partywall
 
-Documentation complète des services et fonctions disponibles dans l'application.
+Ce document décrit toutes les fonctions et services disponibles dans l'application Partywall.
 
 ---
 
 ## 📋 Table des matières
 
-- [Services principaux](#-services-principaux)
-- [Service Photos](#-service-photos)
-- [Service Événements](#-service-événements)
-- [Service Invités](#-service-invités)
-- [Service IA (Gemini)](#-service-ia-gemini)
-- [Service Paramètres](#-service-paramètres)
-- [Service Battles](#-service-battles)
-- [Service Export](#-service-export)
-- [Client Supabase](#-client-supabase)
+- [Services Photos](#services-photos)
+- [Services Événements](#services-événements)
+- [Services Invités](#services-invités)
+- [Services IA](#services-ia)
+- [Services Battles](#services-battles)
+- [Services Aftermovies](#services-aftermovies)
+- [Services Gamification](#services-gamification)
+- [Services Paramètres](#services-paramètres)
+- [Services Export](#services-export)
+- [Services RGPD](#services-rgpd)
+- [Client Supabase](#client-supabase)
 
 ---
 
-## 🎯 Services principaux
+## 📸 Services Photos
 
-L'application utilise une architecture **Service Layer** où toute la logique métier est isolée dans des services TypeScript. Ces services communiquent avec Supabase (PostgreSQL, Storage, Realtime) et Google Gemini API.
+### `photoService.ts`
 
-### Structure
+#### `addPhotoToWall(eventId, base64Image, caption, author, tags?, userDescription?)`
 
-```
-services/
-├── supabaseClient.ts      # Client Supabase configuré
-├── photoService.ts        # Gestion des photos
-├── eventService.ts        # Gestion des événements
-├── guestService.ts        # Gestion des invités
-├── geminiService.ts       # Intégration Google Gemini
-├── settingsService.ts     # Paramètres d'événement
-├── battleService.ts       # Battles photos
-├── exportService.ts       # Export de photos
-└── ...
-```
-
----
-
-## 📸 Service Photos
-
-**Fichier** : `services/photoService.ts`
-
-### `uploadPhotoToStorage`
-
-Upload une photo vers Supabase Storage.
-
-```typescript
-uploadPhotoToStorage(
-  file: File,
-  eventId: string,
-  fileName?: string
-): Promise<string>
-```
+Upload une photo vers Supabase Storage et insère un enregistrement en base.
 
 **Paramètres** :
-- `file` : Fichier image/vidéo à uploader
-- `eventId` : ID de l'événement
-- `fileName` : Nom de fichier optionnel (généré automatiquement si non fourni)
+- `eventId: string` - ID de l'événement
+- `base64Image: string` - Image en base64
+- `caption: string` - Légende de la photo
+- `author: string` - Nom de l'auteur
+- `tags?: string[]` - Tags suggérés par l'IA (optionnel)
+- `userDescription?: string` - Description saisie par l'utilisateur (optionnel)
 
-**Retour** : URL publique de la photo uploadée
-
-**Exemple** :
-```typescript
-const url = await uploadPhotoToStorage(file, eventId);
-// Retourne : "https://xxx.supabase.co/storage/v1/object/public/party-photos/..."
-```
-
----
-
-### `addPhotoToWall`
-
-Ajoute une photo au mur (insertion en base de données).
-
-```typescript
-addPhotoToWall(
-  url: string,
-  caption: string,
-  author: string,
-  eventId: string,
-  type?: MediaType,
-  duration?: number
-): Promise<Photo>
-```
-
-**Paramètres** :
-- `url` : URL de la photo (Supabase Storage)
-- `caption` : Légende générée par IA
-- `author` : Nom de l'auteur (invité)
-- `eventId` : ID de l'événement
-- `type` : Type de média ('photo' | 'video'), défaut 'photo'
-- `duration` : Durée en secondes (pour vidéos)
-
-**Retour** : Objet Photo créé
+**Retour** : `Promise<Photo>`
 
 **Exemple** :
 ```typescript
 const photo = await addPhotoToWall(
-  'https://.../photo.jpg',
-  'Moment magique ! 💍✨',
-  'Sophie',
   eventId,
-  'photo'
+  base64Image,
+  "Moment magique ! ✨",
+  "Sophie",
+  ["sourire", "groupe"],
+  "Photo prise pendant le toast"
 );
 ```
 
----
+#### `getPhotos(eventId, limit?, offset?)`
 
-### `getPhotosByEvent`
-
-Récupère toutes les photos d'un événement.
-
-```typescript
-getPhotosByEvent(eventId: string): Promise<Photo[]>
-```
+Récupère les photos d'un événement avec pagination.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
+- `eventId: string` - ID de l'événement
+- `limit?: number` - Nombre de photos à récupérer (défaut: 50)
+- `offset?: number` - Offset pour pagination (défaut: 0)
 
-**Retour** : Liste des photos triées par date (plus récentes en premier)
+**Retour** : `Promise<Photo[]>`
 
----
+#### `deletePhoto(photoId)`
 
-### `deletePhoto`
-
-Supprime une photo (authentifié uniquement).
-
-```typescript
-deletePhoto(photoId: string): Promise<void>
-```
+Supprime une photo (admin uniquement).
 
 **Paramètres** :
-- `photoId` : ID de la photo à supprimer
+- `photoId: string` - ID de la photo
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas authentifié
+**Retour** : `Promise<void>`
 
----
-
-### `likePhoto`
+#### `likePhoto(photoId, userIdentifier)`
 
 Ajoute un like à une photo.
 
-```typescript
-likePhoto(photoId: string, userIdentifier: string): Promise<void>
-```
-
 **Paramètres** :
-- `photoId` : ID de la photo
-- `userIdentifier` : Identifiant de l'utilisateur (nom invité)
+- `photoId: string` - ID de la photo
+- `userIdentifier: string` - Identifiant utilisateur (nom ou ID)
 
-**Note** : Un utilisateur ne peut liker qu'une fois une photo (contrainte UNIQUE)
+**Retour** : `Promise<void>`
 
----
-
-### `unlikePhoto`
+#### `unlikePhoto(photoId, userIdentifier)`
 
 Retire un like d'une photo.
 
-```typescript
-unlikePhoto(photoId: string, userIdentifier: string): Promise<void>
-```
+**Paramètres** :
+- `photoId: string` - ID de la photo
+- `userIdentifier: string` - Identifiant utilisateur
 
----
+**Retour** : `Promise<void>`
 
-### `addReaction`
+#### `addReaction(photoId, userIdentifier, reactionType)`
 
-Ajoute ou modifie une réaction (émoji) sur une photo.
-
-```typescript
-addReaction(
-  photoId: string,
-  userIdentifier: string,
-  reactionType: ReactionType
-): Promise<void>
-```
+Ajoute ou modifie une réaction sur une photo.
 
 **Paramètres** :
-- `photoId` : ID de la photo
-- `userIdentifier` : Identifiant de l'utilisateur
-- `reactionType` : Type de réaction ('heart' | 'laugh' | 'cry' | 'fire' | 'wow' | 'thumbsup')
+- `photoId: string` - ID de la photo
+- `userIdentifier: string` - Identifiant utilisateur
+- `reactionType: ReactionType` - Type de réaction ('heart', 'laugh', 'cry', 'fire', 'wow', 'thumbsup')
 
-**Note** : Un utilisateur a une seule réaction par photo (mais peut la changer)
+**Retour** : `Promise<void>`
 
----
-
-### `removeReaction`
+#### `removeReaction(photoId, userIdentifier)`
 
 Retire une réaction d'une photo.
 
-```typescript
-removeReaction(photoId: string, userIdentifier: string): Promise<void>
-```
+**Paramètres** :
+- `photoId: string` - ID de la photo
+- `userIdentifier: string` - Identifiant utilisateur
+
+**Retour** : `Promise<void>`
+
+#### `getPhotoReactions(photoId)`
+
+Récupère les compteurs de réactions pour une photo.
+
+**Paramètres** :
+- `photoId: string` - ID de la photo
+
+**Retour** : `Promise<ReactionCounts>`
 
 ---
 
-### `getPhotoReactions`
+## 🎪 Services Événements
 
-Récupère toutes les réactions d'une photo avec compteurs.
+### `eventService.ts`
 
-```typescript
-getPhotoReactions(photoId: string): Promise<ReactionCounts>
-```
-
-**Retour** : Objet avec compteurs par type de réaction
-```typescript
-{
-  heart: 5,
-  laugh: 2,
-  fire: 1,
-  // ...
-}
-```
-
----
-
-## 🎉 Service Événements
-
-**Fichier** : `services/eventService.ts`
-
-### `createEvent`
+#### `createEvent(slug, name, description, ownerId?)`
 
 Crée un nouvel événement.
 
-```typescript
-createEvent(
-  slug: string,
-  name: string,
-  description: string | null,
-  ownerId?: string
-): Promise<Event>
-```
-
 **Paramètres** :
-- `slug` : Identifiant unique URL (ex: "mariage-sophie-marc")
-- `name` : Nom de l'événement
-- `description` : Description (optionnel, max 100 caractères)
-- `ownerId` : ID du propriétaire (optionnel, utilise auth.uid() si non fourni)
+- `slug: string` - Identifiant unique pour l'URL (ex: "mariage-sophie-marc")
+- `name: string` - Nom de l'événement
+- `description: string | null` - Description de l'événement
+- `ownerId?: string` - ID du propriétaire (optionnel, utilise auth.uid() si non fourni)
 
-**Retour** : Événement créé
-
-**Erreurs** :
-- `23505` : Slug déjà existant
-- `42501` : Utilisateur non authentifié
+**Retour** : `Promise<Event>`
 
 **Exemple** :
 ```typescript
 const event = await createEvent(
-  'mariage-sophie-marc',
-  'Mariage de Sophie et Marc',
-  'Union de deux âmes qui s\'aiment',
-  userId
+  "mariage-sophie-marc",
+  "Mariage de Sophie et Marc",
+  "Célébration de l'union de Sophie et Marc"
 );
 ```
 
----
-
-### `getEventBySlug`
+#### `getEventBySlug(slug)`
 
 Récupère un événement par son slug.
 
-```typescript
-getEventBySlug(slug: string): Promise<Event | null>
-```
+**Paramètres** :
+- `slug: string` - Slug de l'événement
+
+**Retour** : `Promise<Event | null>`
+
+#### `getEventById(eventId)`
+
+Récupère un événement par son ID.
 
 **Paramètres** :
-- `slug` : Slug de l'événement
+- `eventId: string` - ID de l'événement
 
-**Retour** : Événement ou `null` si non trouvé
+**Retour** : `Promise<Event | null>`
 
----
-
-### `getUserEvents`
-
-Récupère tous les événements d'un utilisateur.
-
-```typescript
-getUserEvents(userId?: string): Promise<Event[]>
-```
-
-**Paramètres** :
-- `userId` : ID de l'utilisateur (optionnel, utilise auth.uid() si non fourni)
-
-**Retour** : Liste des événements (propriétaire + organisateur)
-
----
-
-### `updateEvent`
+#### `updateEvent(eventId, updates)`
 
 Met à jour un événement.
 
-```typescript
-updateEvent(
-  eventId: string,
-  updates: Partial<Pick<Event, 'name' | 'description' | 'is_active'>>
-): Promise<Event>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `updates: EventUpdate` - Objet avec les champs à mettre à jour
+
+**Retour** : `Promise<Event>`
+
+#### `deleteEvent(eventId)`
+
+Supprime un événement (owner uniquement).
 
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `updates` : Objet avec les champs à mettre à jour
+- `eventId: string` - ID de l'événement
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas propriétaire/organisateur
+**Retour** : `Promise<void>`
 
----
+#### `getUserEvents(userId)`
 
-### `deleteEvent`
+Récupère tous les événements d'un utilisateur.
 
-Supprime un événement (propriétaire uniquement).
+**Paramètres** :
+- `userId: string` - ID de l'utilisateur
 
-```typescript
-deleteEvent(eventId: string): Promise<void>
-```
+**Retour** : `Promise<Event[]>`
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas propriétaire
-
----
-
-### `getEventOrganizers`
-
-Récupère tous les organisateurs d'un événement.
-
-```typescript
-getEventOrganizers(eventId: string): Promise<EventOrganizer[]>
-```
-
-**Retour** : Liste des organisateurs avec leurs rôles
-
----
-
-### `addOrganizer`
+#### `addEventOrganizer(eventId, userId, role)`
 
 Ajoute un organisateur à un événement.
 
-```typescript
-addOrganizer(
-  eventId: string,
-  userEmail: string,
-  role: 'owner' | 'organizer' | 'viewer'
-): Promise<EventOrganizer>
-```
-
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `userEmail` : Email de l'utilisateur à ajouter
-- `role` : Rôle de l'organisateur
+- `eventId: string` - ID de l'événement
+- `userId: string` - ID de l'utilisateur
+- `role: 'owner' | 'organizer' | 'viewer'` - Rôle de l'organisateur
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas propriétaire
+**Retour** : `Promise<EventOrganizer>`
 
----
-
-### `removeOrganizer`
+#### `removeEventOrganizer(eventId, userId)`
 
 Retire un organisateur d'un événement.
 
-```typescript
-removeOrganizer(eventId: string, userId: string): Promise<void>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `userId: string` - ID de l'utilisateur
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas propriétaire
+**Retour** : `Promise<void>`
 
 ---
 
-## 👥 Service Invités
+## 👥 Services Invités
 
-**Fichier** : `services/guestService.ts`
+### `guestService.ts`
 
-### `createGuest`
+#### `createGuest(eventId, name, avatarUrl)`
 
 Crée un nouvel invité.
 
-```typescript
-createGuest(
-  eventId: string,
-  name: string,
-  avatarUrl: string
-): Promise<Guest>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `name: string` - Nom de l'invité
+- `avatarUrl: string` - URL de l'avatar
+
+**Retour** : `Promise<Guest>`
+
+#### `getGuestByName(eventId, name)`
+
+Récupère un invité par son nom.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `name` : Nom de l'invité
-- `avatarUrl` : URL de l'avatar (Supabase Storage)
+- `eventId: string` - ID de l'événement
+- `name: string` - Nom de l'invité
 
-**Retour** : Invité créé
+**Retour** : `Promise<Guest | null>`
 
----
-
-### `getGuestByName`
-
-Récupère un invité par son nom et événement.
-
-```typescript
-getGuestByName(eventId: string, name: string): Promise<Guest | null>
-```
-
----
-
-### `getGuestsByEvent`
+#### `getGuests(eventId)`
 
 Récupère tous les invités d'un événement.
 
-```typescript
-getGuestsByEvent(eventId: string): Promise<Guest[]>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
 
----
+**Retour** : `Promise<Guest[]>`
 
-### `blockGuest`
+#### `blockGuest(eventId, name, durationMinutes)`
 
 Bloque temporairement un invité.
 
-```typescript
-blockGuest(
-  eventId: string,
-  name: string,
-  durationHours: number
-): Promise<void>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `name: string` - Nom de l'invité
+- `durationMinutes: number` - Durée du blocage en minutes
+
+**Retour** : `Promise<BlockedGuest>`
+
+#### `unblockGuest(eventId, name)`
+
+Débloque un invité.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `name` : Nom de l'invité à bloquer
-- `durationHours` : Durée du blocage en heures
+- `eventId: string` - ID de l'événement
+- `name: string` - Nom de l'invité
+
+**Retour** : `Promise<void>`
+
+#### `isGuestBlocked(eventId, name)`
+
+Vérifie si un invité est bloqué.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `name: string` - Nom de l'invité
+
+**Retour** : `Promise<boolean>`
 
 ---
 
-## 🤖 Service IA (Gemini)
+## 🤖 Services IA
 
-**Fichier** : `services/geminiService.ts`
+### `geminiService.ts`
 
-### `generateImageCaption`
+#### `moderateContent(base64Image)`
+
+Modère le contenu d'une image (détection de contenu inapproprié).
+
+**Paramètres** :
+- `base64Image: string` - Image en base64
+
+**Retour** : `Promise<{ safe: boolean; reason?: string }>`
+
+**Exemple** :
+```typescript
+const moderation = await moderateContent(base64Image);
+if (!moderation.safe) {
+  throw new Error("Contenu inapproprié détecté");
+}
+```
+
+#### `generateImageCaption(base64Image, eventContext?)`
 
 Génère une légende personnalisée pour une image.
 
-```typescript
-generateImageCaption(
-  base64Image: string,
-  eventContext?: string | null
-): Promise<string>
-```
+**Paramètres** :
+- `base64Image: string` - Image en base64
+- `eventContext?: string | null` - Contexte de l'événement (optionnel)
+
+**Retour** : `Promise<string>`
+
+#### `generateImageTags(base64Image)`
+
+Génère des tags sémantiques pour une image.
 
 **Paramètres** :
-- `base64Image` : Image en base64
-- `eventContext` : Contexte de l'événement pour personnaliser (ex: "Mariage de Sophie et Marc")
+- `base64Image: string` - Image en base64
 
-**Retour** : Légende générée (ex: "Moment magique à jamais gravé ! 💍✨")
+**Retour** : `Promise<string[]>`
 
-**Fallback** : Retourne `"Party time! 🎉"` en cas d'erreur
+#### `enhanceImageQuality(base64Image)`
 
-**Exemple** :
-```typescript
-const caption = await generateImageCaption(base64Image, 'Mariage de Sophie et Marc');
-// Retourne : "Sophie et Marc rayonnent d'amour ! 💍✨"
-```
-
----
-
-### `moderateImage`
-
-Modère une image pour vérifier qu'elle est appropriée.
-
-```typescript
-moderateImage(base64Image: string): Promise<boolean>
-```
+Améliore la qualité d'une image (débruitage, balance des blancs, netteté).
 
 **Paramètres** :
-- `base64Image` : Image en base64
+- `base64Image: string` - Image en base64
 
-**Retour** : `true` si appropriée, `false` sinon
+**Retour** : `Promise<string>` - Image améliorée en base64
 
-**Fallback** : Retourne `true` en cas d'erreur (pour ne pas bloquer l'upload)
+#### `translateCaption(caption, targetLanguage)`
 
----
-
-### `analyzeImageQuality`
-
-Analyse la qualité d'une image.
-
-```typescript
-analyzeImageQuality(base64Image: string): Promise<'good' | 'fair' | 'poor'>
-```
-
-**Retour** : Qualité de l'image
-
-**Fallback** : Retourne `'good'` en cas d'erreur
-
----
-
-## ⚙️ Service Paramètres
-
-**Fichier** : `services/settingsService.ts`
-
-### `getSettings`
-
-Récupère les paramètres d'un événement.
-
-```typescript
-getSettings(eventId: string): Promise<EventSettings>
-```
-
-**Retour** : Paramètres de l'événement
-
----
-
-### `updateSettings`
-
-Met à jour les paramètres d'un événement.
-
-```typescript
-updateSettings(
-  eventId: string,
-  updates: Partial<EventSettings>
-): Promise<EventSettings>
-```
+Traduit une légende dans une langue cible.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `updates` : Objet avec les paramètres à mettre à jour
+- `caption: string` - Légende à traduire
+- `targetLanguage: string` - Code langue cible (ex: 'en', 'es', 'de')
 
-**Erreurs** : Lance une erreur si l'utilisateur n'est pas authentifié
+**Retour** : `Promise<string>`
 
----
-
-### `subscribeToSettings`
-
-S'abonne aux changements de paramètres en temps réel.
-
-```typescript
-subscribeToSettings(
-  eventId: string,
-  callback: (settings: EventSettings) => void
-): Promise<() => void>
-```
-
-**Retour** : Fonction de désabonnement
-
-**Exemple** :
-```typescript
-const unsubscribe = await subscribeToSettings(eventId, (settings) => {
-  console.log('Paramètres mis à jour :', settings);
-});
-
-// Plus tard
-unsubscribe();
-```
+**Langues supportées** : FR, EN, ES, DE, IT, PT, NL, PL, RU, JA, ZH, KO, AR
 
 ---
 
-## 🥊 Service Battles
+## ⚔️ Services Battles
 
-**Fichier** : `services/battleService.ts`
+### `battleService.ts`
 
-### `createBattle`
+#### `createBattle(eventId, photo1Id, photo2Id, expiresInMinutes?)`
 
-Crée une battle (duel) entre deux photos.
-
-```typescript
-createBattle(
-  eventId: string,
-  photoAId: string,
-  photoBId: string
-): Promise<PhotoBattle>
-```
+Crée une battle entre deux photos.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
-- `photoAId` : ID de la première photo
-- `photoBId` : ID de la seconde photo
+- `eventId: string` - ID de l'événement
+- `photo1Id: string` - ID de la première photo
+- `photo2Id: string` - ID de la deuxième photo
+- `expiresInMinutes?: number` - Durée de la battle en minutes (optionnel)
 
-**Retour** : Battle créée
+**Retour** : `Promise<PhotoBattle>`
 
----
-
-### `voteBattle`
+#### `voteBattle(battleId, photoId, userIdentifier)`
 
 Vote pour une photo dans une battle.
 
-```typescript
-voteBattle(
-  battleId: string,
-  photoId: string,
-  userIdentifier: string
-): Promise<void>
-```
+**Paramètres** :
+- `battleId: string` - ID de la battle
+- `photoId: string` - ID de la photo pour laquelle voter
+- `userIdentifier: string` - Identifiant utilisateur
+
+**Retour** : `Promise<void>`
+
+#### `getBattle(battleId)`
+
+Récupère une battle par son ID.
 
 **Paramètres** :
-- `battleId` : ID de la battle
-- `photoId` : ID de la photo pour laquelle voter ('photo_a_id' ou 'photo_b_id')
-- `userIdentifier` : Identifiant de l'utilisateur
+- `battleId: string` - ID de la battle
+
+**Retour** : `Promise<PhotoBattle | null>`
+
+#### `getActiveBattles(eventId)`
+
+Récupère toutes les battles actives d'un événement.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+
+**Retour** : `Promise<PhotoBattle[]>`
+
+#### `finishBattle(battleId)`
+
+Termine une battle manuellement.
+
+**Paramètres** :
+- `battleId: string` - ID de la battle
+
+**Retour** : `Promise<void>`
 
 ---
 
-## 📥 Service Export
+## 🎬 Services Aftermovies
 
-**Fichier** : `services/exportService.ts`
+### `aftermovieService.ts`
 
-### `exportPhotosAsZip`
+#### `generateAftermovie(eventId, photoIds, options)`
 
-Exporte toutes les photos d'un événement en ZIP.
-
-```typescript
-exportPhotosAsZip(eventId: string): Promise<Blob>
-```
+Génère un aftermovie (timelapse) à partir de photos sélectionnées.
 
 **Paramètres** :
-- `eventId` : ID de l'événement
+- `eventId: string` - ID de l'événement
+- `photoIds: string[]` - IDs des photos à inclure
+- `options: AftermovieOptions` - Options de génération (qualité, transitions, audio, etc.)
 
-**Retour** : Blob du fichier ZIP
+**Retour** : `Promise<AftermovieResult>`
 
 **Exemple** :
 ```typescript
-const zipBlob = await exportPhotosAsZip(eventId);
-saveAs(zipBlob, `photos-${eventId}.zip`);
+const result = await generateAftermovie(eventId, photoIds, {
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  msPerPhoto: 2000,
+  videoBitsPerSecond: 12_000_000,
+  includeTitle: true,
+  titleText: "Mariage Sophie et Marc",
+  transitionType: 'fade',
+  transitionDuration: 1000
+});
 ```
 
----
+### `aftermovieShareService.ts`
 
-## 🎬 Service Aftermovie
-
-**Fichier** : `services/aftermovieService.ts`
-
-Génère des vidéos timelapse (aftermovie) à partir des photos d'un événement.
-
-### `generateAftermovie`
-
-Génère une vidéo aftermovie avec les options spécifiées.
-
-```typescript
-generateAftermovie(
-  photos: Photo[],
-  options: AftermovieOptions
-): Promise<AftermovieResult>
-```
-
-**Paramètres** :
-- `photos` : Liste des photos à inclure dans l'aftermovie
-- `options` : Options de génération (résolution, FPS, transitions, etc.)
-
-**Retour** : Objet avec le blob vidéo, le MIME type, le nom de fichier et la durée
-
----
-
-## 📤 Service Partage Aftermovie
-
-**Fichier** : `services/aftermovieShareService.ts`
-
-Gère l'upload, le partage et le téléchargement des aftermovies.
-
-### `uploadAftermovie`
+#### `uploadAftermovie(eventId, blob, filename, title?)`
 
 Upload un aftermovie vers Supabase Storage.
 
-```typescript
-uploadAftermovie(
-  videoBlob: Blob,
-  eventId: string,
-  filename: string,
-  title?: string
-): Promise<Aftermovie>
-```
-
 **Paramètres** :
-- `videoBlob` : Blob de la vidéo
-- `eventId` : ID de l'événement
-- `filename` : Nom du fichier
-- `title` : Titre optionnel de l'aftermovie
+- `eventId: string` - ID de l'événement
+- `blob: Blob` - Fichier vidéo
+- `filename: string` - Nom du fichier
+- `title?: string` - Titre de l'aftermovie (optionnel)
 
-**Retour** : Objet Aftermovie créé
+**Retour** : `Promise<Aftermovie>`
 
-### `getAftermoviesByEvent`
+#### `getAftermovies(eventId)`
 
 Récupère tous les aftermovies d'un événement.
 
-```typescript
-getAftermoviesByEvent(eventId: string): Promise<Aftermovie[]>
-```
+**Paramètres** :
+- `eventId: string` - ID de l'événement
 
-### `incrementDownloadCount`
+**Retour** : `Promise<Aftermovie[]>`
+
+#### `incrementDownloadCount(aftermovieId)`
 
 Incrémente le compteur de téléchargements d'un aftermovie.
 
-```typescript
-incrementDownloadCount(aftermovieId: string): Promise<void>
-```
+**Paramètres** :
+- `aftermovieId: string` - ID de l'aftermovie
 
-### `generateShareLink`
-
-Génère un lien de partage pour télécharger un aftermovie.
-
-```typescript
-generateShareLink(aftermovieId: string): string
-```
-
-**Retour** : URL publique pour téléchargement
-
-### `generateQRCode`
-
-Génère un QR code pour télécharger un aftermovie.
-
-```typescript
-generateQRCode(shareLink: string): Promise<string>
-```
-
-**Retour** : Data URL du QR code (base64)
+**Retour** : `Promise<void>`
 
 ---
 
-## 🛡️ Service RGPD
+## 🏆 Services Gamification
 
-**Fichier** : `services/rgpdService.ts`
+### `gamificationService.ts`
 
-Gère la conformité RGPD (consentement, politique de confidentialité, gestion des données).
+#### `calculateAuthorStats(eventId, author)`
 
-### `getConsent`
-
-Récupère le consentement actuel de l'utilisateur.
-
-```typescript
-getConsent(): ConsentData | null
-```
-
-**Retour** : Données de consentement ou `null` si pas de consentement
-
-### `saveConsent`
-
-Enregistre le consentement de l'utilisateur.
-
-```typescript
-saveConsent(consent: ConsentData): void
-```
+Calcule les statistiques d'un auteur (photos, likes, réactions, badges, score).
 
 **Paramètres** :
-- `consent` : Objet avec les préférences de consentement (essentiels, analytiques, marketing, fonctionnels)
+- `eventId: string` - ID de l'événement
+- `author: string` - Nom de l'auteur
 
-### `exportUserData`
+**Retour** : `Promise<AuthorStats>`
 
-Exporte toutes les données utilisateur en JSON.
+#### `getBadgesForAuthor(eventId, author)`
 
-```typescript
-exportUserData(eventId: string, userName: string): Promise<string>
-```
-
-**Retour** : JSON stringifié avec toutes les données de l'utilisateur
-
-### `deleteUserData`
-
-Supprime toutes les données utilisateur locales.
-
-```typescript
-deleteUserData(): void
-```
-
-**Note** : Supprime uniquement les données locales (localStorage). Les données serveur doivent être supprimées via l'interface admin.
-
----
-
-## 🎨 Service Backgrounds
-
-**Fichier** : `services/backgroundService.ts`
-
-Gère les images de fond personnalisées pour les événements.
-
-### `uploadBackground`
-
-Upload une image de fond (desktop ou mobile).
-
-```typescript
-uploadBackground(
-  file: File,
-  eventId: string,
-  type: 'desktop' | 'mobile'
-): Promise<string>
-```
-
-**Retour** : URL publique de l'image uploadée
-
-### `getBackgroundUrl`
-
-Récupère l'URL de l'image de fond pour un événement.
-
-```typescript
-getBackgroundUrl(
-  eventId: string,
-  type: 'desktop' | 'mobile'
-): Promise<string | null>
-```
-
----
-
-## 🎯 Service Event Context
-
-**Fichier** : `services/eventContextService.ts`
-
-Gère le contexte des événements pour la personnalisation IA.
-
-### `getEventContext`
-
-Récupère le contexte d'un événement.
-
-```typescript
-getEventContext(eventId: string): Promise<string | null>
-```
-
-**Retour** : Contexte de l'événement (ex: "Mariage de Sophie et Marc") ou `null`
-
-### `updateEventContext`
-
-Met à jour le contexte d'un événement.
-
-```typescript
-updateEventContext(
-  eventId: string,
-  context: string
-): Promise<void>
-```
-
-**Note** : Le contexte est utilisé pour personnaliser les légendes IA générées.
-
----
-
-## 📸 Service Photobooth
-
-**Fichier** : `services/photoboothService.ts`
-
-Gère l'upload de photos depuis le photobooth avec traitement IA complet.
-
-### `submitPhoto`
-
-Soumet une photo depuis le photobooth avec modération IA, génération de légende, et application de cadres.
-
-```typescript
-submitPhoto(params: SubmitPhotoParams): Promise<Photo>
-```
+Récupère tous les badges d'un auteur.
 
 **Paramètres** :
-- `imageDataUrl` : Image en base64
-- `authorName` : Nom de l'auteur
-- `eventId` : ID de l'événement
-- `eventSettings` : Paramètres de l'événement
-- `activeFilter` : Filtre actif
-- `activeFrame` : Cadre décoratif actif
+- `eventId: string` - ID de l'événement
+- `author: string` - Nom de l'auteur
 
-**Retour** : Photo créée avec légende IA et modération
+**Retour** : `Promise<Badge[]>`
 
-### `submitVideo`
+#### `getLeaderboard(eventId, limit?)`
 
-Soumet une vidéo depuis le photobooth.
-
-```typescript
-submitVideo(params: SubmitVideoParams): Promise<Photo>
-```
+Récupère le classement des participants.
 
 **Paramètres** :
-- `videoBlob` : Blob de la vidéo
-- `eventId` : ID de l'événement
-- `videoDuration` : Durée en secondes
-- `eventSettings` : Paramètres de l'événement
+- `eventId: string` - ID de l'événement
+- `limit?: number` - Nombre de participants à retourner (défaut: 10)
+
+**Retour** : `Promise<LeaderboardEntry[]>`
+
+#### `getMilestonesForAuthor(eventId, author)`
+
+Récupère les milestones débloqués et à débloquer pour un auteur.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `author: string` - Nom de l'auteur
+
+**Retour** : `Promise<{ unlocked: Milestone[]; next: Milestone | null }>`
 
 ---
 
-## 🤖 Service IA (AI Service)
+## ⚙️ Services Paramètres
 
-**Fichier** : `services/aiService.ts`
+### `settingsService.ts`
 
-Service unifié pour toutes les opérations IA (modération, légendes, tags).
+#### `getEventSettings(eventId)`
 
-### `analyzeAndCaptionImage`
+Récupère les paramètres d'un événement.
 
-Analyse une image et génère une légende avec modération.
+**Paramètres** :
+- `eventId: string` - ID de l'événement
 
+**Retour** : `Promise<EventSettings>`
+
+#### `updateEventSettings(eventId, updates)`
+
+Met à jour les paramètres d'un événement.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `updates: Partial<EventSettings>` - Objet avec les champs à mettre à jour
+
+**Retour** : `Promise<EventSettings>`
+
+**Exemple** :
 ```typescript
-analyzeAndCaptionImage(
-  base64Image: string,
-  eventContext?: string | null
-): Promise<{ caption: string; analysis: ImageAnalysis; tags?: string[] }>
-```
-
-**Retour** : Légende générée, analyse (modération + qualité), et tags optionnels
-
----
-
-## 🎨 Service Cadres
-
-**Fichier** : `services/frameService.ts`
-
-Gère les cadres décoratifs pour les photos.
-
-### `getFrames`
-
-Récupère tous les cadres disponibles.
-
-```typescript
-getFrames(): Promise<Frame[]>
-```
-
-### `uploadFrame`
-
-Upload un nouveau cadre (admin uniquement).
-
-```typescript
-uploadFrame(file: File, name: string): Promise<Frame>
-```
-
----
-
-## 🎮 Service Gamification
-
-**Fichier** : `services/gamificationService.ts`
-
-Gère les badges, classements et statistiques de gamification.
-
-### `calculateAuthorStats`
-
-Calcule les statistiques d'un auteur (nombre de photos, likes, badges).
-
-```typescript
-calculateAuthorStats(
-  author: string,
-  photos: Photo[]
-): AuthorStats
-```
-
-### `getLeaderboard`
-
-Génère le classement des auteurs.
-
-```typescript
-getLeaderboard(photos: Photo[]): LeaderboardEntry[]
+await updateEventSettings(eventId, {
+  caption_generation_enabled: true,
+  battle_mode_enabled: true,
+  event_context: "Mariage de Sophie et Marc",
+  caption_language: "fr"
+});
 ```
 
 ---
 
-## 👤 Service Reconnaissance Faciale
+## 📦 Services Export
 
-**Fichier** : `services/faceRecognitionService.ts`
+### `exportService.ts`
 
-Gère la reconnaissance faciale pour la fonctionnalité "Retrouve-moi".
+#### `exportPhotosAsZip(eventId, photoIds?)`
 
-### `detectFaces`
+Exporte des photos en ZIP.
 
-Détecte les visages dans une image.
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `photoIds?: string[]` - IDs des photos à exporter (optionnel, toutes si non fourni)
 
+**Retour** : `Promise<Blob>` - Fichier ZIP
+
+**Exemple** :
 ```typescript
-detectFaces(imageUrl: string): Promise<FaceDetection[]>
-```
-
-### `findPhotosWithFace`
-
-Trouve toutes les photos contenant un visage similaire.
-
-```typescript
-findPhotosWithFace(
-  referenceImageUrl: string,
-  photos: Photo[]
-): Promise<Photo[]>
-```
-
----
-
-## 🎯 Service Battles Automatiques
-
-**Fichier** : `services/autoBattleService.ts`
-
-Gère les battles photos automatiques.
-
-### `createAutoBattle`
-
-Crée automatiquement une battle entre deux photos populaires.
-
-```typescript
-createAutoBattle(eventId: string): Promise<PhotoBattle | null>
+const zipBlob = await exportPhotosAsZip(eventId, selectedPhotoIds);
+const url = URL.createObjectURL(zipBlob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'photos.zip';
+a.click();
 ```
 
 ---
 
-## 👏 Service Détection d'Applaudissements
+## 🛡️ Services RGPD
 
-**Fichier** : `services/applauseDetectionService.ts`
+### `rgpdService.ts`
 
-Détecte les applaudissements pour déclencher des effets AR.
+#### `getConsent()`
 
-### `detectApplause`
+Récupère le consentement RGPD de l'utilisateur.
 
-Détecte les applaudissements depuis l'audio du microphone.
+**Retour** : `Promise<ConsentData | null>`
 
-```typescript
-detectApplause(audioContext: AudioContext): Promise<boolean>
-```
+#### `setConsent(consent)`
 
----
+Enregistre le consentement RGPD de l'utilisateur.
 
-## 🖼️ Service Cadres Locaux
+**Paramètres** :
+- `consent: ConsentData` - Données de consentement
 
-**Fichier** : `services/localFramesService.ts`
+**Retour** : `Promise<void>`
 
-Gère les cadres stockés localement (fallback si Supabase indisponible).
+#### `exportUserData(userIdentifier)`
 
-### `getLocalFrames`
+Exporte toutes les données d'un utilisateur (RGPD - droit à la portabilité).
 
-Récupère les cadres locaux.
+**Paramètres** :
+- `userIdentifier: string` - Identifiant utilisateur
 
-```typescript
-getLocalFrames(): Frame[]
-```
+**Retour** : `Promise<Blob>` - Fichier JSON avec les données
+
+#### `deleteUserData(userIdentifier)`
+
+Supprime toutes les données d'un utilisateur (RGPD - droit à l'effacement).
+
+**Paramètres** :
+- `userIdentifier: string` - Identifiant utilisateur
+
+**Retour** : `Promise<void>`
 
 ---
 
 ## 🔌 Client Supabase
 
-**Fichier** : `services/supabaseClient.ts`
+### `supabaseClient.ts`
 
-### `supabase`
+#### `supabase`
 
-Client Supabase configuré et exporté.
+Client Supabase configuré avec les credentials d'environnement.
 
+**Utilisation** :
 ```typescript
 import { supabase } from './services/supabaseClient';
 
-// Exemple d'utilisation
+// Requête directe
 const { data, error } = await supabase
   .from('photos')
   .select('*')
   .eq('event_id', eventId);
+
+// Realtime subscription
+const subscription = supabase
+  .channel('photos')
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'photos'
+  }, (payload) => {
+    console.log('Nouvelle photo:', payload.new);
+  })
+  .subscribe();
 ```
 
-### `isSupabaseConfigured`
+#### `isSupabaseConfigured()`
 
-Vérifie si Supabase est configuré.
+Vérifie si Supabase est correctement configuré.
 
-```typescript
-isSupabaseConfigured(): boolean
-```
-
-**Retour** : `true` si les variables d'environnement sont présentes
+**Retour** : `boolean`
 
 ---
 
 ## 🔄 Realtime Subscriptions
 
-### Exemple : S'abonner aux nouvelles photos
+Tous les services utilisent Supabase Realtime pour la synchronisation automatique. Les subscriptions sont gérées via les Contexts React :
 
+- **PhotosContext** : Synchronise les photos, likes, réactions
+- **SettingsContext** : Synchronise les paramètres d'événement
+- **EventContext** : Synchronise les événements actifs
+
+**Exemple de subscription manuelle** :
 ```typescript
-import { supabase } from './services/supabaseClient';
-
-const channel = supabase
-  .channel(`photos:${eventId}`)
+const subscription = supabase
+  .channel('photos')
   .on('postgres_changes', {
-    event: 'INSERT',
+    event: '*', // INSERT, UPDATE, DELETE
     schema: 'public',
     table: 'photos',
     filter: `event_id=eq.${eventId}`
   }, (payload) => {
-    const newPhoto = payload.new as Photo;
-    // Traiter la nouvelle photo
-    addPhotoToState(newPhoto);
+    if (payload.eventType === 'INSERT') {
+      addPhoto(payload.new as Photo);
+    } else if (payload.eventType === 'DELETE') {
+      removePhoto(payload.old.id);
+    }
   })
   .subscribe();
 
-// Désabonnement
-supabase.removeChannel(channel);
-```
-
-### Exemple : S'abonner aux mises à jour de likes
-
-```typescript
-const channel = supabase
-  .channel(`likes:${eventId}`)
-  .on('postgres_changes', {
-    event: '*', // INSERT, UPDATE, DELETE
-    schema: 'public',
-    table: 'likes',
-    filter: `photo_id=eq.${photoId}`
-  }, (payload) => {
-    // Mettre à jour le compteur de likes
-    updateLikesCount(payload);
-  })
-  .subscribe();
+// N'oubliez pas de se désabonner
+return () => {
+  subscription.unsubscribe();
+};
 ```
 
 ---
 
-## ⚠️ Gestion des erreurs
+## ⚠️ Gestion d'erreurs
 
-Tous les services suivent un pattern de gestion d'erreurs cohérent :
+Tous les services gèrent les erreurs de manière cohérente :
 
+- **Erreurs Supabase** : Loggées avec `logger.error()` et propagées
+- **Erreurs IA** : Fallbacks (légendes par défaut si erreur Gemini)
+- **Erreurs validation** : Messages d'erreur explicites
+
+**Exemple** :
 ```typescript
 try {
-  const result = await someServiceFunction();
-  return result;
+  const photo = await addPhotoToWall(eventId, base64Image, caption, author);
+  addToast('Photo uploadée avec succès !', 'success');
 } catch (error) {
-  logger.error('Error in service', error, { component: 'serviceName', action: 'functionName' });
-  throw error instanceof Error ? error : new Error('Erreur générique');
+  logger.error('Upload failed', error, { component: 'photoService' });
+  addToast('Erreur lors de l\'upload', 'error');
 }
 ```
 
-### Types d'erreurs courants
-
-- **Supabase RLS** : `42501` - Insufficient privilege
-- **Unique violation** : `23505` - Contrainte unique violée
-- **Foreign key** : `23503` - Référence invalide
-- **Gemini API** : Rate limiting, quota dépassé, API indisponible
-
 ---
 
-## 📝 Notes importantes
+## 📚 Types TypeScript
 
-1. **Authentification** : Certaines fonctions nécessitent une authentification Supabase
-2. **RLS** : Les politiques RLS de Supabase contrôlent l'accès aux données
-3. **Fallbacks** : Les services IA retournent des valeurs par défaut en cas d'erreur
-4. **Validation** : Tous les inputs sont validés avant traitement
-5. **Logging** : Toutes les erreurs sont loggées avec contexte
+Tous les types sont définis dans `types.ts` :
+
+- `Photo`, `PhotoRow`
+- `Event`, `EventRow`, `EventUpdate`
+- `Guest`, `GuestRow`
+- `PhotoBattle`, `BattleRow`
+- `Aftermovie`, `AftermovieRow`
+- `ReactionType`, `ReactionCounts`
+- `Badge`, `AuthorStats`, `LeaderboardEntry`
+- Et plus...
 
 ---
 

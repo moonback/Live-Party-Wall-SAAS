@@ -1,18 +1,19 @@
 # 🤝 Guide de Contribution - Partywall
 
-Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à contribuer efficacement au projet.
+Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à comprendre comment contribuer efficacement au projet.
 
 ---
 
 ## 📋 Table des matières
 
-- [Code de conduite](#-code-de-conduite)
-- [Comment contribuer](#-comment-contribuer)
-- [Processus de développement](#-processus-de-développement)
-- [Standards de code](#-standards-de-code)
-- [Tests](#-tests)
-- [Documentation](#-documentation)
-- [Pull Requests](#-pull-requests)
+- [Code de conduite](#code-de-conduite)
+- [Comment contribuer](#comment-contribuer)
+- [Processus de développement](#processus-de-développement)
+- [Standards de code](#standards-de-code)
+- [Tests](#tests)
+- [Documentation](#documentation)
+- [Pull Requests](#pull-requests)
+- [Questions](#questions)
 
 ---
 
@@ -20,26 +21,26 @@ Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à 
 
 ### Nos valeurs
 
-- ✅ **Respect** : Respect mutuel entre tous les contributeurs
-- ✅ **Bienveillance** : Environnement accueillant et inclusif
-- ✅ **Ouverture** : Accepter les critiques constructives
-- ✅ **Collaboration** : Travailler ensemble vers un objectif commun
+- **Respect** : Traitez tous les contributeurs avec respect et bienveillance
+- **Inclusion** : Accueillez les contributions de tous, peu importe le niveau d'expérience
+- **Collaboration** : Travaillez ensemble pour améliorer le projet
+- **Qualité** : Maintenez des standards de code élevés
 
 ### Comportement attendu
 
-- Utiliser un langage accueillant et inclusif
-- Respecter les différents points de vue et expériences
-- Accepter gracieusement les critiques constructives
-- Se concentrer sur ce qui est meilleur pour la communauté
-- Faire preuve d'empathie envers les autres membres
+- ✅ Utiliser un langage accueillant et inclusif
+- ✅ Respecter les différents points de vue et expériences
+- ✅ Accepter gracieusement les critiques constructives
+- ✅ Se concentrer sur ce qui est meilleur pour la communauté
+- ✅ Faire preuve d'empathie envers les autres membres
 
 ### Comportement inacceptable
 
-- Langage ou images sexualisés
-- Commentaires désobligeants, dégradants ou injurieux
-- Harcèlement public ou privé
-- Publication d'informations privées sans permission
-- Autre conduite jugée inappropriée
+- ❌ Langage ou images sexualisés
+- ❌ Trolling, commentaires insultants/désobligeants
+- ❌ Harcèlement public ou privé
+- ❌ Publication d'informations privées sans permission
+- ❌ Autre conduite jugée inappropriée dans un contexte professionnel
 
 ---
 
@@ -47,181 +48,144 @@ Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à 
 
 ### Signaler un bug
 
-1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/moonback/Partywall-SAAS/issues)
-2. **Créer une nouvelle issue** avec le template suivant :
-
-```markdown
-## Description du bug
-Description claire et concise du bug.
-
-## Étapes pour reproduire
-1. Aller à '...'
-2. Cliquer sur '...'
-3. Scroller jusqu'à '...'
-4. Voir l'erreur
-
-## Comportement attendu
-Ce qui devrait se passer.
-
-## Comportement actuel
-Ce qui se passe réellement.
-
-## Captures d'écran
-Si applicable, ajouter des captures d'écran.
-
-## Environnement
-- OS: [ex: Windows 11, macOS 14, Ubuntu 22.04]
-- Navigateur: [ex: Chrome 120, Firefox 121, Safari 17]
-- Version de l'app: [ex: 1.0.0]
-
-## Informations supplémentaires
-Toute autre information pertinente.
-```
+1. **Vérifier les issues existantes** - Assurez-vous que le bug n'a pas déjà été signalé
+2. **Créer une nouvelle issue** - Utilisez le template "Bug Report"
+3. **Fournir des détails** :
+   - Description claire du bug
+   - Étapes pour reproduire
+   - Comportement attendu vs actuel
+   - Environnement (OS, navigateur, version)
+   - Captures d'écran si applicable
 
 ### Proposer une fonctionnalité
 
-1. **Vérifier** que la fonctionnalité n'a pas déjà été proposée
-2. **Créer une nouvelle issue** avec le label `enhancement` :
-
-```markdown
-## Description de la fonctionnalité
-Description claire et concise de la fonctionnalité proposée.
-
-## Cas d'usage
-Décrire quand et comment cette fonctionnalité serait utilisée.
-
-## Bénéfices attendus
-Pourquoi cette fonctionnalité serait utile.
-
-## Mockups/Wireframes
-Si applicable, ajouter des mockups ou wireframes.
-
-## Alternatives considérées
-Décrire les alternatives que vous avez considérées.
-
-## Informations supplémentaires
-Toute autre information pertinente.
-```
+1. **Vérifier la roadmap** - Consultez [ROADMAP.md](./ROADMAP.md) pour voir si c'est déjà prévu
+2. **Créer une nouvelle issue** - Utilisez le template "Feature Request"
+3. **Décrire la fonctionnalité** :
+   - Cas d'usage détaillé
+   - Bénéfices attendus
+   - Alternatives considérées
+   - Mockups/wireframes si applicable
 
 ### Contribuer au code
 
-1. **Fork** le projet
-2. **Créer une branche** pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. **Développer** votre fonctionnalité en suivant les standards
-4. **Tester** votre code manuellement
-5. **Commit** vos changements avec [Conventional Commits](https://www.conventionalcommits.org/)
-6. **Push** vers la branche (`git push origin feature/AmazingFeature`)
-7. **Ouvrir une Pull Request** avec une description détaillée
+1. **Fork le projet** - Créez un fork sur GitHub
+2. **Créer une branche** - `git checkout -b feature/ma-fonctionnalite`
+3. **Développer** - Implémentez votre fonctionnalité ou correction
+4. **Tester** - Assurez-vous que tout fonctionne
+5. **Commit** - Utilisez des messages de commit clairs
+6. **Push** - `git push origin feature/ma-fonctionnalite`
+7. **Pull Request** - Ouvrez une PR avec une description détaillée
 
 ---
 
-## 💻 Processus de développement
+## 🔧 Processus de développement
 
-### 1. Configuration de l'environnement
+### Setup de l'environnement
 
-```bash
-# Cloner votre fork
-git clone https://github.com/moonback/Partywall-SAAS.git
-cd Partywall-SAAS
+1. **Cloner le fork** :
+   ```bash
+   git clone https://github.com/votre-username/Partywall-SAAS.git
+   cd Partywall-SAAS
+   ```
 
-# Installer les dépendances
-npm install
+2. **Installer les dépendances** :
+   ```bash
+   npm install
+   ```
 
-# Créer le fichier .env
-cp .env.example .env
-# Remplir les variables d'environnement
+3. **Configurer les variables d'environnement** :
+   ```bash
+   cp .env.example .env
+   # Éditer .env avec vos credentials
+   ```
 
-# Lancer en mode développement
-npm run dev
-```
+4. **Lancer en développement** :
+   ```bash
+   npm run dev
+   ```
 
-### 2. Structure des branches
+### Workflow Git
 
-- `main` : Branche principale (production) - **Ne jamais commit directement**
-- `develop` : Branche de développement (si applicable)
-- `feature/*` : Nouvelles fonctionnalités (ex: `feature/add-dark-mode`)
-- `bugfix/*` : Corrections de bugs (ex: `bugfix/fix-upload-error`)
-- `hotfix/*` : Corrections urgentes pour production (ex: `hotfix/security-patch`)
-- `docs/*` : Améliorations de documentation (ex: `docs/update-readme`)
+1. **Synchroniser avec upstream** :
+   ```bash
+   git remote add upstream https://github.com/moonback/Partywall-SAAS.git
+   git fetch upstream
+   git checkout main
+   git merge upstream/main
+   ```
 
-**Convention de nommage** : Utiliser des noms descriptifs en kebab-case.
+2. **Créer une branche** :
+   ```bash
+   git checkout -b feature/ma-fonctionnalite
+   ```
 
-### 3. Workflow Git
+3. **Développer et commit** :
+   ```bash
+   git add .
+   git commit -m "feat: Ajout de la fonctionnalité X"
+   ```
 
-```bash
-# 1. Mettre à jour votre fork
-git checkout main
-git pull upstream main
-
-# 2. Créer une nouvelle branche
-git checkout -b feature/ma-fonctionnalite
-
-# 3. Développer et commit
-git add .
-git commit -m "feat: Ajouter ma fonctionnalité"
-
-# 4. Push vers votre fork
-git push origin feature/ma-fonctionnalite
-
-# 5. Ouvrir une Pull Request sur GitHub
-```
+4. **Push et PR** :
+   ```bash
+   git push origin feature/ma-fonctionnalite
+   # Puis ouvrir une PR sur GitHub
+   ```
 
 ---
 
-## 📝 Standards de code
+## 📐 Standards de code
 
 ### TypeScript
 
-- ✅ **Toujours utiliser TypeScript** (pas de JavaScript)
+- ✅ **Toujours utiliser TypeScript** pour nouveau code
 - ✅ **Éviter `any`** : Utiliser `unknown` ou types explicites
-- ✅ **Types stricts** : Activer `strict: true` dans tsconfig.json
-- ✅ **Interfaces pour objets complexes** : Définir dans `types.ts`
+- ✅ **Interfaces pour objets complexes** : Définir dans `types.ts` si partagé
+- ✅ **JSDoc pour fonctions complexes** : Documenter les paramètres et retours
 
 **Exemple** :
 ```typescript
-// ❌ Mauvais
-function processData(data: any) {
-  return data.value;
-}
-
-// ✅ Bon
-interface Data {
-  value: string;
-}
-
-function processData(data: Data): string {
-  return data.value;
-}
+/**
+ * Upload une photo vers Supabase Storage
+ * @param base64Image - Image en base64
+ * @param caption - Légende de la photo
+ * @param author - Nom de l'auteur
+ * @returns Promise résolue avec l'objet Photo créé
+ */
+export const addPhotoToWall = async (
+  base64Image: string,
+  caption: string,
+  author: string
+): Promise<Photo> => {
+  // ...
+};
 ```
 
 ### React
 
-- ✅ **Composants fonctionnels uniquement** (pas de classes)
-- ✅ **Hooks pour l'état** : `useState`, `useEffect`, `useContext`
+- ✅ **Composants fonctionnels uniquement** : Pas de classes
+- ✅ **Hooks pour état et effets** : `useState`, `useEffect`, `useContext`
 - ✅ **Props typées** : Toujours définir une interface pour les props
 - ✅ **Nommage PascalCase** : `GuestUpload`, `WallView`
 
 **Exemple** :
 ```typescript
-// ❌ Mauvais
-const Component = (props) => {
-  return <div>{props.name}</div>;
-};
-
-// ✅ Bon
-interface ComponentProps {
-  name: string;
-  onAction: () => void;
+interface GuestUploadProps {
+  onPhotoUploaded: (photo: Photo) => void;
+  onBack: () => void;
 }
 
-const Component: React.FC<ComponentProps> = ({ name, onAction }) => {
-  return <div>{name}</div>;
+export const GuestUpload: React.FC<GuestUploadProps> = ({
+  onPhotoUploaded,
+  onBack
+}) => {
+  // ...
 };
 ```
 
 ### Nommage
 
-- **Fichiers** : `camelCase.tsx` (composants), `camelCase.ts` (services)
+- **Fichiers** : `camelCase.tsx` (composants), `camelCase.ts` (services/utils)
 - **Composants** : `PascalCase`
 - **Fonctions/Variables** : `camelCase`
 - **Constantes** : `UPPER_SNAKE_CASE`
@@ -234,79 +198,32 @@ const Component: React.FC<ComponentProps> = ({ name, onAction }) => {
 - **Point-virgule** : Oui
 - **Trailing commas** : Oui dans objets/arrays multilignes
 
-### Architecture
-
-- **Service Layer** : Toute la logique métier dans `/services`
-- **Composants "stupides"** : UI uniquement, pas de logique métier
-- **Context API** : Pour l'état global partagé
-- **Lazy Loading** : Pour les composants lourds
-
 ---
 
 ## 🧪 Tests
 
-### Tests à implémenter (Roadmap)
-
-- [ ] **Tests unitaires** : Services avec mocks (Jest/Vitest)
-- [ ] **Tests d'intégration** : Flux complets (upload → affichage)
-- [ ] **Tests E2E** : Scénarios utilisateur (Playwright)
-
-### Structure de tests (future)
+### Structure des tests (À implémenter)
 
 ```
 tests/
-├── unit/
-│   ├── services/
-│   │   ├── photoService.test.ts
-│   │   ├── geminiService.test.ts
-│   │   └── ...
-│   └── utils/
-│       ├── validation.test.ts
-│       └── ...
-├── integration/
-│   └── flows/
-│       ├── upload-flow.test.ts
-│       └── aftermovie-flow.test.ts
-└── e2e/
-    └── scenarios/
-        ├── guest-journey.spec.ts
-        └── admin-journey.spec.ts
+├── unit/           # Tests unitaires (services, utils)
+├── integration/    # Tests d'intégration (flux complets)
+└── e2e/            # Tests end-to-end (Playwright)
 ```
 
 ### Bonnes pratiques
 
-- ✅ **Tester les cas d'erreur** : API down, validation échouée, réseau lent
-- ✅ **Mocker les appels externes** : Supabase, Gemini API
-- ✅ **Tester les edge cases** : Fichiers très gros, images corrompues, timeout
-- ✅ **Maintenir une couverture > 80%** : Objectif pour la v1.0
-- ✅ **Tests isolés** : Chaque test doit être indépendant
-- ✅ **Nommage clair** : `describe('photoService', () => { it('should upload photo successfully', ...) })`
+- ✅ Tester les cas d'erreur (API down, validation échouée)
+- ✅ Mocker les appels externes (Supabase, Gemini)
+- ✅ Tester les edge cases (fichiers très gros, réseau lent)
+- ✅ Maintenir une couverture de code > 80%
 
-### Exemple de test unitaire (future)
+### Exécuter les tests (À implémenter)
 
-```typescript
-// tests/unit/services/photoService.test.ts
-import { uploadPhotoToStorage } from '@/services/photoService';
-import { supabase } from '@/services/supabaseClient';
-
-jest.mock('@/services/supabaseClient');
-
-describe('photoService', () => {
-  it('should upload photo successfully', async () => {
-    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
-    const eventId = 'test-event-id';
-    
-    // Mock Supabase response
-    (supabase.storage.from as jest.Mock).mockReturnValue({
-      upload: jest.fn().mockResolvedValue({ data: { path: 'test.jpg' } })
-    });
-    
-    const url = await uploadPhotoToStorage(file, eventId);
-    
-    expect(url).toBeDefined();
-    expect(url).toContain('test.jpg');
-  });
-});
+```bash
+npm test              # Tests unitaires
+npm run test:e2e      # Tests E2E
+npm run test:coverage # Couverture de code
 ```
 
 ---
@@ -319,68 +236,29 @@ describe('photoService', () => {
 - ✅ **Commentaires pour "pourquoi"** : Expliquer les décisions, pas le "quoi"
 - ✅ **Éviter les commentaires évidents** : Le code doit être auto-explicatif
 
-**Exemple** :
-```typescript
-/**
- * Upload une photo vers Supabase Storage
- * @param file - Fichier image/vidéo à uploader
- * @param eventId - ID de l'événement
- * @returns Promise résolue avec l'URL publique de la photo
- */
-export const uploadPhotoToStorage = async (
-  file: File,
-  eventId: string
-): Promise<string> => {
-  // ...
-};
-```
-
 ### Documentation utilisateur
 
-- Mettre à jour `README.md` si nouvelle fonctionnalité utilisateur
-- Mettre à jour `ARCHITECTURE.md` si modification architecturale
-- Mettre à jour `API_DOCS.md` si nouveau service
-- Mettre à jour `DB_SCHEMA.md` si modification base de données
+- ✅ **Mettre à jour README.md** : Si nouvelle fonctionnalité utilisateur
+- ✅ **Mettre à jour ARCHITECTURE.md** : Si modification architecturale
+- ✅ **Mettre à jour API_DOCS.md** : Si nouveau service ou endpoint
+- ✅ **Mettre à jour DB_SCHEMA.md** : Si modification base de données
 
 ---
 
-## 🔀 Pull Requests
+## 🔍 Pull Requests
 
-### Avant de soumettre
+### Checklist avant PR
 
 - [ ] Code suit les conventions (nommage, formatage)
-- [ ] Types TypeScript corrects (pas d'erreurs)
-- [ ] Gestion d'erreurs appropriée
-- [ ] Tests manuels effectués
-- [ ] Documentation mise à jour
-- [ ] Pas de `console.log` oubliés
+- [ ] Types TypeScript corrects (pas d'erreurs, pas de `any`)
+- [ ] Gestion d'erreurs appropriée (try/catch, fallbacks pour IA)
+- [ ] Tests manuels effectués (upload, affichage, erreurs)
+- [ ] Documentation mise à jour si nécessaire
+- [ ] Pas de `console.log` oubliés (utiliser `logger`)
 - [ ] Pas de code commenté mort
-- [ ] Pas de secrets dans le code
+- [ ] Variables d'environnement vérifiées (pas de secrets dans le code)
 
-### Format du commit
-
-Utiliser [Conventional Commits](https://www.conventionalcommits.org/) :
-
-```
-feat: Ajouter la fonctionnalité X
-fix: Corriger le bug Y
-docs: Mettre à jour la documentation
-style: Formatage du code
-refactor: Refactorisation du code
-test: Ajouter des tests
-chore: Tâches de maintenance
-```
-
-**Exemples** :
-```bash
-git commit -m "feat: Ajouter le mode collage pour les photos"
-git commit -m "fix: Corriger l'upload de vidéos > 20s"
-git commit -m "docs: Mettre à jour API_DOCS.md"
-```
-
-### Description de la PR
-
-Template à suivre :
+### Template de PR
 
 ```markdown
 ## Description
@@ -393,62 +271,78 @@ Brève description des changements
 - [ ] Documentation
 
 ## Comment tester
-1. Étapes pour tester
-2. ...
+1. Étape 1
+2. Étape 2
+3. ...
+
+## Captures d'écran (si applicable)
+...
 
 ## Checklist
 - [ ] Code testé
 - [ ] Documentation mise à jour
-- [ ] Pas de breaking changes
+- [ ] Pas de breaking changes (ou documentés)
 ```
 
-### Review process
+### Review Process
 
-1. **Automatique** : CI/CD vérifie le code
-2. **Manuel** : Au moins un maintainer doit approuver
-3. **Feedback** : Les commentaires seront adressés
-4. **Merge** : Une fois approuvé, la PR sera mergée
-
----
-
-## 🐛 Signaler des problèmes
-
-### Issues
-
-Utiliser les templates d'issues :
-- 🐛 **Bug Report** : Pour signaler un bug
-- ✨ **Feature Request** : Pour proposer une fonctionnalité
-- 📚 **Documentation** : Pour améliorer la documentation
-- ❓ **Question** : Pour poser une question
-
-### Informations à fournir
-
-**Pour un bug** :
-- Description claire
-- Étapes pour reproduire
-- Comportement attendu vs actuel
-- Environnement (OS, navigateur, version)
-- Captures d'écran/logs
-
-**Pour une fonctionnalité** :
-- Description détaillée
-- Cas d'usage
-- Bénéfices attendus
-- Mockups/wireframes si applicable
+1. **Automated checks** - CI/CD vérifie le code
+2. **Code review** - Au moins un maintainer doit approuver
+3. **Tests** - Tous les tests doivent passer
+4. **Merge** - Squash and merge pour maintenir un historique propre
 
 ---
 
-## 📞 Contact
+## 🚫 Anti-patterns à éviter
 
-- **GitHub Issues** : Pour les bugs et fonctionnalités
-- **Email** : [votre-email@example.com]
-- **Discord/Slack** : [lien si applicable]
+### ❌ À ne pas faire
+
+- ❌ **Logique métier dans composants** : Extraire dans services
+- ❌ **Props drilling excessif** : Utiliser Context si nécessaire
+- ❌ **État global inutile** : Préférer état local quand possible
+- ❌ **Re-renders inutiles** : Utiliser `useMemo`, `useCallback` si nécessaire
+- ❌ **Appels API dans composants** : Utiliser les services
+- ❌ **Types `any`** : Toujours typer explicitement
+- ❌ **Composants trop gros** : Extraire en sous-composants
+- ❌ **Duplication de code** : Extraire en fonctions/services réutilisables
+
+### ✅ À faire
+
+- ✅ **Composants petits et focalisés** : Une responsabilité par composant
+- ✅ **Services réutilisables** : Logique partagée dans services
+- ✅ **Types partagés** : Définir dans `types.ts`
+- ✅ **Constantes centralisées** : Définir dans `constants.ts`
+- ✅ **Gestion d'erreurs robuste** : Try/catch, fallbacks, logging
 
 ---
 
-## 🙏 Remerciements
+## 💬 Questions
 
-Merci à tous les contributeurs qui rendent ce projet possible !
+### Où poser des questions ?
+
+- **Issues GitHub** : Pour questions techniques ou fonctionnelles
+- **Discussions GitHub** : Pour discussions générales
+- **Email** : Pour questions privées ou sensibles
+
+### Questions fréquentes
+
+**Q: Puis-je travailler sur une fonctionnalité de la roadmap ?**
+R: Oui ! Vérifiez d'abord qu'il n'y a pas déjà une issue ou PR en cours.
+
+**Q: Comment savoir quoi travailler ?**
+R: Consultez les issues avec le label `good first issue` ou `help wanted`.
+
+**Q: Puis-je contribuer même si je suis débutant ?**
+R: Absolument ! Les contributions de tous niveaux sont les bienvenues.
+
+**Q: Combien de temps prend une PR ?**
+R: Cela dépend de la complexité. Les PR simples peuvent être mergées rapidement.
+
+---
+
+## 🎉 Remerciements
+
+Merci de contribuer à Partywall ! Chaque contribution, grande ou petite, est appréciée et aide à améliorer le projet pour tous.
 
 ---
 

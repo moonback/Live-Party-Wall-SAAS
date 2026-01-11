@@ -1,355 +1,202 @@
 # 🗺️ Roadmap - Partywall
 
-Feuille de route et fonctionnalités futures pour Partywall.
+Ce document présente la feuille de route et les évolutions futures prévues pour Partywall.
 
 ---
 
-## 📋 Table des matières
+## 📊 Statut actuel : MVP → V1
 
-- [État actuel (MVP)](#-état-actuel-mvp)
-- [Version 1.0 (Stable)](#-version-10-stable)
-- [Version 1.5 (Améliorations)](#-version-15-améliorations)
-- [Version 2.0 (Fonctionnalités avancées)](#-version-20-fonctionnalités-avancées)
-- [Idées futures](#-idées-futures)
+L'application est actuellement en **version 1.1.0** avec toutes les fonctionnalités MVP implémentées et de nombreuses fonctionnalités avancées.
 
 ---
 
-## ✅ État actuel (MVP)
+## ✅ MVP (Complété)
 
-### Fonctionnalités implémentées
+### Fonctionnalités de base
 
-#### Core
-- ✅ **Upload de photos** : Prise de photo, galerie, collage
-- ✅ **Modération IA** : Google Gemini pour filtrer le contenu
-- ✅ **Légendes IA** : Génération automatique de légendes personnalisées
-- ✅ **Affichage temps réel** : Synchronisation via Supabase Realtime
-- ✅ **Multi-événements** : Architecture SaaS complète
-- ✅ **Gestion d'équipe** : Organisateurs avec rôles (owner, organizer, viewer)
-
-#### Interactions sociales
-- ✅ **Système de likes** : Interactions sociales
-- ✅ **Réactions émojis** : 6 types (❤️, 😂, 😢, 🔥, 😮, 👍)
-- ✅ **Galerie interactive** : Parcourir toutes les photos avec filtres
-- ✅ **Recherche IA** : Reconnaissance faciale "Retrouve-moi"
-
-#### Affichage
-- ✅ **Mode projection** : Affichage optimisé grand écran
-- ✅ **Mode collage** : Assembler jusqu'à 4 photos
-- ✅ **Cadres décoratifs** : Polaroid, néon, or
-- ✅ **Photobooth** : Capture photo/vidéo avec filtres et cadres
-
-#### Gamification
-- ✅ **Badges** : 12 types différents
-- ✅ **Classements** : Système de points et leaderboard
-- ✅ **Battles photos** : Duels entre photos avec votes
-- ✅ **Milestones** : 20+ achievements à débloquer
-
-#### Export & Partage
-- ✅ **Export HD** : Téléchargement individuel et ZIP
-- ✅ **Aftermovie** : Génération automatique de vidéos timelapse
-  - ✅ 3 presets (HD, Full HD, Story 9:16)
-  - ✅ Audio personnalisé
-  - ✅ Réorganisation des photos
-  - ✅ Partage avec QR code et lien
-  - ✅ Compteur de téléchargements
-
-#### Administration
-- ✅ **Dashboard temps réel** : Statistiques live
-- ✅ **Modération** : Suppression photos, blocage invités
-- ✅ **Paramètres granulaires** : Activation/désactivation de fonctionnalités
-- ✅ **Personnalisation** : Fond, logo, contexte IA
-- ✅ **Statistiques** : Analytics en temps réel
-
-#### Conformité
-- ✅ **RGPD complet** : Consentement, politique, gestion des données
-- ✅ **Gestion des cookies** : 4 catégories avec préférences
-- ✅ **Droits utilisateurs** : Accès, portabilité, effacement
-
-#### Infrastructure
-- ✅ **Landing page SaaS** : Page d'accueil professionnelle
-- ✅ **Application Electron** : Version desktop (optionnel)
+- ✅ Upload de photos/vidéos avec compression
+- ✅ Affichage temps réel sur grand écran
+- ✅ Modération IA automatique
+- ✅ Génération de légendes IA
+- ✅ Likes et réactions (6 types)
+- ✅ Galerie interactive avec filtres
+- ✅ Dashboard administrateur
+- ✅ Multi-événements (SaaS)
+- ✅ Conformité RGPD complète
 
 ---
 
-## 🎯 Version 1.0 (Stable)
+## 🚀 V1 (En cours / Complété)
 
-**Objectif** : Stabiliser le MVP et corriger les bugs critiques.
+### Fonctionnalités avancées
 
-**Timeline** : 2-3 mois
-
-### Priorités
-
-#### Tests automatisés
-- [ ] **Tests unitaires** (Jest/Vitest)
-  - [ ] Services (photoService, geminiService, etc.)
-  - [ ] Utilitaires (validation, compression, etc.)
-  - [ ] Hooks personnalisés
-- [ ] **Tests d'intégration**
-  - [ ] Flux upload complet
-  - [ ] Génération aftermovie
-  - [ ] Système de battles
-- [ ] **Tests E2E** (Playwright)
-  - [ ] Parcours invité (upload → affichage)
-  - [ ] Parcours admin (création événement → modération)
-  - [ ] Tests responsive (mobile, tablette, desktop)
-
-#### Performance
-- [x] **Optimisation du chargement initial**
-  - [x] Code splitting amélioré
-  - [x] Preload des ressources critiques
-  - [x] Lazy loading des composants lourds
-- [x] **Cache des images**
-  - [x] Service Worker pour cache offline
-  - [x] Compression optimale des images (déjà implémenté avec useImageCompression)
-  - [x] Lazy loading des images (hook useLazyImage créé)
-- [x] **Optimisation Realtime**
-  - [x] Réduction des abonnements inutiles (hook useOptimizedSubscription créé)
-  - [x] Debounce des mises à jour (implémenté dans PhotosContext)
-  - [x] Pagination côté serveur (implémenté dans photoService)
-
-#### Sécurité
-- [ ] **Audit de sécurité**
-  - [ ] Review des politiques RLS
-  - [ ] Validation des inputs serveur
-  - [ ] Protection XSS/CSRF
-- [ ] **Rate limiting**
-  - [ ] Limitation uploads par utilisateur
-  - [ ] Limitation appels Gemini API
-  - [ ] Protection contre spam
-- [ ] **Validation renforcée**
-  - [ ] Validation côté serveur (Edge Functions)
-  - [ ] Sanitization des inputs
-  - [ ] Vérification des types MIME
-
-#### Documentation
-- [x] **Guide utilisateur complet**
-  - [x] Guide organisateur
-  - [x] Guide invité
-  - [x] FAQ complète
-- [ ] **Vidéos tutoriels**
-  - [ ] Création d'un événement
-  - [ ] Upload de photos
-  - [ ] Génération d'aftermovie
-- [ ] **Documentation technique**
-  - [ ] API_DOCS.md complet
-  - [ ] ARCHITECTURE.md avec diagrammes
-  - [ ] Guide de déploiement
-
-#### Bugs critiques
-- [ ] **Correction des bugs connus**
-  - [ ] Issues GitHub prioritaires
-  - [ ] Bugs de performance
-  - [ ] Bugs d'affichage mobile
-- [ ] **Amélioration de la gestion d'erreurs**
-  - [ ] Messages d'erreur utilisateur-friendly
-  - [ ] Retry automatique pour erreurs réseau
-  - [ ] Fallbacks pour services IA
-- [ ] **Logging amélioré**
-  - [ ] Logging structuré (JSON)
-  - [ ] Niveaux de log (error, warn, info, debug)
-  - [ ] Intégration Sentry (optionnel)
+- ✅ **Photobooth interactif** - Filtres et cadres en temps réel
+- ✅ **Mode collage** - Assemblage de 2-4 photos
+- ✅ **Battles photos** - Duels votés en direct
+- ✅ **Aftermovies** - Génération de timelapse avec presets HD/Full HD/Story
+- ✅ **Gamification complète** - 12 badges, système de points, milestones, classements
+- ✅ **Recherche IA "Retrouve-moi"** - Reconnaissance faciale
+- ✅ **Traduction multilingue** - 14 langues pour les légendes
+- ✅ **Amélioration qualité IA** - Débruitage, balance des blancs, netteté
+- ✅ **Contrôle mobile** - Interface optimisée pour gestion mobile
+- ✅ **Export ZIP** - Téléchargement groupé de photos
+- ✅ **Partage aftermovies** - QR code et liens de téléchargement
 
 ---
 
-## 🚀 Version 1.5 (Améliorations)
+## 🔮 V2 (Planifié)
 
-**Objectif** : Améliorer l'expérience utilisateur et ajouter des fonctionnalités demandées.
+### Améliorations UX/UI
 
-### Nouvelles fonctionnalités
+- [ ] **Thèmes personnalisables** - Système de thèmes pour personnaliser l'apparence
+- [ ] **Animations avancées** - Transitions plus fluides et effets visuels
+- [ ] **Mode sombre** - Support du mode sombre
+- [ ] **Accessibilité améliorée** - ARIA labels, navigation clavier, lecteurs d'écran
+- [ ] **Responsive design optimisé** - Meilleure adaptation mobile/tablette/desktop
 
-- [ ] **Notifications push**
-  - [ ] Notifications navigateur
-  - [ ] Notifications mobile (PWA)
-  - [ ] Alertes pour nouveaux likes
+### Fonctionnalités sociales
 
-- [ ] **Partage social**
-  - [ ] Partage direct vers réseaux sociaux
-  - [ ] Génération de liens de partage
-  - [ ] Embed codes pour sites web
+- [ ] **Commentaires sur photos** - Système de commentaires avec modération
+- [ ] **Partage social direct** - Partage vers Instagram, Facebook, Twitter
+- [ ] **Notifications push** - Notifications pour nouveaux likes, réactions, battles
+- [ ] **Système de followers** - Suivre les photographes favoris
+- [ ] **Collections** - Créer des collections de photos favorites
 
-- [ ] **Thèmes personnalisables**
-  - [ ] Thèmes prédéfinis (mariage, entreprise, etc.)
-  - [ ] Personnalisation des couleurs
-  - [ ] Personnalisation des cadres
+### Analytics avancés
 
-- [ ] **Filtres avancés**
-  - [ ] Filtres par auteur
-  - [ ] Filtres par date
-  - [ ] Filtres par type (photo/vidéo)
-  - [ ] Recherche textuelle dans légendes
-
-- [ ] **Amélioration IA**
-  - [ ] Détection d'émotions
-  - [ ] Suggestions de tags
-  - [x] Amélioration automatique plus poussée
-  - [x] Traduction multilingue des légendes
-
-- [ ] **Analytics avancés**
-  - [ ] Graphiques de tendances
-  - [ ] Export de rapports
-  - [ ] Métriques d'engagement
-  - [ ] Heatmaps d'interaction
-
-- [ ] **Intégrations**
-  - [ ] Export vers Google Photos
-  - [ ] Export vers Dropbox
-  - [ ] Intégration Instagram
-  - [ ] Webhooks pour événements
+- [ ] **Dashboard analytics complet** - Graphiques, tendances, insights
+- [ ] **Export de rapports** - PDF/Excel avec statistiques détaillées
+- [ ] **Heatmaps** - Visualisation des interactions utilisateurs
+- [ ] **A/B Testing** - Tester différentes configurations
+- [ ] **Prédictions IA** - Prédire les photos populaires
 
 ---
 
-## 🌟 Version 2.0 (Fonctionnalités avancées)
+## 🎯 V3 (Futur)
 
-**Objectif** : Transformer Partywall en plateforme complète d'engagement événementiel.
+### Fonctionnalités premium
 
-### Fonctionnalités majeures
+- [ ] **API REST publique** - API pour intégrations tierces
+- [ ] **Webhooks** - Notifications pour événements (nouvelle photo, battle terminée, etc.)
+- [ ] **Intégrations tierces** - Zapier, Make, etc.
+- [ ] **White-label** - Personnalisation complète pour clients entreprise
+- [ ] **Multi-langues interface** - i18n pour l'interface utilisateur (actuellement FR uniquement)
 
-- [ ] **Application mobile native**
-  - [ ] iOS (React Native ou Swift)
-  - [ ] Android (React Native ou Kotlin)
-  - [ ] Notifications push natives
-  - [ ] Upload en arrière-plan
+### IA avancée
 
-- [ ] **Mode kiosque amélioré**
-  - [ ] Interface kiosque dédiée
-  - [ ] Gestion multi-écrans
-  - [ ] Synchronisation entre écrans
-  - [ ] Mode présentation automatique
+- [ ] **Reconnaissance faciale avancée** - Groupes de personnes, albums automatiques
+- [ ] **Génération de vidéos IA** - Création automatique de montages vidéo
+- [ ] **Filtres IA** - Filtres artistiques générés par IA
+- [ ] **Détection d'émotions** - Analyse des émotions dans les photos
+- [ ] **Recommandations intelligentes** - Suggestions de photos similaires
 
-- [ ] **Live streaming**
-  - [ ] Intégration streaming vidéo
-  - [ ] Diffusion en direct
-  - [ ] Chat en direct
-  - [ ] Réactions en temps réel
+### Collaboration
 
-- [ ] **AR/VR avancé**
-  - [ ] Filtres AR en temps réel
-  - [ ] Scènes AR interactives
-  - [ ] Expérience VR immersive
-  - [ ] Effets 3D
-
-- [ ] **Intelligence avancée**
-  - [ ] Recommandations personnalisées
-  - [ ] Détection de groupes
-  - [ ] Création automatique d'albums
-  - [ ] Génération de stories
-
-- [ ] **Monétisation**
-  - [ ] Plans premium
-  - [ ] Paiements intégrés (Stripe)
-  - [ ] Facturation automatique
-  - [ ] Gestion d'abonnements
-
-- [ ] **API publique**
-  - [ ] REST API complète
-  - [ ] GraphQL API
-  - [ ] Webhooks configurables
-  - [ ] SDK pour développeurs
-
-- [ ] **White-label**
-  - [ ] Personnalisation complète de la marque
-  - [ ] Domaines personnalisés
-  - [ ] Thèmes sur mesure
-  - [ ] Logo et couleurs personnalisables
+- [ ] **Équipes multi-organisateurs** - Gestion d'équipes avec rôles avancés
+- [ ] **Workflows de modération** - Workflows personnalisables pour modération
+- [ ] **Templates d'événements** - Templates pré-configurés par type d'événement
+- [ ] **Calendrier d'événements** - Planification et gestion de plusieurs événements
 
 ---
 
-## 💡 Idées futures
+## 🔧 Améliorations techniques
+
+### Performance
+
+- [ ] **Cache des résultats Gemini** - Réduire les appels API répétés
+- [ ] **CDN pour assets statiques** - Distribution globale des assets
+- [ ] **Compression serveur** - Compression supplémentaire côté serveur
+- [ ] **Rate limiting avancé** - Protection contre abus
+- [ ] **Optimisation des requêtes** - Requêtes SQL optimisées avec EXPLAIN
+
+### Infrastructure
+
+- [ ] **Tests automatisés** - Jest/Vitest pour unit tests, Playwright pour E2E
+- [ ] **CI/CD complet** - Pipeline automatisé de déploiement
+- [ ] **Monitoring** - Sentry pour erreurs, analytics pour performance
+- [ ] **Backup automatique** - Sauvegardes régulières de la base de données
+- [ ] **Multi-régions** - Déploiement dans plusieurs régions pour latence réduite
+
+### Sécurité
+
+- [ ] **2FA (Two-Factor Authentication)** - Authentification à deux facteurs
+- [ ] **Audit logs** - Logs d'audit pour toutes les actions admin
+- [ ] **Chiffrement end-to-end** - Chiffrement des photos sensibles
+- [ ] **Rate limiting par IP** - Protection contre attaques DDoS
+- [ ] **Penetration testing** - Tests de sécurité réguliers
+
+---
+
+## 📱 Applications mobiles
+
+### Applications natives (V4)
+
+- [ ] **Application iOS** - Application native iOS (Swift/SwiftUI)
+- [ ] **Application Android** - Application native Android (Kotlin/Jetpack Compose)
+- [ ] **Notifications push natives** - Notifications push via APNs/FCM
+- [ ] **Upload en arrière-plan** - Upload de photos même quand l'app est fermée
+- [ ] **Mode offline** - Fonctionnalités disponibles hors ligne
+
+---
+
+## 🎨 Expériences immersives
+
+### AR/VR (V5 - Long terme)
+
+- [ ] **Expérience AR** - Visualisation des photos en réalité augmentée
+- [ ] **Projection 3D** - Affichage des photos en 3D
+- [ ] **Expérience VR** - Galerie virtuelle en réalité virtuelle
+- [ ] **Effets AR avancés** - Effets visuels en temps réel avec AR
+
+---
+
+## 📊 Priorités
 
 ### Court terme (3-6 mois)
 
-- [ ] **Gamification avancée**
-  - [ ] Quêtes et défis
-  - [ ] Système de points
-  - [ ] Tournois photos
-  - [ ] Récompenses
-
-- [ ] **Collaboration**
-  - [ ] Albums collaboratifs
-  - [ ] Édition collaborative
-  - [ ] Commentaires sur photos
-  - [ ] Mentions (@username)
-
-- [ ] **Accessibilité**
-  - [ ] Support lecteur d'écran
-  - [ ] Navigation clavier
-  - [ ] Contraste amélioré
-  - [ ] Sous-titres vidéo
+1. **Tests automatisés** - Base solide pour développement futur
+2. **Monitoring** - Visibilité sur les erreurs et performances
+3. **Thèmes personnalisables** - Personnalisation pour clients
+4. **Commentaires sur photos** - Engagement social amélioré
+5. **API REST publique** - Ouverture pour intégrations
 
 ### Moyen terme (6-12 mois)
 
-- [ ] **Intelligence prédictive**
-  - [ ] Prédiction des moments populaires
-  - [ ] Suggestions de timing optimal
-  - [ ] Analyse de sentiment
-  - [ ] Recommandations d'événements
-
-- [ ] **Intégrations tierces**
-  - [ ] Calendrier (Google Calendar, Outlook)
-  - [ ] CRM (Salesforce, HubSpot)
-  - [ ] Email marketing (Mailchimp, SendGrid)
-  - [ ] Outils événementiels (Eventbrite, etc.)
-
-- [ ] **Multi-langues**
-  - [ ] Interface multilingue
-  - [ ] Traduction automatique
-  - [ ] Support RTL
-  - [ ] Localisation complète
+1. **Applications mobiles natives** - Expérience mobile optimale
+2. **IA avancée** - Reconnaissance faciale, recommandations
+3. **Analytics avancés** - Insights pour organisateurs
+4. **White-label** - Solution entreprise complète
+5. **Multi-langues interface** - Internationalisation
 
 ### Long terme (12+ mois)
 
-- [ ] **Plateforme marketplace**
-  - [ ] Marketplace de cadres
-  - [ ] Marketplace de filtres
-  - [ ] Marketplace de thèmes
-  - [ ] Système de commissions
-
-- [ ] **Blockchain & NFT**
-  - [ ] Minting de photos en NFT
-  - [ ] Certificats d'authenticité
-  - [ ] Marketplace NFT
-  - [ ] Smart contracts
-
-- [ ] **IA générative**
-  - [ ] Génération de photos avec IA
-  - [ ] Style transfer
-  - [ ] Super résolution
-  - [ ] Colorisation automatique
-
-- [ ] **Écosystème complet**
-  - [ ] Application organisateur dédiée
-  - [ ] Application invité dédiée
-  - [ ] Application projection dédiée
-  - [ ] Dashboard analytics avancé
-
----
-
-## 📊 Métriques de succès
-
-### KPIs à suivre
-
-- **Engagement** : Nombre de photos par événement, likes moyens
-- **Rétention** : Taux de retour des organisateurs
-- **Performance** : Temps de chargement, taux d'erreur
-- **Satisfaction** : NPS, avis utilisateurs
-- **Croissance** : Nouveaux événements, nouveaux utilisateurs
+1. **AR/VR** - Expériences immersives
+2. **Intégrations tierces** - Écosystème d'intégrations
+3. **Marketplace** - Marketplace de templates et extensions
+4. **Franchise** - Modèle de franchise pour déploiement global
 
 ---
 
 ## 🤝 Contribution
 
-Les suggestions et contributions sont les bienvenues ! Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour plus de détails.
+Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines.
 
-### Comment proposer une fonctionnalité
+### Comment contribuer à la roadmap
 
-1. Ouvrir une issue sur GitHub avec le label `enhancement`
-2. Décrire la fonctionnalité en détail
-3. Expliquer le cas d'usage
-4. Proposer une implémentation si possible
+1. **Ouvrir une issue** - Proposez une nouvelle fonctionnalité
+2. **Discuter** - Participez aux discussions sur les issues
+3. **Voter** - Votez pour les fonctionnalités qui vous intéressent
+4. **Développer** - Implémentez une fonctionnalité et ouvrez une PR
+
+---
+
+## 📝 Notes
+
+- Cette roadmap est **évolutive** et peut changer selon les retours utilisateurs
+- Les priorités peuvent être ajustées selon les besoins du marché
+- Les fonctionnalités marquées comme "Long terme" sont des idées pour l'avenir, pas des engagements
 
 ---
 
 **Dernière mise à jour** : 2026-01-15
-
-**Note** : Cette roadmap est évolutive et peut changer selon les retours utilisateurs et les priorités business.
 
