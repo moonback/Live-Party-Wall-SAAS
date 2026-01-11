@@ -35,7 +35,7 @@ const DataManagement = lazy(() => import('./components/rgpd/DataManagement')); /
 const ConsentBanner = lazy(() => import('./components/rgpd/ConsentBanner')); // Banner de consentement
 const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePreferences')); // Préférences cookies
 const LicenseBlock = lazy(() => import('./components/LicenseBlock')); // Blocage de licence
-const LicenseManager = lazy(() => import('./components/LicenseManager')); // Gestion des licences
+const LicensePasswordGate = lazy(() => import('./components/LicensePasswordGate')); // Porte d'accès protégée pour gestion des licences
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -351,28 +351,15 @@ const AppContent: React.FC = () => {
               </TransitionWrapper>
             )}
 
-            {/* Mode gestion des licences - accessible uniquement via URL directe, pas visible dans l'UI */}
+            {/* Mode gestion des licences - accessible uniquement via URL directe ?mode=license-management, protégé par mot de passe */}
             {viewMode === 'license-management' && (
               <TransitionWrapper type="scale" duration={600}>
-                {isAdminAuthenticated ? (
-                  <LicenseManager 
-                    onBack={() => {
-                      // Retourner au dashboard admin
-                      setViewMode('admin');
-                    }}
-                  />
-                ) : (
-                  <AdminLogin 
-                    onLoginSuccess={() => {
-                      // Après connexion, rester sur la gestion des licences
-                      setViewMode('license-management');
-                    }}
-                    onBack={() => {
-                      // Retourner à l'accueil
-                      setViewMode('landing');
-                    }}
-                  />
-                )}
+                <LicensePasswordGate 
+                  onBack={() => {
+                    // Retourner à l'accueil
+                    setViewMode('landing');
+                  }}
+                />
               </TransitionWrapper>
             )}
 
