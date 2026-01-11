@@ -354,7 +354,7 @@ const AppContent: React.FC = () => {
             <TransitionWrapper type="slide-right" duration={600}>
               <GuestUpload 
                 onPhotoUploaded={(p) => {
-                  setViewMode('gallery');
+                  // Photo uploadée avec succès, pas de redirection automatique
                 }} 
                 onBack={() => setViewMode('landing')}
                 onCollageMode={() => setViewMode('collage')}

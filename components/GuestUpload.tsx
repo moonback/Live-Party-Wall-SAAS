@@ -17,6 +17,7 @@ import { CameraView } from './photobooth/CameraView';
 import { PreviewView } from './photobooth/PreviewView';
 import { TimerSettings } from './photobooth/TimerSettings';
 import { BurstModeView } from './photobooth/BurstModeView';
+import { UploadConfirmation } from './photobooth/UploadConfirmation';
 
 interface GuestUploadProps {
   onPhotoUploaded: (photo: Photo) => void;
@@ -31,6 +32,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [authorName, setAuthorName] = useState(() => {
     return localStorage.getItem('party_user_name') || '';
   });
@@ -432,16 +434,24 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         addToast("Photo envoyée avec succès ! 🎉", 'success');
       }
 
+      // Afficher la confirmation visuelle
+      setShowConfirmation(true);
+      setLoading(false);
+      
+      // Notifier que la photo a été uploadée (sans redirection)
       onPhotoUploaded(newPhoto);
-      handleRetake();
       
     } catch (error) {
       logger.error("Error submitting", error, { component: 'GuestUpload', action: 'handleSubmit' });
       const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'envoi";
       addToast(errorMessage, 'error');
-    } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirmationComplete = () => {
+    setShowConfirmation(false);
+    handleRetake();
   };
 
   const triggerInput = () => {
@@ -548,6 +558,11 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         timerEnabled={timerEnabled}
         timerDuration={timerDuration}
         onSave={handleTimerSettingsSave}
+      />
+
+      <UploadConfirmation
+        isVisible={showConfirmation}
+        onComplete={handleConfirmationComplete}
       />
     </div>
   );

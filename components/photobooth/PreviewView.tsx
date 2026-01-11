@@ -283,6 +283,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <span className="text-2xl sm:text-3xl relative z-10 transition-transform duration-300 group-hover:rotate-180">↺</span>
         </button>
+        
         <button
           onClick={onSubmit}
           disabled={loading}
