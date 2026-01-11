@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Photo } from '../types';
 import {
-  subscribeToNewPhotos,
-  subscribeToLikesUpdates,
-  subscribeToReactionsUpdates,
   getPhotosReactions,
 } from '../services/photoService';
+import { createUnifiedPhotoSubscription } from '../services/unifiedRealtimeService'; // ⚡ OPTIMISATION : Service unifié
 import type { ReactionCounts, ReactionType } from '../types';
 import { REACTIONS } from '../constants';
 import { Settings, Camera, ArrowLeft, Heart } from 'lucide-react';
@@ -223,58 +221,124 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
     }
   }, [photos]);
 
-  // S'abonner aux nouvelles photos en temps réel
+  // ⚡ OPTIMISATION : Subscription unifiée pour toutes les mises à jour temps réel
   useEffect(() => {
-    const subscription = subscribeToNewPhotos(async (newPhoto) => {
-      try {
-        setDisplayedPhotos((prev) => {
-          const exists = prev.some((p) => p.id === newPhoto.id);
-          if (exists) {
-            return prev;
-          }
+    if (!currentEvent?.id) return;
 
-          if (settings.ar_scene_enabled !== false && arSceneManagerRef.current) {
-            arSceneManagerRef.current.triggerRandomEffect();
-          }
+    const unifiedSubscription = createUnifiedPhotoSubscription(currentEvent.id, {
+      onNewPhoto: async (newPhoto) => {
+        try {
+          setDisplayedPhotos((prev) => {
+            const exists = prev.some((p) => p.id === newPhoto.id);
+            if (exists) {
+              return prev;
+            }
 
-          const updated = [...prev, newPhoto].sort((a, b) => a.timestamp - b.timestamp);
-          const newIndex = updated.findIndex((p) => p.id === newPhoto.id);
+            if (settings.ar_scene_enabled !== false && arSceneManagerRef.current) {
+              arSceneManagerRef.current.triggerRandomEffect();
+            }
 
-          // Charger les réactions pour la nouvelle photo immédiatement
-          getPhotosReactions([newPhoto.id]).then((reactionsMap) => {
-            setPhotosReactions((prev) => {
-              const next = new Map(prev);
-              reactionsMap.forEach((reactions, photoId) => {
-                if (Object.keys(reactions).length > 0) {
-                  next.set(photoId, reactions);
-                }
+            const updated = [...prev, newPhoto].sort((a, b) => a.timestamp - b.timestamp);
+            const newIndex = updated.findIndex((p) => p.id === newPhoto.id);
+
+            // Charger les réactions pour la nouvelle photo immédiatement
+            getPhotosReactions([newPhoto.id]).then((reactionsMap) => {
+              setPhotosReactions((prev) => {
+                const next = new Map(prev);
+                reactionsMap.forEach((reactions, photoId) => {
+                  if (Object.keys(reactions).length > 0) {
+                    next.set(photoId, reactions);
+                  }
+                });
+                return next;
               });
-              return next;
+            }).catch((error) => {
+              logger.error(`Error loading reactions for new photo ${newPhoto.id}`, error);
             });
-          }).catch((error) => {
-            console.error(`Error loading reactions for new photo ${newPhoto.id}:`, error);
+
+            setIsTransitioning(true);
+            setProgress(100);
+
+            setTimeout(() => {
+              setCurrentIndex(newIndex);
+              setProgress(0);
+              setIsTransitioning(false);
+            }, transitionDuration);
+
+            return updated;
           });
-
-          setIsTransitioning(true);
-          setProgress(100);
-
-          setTimeout(() => {
-            setCurrentIndex(newIndex);
-            setProgress(0);
-            setIsTransitioning(false);
-          }, transitionDuration);
-
-          return updated;
+        } catch (error) {
+          logger.error('Error handling new photo', error);
+        }
+      },
+      onPhotoDeleted: (deletedPhotoId) => {
+        setDisplayedPhotos((prev) => prev.filter(p => p.id !== deletedPhotoId));
+        setPhotosReactions(prev => {
+          const next = new Map(prev);
+          next.delete(deletedPhotoId);
+          return next;
         });
-      } catch (error) {
-        console.error('Error handling new photo:', error);
-      }
+      },
+      onLikesUpdate: (photoId, newLikesCount) => {
+        try {
+          setDisplayedPhotos((prev) =>
+            prev.map((photo) =>
+              photo.id === photoId ? { ...photo, likes_count: newLikesCount } : photo
+            )
+          );
+          
+          // ⚡ OPTIMISATION : Afficher automatiquement la photo concernée si like
+          const activity: RecentActivity = {
+            id: `${Date.now()}-like-${photoId}`,
+            type: 'like',
+            photoId,
+            timestamp: Date.now(),
+          };
+          setRecentActivities((prev) => {
+            const updated = [activity, ...prev].slice(0, 5);
+            return updated;
+          });
+          
+          switchToPhoto(photoId);
+        } catch (error) {
+          logger.error('Error updating likes', error);
+        }
+      },
+      onReactionsUpdate: (photoId, reactions) => {
+        try {
+          setPhotosReactions((prev) => {
+            const next = new Map(prev);
+            if (Object.keys(reactions).length > 0) {
+              next.set(photoId, reactions);
+            } else {
+              next.delete(photoId);
+            }
+            return next;
+          });
+          
+          // ⚡ OPTIMISATION : Afficher automatiquement la photo concernée si réaction
+          const activity: RecentActivity = {
+            id: `${Date.now()}-reaction-${photoId}`,
+            type: 'reaction',
+            photoId,
+            timestamp: Date.now(),
+          };
+          setRecentActivities((prev) => {
+            const updated = [activity, ...prev].slice(0, 5);
+            return updated;
+          });
+          
+          switchToPhoto(photoId);
+        } catch (error) {
+          logger.error('Error updating reactions', error);
+        }
+      },
     });
 
     return () => {
-      subscription.unsubscribe();
+      unifiedSubscription.unsubscribe();
     };
-  }, [transitionDuration, settings.ar_scene_enabled]);
+  }, [transitionDuration, settings.ar_scene_enabled, currentEvent?.id, switchToPhoto]);
 
   // Charger les réactions pour toutes les photos (optimisé avec une seule requête)
   useEffect(() => {
@@ -317,86 +381,8 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
     [displayedPhotos, currentIndex, transitionDuration]
   );
 
-  // S'abonner aux mises à jour de likes en temps réel
-  useEffect(() => {
-    const subscription = subscribeToLikesUpdates(
-      (photoId, newLikesCount) => {
-        try {
-          setDisplayedPhotos((prev) =>
-            prev.map((photo) =>
-              photo.id === photoId ? { ...photo, likes_count: newLikesCount } : photo
-            )
-          );
-        } catch (error) {
-          console.error('Error updating likes:', error);
-        }
-      },
-      (photoId, isLike) => {
-        // Callback pour les événements de likes en temps réel
-        if (isLike) {
-          const activity: RecentActivity = {
-            id: `${Date.now()}-like-${photoId}`,
-            type: 'like',
-            photoId,
-            timestamp: Date.now(),
-          };
-          setRecentActivities((prev) => {
-            const updated = [activity, ...prev].slice(0, 5); // Garder seulement les 5 derniers
-            return updated;
-          });
-          
-          // Afficher automatiquement la photo concernée
-          switchToPhoto(photoId);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [switchToPhoto]);
-
-  // S'abonner aux mises à jour de réactions en temps réel
-  useEffect(() => {
-    const subscription = subscribeToReactionsUpdates(
-      (photoId, reactions) => {
-        try {
-          setPhotosReactions((prev) => {
-            const next = new Map(prev);
-            if (Object.keys(reactions).length > 0) {
-              next.set(photoId, reactions);
-            } else {
-              next.delete(photoId);
-            }
-            return next;
-          });
-        } catch (error) {
-          console.error('Error updating reactions:', error);
-        }
-      },
-      (photoId, reactionType) => {
-        // Callback pour les événements de réactions en temps réel
-        const activity: RecentActivity = {
-          id: `${Date.now()}-reaction-${photoId}-${reactionType}`,
-          type: 'reaction',
-          reactionType,
-          photoId,
-          timestamp: Date.now(),
-        };
-        setRecentActivities((prev) => {
-          const updated = [activity, ...prev].slice(0, 5); // Garder seulement les 5 derniers
-          return updated;
-        });
-        
-        // Afficher automatiquement la photo concernée
-        switchToPhoto(photoId);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [switchToPhoto]);
+  // ⚡ OPTIMISATION : Les subscriptions likes et réactions sont maintenant dans le useEffect unifié ci-dessus
+  // Plus besoin de subscriptions séparées - tout est géré par createUnifiedPhotoSubscription
 
   // Synchroniser avec les photos reçues en props
   useEffect(() => {

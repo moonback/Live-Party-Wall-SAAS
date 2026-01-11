@@ -1,13 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Photo, ReactionCounts } from '../../types';
-import { subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToReactionsUpdates, getPhotoReactions } from '../../services/photoService';
+import { getPhotoReactions } from '../../services/photoService';
+import { createUnifiedPhotoSubscription } from '../../services/unifiedRealtimeService'; // ⚡ OPTIMISATION : Service unifié
 
 interface UseWallDataProps {
   initialPhotos: Photo[];
   settings: any;
+  eventId?: string; // ⚡ OPTIMISATION : Nécessaire pour le service unifié
 }
 
-export const useWallData = ({ initialPhotos, settings }: UseWallDataProps) => {
+export const useWallData = ({ initialPhotos, settings, eventId }: UseWallDataProps) => {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
   const [photosReactions, setPhotosReactions] = useState<Map<string, ReactionCounts>>(new Map());
   const [isLoadingNew, setIsLoadingNew] = useState(false);
@@ -39,89 +41,88 @@ export const useWallData = ({ initialPhotos, settings }: UseWallDataProps) => {
       });
   }, [initialPhotos]);
 
-  // S'abonner aux nouvelles photos
+  // ⚡ OPTIMISATION : Subscription unifiée pour toutes les mises à jour temps réel
   useEffect(() => {
-    const subscription = subscribeToNewPhotos((newPhoto) => {
-      setPhotos((prev) => {
-        if (prev.some(p => p.id === newPhoto.id)) return prev;
-        return [newPhoto, ...prev];
-      });
-      
-      setNewPhotoIndicator(newPhoto);
-      setIsLoadingNew(true);
-      setTimeout(() => {
+    if (!eventId) return;
+
+    const unifiedSubscription = createUnifiedPhotoSubscription(eventId, {
+      onNewPhoto: (newPhoto) => {
+        setPhotos((prev) => {
+          if (prev.some(p => p.id === newPhoto.id)) return prev;
+          return [newPhoto, ...prev];
+        });
+        
+        setNewPhotoIndicator(newPhoto);
+        setIsLoadingNew(true);
+        setTimeout(() => {
           setIsLoadingNew(false);
           setNewPhotoIndicator(null);
-      }, 3000);
+        }, 3000);
+      },
+      onPhotoDeleted: (deletedPhotoId) => {
+        setPhotos((prev) => prev.filter(p => p.id !== deletedPhotoId));
+        setPhotosReactions(prev => {
+          const next = new Map(prev);
+          next.delete(deletedPhotoId);
+          return next;
+        });
+      },
+      onLikesUpdate: (photoId, newLikesCount) => {
+        setPhotos((prev) => {
+          const index = prev.findIndex(p => p.id === photoId);
+          if (index === -1) return prev;
+          if (prev[index].likes_count === newLikesCount) return prev;
+          
+          const newPhotos = [...prev];
+          newPhotos[index] = { ...prev[index], likes_count: newLikesCount };
+          return newPhotos;
+        });
+      },
+      onReactionsUpdate: (photoId, reactions) => {
+        setPhotosReactions(prev => {
+          const next = new Map(prev);
+          if (Object.keys(reactions).length > 0) {
+            next.set(photoId, reactions);
+          } else {
+            next.delete(photoId);
+          }
+          return next;
+        });
+      },
     });
 
     return () => {
-      subscription.unsubscribe();
+      unifiedSubscription.unsubscribe();
     };
-  }, []);
+  }, [eventId]);
 
-  // Charger les réactions initiales
+  // ⚡ OPTIMISATION : Charger les réactions initiales par batch
   useEffect(() => {
     const loadReactions = async () => {
       const reactionsMap = new Map<string, ReactionCounts>();
-      // On charge par lot pour éviter trop de requêtes simultanées si beaucoup de photos
-      // Idéalement il faudrait un endpoint getReactionsForPhotos([ids])
-      // Ici on garde la logique existante mais on pourrait optimiser
-      const recentPhotos = photos.slice(0, 50); // Optimisation: charger seulement les récentes
+      // ⚡ OPTIMISATION : Charger seulement les 50 premières photos
+      const recentPhotos = photos.slice(0, 50);
       
-      await Promise.all(
-        recentPhotos.map(async (photo) => {
-          const reactions = await getPhotoReactions(photo.id);
-          if (Object.keys(reactions).length > 0) {
-            reactionsMap.set(photo.id, reactions);
-          }
-        })
-      );
+      if (recentPhotos.length === 0) return;
+
+      // ⚡ OPTIMISATION : Utiliser getPhotosReactions pour charger par batch
+      const { getPhotosReactions } = await import('../../services/photoService');
+      const photoIds = recentPhotos.map(p => p.id);
+      const batchReactions = await getPhotosReactions(photoIds);
+      
+      batchReactions.forEach((reactions, photoId) => {
+        if (Object.keys(reactions).length > 0) {
+          reactionsMap.set(photoId, reactions);
+        }
+      });
+      
       setPhotosReactions(reactionsMap);
     };
     
     if (photos.length > 0) {
       loadReactions();
     }
-  }, [photos.length]); // Déclencheur simplifié
-
-  // S'abonner aux likes
-  useEffect(() => {
-    const subscription = subscribeToLikesUpdates((photoId, newLikesCount) => {
-      setPhotos((prev) => {
-        const index = prev.findIndex(p => p.id === photoId);
-        if (index === -1) return prev;
-        if (prev[index].likes_count === newLikesCount) return prev;
-        
-        const newPhotos = [...prev];
-        newPhotos[index] = { ...prev[index], likes_count: newLikesCount };
-        return newPhotos;
-      });
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // S'abonner aux réactions
-  useEffect(() => {
-    const subscription = subscribeToReactionsUpdates((photoId, reactions) => {
-      setPhotosReactions(prev => {
-        const next = new Map(prev);
-        if (Object.keys(reactions).length > 0) {
-          next.set(photoId, reactions);
-        } else {
-          next.delete(photoId);
-        }
-        return next;
-      });
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  }, [photos.length]);
 
   const stats = useMemo(() => {
     const totalPhotos = photos.length;

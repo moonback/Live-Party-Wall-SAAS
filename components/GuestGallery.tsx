@@ -2,11 +2,13 @@ import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspens
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
 import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
-import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
+import { toggleLike, getUserLikes, toggleReaction, getUserReactions } from '../services/photoService';
+import { createUnifiedPhotoSubscription } from '../services/unifiedRealtimeService'; // ⚡ OPTIMISATION : Service unifié
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
+import { usePhotos } from '../context/PhotosContext'; // ⚡ OPTIMISATION : Utiliser PhotosContext
 import { getActiveBattles, subscribeToNewBattles, subscribeToBattleUpdates } from '../services/battleService';
 import { getAftermovies, incrementAftermovieDownloadCount } from '../services/aftermovieShareService';
 import { useDebounce } from '../hooks/useDebounce';
@@ -49,6 +51,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const { addToast } = useToast();
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
+  // ⚡ OPTIMISATION : Utiliser PhotosContext au lieu de charger directement
+  const { photos: contextPhotos, loading: contextLoading, loadMore, hasMore, isLoadingMore } = usePhotos();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedPhotoIds, setLikedPhotoIds] = useState<Set<string>>(new Set());
@@ -80,6 +84,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   
   const parentRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // ⚡ OPTIMISATION : Ref pour infinite scroll
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Initialisation User ID
   useEffect(() => {
@@ -91,26 +97,29 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     setUserId(storedId);
   }, []);
 
-  // Chargement des données
+  // ⚡ OPTIMISATION : Synchroniser avec PhotosContext
+  useEffect(() => {
+    setPhotos(contextPhotos);
+    setLoading(contextLoading);
+  }, [contextPhotos, contextLoading]);
+
+  // ⚡ OPTIMISATION : Chargement des données utilisateur (likes, réactions, etc.)
   useEffect(() => {
     if (!userId || !currentEvent?.id) {
-      setPhotos([]);
-      setLoading(false);
+      setLikedPhotoIds(new Set());
+      setUserReactions(new Map());
       return;
     }
 
-    const loadData = async () => {
+    const loadUserData = async () => {
       try {
-        setLoading(true);
-        const [allPhotos, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
-          getPhotos(currentEvent.id),
+        const [userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
           getUserLikes(userId),
           getUserReactions(userId),
           getAllGuests(currentEvent.id),
           getAftermovies(currentEvent.id)
         ]);
         
-        setPhotos(allPhotos);
         setLikedPhotoIds(new Set(userLikes));
         setUserReactions(userReactionsData);
         setAftermovies(allAftermovies);
@@ -123,87 +132,90 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
           }
         });
         setGuestAvatars(avatarsMap);
-        
-        const { getPhotosReactions } = await import('../services/photoService');
-        const photoIds = allPhotos.map(p => p.id);
-        const reactionsMap = await getPhotosReactions(photoIds);
-        setPhotosReactions(reactionsMap);
       } catch (error) {
-        logger.error('Error loading photos reactions', error, { component: 'GuestGallery', action: 'loadPhotosReactions' });
-        addToast("Erreur de chargement", 'error');
-      } finally {
-        setLoading(false);
+        logger.error('Error loading user data', error, { component: 'GuestGallery', action: 'loadUserData' });
       }
     };
 
-    loadData();
+    loadUserData();
+  }, [userId, currentEvent?.id]);
 
-    // Abonnement aux nouvelles photos en temps réel
-    const sub = subscribeToNewPhotos(currentEvent.id, (newPhoto) => {
-      setPhotos(prev => {
-        // Vérifier si la photo n'existe pas déjà pour éviter les doublons
-        if (prev.some(p => p.id === newPhoto.id)) {
-          return prev;
+  // ⚡ OPTIMISATION : Charger les réactions pour toutes les photos chargées
+  useEffect(() => {
+    if (contextPhotos.length === 0) return;
+
+    const loadReactions = async () => {
+      try {
+        const { getPhotosReactions } = await import('../services/photoService');
+        const photoIds = contextPhotos.map(p => p.id);
+        // Charger par batch de 100 pour éviter les requêtes trop longues
+        const BATCH_SIZE = 100;
+        const reactionsMap = new Map<string, import('../types').ReactionCounts>();
+        
+        for (let i = 0; i < photoIds.length; i += BATCH_SIZE) {
+          const batch = photoIds.slice(i, i + BATCH_SIZE);
+          const batchReactions = await getPhotosReactions(batch);
+          batchReactions.forEach((reactions, photoId) => {
+            reactionsMap.set(photoId, reactions);
+          });
         }
-        return [newPhoto, ...prev];
-      });
-      addToast("Nouvelle photo publiée !", 'info');
-    });
-
-    // Abonnement aux suppressions de photos en temps réel
-    const deleteSub = subscribeToPhotoDeletions(currentEvent.id, (deletedPhotoId) => {
-      // Vérifier si la photo existe dans notre liste locale avant de la supprimer
-      // Cela évite de supprimer des photos d'autres événements (RLS filtre déjà)
-      setPhotos(prev => {
-        const photoExists = prev.some(p => p.id === deletedPhotoId);
-        if (photoExists) {
-          return prev.filter(p => p.id !== deletedPhotoId);
-        }
-        return prev;
-      });
-      
-      // Retirer aussi des réactions et likes si la photo existait
-      setPhotosReactions(prev => {
-        const next = new Map(prev);
-        next.delete(deletedPhotoId);
-        return next;
-      });
-      
-      setLikedPhotoIds(prev => {
-        const next = new Set(prev);
-        next.delete(deletedPhotoId);
-        return next;
-      });
-      
-      // Retirer aussi des battles si la photo était dans une battle
-      setBattles(prev => prev.filter(b => 
-        b.photo1.id !== deletedPhotoId && b.photo2.id !== deletedPhotoId
-      ));
-    });
-
-    // Abonnement aux mises à jour de likes en temps réel
-    const likesSub = subscribeToLikesUpdates(
-      (photoId, newLikesCount) => {
-        setPhotos(prev => prev.map(p => {
-          if (p.id === photoId) {
-            return { ...p, likes_count: newLikesCount };
-          }
-          return p;
-        }));
+        
+        setPhotosReactions(reactionsMap);
+      } catch (error) {
+        logger.error('Error loading photos reactions', error, { component: 'GuestGallery', action: 'loadReactions' });
       }
-    );
+    };
 
-    // Abonnement aux mises à jour de réactions en temps réel
-    const reactionsSub = subscribeToReactionsUpdates((photoId, reactions) => {
-      setPhotosReactions(prev => {
-        const next = new Map(prev);
-        if (Object.keys(reactions).length > 0) {
-          next.set(photoId, reactions);
-        } else {
-          next.delete(photoId);
-        }
-        return next;
-      });
+    loadReactions();
+  }, [contextPhotos]);
+
+  // ⚡ OPTIMISATION : Subscriptions temps réel unifiées (les photos sont gérées par PhotosContext)
+  useEffect(() => {
+    if (!userId || !currentEvent?.id) {
+      return;
+    }
+
+    // ⚡ OPTIMISATION : Utiliser une seule subscription unifiée au lieu de 4 séparées
+    const unifiedSubscription = createUnifiedPhotoSubscription(currentEvent.id, {
+      onNewPhoto: (newPhoto) => {
+        // La photo est déjà ajoutée par PhotosContext, on garde juste la notification
+        addToast("Nouvelle photo publiée !", 'info');
+      },
+      onPhotoDeleted: (deletedPhotoId) => {
+        // Les photos sont synchronisées depuis PhotosContext, mais on nettoie les données locales
+        setPhotosReactions(prev => {
+          const next = new Map(prev);
+          next.delete(deletedPhotoId);
+          return next;
+        });
+        
+        setLikedPhotoIds(prev => {
+          const next = new Set(prev);
+          next.delete(deletedPhotoId);
+          return next;
+        });
+        
+        // Retirer aussi des battles si la photo était dans une battle
+        setBattles(prev => prev.filter(b => 
+          b.photo1.id !== deletedPhotoId && b.photo2.id !== deletedPhotoId
+        ));
+      },
+      onLikesUpdate: (photoId, newLikesCount) => {
+        // Les likes sont gérés par PhotosContext, mais on peut mettre à jour l'état local si nécessaire
+        // (pour l'instant, on laisse PhotosContext gérer)
+      },
+      onReactionsUpdate: (photoId, reactions) => {
+        // ⚡ OPTIMISATION : Mettre à jour les réactions localement
+        setPhotosReactions(prev => {
+          const next = new Map(prev);
+          if (Object.keys(reactions).length > 0) {
+            next.set(photoId, reactions);
+          } else {
+            next.delete(photoId);
+          }
+          return next;
+        });
+      },
     });
 
     const loadBattles = async () => {
@@ -285,12 +297,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       setTimeout(setupBattleUpdates, 500);
     }
 
-    // Nettoyer tous les abonnements et intervals de manière sécurisée
+    // ⚡ OPTIMISATION : Nettoyer tous les abonnements et intervals de manière sécurisée
     return combineCleanups([
-      () => sub.unsubscribe(),
-      () => likesSub.unsubscribe(),
-      () => reactionsSub.unsubscribe(),
-      () => deleteSub.unsubscribe(),
+      () => unifiedSubscription.unsubscribe(), // ⚡ Une seule subscription au lieu de 4
       battlesSub ? () => battlesSub.unsubscribe() : null,
       ...battleUpdatesSubs.map(sub => () => sub.unsubscribe()),
       checkExpiredInterval ? () => clearInterval(checkExpiredInterval) : null,
@@ -310,15 +319,44 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     return () => div.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // ⚡ OPTIMISATION : Infinite scroll avec Intersection Observer
+  useEffect(() => {
+    if (!observerTarget.current || !hasMore || isLoadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMore();
+        }
+      },
+      {
+        root: parentRef.current,
+        rootMargin: '200px', // ⚡ Précharger 200px avant d'atteindre le bas
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(observerTarget.current);
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isLoadingMore, loadMore]);
+
   const scrollToTop = () => {
     parentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // ⚡ OPTIMISATION : handleLike sans dépendance sur likedPhotoIds (Set change de référence)
   const handleLike = useCallback(async (photoId: string) => {
     if (selectionMode) return;
-    const isLiked = likedPhotoIds.has(photoId);
     
+    // Utiliser une fonction pour accéder à la valeur actuelle
+    let isLiked = false;
     setLikedPhotoIds(prev => {
+      isLiked = prev.has(photoId);
       const next = new Set(prev);
       if (isLiked) next.delete(photoId);
       else next.add(photoId);
@@ -337,6 +375,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     } catch (error) {
       console.error(error);
       addToast("Erreur lors du like", 'error');
+      // Rollback
       setLikedPhotoIds(prev => {
         const next = new Set(prev);
         if (isLiked) next.add(photoId);
@@ -344,7 +383,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         return next;
       });
     }
-  }, [likedPhotoIds, userId, addToast, selectionMode]);
+  }, [userId, addToast, selectionMode]); // ⚡ OPTIMISATION : Dépendances minimales
 
   const handleReaction = useCallback(async (photoId: string, reactionType: ReactionType | null) => {
     if (selectionMode) return;
@@ -734,6 +773,21 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onSelect={handleSelect}
             scrollContainerRef={parentRef}
           />
+
+          {/* ⚡ OPTIMISATION : Infinite scroll trigger */}
+          {hasMore && (
+            <div 
+              ref={observerTarget}
+              className="h-20 flex items-center justify-center py-8"
+            >
+              {isLoadingMore && (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                  <p className="text-sm text-slate-400">Chargement de plus de photos...</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

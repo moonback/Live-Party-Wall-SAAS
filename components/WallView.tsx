@@ -93,7 +93,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     isLoadingNew, 
     stats,
     newPhotoIndicator 
-  } = useWallData({ initialPhotos, settings });
+  } = useWallData({ initialPhotos, settings, eventId: currentEvent?.id }); // ⚡ OPTIMISATION : Passer eventId
 
   const { 
     battles, 

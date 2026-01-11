@@ -38,15 +38,13 @@ const VirtualColumn = React.memo(({
     return () => window.removeEventListener('resize', updateViewportHeight);
   }, []);
 
+  // ⚡ OPTIMISATION : Overscan adaptatif (max 20 photos au lieu de 100+)
   const overscan = useMemo(() => {
-    const MIN_PHOTOS_TOTAL = 100;
-    const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
-    
     // Estimation moyenne de la hauteur basée sur les photos dans cette colonne
     let avgHeight = 400;
     if (data.length > 0) {
       const heights = data.slice(0, Math.min(10, data.length)).map(item => {
-        if (item.type === 'battle') return 420; // Hauteur améliorée pour le nouveau design
+        if (item.type === 'battle') return 420;
         const orientation = item.photo.orientation || 'unknown';
         switch (orientation) {
           case 'portrait': return 560;
@@ -60,13 +58,14 @@ const VirtualColumn = React.memo(({
     
     const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
     
-    const overscanNeeded = Math.max(
-      photosPerColumn - visiblePhotosInViewport + 20,
-      Math.ceil(MIN_PHOTOS_TOTAL / numColumns)
+    // ⚡ OPTIMISATION : Overscan minimal (2-3 photos de chaque côté) avec max de 20
+    const overscanNeeded = Math.min(
+      visiblePhotosInViewport + 5, // 5 photos supplémentaires (2-3 de chaque côté)
+      20 // Maximum absolu pour éviter de surcharger
     );
     
     return Math.min(overscanNeeded, data.length);
-  }, [numColumns, data.length, viewportHeight, data]);
+  }, [data.length, viewportHeight, data]);
 
   const virtualizer = useVirtualizer({
     count: data.length,
