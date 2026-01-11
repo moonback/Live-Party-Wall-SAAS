@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play } from 'lucide-react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play, Languages } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -559,10 +559,60 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
         </div>
       </div>
 
+      {/* Configuration IA - Langue des légendes */}
+      {settings.caption_generation_enabled && (
+        <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-purple-500/20">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
+            <div className="p-1.5 rounded-lg bg-purple-500/20">
+              <Languages className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+            </div>
+            Langue des légendes IA
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                Langue pour les légendes générées automatiquement
+              </label>
+              <select
+                value={settings.caption_language || 'fr'}
+                onChange={async (e) => {
+                  await updateSettings({ caption_language: e.target.value });
+                  logger.info('Caption language updated', { 
+                    component: 'SettingsTab', 
+                    action: 'updateCaptionLanguage', 
+                    language: e.target.value 
+                  });
+                  addToast('Langue des légendes mise à jour', 'success');
+                }}
+                className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition-all"
+              >
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+                <option value="pt">Português</option>
+                <option value="nl">Nederlands</option>
+                <option value="pl">Polski</option>
+                <option value="ru">Русский</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="ko">한국어</option>
+                <option value="ar">العربية</option>
+              </select>
+              <p className="text-xs text-white/60 mt-2">
+                Les légendes générées par l'IA seront traduites dans cette langue. 
+                Les nouvelles photos utiliseront cette langue, les anciennes restent inchangées.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Configuration du carrousel automatique */}
       {settings.auto_carousel_enabled && (
         <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-pink-500/20">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
             <Play className="w-5 h-5 md:w-6 md:h-6" />
             Configuration du carrousel automatique
           </h2>

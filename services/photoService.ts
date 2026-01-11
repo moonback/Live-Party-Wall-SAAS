@@ -279,32 +279,146 @@ export const addVideoToWall = async (
 };
 
 /**
+ * Options de pagination pour getPhotos
+ */
+export interface GetPhotosOptions {
+  /**
+   * Page à récupérer (commence à 1)
+   */
+  page?: number;
+  /**
+   * Nombre de photos par page
+   */
+  pageSize?: number;
+  /**
+   * Récupérer toutes les photos (ignore la pagination)
+   */
+  all?: boolean;
+}
+
+/**
+ * Résultat paginé de getPhotos
+ */
+export interface PaginatedPhotosResult {
+  photos: Photo[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+/**
  * Fetch all photos from the DB for a specific event.
  * Calculates likes_count from the likes table to ensure accuracy.
- * ⚡ Optimisé pour gérer 200+ photos efficacement.
+ * ⚡ Optimisé pour gérer 200+ photos efficacement avec pagination côté serveur.
  * @param eventId - ID de l'événement
+ * @param options - Options de pagination
  */
-export const getPhotos = async (eventId: string): Promise<Photo[]> => {
-  if (!isSupabaseConfigured()) return [];
+export const getPhotos = async (
+  eventId: string,
+  options: GetPhotosOptions = {}
+): Promise<Photo[] | PaginatedPhotosResult> => {
+  if (!isSupabaseConfigured()) return options.page ? { photos: [], total: 0, page: 1, pageSize: 50, hasMore: false } : [];
 
-  // ⚡ Récupérer toutes les photos de l'événement (support jusqu'à 1000+ photos par défaut Supabase)
+  const { page, pageSize = 50, all = false } = options;
+
+  // Si all est true ou pas de pagination demandée, récupérer toutes les photos (comportement original)
+  if (all || !page) {
+    const { data: photosData, error: photosError } = await supabase
+      .from('photos')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: true });
+
+    if (photosError) {
+      logger.error("Error fetching photos", photosError, { component: 'photoService', action: 'getPhotos' });
+      return [];
+    }
+
+    if (!photosData || photosData.length === 0) {
+      return [];
+    }
+
+    // ⚡ Récupérer le nombre de likes pour chaque photo (optimisé pour 200+ photos)
+    // Supabase supporte jusqu'à 1000 IDs dans une clause .in()
+    const photoIds = photosData.map((p: PhotoRow) => p.id);
+    const { data: likesData, error: likesError } = await supabase
+      .from('likes')
+      .select('photo_id')
+      .in('photo_id', photoIds)
+      .returns<Pick<LikeRow, 'photo_id'>[]>();
+
+    if (likesError) {
+      logger.error("Error fetching likes", likesError, { component: 'photoService', action: 'getPhotos' });
+      // Continuer avec likes_count de la table photos en cas d'erreur
+    }
+
+    // Compter les likes par photo
+    const likesCountMap = new Map<string, number>();
+    if (likesData) {
+      likesData.forEach((like: Pick<LikeRow, 'photo_id'>) => {
+        const count = likesCountMap.get(like.photo_id) || 0;
+        likesCountMap.set(like.photo_id, count + 1);
+      });
+    }
+
+    const photos = photosData.map((p: PhotoRow) => ({
+    id: p.id,
+    url: p.url,
+    caption: p.caption || '',
+    author: p.author || '',
+    timestamp: new Date(p.created_at).getTime(),
+    likes_count: likesCountMap.get(p.id) || 0, // Utiliser le nombre réel depuis la table likes
+    type: (p.type || 'photo') as MediaType,
+    duration: p.duration ? Number(p.duration) : undefined,
+    tags: Array.isArray(p.tags) ? p.tags : undefined,
+    user_description: p.user_description || undefined
+  }));
+
+    // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)
+    try {
+      return await enrichPhotosWithOrientation(photos);
+    } catch (error) {
+      logger.error("Error enriching photos with orientation", error, { component: 'photoService', action: 'getPhotos' });
+      // En cas d'erreur, retourner les photos sans orientation
+      return photos;
+    }
+  }
+
+  // Pagination côté serveur
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Récupérer le total de photos pour cet événement
+  const { count, error: countError } = await supabase
+    .from('photos')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_id', eventId);
+
+  if (countError) {
+    logger.error("Error counting photos", countError, { component: 'photoService', action: 'getPhotos' });
+  }
+
+  const total = count || 0;
+
+  // Récupérer les photos paginées
   const { data: photosData, error: photosError } = await supabase
     .from('photos')
     .select('*')
     .eq('event_id', eventId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
+    .range(from, to);
 
   if (photosError) {
     logger.error("Error fetching photos", photosError, { component: 'photoService', action: 'getPhotos' });
-    return [];
+    return { photos: [], total, page, pageSize, hasMore: false };
   }
 
   if (!photosData || photosData.length === 0) {
-    return [];
+    return { photos: [], total, page, pageSize, hasMore: false };
   }
 
-  // ⚡ Récupérer le nombre de likes pour chaque photo (optimisé pour 200+ photos)
-  // Supabase supporte jusqu'à 1000 IDs dans une clause .in()
+  // ⚡ Récupérer le nombre de likes pour chaque photo
   const photoIds = photosData.map((p: PhotoRow) => p.id);
   const { data: likesData, error: likesError } = await supabase
     .from('likes')
@@ -314,7 +428,6 @@ export const getPhotos = async (eventId: string): Promise<Photo[]> => {
 
   if (likesError) {
     logger.error("Error fetching likes", likesError, { component: 'photoService', action: 'getPhotos' });
-    // Continuer avec likes_count de la table photos en cas d'erreur
   }
 
   // Compter les likes par photo
@@ -332,20 +445,34 @@ export const getPhotos = async (eventId: string): Promise<Photo[]> => {
     caption: p.caption || '',
     author: p.author || '',
     timestamp: new Date(p.created_at).getTime(),
-    likes_count: likesCountMap.get(p.id) || 0, // Utiliser le nombre réel depuis la table likes
+    likes_count: likesCountMap.get(p.id) || 0,
     type: (p.type || 'photo') as MediaType,
     duration: p.duration ? Number(p.duration) : undefined,
     tags: Array.isArray(p.tags) ? p.tags : undefined,
     user_description: p.user_description || undefined
   }));
 
-  // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)
+  // ⚡ Précalculer les orientations en parallèle
   try {
-    return await enrichPhotosWithOrientation(photos);
+    const enrichedPhotos = await enrichPhotosWithOrientation(photos);
+    const hasMore = to < total - 1;
+    return {
+      photos: enrichedPhotos,
+      total,
+      page,
+      pageSize,
+      hasMore
+    };
   } catch (error) {
     logger.error("Error enriching photos with orientation", error, { component: 'photoService', action: 'getPhotos' });
-    // En cas d'erreur, retourner les photos sans orientation
-    return photos;
+    const hasMore = to < total - 1;
+    return {
+      photos,
+      total,
+      page,
+      pageSize,
+      hasMore
+    };
   }
 };
 

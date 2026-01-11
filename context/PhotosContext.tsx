@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { Photo } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions } from '../services/photoService';
 import { logger } from '../utils/logger';
 import { useEvent } from './EventContext';
+import { debounce } from '../utils/debounce';
 
 interface PhotosContextType {
   photos: Photo[];
@@ -66,12 +67,18 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setPhotos(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  // Update likes count for a photo
+  // Update likes count for a photo avec debounce pour éviter trop de re-renders
+  const updatePhotoLikesDebounced = useRef(
+    debounce((photoId: string, newLikesCount: number) => {
+      setPhotos(prev => prev.map(p => 
+        p.id === photoId ? { ...p, likes_count: newLikesCount } : p
+      ));
+    }, 300) // Debounce de 300ms
+  ).current;
+
   const updatePhotoLikes = useCallback((photoId: string, newLikesCount: number) => {
-    setPhotos(prev => prev.map(p => 
-      p.id === photoId ? { ...p, likes_count: newLikesCount } : p
-    ));
-  }, []);
+    updatePhotoLikesDebounced(photoId, newLikesCount);
+  }, [updatePhotoLikesDebounced]);
 
   // Initial load and subscriptions
   useEffect(() => {
@@ -87,8 +94,9 @@ export const PhotosProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       addPhoto(newPhoto);
     });
 
-    // Subscribe to likes updates
+    // Subscribe to likes updates avec debounce intégré
     const likesSubscription = subscribeToLikesUpdates((photoId, newLikesCount) => {
+      // Le debounce est déjà géré dans updatePhotoLikes
       updatePhotoLikes(photoId, newLikesCount);
     });
 

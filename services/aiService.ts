@@ -14,6 +14,7 @@ import {
   detectGeminiErrorType, 
   logGeminiError 
 } from '../utils/geminiErrorHandler';
+import { translateCaptionIfNeeded } from './translationService';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -65,11 +66,13 @@ export interface CombinedAnalysisResult {
  * 
  * @param base64Image - Image en base64
  * @param eventContext - Contexte optionnel de l'événement pour personnaliser les légendes
- * @returns Promise<CombinedAnalysisResult> - Analyse complète + légende
+ * @param captionLanguage - Code langue ISO 639-1 pour la traduction de la légende (ex: 'en', 'es', 'de')
+ * @returns Promise<CombinedAnalysisResult> - Analyse complète + légende (traduite si nécessaire)
  */
 export const analyzeAndCaptionImage = async (
   base64Image: string,
-  eventContext?: string | null
+  eventContext?: string | null,
+  captionLanguage?: string | null
 ): Promise<CombinedAnalysisResult> => {
   try {
     // Validation de l'input
@@ -98,14 +101,14 @@ export const analyzeAndCaptionImage = async (
     cleanCache();
     
     // Générer un hash de l'image pour le cache
-    // Le hash inclut aussi le contexte de l'événement (car la légende dépend du contexte)
+    // Le hash inclut aussi le contexte de l'événement et la langue (car la légende dépend du contexte et de la langue)
     const imageHash = await getImageHash(base64Image);
-    const cacheKey = `${imageHash}_${eventContext || 'default'}`;
+    const cacheKey = `${imageHash}_${eventContext || 'default'}_${captionLanguage || 'fr'}`;
     
     // Vérifier le cache
     const cached = analysisCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-      logger.debug('Cache hit for image analysis', { hash: imageHash.substring(0, 8) });
+      logger.debug('Cache hit for image analysis', { hash: imageHash.substring(0, 8), language: captionLanguage });
       return cached.result;
     }
     
@@ -324,7 +327,26 @@ FORMAT DE RÉPONSE ATTENDU (exemple) :
     };
 
     // Validation et fallback pour la légende
-    const caption = parsed.caption?.trim() || "Party time! 🎉";
+    let caption = parsed.caption?.trim() || "Party time! 🎉";
+
+    // Traduire la légende si une langue est spécifiée
+    if (captionLanguage && captionLanguage !== 'fr') {
+      try {
+        caption = await translateCaptionIfNeeded(caption, captionLanguage);
+        logger.debug('Caption translated', { 
+          original: parsed.caption?.trim(), 
+          translated: caption, 
+          language: captionLanguage 
+        });
+      } catch (translationError) {
+        logger.warn('Translation failed, using original caption', translationError, {
+          component: 'aiService',
+          action: 'analyzeAndCaptionImage',
+          language: captionLanguage
+        });
+        // Continuer avec la légende originale en cas d'erreur de traduction
+      }
+    }
 
     // Validation et fallback pour les tags
     const tags = Array.isArray(parsed.tags) && parsed.tags.length > 0 
@@ -337,7 +359,7 @@ FORMAT DE RÉPONSE ATTENDU (exemple) :
       tags,
     };
     
-    // Mettre en cache le résultat
+    // Mettre en cache le résultat (la langue est déjà dans cacheKey)
     analysisCache.set(cacheKey, {
       result,
       timestamp: Date.now()

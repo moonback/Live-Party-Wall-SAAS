@@ -28,8 +28,20 @@
     
     <!-- Manifest PWA -->
     <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect pour les fonts (doit être avant le chargement des fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    
+    <!-- Preload des ressources critiques -->
+    <link rel="preload" href="/index.css" as="style" />
+    
+    <!-- Fonts Google -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css">
+    
+    <!-- DNS prefetch pour les APIs externes -->
+    <link rel="dns-prefetch" href="https://esm.sh" />
     <style>
       /* Splash Screen */
       #splash-screen {

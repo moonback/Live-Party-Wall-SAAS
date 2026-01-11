@@ -94,18 +94,18 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
   - [ ] Tests responsive (mobile, tablette, desktop)
 
 #### Performance
-- [ ] **Optimisation du chargement initial**
-  - [ ] Code splitting amélioré
-  - [ ] Preload des ressources critiques
-  - [ ] Lazy loading des composants lourds
-- [ ] **Cache des images**
-  - [ ] Service Worker pour cache offline
-  - [ ] Compression optimale des images
-  - [ ] Lazy loading des images
-- [ ] **Optimisation Realtime**
-  - [ ] Réduction des abonnements inutiles
-  - [ ] Debounce des mises à jour
-  - [ ] Pagination côté serveur
+- [x] **Optimisation du chargement initial**
+  - [x] Code splitting amélioré
+  - [x] Preload des ressources critiques
+  - [x] Lazy loading des composants lourds
+- [x] **Cache des images**
+  - [x] Service Worker pour cache offline
+  - [x] Compression optimale des images (déjà implémenté avec useImageCompression)
+  - [x] Lazy loading des images (hook useLazyImage créé)
+- [x] **Optimisation Realtime**
+  - [x] Réduction des abonnements inutiles (hook useOptimizedSubscription créé)
+  - [x] Debounce des mises à jour (implémenté dans PhotosContext)
+  - [x] Pagination côté serveur (implémenté dans photoService)
 
 #### Sécurité
 - [ ] **Audit de sécurité**
@@ -122,10 +122,10 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
   - [ ] Vérification des types MIME
 
 #### Documentation
-- [ ] **Guide utilisateur complet**
-  - [ ] Guide organisateur
-  - [ ] Guide invité
-  - [ ] FAQ complète
+- [x] **Guide utilisateur complet**
+  - [x] Guide organisateur
+  - [x] Guide invité
+  - [x] FAQ complète
 - [ ] **Vidéos tutoriels**
   - [ ] Création d'un événement
   - [ ] Upload de photos
@@ -181,8 +181,8 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
 - [ ] **Amélioration IA**
   - [ ] Détection d'émotions
   - [ ] Suggestions de tags
-  - [ ] Amélioration automatique plus poussée
-  - [ ] Traduction multilingue des légendes
+  - [x] Amélioration automatique plus poussée
+  - [x] Traduction multilingue des légendes
 
 - [ ] **Analytics avancés**
   - [ ] Graphiques de tendances

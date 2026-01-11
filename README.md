@@ -38,6 +38,12 @@
 
 Créer une animation collective et engageante où chaque photo devient un moment partagé, amplifié par l'IA pour générer des légendes personnalisées et garantir un contenu approprié.
 
+### 📖 Guides utilisateur
+
+- **[🎛️ Guide Organisateur](./docs/GUIDE_ORGANISATEUR.md)** - Guide complet pour créer et gérer vos événements
+- **[👥 Guide Invité](./docs/GUIDE_INVITE.md)** - Guide pour partager et interagir avec les photos
+- **[❓ FAQ](./docs/FAQ.md)** - Réponses aux questions fréquentes
+
 ---
 
 ## 🚀 Fonctionnalités principales
@@ -309,14 +315,15 @@ Pour plus de détails, consultez [DB_SCHEMA.md](./DB_SCHEMA.md).
 
 ## 🤖 Intelligence Artificielle
 
-Live Party Wall intègre **Google Gemini 3 Flash** pour :
+Live Party Wall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
 
 | Fonctionnalité | Description |
 |----------------|-------------|
 | 🛡️ **Modération automatique** | Détection de contenu inapproprié (toujours actif) |
 | ✍️ **Génération de légendes** | Légendes personnalisées selon type d'événement (max 12 mots) |
+| 🌍 **Traduction multilingue** | Légendes traduites automatiquement dans 14 langues (FR, EN, ES, DE, IT, PT, NL, PL, RU, JA, ZH, KO, AR) |
 | 🏷️ **Tags sémantiques** | Amélioration de la recherche et catégorisation |
-| ⚡ **Amélioration qualité** | Optimisation automatique des images de faible qualité |
+| ⚡ **Amélioration qualité avancée** | Optimisation automatique poussée : débruitage, correction balance des blancs, netteté améliorée, correction exposition |
 | 🎯 **Contexte adaptatif** | Personnalisation selon le contexte (mariage, anniversaire...) |
 
 ---
@@ -396,6 +403,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 ### Paramètres d'événement
 - ✅ Activation/désactivation de fonctionnalités
 - 🤖 Configuration contexte IA
+- 🌍 **Langue des légendes** - Sélection parmi 14 langues pour la traduction automatique
 - 📢 Messages d'alerte
 - 🖼️ Images de fond personnalisées (desktop et mobile)
 - 🎨 Logo personnalisé (remplace le titre sur la landing page)
@@ -453,6 +461,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 📊 Stats temps réel
 - ⚔️ Création de battles
 - 🎨 Configuration complète (fond, logo, paramètres)
+- 🌍 **Configuration langue légendes** - Sélection de la langue pour les légendes IA
 - 🎬 **Notifications visuelles** - Animations sur le mur lors de l'activation des fonctionnalités :
   - Mode Battle, Retrouve-moi, Mode Collage
   - Effets visuels avec particules, glow et animations fluides
@@ -557,9 +566,14 @@ Live Party Wall est **100% conforme au RGPD** avec :
 - ✅ Service Layer Pattern
 - ✅ Gestion d'erreurs complète
 - ✅ Logging structuré
-- ✅ Lazy Loading
+- ✅ Lazy Loading (composants et images)
 - ✅ Virtualisation des listes
 - ✅ Compression automatique
+- ✅ Code splitting optimisé
+- ✅ Service Worker pour cache offline
+- ✅ Pagination côté serveur
+- ✅ Debounce des mises à jour Realtime
+- ✅ Optimisation des subscriptions
 
 ---
 
@@ -571,11 +585,22 @@ Live Party Wall est **100% conforme au RGPD** avec :
 - **Backend** : Supabase - scalabilité automatique
 - **IA** : Google Gemini API - quota géré par Google
 
-### 🚀 Optimisations possibles
+### 🚀 Optimisations implémentées
+
+- ✅ **Code splitting amélioré** - Chunks optimisés par vendor et fonctionnalité
+- ✅ **Preload des ressources critiques** - CSS et fonts préchargées
+- ✅ **Service Worker** - Cache offline des images et ressources
+- ✅ **Lazy loading avancé** - Intersection Observer pour les images
+- ✅ **Pagination côté serveur** - Support de milliers de photos
+- ✅ **Debounce Realtime** - Réduction des re-renders
+- ✅ **Subscriptions optimisées** - Gestion automatique du cleanup
+- ✅ **Amélioration automatique avancée** - Débruitage, balance des blancs, netteté améliorée
+- ✅ **Traduction multilingue** - Support de 14 langues pour les légendes IA
+
+### 🔮 Optimisations futures
 
 - 💾 Cache des résultats Gemini
 - 🌐 CDN pour assets statiques
-- 📄 Pagination côté serveur
 - 🗜️ Compression serveur supplémentaire
 - ⏱️ Rate limiting avancé
 
@@ -636,11 +661,22 @@ Plus de **20 milestones** à débloquer :
 
 ## 📚 Documentation complémentaire
 
+### 📖 Guides utilisateur
+
+| Document | Description |
+|----------|-------------|
+| [🎛️ Guide Organisateur](./docs/GUIDE_ORGANISATEUR.md) | Guide complet pour les organisateurs d'événements |
+| [👥 Guide Invité](./docs/GUIDE_INVITE.md) | Guide complet pour les invités |
+| [❓ FAQ](./docs/FAQ.md) | Foire aux questions complète |
+
+### 🔧 Documentation technique
+
 | Document | Description |
 |----------|-------------|
 | [📐 ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture détaillée du système (frontend, backend, flux de données) |
 | [🔌 API_DOCS.md](./API_DOCS.md) | Documentation complète des services et fonctions disponibles |
 | [🗄️ DB_SCHEMA.md](./DB_SCHEMA.md) | Schéma complet de la base de données (tables, relations, RLS) |
+| [🚀 Optimisations Performance](./docs/PERFORMANCE_OPTIMIZATIONS.md) | Documentation des optimisations de performance implémentées |
 | [🗺️ ROADMAP.md](./ROADMAP.md) | Feuille de route et futures fonctionnalités |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Guide de contribution au projet |
 
