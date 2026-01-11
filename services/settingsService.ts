@@ -123,7 +123,11 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
     
     // Merger les settings existants avec les nouveaux settings
     // Cela préserve les valeurs existantes pour les champs non modifiés
-    const settingsToUpdate: any = {
+    const settingsToUpdate: EventSettings & { 
+      updated_at: string; 
+      event_id: string;
+      id?: number;
+    } = {
       ...baseSettings,
       ...settingsWithoutId,
       alert_text: alertText !== undefined ? alertText : (baseSettings.alert_text || null),

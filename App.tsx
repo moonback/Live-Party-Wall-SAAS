@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import TransitionWrapper from './components/TransitionWrapper';
 import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
+import { logger } from './utils/logger';
 
 // Lazy loading components
 const Landing = lazy(() => import('./components/Landing'));
@@ -125,7 +126,7 @@ const AppContent: React.FC = () => {
         }
       } catch (error) {
         // En cas d'erreur, on ne fait rien pour ne pas perturber l'utilisateur
-        console.error('Error checking/restoring guest session:', error);
+        logger.error('Error checking/restoring guest session', error, { component: 'App', action: 'checkGuestSession' });
       }
     };
 

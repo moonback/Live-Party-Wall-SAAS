@@ -6,6 +6,7 @@ import { generateVideoThumbnail } from '../../utils/videoThumbnailGenerator';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useToast } from '../../context/ToastContext';
 import { shareAftermovie, copyToClipboard } from '../../services/socialShareService';
+import { logger } from '../../utils/logger';
 
 interface AftermovieCardProps {
   aftermovie: Aftermovie;
@@ -42,7 +43,7 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
           setThumbnailLoading(false);
         }
       } catch (error) {
-        console.warn('Erreur génération miniature:', error);
+        logger.warn('Erreur génération miniature', error, { component: 'AftermovieCard', action: 'loadThumbnail', aftermovieId: aftermovie.id });
         if (!cancelled) {
           setThumbnailLoading(false);
         }

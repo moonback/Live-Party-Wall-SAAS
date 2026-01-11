@@ -3,6 +3,7 @@ import { ArrowRight, Users, Menu, X, Sparkles, Power } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StickyNavigation } from './StickyNavigation';
 import { getStaticAssetPath, isElectron } from '../../utils/electronPaths';
+import { logger } from '../../utils/logger';
 
 interface LandingHeaderProps {
   isAuthenticated: boolean;
@@ -60,7 +61,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
       try {
         await window.electronAPI.closeApp();
       } catch (error) {
-        console.error('Erreur lors de la fermeture de l\'application:', error);
+        logger.error('Erreur lors de la fermeture de l\'application', error, { component: 'LandingHeader', action: 'closeApp' });
       }
     }
   };
@@ -101,7 +102,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                   className="relative w-8 h-8 sm:w-9 sm:h-9 z-10"
                   onError={(e) => {
                     // Fallback si l'image ne charge pas
-                    console.error('Failed to load icon:', e);
+                    logger.error('Failed to load icon', e, { component: 'LandingHeader', action: 'loadIcon' });
                   }}
                 />
               </div>

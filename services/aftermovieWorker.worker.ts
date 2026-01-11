@@ -7,22 +7,22 @@
  * - Il retourne les ImageBitmap via postMessage (avec Transferable pour performance)
  */
 
-interface LoadImageMessage {
+export interface LoadImageMessage {
   type: 'loadImage';
   id: string;
   url: string;
 }
 
-interface LoadImageBatchMessage {
+export interface LoadImageBatchMessage {
   type: 'loadImageBatch';
   photos: Array<{ id: string; url: string; type: 'image' | 'video' }>;
 }
 
-interface CancelMessage {
+export interface CancelMessage {
   type: 'cancel';
 }
 
-type WorkerMessage = LoadImageMessage | LoadImageBatchMessage | CancelMessage;
+export type WorkerMessage = LoadImageMessage | LoadImageBatchMessage | CancelMessage;
 
 interface ImageLoadedResponse {
   type: 'imageLoaded';

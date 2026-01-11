@@ -220,7 +220,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       await refreshPhotos();
       addToast("Toutes les photos et tous les invités ont été supprimés", 'success');
     } catch (error) {
-      console.error(error);
+      logger.error('Error deleting all photos and guests', error, { component: 'AdminDashboard', action: 'deleteAll' });
       addToast("Erreur lors de la suppression totale", 'error');
     }
   };
@@ -241,7 +241,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         });
         addToast("Téléchargement lancé !", 'success');
     } catch (error) {
-        console.error(error);
+        logger.error('Error exporting photos to ZIP', error, { component: 'AdminDashboard', action: 'exportToZip' });
         addToast("Erreur lors de l'export ZIP", 'error');
     } finally {
         setIsExporting(false);
@@ -286,7 +286,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         );
         addToast("Téléchargement lancé !", 'success');
     } catch (error) {
-        console.error(error);
+        logger.error('Error exporting photos with metadata', error, { component: 'AdminDashboard', action: 'exportWithMetadata' });
         addToast("Erreur lors de l'export PNG avec métadonnées", 'error');
     } finally {
         setIsExportingWithMetadata(false);
@@ -335,7 +335,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       const userEvents = await getUserEvents(user.id);
       setEvents(userEvents);
     } catch (error) {
-      console.error('Error loading events:', error);
+      logger.error('Error loading events', error, { component: 'AdminDashboard', action: 'loadEvents' });
     }
   };
 
@@ -408,7 +408,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                       onBack();
                     }, 300);
                   } catch (error) {
-                    console.error('Error loading event:', error);
+                    logger.error('Error loading event', error, { component: 'AdminDashboard', action: 'loadEvent', eventId: event.id });
                     addToast('Erreur lors du chargement de l\'événement', 'error');
                   }
                 }}

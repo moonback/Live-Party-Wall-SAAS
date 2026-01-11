@@ -353,6 +353,14 @@ export interface EventRow {
   is_active: boolean;
 }
 
+export interface EventUpdate {
+  slug?: string;
+  name?: string;
+  description?: string | null;
+  is_active?: boolean;
+  updated_at?: string;
+}
+
 export interface EventOrganizer {
   id: string;
   event_id: string;
@@ -367,4 +375,18 @@ export interface EventOrganizerRow {
   user_id: string;
   role: 'owner' | 'organizer' | 'viewer';
   created_at: string;
+}
+
+export interface AftermovieRow {
+  id: string;
+  event_id: string;
+  url: string;
+  storage_path: string;
+  title: string | null;
+  filename: string;
+  file_size: number | null;
+  duration_seconds: number | null;
+  created_at: string;
+  created_by: string | null;
+  download_count?: number;
 }

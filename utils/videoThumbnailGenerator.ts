@@ -2,6 +2,8 @@
  * Utilitaires pour générer des miniatures vidéo
  */
 
+import { logger } from './logger';
+
 /**
  * Génère une miniature à partir d'une vidéo
  * @param videoUrl - URL de la vidéo
@@ -77,7 +79,7 @@ export async function generateMultipleThumbnails(
       const thumbnail = await generateVideoThumbnail(videoUrl, time);
       thumbnails.push(thumbnail);
     } catch (error) {
-      console.error(`Erreur génération thumbnail à ${time}s:`, error);
+      logger.error(`Erreur génération thumbnail à ${time}s`, error, { component: 'videoThumbnailGenerator', action: 'generateThumbnails', time });
     }
   }
 
