@@ -380,7 +380,12 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
 
     setLoading(true);
-    setLoadingStep('Analyse IA... 🤖');
+    // Afficher le message d'analyse IA seulement si la génération de légende est activée
+    if (eventSettings.caption_generation_enabled) {
+      setLoadingStep('Analyse IA... 🤖');
+    } else {
+      setLoadingStep('Traitement de la photo... 📸');
+    }
     
     try {
       let newPhoto: Photo;
@@ -407,7 +412,12 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
         addToast("Vidéo envoyée avec succès ! 🎉", 'success');
       } else {
-        setLoadingStep('Analyse IA et génération de légende... 🤖');
+        // Ne pas afficher le message de génération de légende si désactivé
+        if (eventSettings.caption_generation_enabled) {
+          setLoadingStep('Analyse IA et génération de légende... 🤖');
+        } else {
+          setLoadingStep('Traitement de la photo... 📸');
+        }
         
         newPhoto = await submitPhoto({
           imageDataUrl: preview,
