@@ -44,7 +44,8 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   useEffect(() => {
     setLocalConfig({
       ...config,
-      content_moderation_enabled: true
+      content_moderation_enabled: true,
+      caption_language: config.caption_language || 'fr' // Valeur par défaut si non définie
     });
   }, [config]);
 
