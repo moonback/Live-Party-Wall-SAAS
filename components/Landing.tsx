@@ -1,14 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ViewMode } from '../types';
-import { Images, Camera, User } from 'lucide-react';
+import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useEvent } from '../context/EventContext';
-import { LandingHeader } from './landing/LandingHeader';
-import { LandingFooter } from './landing/LandingFooter';
-import { TopRightButtons } from './landing/TopRightButtons';
-import { MobileButtons } from './landing/MobileButtons';
-import { NavigationCards } from './landing/NavigationCards';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
 
@@ -16,6 +11,402 @@ interface LandingProps {
   onSelectMode: (mode: ViewMode) => void;
   isAdminAuthenticated?: boolean;
 }
+
+// Composant ActionButton intégré
+interface ActionButtonProps {
+  onClick: () => void;
+  icon: LucideIcon;
+  title: string;
+  ariaLabel: string;
+  gradient?: string;
+  glowColor?: string;
+  className?: string;
+}
+
+const ActionButton: React.FC<ActionButtonProps> = ({
+  onClick,
+  icon: Icon,
+  title,
+  ariaLabel,
+  gradient = 'from-white/8 via-white/5 to-white/8',
+  glowColor = 'rgba(99, 102, 241, 0.15)',
+  className = '',
+}) => {
+  const defaultStyle: React.CSSProperties = {
+    boxShadow: `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br ${gradient} hover:from-white/15 hover:via-white/10 hover:to-white/15 active:from-white/20 active:via-white/15 active:to-white/20 border border-white/20 hover:border-white/40 active:border-white/50 text-white/80 hover:text-white active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden ${className}`}
+      style={defaultStyle}
+      title={title}
+      aria-label={ariaLabel}
+      onFocus={(e: React.FocusEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.boxShadow = `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 30px ${glowColor.replace('0.15', '0.3')}, inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 3px ${glowColor.replace('0.15', '0.5')}`;
+      }}
+      onBlur={(e: React.FocusEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.boxShadow = defaultStyle.boxShadow as string;
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/20 group-hover:via-purple-500/20 group-hover:to-cyan-500/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-sm" />
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+      <div className="absolute inset-0 bg-pink-500/20 rounded-xl sm:rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <Icon className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
+    </button>
+  );
+};
+
+// Composant TopRightButtons intégré
+interface TopRightButtonsProps {
+  onSelectMode: (mode: ViewMode) => void;
+  isAdminAuthenticated: boolean;
+  hasUserProfile: boolean;
+  statsEnabled: boolean;
+  battleModeEnabled: boolean;
+}
+
+const TopRightButtons: React.FC<TopRightButtonsProps> = ({
+  onSelectMode,
+  isAdminAuthenticated,
+  hasUserProfile,
+  statsEnabled,
+  battleModeEnabled,
+}) => {
+  return (
+    <div className="hidden sm:flex fixed top-1/2 right-2 sm:right-4 -translate-y-1/2 z-50 flex-col items-center gap-3 sm:gap-4 py-4 px-2 rounded-full backdrop-blur-sm bg-black/10 border border-white/5 transition-all duration-300 hover:bg-black/20">
+      {hasUserProfile && (
+        <ActionButton
+          onClick={() => onSelectMode('guest-profile')}
+          icon={User}
+          title="Mon profil"
+          ariaLabel="Mon profil"
+          glowColor="rgba(236, 72, 153, 0.15)"
+        />
+      )}
+      <ActionButton
+        onClick={() => onSelectMode('help')}
+        icon={HelpCircle}
+        title="Aide"
+        ariaLabel="Aide"
+        gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
+        glowColor="rgba(99, 102, 241, 0.15)"
+      />
+      {isAdminAuthenticated && (
+        <ActionButton
+          onClick={() => onSelectMode('projection')}
+          icon={Camera}
+          title="Projection Murale"
+          ariaLabel="Projection Murale"
+          glowColor="rgba(236, 72, 153, 0.15)"
+        />
+      )}
+      {isAdminAuthenticated && (
+        <ActionButton
+          onClick={() => onSelectMode('wall')}
+          icon={Images}
+          title="Mur Live"
+          ariaLabel="Mur Live"
+          gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
+          glowColor="rgba(99, 102, 241, 0.15)"
+        />
+      )}
+      {statsEnabled && (
+        <ActionButton
+          onClick={() => onSelectMode('stats-display')}
+          icon={BarChart3}
+          title="Statistiques"
+          ariaLabel="Statistiques"
+          gradient="from-cyan-500/0 via-blue-500/0 to-indigo-500/0"
+          glowColor="rgba(34, 211, 238, 0.15)"
+        />
+      )}
+      {isAdminAuthenticated && (
+        <button
+          onClick={() => onSelectMode('mobile-control')}
+          className="relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          }}
+          title="Contrôle Mobile"
+          aria-label="Contrôle Mobile"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="relative">
+            <div className="absolute inset-0 bg-cyan-400/30 rounded-full blur-md group-hover:bg-cyan-400/50 transition-all duration-300 animate-pulse" />
+            <Smartphone className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-6 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
+          </div>
+        </button>
+      )}
+      {battleModeEnabled && (
+        <button
+          onClick={() => onSelectMode('battle-results')}
+          className="relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          }}
+          title="Résultats des Battles"
+          aria-label="Résultats des Battles"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-orange-500/0 to-yellow-500/0 group-hover:from-yellow-500/25 group-hover:via-orange-500/25 group-hover:to-yellow-500/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-sm rounded-xl sm:rounded-2xl" />
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <Trophy className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
+        </button>
+      )}
+      <ActionButton
+        onClick={() => onSelectMode('admin')}
+        icon={Lock}
+        title="Administration"
+        ariaLabel="Administration"
+        gradient="from-purple-500/0 via-violet-500/0 to-fuchsia-500/0"
+        glowColor="rgba(139, 92, 246, 0.15)"
+      />
+    </div>
+  );
+};
+
+// Composant MobileButtons intégré
+interface MobileButtonsProps {
+  onSelectMode: (mode: ViewMode) => void;
+  isAdminAuthenticated: boolean;
+  hasUserProfile: boolean;
+  statsEnabled: boolean;
+  battleModeEnabled: boolean;
+}
+
+const MobileButtons: React.FC<MobileButtonsProps> = ({
+  onSelectMode,
+  isAdminAuthenticated,
+  hasUserProfile,
+  statsEnabled,
+  battleModeEnabled,
+}) => {
+  return (
+    <div className="sm:hidden flex items-center gap-1.5 flex-wrap justify-center w-full mt-2 px-2">
+      {hasUserProfile && (
+        <ActionButton
+          onClick={() => onSelectMode('guest-profile')}
+          icon={User}
+          title="Mon profil"
+          ariaLabel="Mon profil"
+          glowColor="rgba(236, 72, 153, 0.15)"
+          className="p-2.5 rounded-xl"
+        />
+      )}
+      <ActionButton
+        onClick={() => onSelectMode('help')}
+        icon={HelpCircle}
+        title="Aide"
+        ariaLabel="Aide"
+        gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
+        glowColor="rgba(99, 102, 241, 0.15)"
+        className="p-2.5 rounded-xl"
+      />
+      {isAdminAuthenticated && (
+        <button
+          onClick={() => onSelectMode('mobile-control')}
+          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          }}
+          title="Contrôle Mobile"
+          aria-label="Contrôle Mobile"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+          <Smartphone className="relative w-4 h-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
+        </button>
+      )}
+      {battleModeEnabled && (
+        <button
+          onClick={() => onSelectMode('battle-results')}
+          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden"
+          style={{
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          }}
+          title="Résultats des Battles"
+          aria-label="Résultats des Battles"
+        >
+          <Trophy className="relative w-4 h-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 drop-shadow-lg" />
+        </button>
+      )}
+      <ActionButton
+        onClick={() => onSelectMode('admin')}
+        icon={Lock}
+        title="Administration"
+        ariaLabel="Administration"
+        gradient="from-purple-500/0 via-violet-500/0 to-fuchsia-500/0"
+        glowColor="rgba(139, 92, 246, 0.15)"
+        className="p-2.5 rounded-xl"
+      />
+    </div>
+  );
+};
+
+// Composant NavigationCards intégré
+interface NavigationOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  gradient: string;
+  glowColor: string;
+  delay: string;
+  isPrimary: boolean;
+}
+
+interface NavigationCardsProps {
+  options: NavigationOption[];
+  mounted: boolean;
+  onSelectMode: (mode: ViewMode) => void;
+}
+
+const NavigationCards: React.FC<NavigationCardsProps> = ({
+  options,
+  mounted,
+  onSelectMode,
+}) => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+
+  return (
+    <div className="w-full flex flex-col lg:flex-row items-center gap-2 lg:gap-3 lg:justify-center">
+      {options.map((option) => {
+        const Icon = option.icon;
+        const isActive = hoveredCard === option.id || activeCard === option.id;
+
+        return (
+          <button
+            key={option.id}
+            onClick={() => onSelectMode(option.id as ViewMode)}
+            onMouseEnter={() => setHoveredCard(option.id)}
+            onMouseLeave={() => setHoveredCard(null)}
+            onTouchStart={() => setActiveCard(option.id)}
+            onTouchEnd={() => setActiveCard(null)}
+            onFocus={() => setHoveredCard(option.id)}
+            onBlur={() => setHoveredCard(null)}
+            className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[140px] h-auto min-h-[80px] sm:min-h-[90px] lg:h-auto lg:aspect-square lg:min-h-[140px] rounded-xl sm:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 sm:px-4 lg:px-0 py-3 sm:py-4 lg:py-0 select-none ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+            }`}
+            style={{
+              animationDelay: option.delay,
+              transform: isActive ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+              transition: 'all 0.28s cubic-bezier(.45,.05,.55,.95)'
+            }}
+            aria-label={option.title}
+            tabIndex={0}
+            type="button"
+          >
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${option.gradient} transition-opacity duration-700 pointer-events-none ${
+                isActive ? 'opacity-40 blur-[2px]' : 'opacity-0'
+              }`}
+            />
+            <div
+              className="relative h-full bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl flex items-center justify-between lg:justify-center px-3 sm:px-4 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-shadow duration-500"
+              style={{
+                boxShadow: isActive
+                  ? `0 4px 32px 0 ${option.glowColor}, 0 2px 12px rgba(0,0,0,0.14)`
+                  : '0 2px 8px rgba(0,0,0,0.10)',
+              }}
+            >
+              <div className="flex-shrink-0 relative">
+                <div
+                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-300 group-hover:scale-110 group-active:scale-105 ${
+                    isActive ? 'scale-110 ring-2 ring-white/30' : ''
+                  }`}
+                  style={{
+                    boxShadow: isActive ? `0 4px 20px ${option.glowColor}` : undefined,
+                  }}
+                >
+                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-8 lg:h-8 text-white drop-shadow" />
+                </div>
+                {option.isPrimary && (
+                  <div className="absolute -top-1.5 -right-1.5 lg:-top-2 lg:-right-2 z-20">
+                    <span className="inline-flex items-center bg-yellow-600/90 px-1.5 py-0.5 rounded shadow text-yellow-100 text-[10px] lg:text-xs font-black animate-pulse">
+                      <Zap className="w-3 h-3 lg:w-4 lg:h-4 mr-0.5 text-yellow-300 drop-shadow" />
+                      <span className="hidden sm:inline">HOT</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 text-left lg:hidden ml-3 sm:ml-4">
+                <div className="flex items-center gap-2 min-w-0 mb-1">
+                  <h3
+                    className={`text-base sm:text-lg font-bold transition-all duration-300 ${
+                      isActive
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
+                        : 'text-white'
+                    }`}
+                  >
+                    {option.title}
+                  </h3>
+                  {option.isPrimary && (
+                    <span role="img" aria-label="Recommandé" className="text-sm text-yellow-200 font-black">★</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                      isActive
+                        ? `bg-gradient-to-r ${option.gradient} scale-150 shadow-lg`
+                        : 'bg-slate-400'
+                    }`}
+                  />
+                  <span className={`text-xs sm:text-sm transition-colors duration-300 ${
+                    isActive ? 'text-white/90 font-medium' : 'text-slate-300'
+                  }`}>
+                    {option.description}
+                  </span>
+                </div>
+              </div>
+              <div className="hidden lg:flex flex-col items-center justify-center gap-3 w-full">
+                <h3
+                  className={`text-sm font-semibold transition-all duration-300 ${
+                    isActive
+                      ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
+                      : 'text-white/90'
+                  }`}
+                >
+                  {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Où suis-je' : option.title}
+                </h3>
+              </div>
+              <div className="flex-shrink-0 ml-2 lg:hidden">
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center bg-white/10 transition-all duration-300 ${
+                    isActive ? 'bg-gradient-to-br from-white/60 to-white/20 scale-110 ring-2 ring-white/40 shadow-lg' : ''
+                  }`}
+                  style={{
+                    boxShadow: isActive ? `0 0 10px ${option.glowColor}` : undefined,
+                  }}
+                >
+                  <ArrowRight
+                    className={`w-4 h-4 text-white transition-transform duration-300 ${
+                      isActive ? 'translate-x-1 scale-125 drop-shadow-sm' : ''
+                    }`}
+                    aria-hidden="true"
+                  />
+                </div>
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// Composant LandingFooter intégré
+const LandingFooter: React.FC = () => {
+  return (
+    <footer className="py-4 px-4 text-center">
+      <p className="text-xs text-white/50">
+        © 2026 Partywall - Tous droits réservés
+      </p>
+    </footer>
+  );
+};
 
 const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = false }) => {
   const isMobile = useIsMobile();
@@ -31,7 +422,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     logoUrl: defaultSettings.logo_url
   });
 
-  // Déterminer le titre à afficher : nom de l'événement en priorité, sinon event_title
   const displayTitle = useMemo(() => {
     if (currentEvent?.name) {
       return currentEvent.name;
@@ -39,8 +429,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     return uiConfig.title;
   }, [currentEvent?.name, uiConfig.title]);
 
-  // Déterminer le sous-titre à afficher : description de l'événement en priorité, sinon event_subtitle
-  // Limité à 100 caractères
   const displaySubtitle = useMemo(() => {
     if (currentEvent?.description) {
       const description = currentEvent.description;
@@ -54,17 +442,13 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
   useEffect(() => {
     setMounted(true);
-    
-    // Vérifier si l'utilisateur a un profil
     const userName = getCurrentUserName();
     const userAvatar = getCurrentUserAvatar();
     setHasUserProfile(!!(userName && userAvatar));
   }, []);
 
   useEffect(() => {
-    // Initial Load - seulement si un événement est sélectionné
     if (!currentEvent?.id) {
-      // Réinitialiser aux valeurs par défaut si pas d'événement
       setUiConfig({
         title: defaultSettings.event_title,
         subtitle: defaultSettings.event_subtitle,
@@ -91,7 +475,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       }));
     });
 
-    // Realtime Subscription
     const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
       setUiConfig(prev => ({
         title: newSettings.event_title ?? prev.title,
@@ -111,7 +494,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
   }, [currentEvent?.id]);
 
   useEffect(() => {
-    // Écouter les changements de localStorage pour mettre à jour le profil
     const handleStorageChange = () => {
       const userName = getCurrentUserName();
       const userAvatar = getCurrentUserAvatar();
@@ -119,7 +501,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     };
 
     window.addEventListener('storage', handleStorageChange);
-    // Vérifier périodiquement (pour les changements dans le même onglet)
     const interval = setInterval(handleStorageChange, 1000);
 
     return () => {
@@ -128,7 +509,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     };
   }, []);
 
-  // Options de navigation optimisées pour mobile/kiosk
   const navigationOptions = useMemo(() => {
     const options = [
       {
@@ -178,7 +558,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       }}
       aria-label="Landing page Party Wall"
     >
-      {/* Background Image - Responsive */}
+      {/* Background Image */}
       <img
         src={
           isMobile
@@ -193,10 +573,10 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         }}
       />
 
-      {/* Overlay sombre pour améliorer la lisibilité */}
+      {/* Overlay sombre */}
       <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
 
-      {/* Top Right Buttons - Desktop only */}
+      {/* Top Right Buttons - Bouton de contrôle à droite */}
       <TopRightButtons
         onSelectMode={onSelectMode}
         isAdminAuthenticated={isAdminAuthenticated}
@@ -212,29 +592,13 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           : 'pt-16 sm:pt-20 md:pt-20 lg:pt-16 py-4 sm:py-6 md:py-6 lg:py-4'
       }`}>
         
-        {/* Hero Section - Header uniquement si pas d'événement sélectionné */}
-        {!currentEvent && (
-          <div className="flex-shrink-0 w-full">
-            <LandingHeader
-              isAuthenticated={isAdminAuthenticated}
-              onAdminClick={() => {}}
-              onScrollToSection={() => {}}
-            />
-          </div>
-        )}
-
-        {/* Logo et titre centrés si événement sélectionné - Style cohérent avec splash screen */}
+        {/* Logo et titre centrés si événement sélectionné */}
         {currentEvent && (
           <div className="flex-shrink-0 w-full flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-4 lg:gap-3 mb-3 sm:mb-4 md:mb-4 lg:mb-2 px-2">
-            {/* Logo Container - Style splash screen */}
             <div className="relative mb-4 sm:mb-5 md:mb-5 lg:mb-3 animate-[fadeInScale_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]">
               <div className="relative flex items-center justify-center">
-                {/* Glow effect */}
                 <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
-                
-                {/* Icon Wrapper avec Camera et Sparkles */}
                 <div className="relative flex items-center justify-center">
-                  {/* Camera Icon - Responsive sizes */}
                   <svg 
                     className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2]" 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -248,8 +612,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                     <circle cx="12" cy="13" r="3"/>
                   </svg>
-                  
-                  {/* Sparkles Icon - Responsive sizes */}
                   <svg 
                     className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#fbcfe8] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] z-[3] animate-[sparklePulse_2s_ease-in-out_infinite]" 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -270,7 +632,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
               </div>
             </div>
             
-            {/* Logo ou Titre de l'événement - Style splash screen - Responsive */}
             {uiConfig.logoUrl ? (
               <div className="relative mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
                 <img
@@ -293,7 +654,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
               </h1>
             )}
             
-            {/* Sous-titre/Description de l'événement - Style splash screen - Responsive */}
             {displaySubtitle && (
               <p className="font-['Outfit',sans-serif] text-[clamp(0.75rem,3vw,0.95rem)] sm:text-[clamp(0.875rem,2.5vw,1rem)] md:text-[clamp(0.95rem,2vw,1rem)] lg:text-[clamp(0.95rem,1.5vw,1.05rem)] font-normal text-white/75 text-center text-shadow-[0_2px_10px_rgba(0,0,0,0.4)] max-w-2xl mx-auto leading-relaxed lg:leading-snug px-3 sm:px-4 mb-0 lg:mb-0 animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.6s_both]">
                 {displaySubtitle}
@@ -302,7 +662,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           </div>
         )}
 
-        {/* Mobile Buttons Row - Below title on mobile */}
+        {/* Mobile Buttons Row */}
         <div className="flex-shrink-0 w-full flex justify-center px-2 sm:px-0 lg:mb-1">
           <MobileButtons
             onSelectMode={onSelectMode}
@@ -313,7 +673,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         </div>
 
-        {/* Navigation Cards - Centered and Enhanced - Responsive */}
+        {/* Navigation Cards */}
         <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-2 sm:py-4 md:py-3 lg:py-2 px-2 sm:px-4 min-h-0">
           <NavigationCards
             options={navigationOptions}
@@ -322,13 +682,13 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         </div>
 
-        {/* Footer - Responsive - Compact sur desktop */}
+        {/* Footer */}
         <div className="flex-shrink-0 mt-auto pb-2 sm:pb-3 md:pb-2 lg:pb-1 px-2 sm:px-4">
           <LandingFooter />
         </div>
       </main>
 
-      {/* Floating Particles Effect - Réduit sur mobile pour performance */}
+      {/* Floating Particles Effect */}
       <div className="fixed inset-0 pointer-events-none z-[1]">
         {[...Array(isMobile ? 3 : 6)].map((_, i) => (
           <div
@@ -343,7 +703,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           />
         ))}
       </div>
-
     </div>
   );
 };
