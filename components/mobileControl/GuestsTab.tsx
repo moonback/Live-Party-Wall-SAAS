@@ -129,14 +129,8 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
       setSwipeStates(prev => {
         const swipeState = prev.get(guestId);
         
-        // Si swipe gauche suffisant (> 120px), supprimer directement
-        if (swipeState && deltaX < -120) {
-          const guest = guests.find(g => g.id === guestId);
-          if (guest) {
-            handleDelete(guestId, guest.name);
-          }
-        } else if (swipeState && deltaX < -80) {
-          // Si swipe entre 80px et 120px, afficher la confirmation
+        // Si swipe gauche suffisant (> 80px), afficher la confirmation
+        if (swipeState && deltaX < -80) {
           setShowDeleteConfirm(guestId);
         }
         
@@ -216,7 +210,7 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
             const isSwipingLeft = swipeOffset < 0;
             const swipeDistance = Math.abs(swipeOffset);
             const swipePercentage = Math.min(swipeDistance / 150, 1); // Max 150px pour 100%
-            const isDeleteThreshold = swipeDistance >= 120; // Seuil de suppression directe
+            const isDeleteThreshold = swipeDistance >= 80; // Seuil de confirmation de suppression
             
             return (
               <div
