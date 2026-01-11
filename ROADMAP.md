@@ -181,8 +181,8 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
 - [ ] **Amélioration IA**
   - [ ] Détection d'émotions
   - [ ] Suggestions de tags
-  - [ ] Amélioration automatique plus poussée
-  - [ ] Traduction multilingue des légendes
+  - [x] Amélioration automatique plus poussée
+  - [x] Traduction multilingue des légendes
 
 - [ ] **Analytics avancés**
   - [ ] Graphiques de tendances

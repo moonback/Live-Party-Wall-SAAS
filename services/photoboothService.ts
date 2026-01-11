@@ -53,7 +53,8 @@ export const submitPhoto = async ({
   // Analyse IA et génération de légende
   const aiResult = await analyzeAndCaptionImage(
     imageForAnalysis,
-    eventSettings.caption_generation_enabled ? eventSettings.event_context : null
+    eventSettings.caption_generation_enabled ? eventSettings.event_context : null,
+    eventSettings.caption_language || 'fr' // Langue pour la traduction
   );
   
   // Vérifier la modération
@@ -88,9 +89,11 @@ export const submitPhoto = async ({
       });
       
       // Passer les suggestions d'amélioration de l'IA pour un traitement ciblé
+      // Mode agressif activé pour améliorations plus poussées
       finalImage = await enhanceImageQuality(
         imageForAnalysis,
-        analysis.suggestedImprovements
+        analysis.suggestedImprovements,
+        true // Mode agressif activé
       );
       
       logger.info('Optimisation de la qualité terminée avec succès', {

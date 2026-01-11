@@ -28,6 +28,7 @@ export interface EventSettings {
   auto_carousel_enabled: boolean;
   auto_carousel_delay: number; // Délai en secondes avant activation du carrousel
   aftermovies_enabled: boolean;
+  caption_language: string; // Code langue ISO 639-1 (ex: 'fr', 'en', 'es', 'de', 'it', 'pt')
 }
 
 export const defaultSettings: EventSettings = {
@@ -55,7 +56,8 @@ export const defaultSettings: EventSettings = {
   logo_watermark_enabled: false,
   auto_carousel_enabled: true,
   auto_carousel_delay: 20, // 20 secondes par défaut
-  aftermovies_enabled: true
+  aftermovies_enabled: true,
+  caption_language: 'fr' // Français par défaut
 };
 
 /**

@@ -856,6 +856,36 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                         )}
                       </div>
                       <p className="text-xs text-slate-400 mt-1">Génère automatiquement une légende contextuelle pour chaque photo avec IA Gemini.</p>
+                      {localConfig.caption_generation_enabled && (
+                        <div className="mt-3 pt-3 border-t border-slate-700">
+                          <label className="block text-xs font-medium text-slate-300 mb-2">
+                            Langue des légendes
+                          </label>
+                          <select
+                            name="caption_language"
+                            value={localConfig.caption_language || 'fr'}
+                            onChange={handleConfigChange}
+                            className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          >
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="de">Deutsch</option>
+                            <option value="it">Italiano</option>
+                            <option value="pt">Português</option>
+                            <option value="nl">Nederlands</option>
+                            <option value="pl">Polski</option>
+                            <option value="ru">Русский</option>
+                            <option value="ja">日本語</option>
+                            <option value="zh">中文</option>
+                            <option value="ko">한국어</option>
+                            <option value="ar">العربية</option>
+                          </select>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Les légendes seront traduites dans cette langue
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </label>
                 </div>
