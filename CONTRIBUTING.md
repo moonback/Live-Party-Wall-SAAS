@@ -47,7 +47,7 @@ Merci de votre intérêt pour contribuer à Live Party Wall ! Ce guide vous aide
 
 ### Signaler un bug
 
-1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/votre-repo/issues)
+1. **Vérifier** que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/moonback/Live-Party-Wall-SAAS/issues)
 2. **Créer une nouvelle issue** avec le template suivant :
 
 ```markdown
@@ -121,7 +121,7 @@ Toute autre information pertinente.
 
 ```bash
 # Cloner votre fork
-git clone https://github.com/votre-username/Live-Party-Wall-SAAS.git
+git clone https://github.com/moonback/Live-Party-Wall-SAAS.git
 cd Live-Party-Wall-SAAS
 
 # Installer les dépendances

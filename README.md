@@ -15,7 +15,7 @@
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE.md)
 
-[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) • [✨ Request Feature](https://github.com/votre-username/Live-Party-Wall-SAAS/issues)
+[🚀 Démo](#) • [📖 Documentation](#documentation-complémentaire) • [🐛 Report Bug](https://github.com/moonback/Live-Party-Wall-SAAS/issues) • [✨ Request Feature](https://github.com/moonback/Live-Party-Wall-SAAS/issues)
 
 </div>
 
@@ -191,7 +191,7 @@ Clé API Google Gemini
 
 ```bash
 # 1. Cloner le projet
-git clone https://github.com/votre-username/Live-Party-Wall-SAAS.git
+git clone https://github.com/moonback/Live-Party-Wall-SAAS.git
 cd Live-Party-Wall-SAAS
 
 # 2. Installer les dépendances
@@ -727,7 +727,7 @@ Les fichiers de distribution sont dans `release/`.
 
 ## 🐛 Signaler un bug
 
-Ouvrez une [issue](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) avec :
+Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec :
 - Description du bug
 - Étapes pour reproduire
 - Comportement attendu vs actuel
@@ -735,7 +735,7 @@ Ouvrez une [issue](https://github.com/votre-username/Live-Party-Wall-SAAS/issues
 
 ## ✨ Proposer une fonctionnalité
 
-Ouvrez une [issue](https://github.com/votre-username/Live-Party-Wall-SAAS/issues) avec le label `enhancement` :
+Ouvrez une [issue](https://github.com/moonback/Live-Party-Wall-SAAS/issues) avec le label `enhancement` :
 - Description détaillée
 - Cas d'usage
 - Bénéfices attendus
@@ -748,7 +748,7 @@ Si ce projet vous est utile, n'hésitez pas à ⭐ le repo !
 
 **[⬆ Retour en haut](#-live-party-wall)**
 
-Made with ❤️ by [Votre Nom](https://github.com/votre-username)
+Made with ❤️ by [moonback](https://github.com/moonback)
 
 </div>
 
@@ -764,6 +764,6 @@ Ce projet est sous licence MIT. Voir [LICENSE.md](./LICENSE.md) pour plus de dé
 
 **[⬆ Retour en haut](#-live-party-wall)**
 
-Made with ❤️ by [Votre Nom](https://github.com/votre-username)
+Made with ❤️ by [moonback](https://github.com/moonback)
 
 </div>
