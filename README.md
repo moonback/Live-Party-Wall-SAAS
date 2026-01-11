@@ -138,12 +138,16 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── stats/             # Analytics
 │   ├── admin/             # Dashboard admin
 │   ├── photobooth/        # Photobooth avec caméra
-│   └── rgpd/              # Composants RGPD (consentement, politique, gestion données)
+│   ├── rgpd/              # Composants RGPD (consentement, politique, gestion données)
+│   ├── LicenseManager.tsx # Gestionnaire de licences
+│   ├── LicensePasswordGate.tsx # Protection par mot de passe
+│   └── LicenseBlock.tsx    # Écran de blocage licence
 │
 ├── 🔧 services/            # Logique métier isolée
 │   ├── supabaseClient.ts  # Configuration Supabase
 │   ├── photoService.ts    # CRUD photos, likes
 │   ├── geminiService.ts   # Intégration IA
+│   ├── licenseService.ts  # Gestion des licences
 │   ├── aftermovieService.ts  # Génération timelapse
 │   ├── aftermovieShareService.ts  # Upload, partage, téléchargements
 │   ├── gamificationService.ts  # Badges, points, classements
@@ -154,6 +158,7 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── AuthContext.tsx    # Authentification
 │   ├── EventContext.tsx   # Multi-tenant
 │   ├── PhotosContext.tsx  # Photos avec Realtime
+│   ├── LicenseContext.tsx # Validation des licences
 │   └── ...
 │
 ├── 🪝 hooks/               # Hooks personnalisés
@@ -163,6 +168,7 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │
 ├── 🗄️ supabase/            # Scripts SQL
 │   ├── supabase_complete_setup.sql
+│   ├── supabase_licenses_setup.sql  # Système de licences
 │   ├── supabase_aftermovies_migration.sql
 │   ├── supabase_aftermovies_enabled_migration.sql
 │   ├── supabase_aftermovies_download_count_migration.sql
@@ -220,6 +226,10 @@ VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
 # Google Gemini API
 # Obtenez votre clé sur https://makersuite.google.com/app/apikey
 GEMINI_API_KEY=votre_cle_api_gemini
+
+# License Manager Password (optionnel)
+# Mot de passe pour accéder au gestionnaire de licences (défaut: "licence")
+VITE_LICENSE_MANAGER_PASSWORD=licence
 ```
 
 **Note** : Les variables préfixées par `VITE_` sont accessibles côté client. La clé Gemini est utilisée côté client pour les appels API directs.
@@ -236,6 +246,7 @@ GEMINI_API_KEY=votre_cle_api_gemini
    - Allez dans **SQL Editor**
    - Copiez et exécutez le contenu de `supabase/supabase_complete_setup.sql`
    - Ce script crée toutes les tables, politiques RLS, indexes et buckets Storage
+   - **Important** : Exécutez également `supabase/supabase_licenses_setup.sql` pour activer le système de licences
 
 3. **Activer Realtime** :
    - Allez dans **Database > Replication**
@@ -248,6 +259,7 @@ GEMINI_API_KEY=votre_cle_api_gemini
      - `photo_battles`
      - `aftermovies`
      - `event_organizers`
+     - `licenses` (pour le système de licences)
 
 4. **Créer un compte administrateur** :
    - Allez dans **Authentication > Users**
@@ -291,6 +303,7 @@ La base de données utilise **PostgreSQL** via Supabase avec une architecture mu
 | **photo_battles** | Duels entre photos | ← events, photos |
 | **aftermovies** | Vidéos timelapse générées | ← events |
 | **blocked_guests** | Invités temporairement bloqués | ← events |
+| **licenses** | Licences utilisateur avec expiration | ← auth.users |
 
 ### 🔒 Sécurité
 
@@ -393,6 +406,7 @@ Partywall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
 - 🎪 Multi-événements (SaaS)
 - 🔐 Gestion d'équipe avec rôles
 - 👥 Owner, Organizer, Viewer
+- 🔑 **Système de licences** - Gestion des licences utilisateur avec expiration automatique
 
 ### Modération
 - 📋 Liste complète des photos
@@ -466,6 +480,46 @@ Partywall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
   - Mode Battle, Retrouve-moi, Mode Collage
   - Effets visuels avec particules, glow et animations fluides
   - Feedback immédiat pour les invités sur grand écran
+- 🔑 **Onglet Licence** - Affichage de la licence actuelle, statut, expiration et jours restants
+
+### 🔑 Système de licences
+
+Partywall inclut un système de licences complet pour gérer l'accès à l'application :
+
+#### Fonctionnalités
+- ✅ **Validation automatique** - Vérification de la validité de la licence au démarrage et toutes les 5 minutes
+- ✅ **Blocage automatique** - L'application est bloquée si la licence est expirée ou invalide
+- ✅ **Gestion centralisée** - Interface d'administration pour créer, modifier et supprimer les licences
+- ✅ **Multi-utilisateurs** - Chaque utilisateur peut avoir sa propre licence
+- ✅ **Statuts flexibles** - Licences actives, expirées, suspendues ou annulées
+- ✅ **Suivi détaillé** - Historique des vérifications, dates d'activation et d'expiration
+
+#### Gestionnaire de licences
+- 🔐 **Protection par mot de passe** - Accès sécurisé via mot de passe (défaut: "licence")
+- 🌐 **Route protégée** - Accessible uniquement via `?mode=license-management`
+- 👥 **Sélection d'utilisateurs** - Interface de recherche et sélection d'utilisateurs
+- 📝 **CRUD complet** - Création, modification, suppression de licences
+- 🔍 **Recherche et filtres** - Recherche par utilisateur, filtre par statut
+- 📊 **Vue détaillée** - Affichage complet des informations de licence (statut, expiration, notes)
+
+#### Configuration
+- **Mot de passe par défaut** : `licence`
+- **Personnalisation** : Variable d'environnement `VITE_LICENSE_MANAGER_PASSWORD`
+- **Session** : Authentification stockée dans `sessionStorage` (expire à la fermeture du navigateur)
+
+#### Utilisation
+1. **Accéder au gestionnaire** : `?mode=license-management`
+2. **Saisir le mot de passe** : Par défaut "licence" (configurable via `.env`)
+3. **Créer une licence** : Sélectionner un utilisateur, définir la date d'expiration
+4. **Gérer les licences** : Modifier, suspendre ou supprimer des licences existantes
+
+#### Blocage de l'application
+Si la licence est expirée ou invalide :
+- 🚫 L'application affiche un écran de blocage
+- 📅 Affichage de la date d'expiration et des jours restants
+- 🔄 Bouton de réessai pour vérifier à nouveau
+- 🔑 Accès au gestionnaire de licences (si authentifié)
+- 🚪 Bouton de déconnexion
 
 ### 🎬 Aftermovies - Génération de vidéos souvenirs
 
