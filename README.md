@@ -315,14 +315,15 @@ Pour plus de détails, consultez [DB_SCHEMA.md](./DB_SCHEMA.md).
 
 ## 🤖 Intelligence Artificielle
 
-Live Party Wall intègre **Google Gemini 3 Flash** pour :
+Live Party Wall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
 
 | Fonctionnalité | Description |
 |----------------|-------------|
 | 🛡️ **Modération automatique** | Détection de contenu inapproprié (toujours actif) |
 | ✍️ **Génération de légendes** | Légendes personnalisées selon type d'événement (max 12 mots) |
+| 🌍 **Traduction multilingue** | Légendes traduites automatiquement dans 14 langues (FR, EN, ES, DE, IT, PT, NL, PL, RU, JA, ZH, KO, AR) |
 | 🏷️ **Tags sémantiques** | Amélioration de la recherche et catégorisation |
-| ⚡ **Amélioration qualité** | Optimisation automatique des images de faible qualité |
+| ⚡ **Amélioration qualité avancée** | Optimisation automatique poussée : débruitage, correction balance des blancs, netteté améliorée, correction exposition |
 | 🎯 **Contexte adaptatif** | Personnalisation selon le contexte (mariage, anniversaire...) |
 
 ---
@@ -402,6 +403,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 ### Paramètres d'événement
 - ✅ Activation/désactivation de fonctionnalités
 - 🤖 Configuration contexte IA
+- 🌍 **Langue des légendes** - Sélection parmi 14 langues pour la traduction automatique
 - 📢 Messages d'alerte
 - 🖼️ Images de fond personnalisées (desktop et mobile)
 - 🎨 Logo personnalisé (remplace le titre sur la landing page)
@@ -459,6 +461,7 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 📊 Stats temps réel
 - ⚔️ Création de battles
 - 🎨 Configuration complète (fond, logo, paramètres)
+- 🌍 **Configuration langue légendes** - Sélection de la langue pour les légendes IA
 - 🎬 **Notifications visuelles** - Animations sur le mur lors de l'activation des fonctionnalités :
   - Mode Battle, Retrouve-moi, Mode Collage
   - Effets visuels avec particules, glow et animations fluides
@@ -591,6 +594,8 @@ Live Party Wall est **100% conforme au RGPD** avec :
 - ✅ **Pagination côté serveur** - Support de milliers de photos
 - ✅ **Debounce Realtime** - Réduction des re-renders
 - ✅ **Subscriptions optimisées** - Gestion automatique du cleanup
+- ✅ **Amélioration automatique avancée** - Débruitage, balance des blancs, netteté améliorée
+- ✅ **Traduction multilingue** - Support de 14 langues pour les légendes IA
 
 ### 🔮 Optimisations futures
 
