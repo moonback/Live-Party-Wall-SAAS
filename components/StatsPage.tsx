@@ -143,8 +143,10 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
       await refreshPhotos();
       
       // Si onPhotosUpdate est fourni, recharger aussi depuis le service
-      if (onPhotosUpdate) {
-        const updatedPhotos = await getPhotos();
+      if (onPhotosUpdate && currentEvent?.id) {
+        const result = await getPhotos(currentEvent.id, { all: true });
+        // Si all: true, getPhotos retourne Photo[] (pas PaginatedPhotosResult)
+        const updatedPhotos = Array.isArray(result) ? result : result.photos;
         onPhotosUpdate(updatedPhotos);
         // Recharger les réactions avec les nouvelles photos
         await loadReactions(updatedPhotos);
