@@ -23,7 +23,7 @@ interface AccueilProps {
 }
 
 /**
- * Landing page complète pour Live Party Wall SaaS
+ * Landing page complète pour Partywall SaaS
  * Page d'accueil détaillée avec présentation complète du produit
  */
 const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {

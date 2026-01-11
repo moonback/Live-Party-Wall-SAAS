@@ -98,7 +98,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
                 <div className="absolute inset-0 bg-pink-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity rounded-full"></div>
                 <img
                   src={getStaticAssetPath('icon.png')}
-                  alt="Live Party Wall"
+                  alt="Partywall"
                   className="relative w-8 h-8 sm:w-9 sm:h-9 z-10"
                   onError={(e) => {
                     // Fallback si l'image ne charge pas
@@ -257,7 +257,7 @@ export const LandingHeader: React.FC<LandingHeaderProps> = ({
               </button>
               
               <p className="text-center text-gray-500 text-sm mt-6">
-                © 2026 Live Party Wall. Tous droits réservés.
+                © 2026 Partywall. Tous droits réservés.
               </p>
             </motion.div>
           </motion.div>

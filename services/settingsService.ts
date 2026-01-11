@@ -32,7 +32,7 @@ export interface EventSettings {
 }
 
 export const defaultSettings: EventSettings = {
-  event_title: 'Live Party Wall',
+  event_title: 'Partywall',
   event_subtitle: '2026',
   scroll_speed: 'normal',
   slide_transition: 'fade',

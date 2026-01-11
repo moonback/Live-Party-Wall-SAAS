@@ -105,7 +105,7 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
             transition={{ delay: 0.2 }}
             className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto mb-8"
           >
-            Notre structure tarifaire n'est pas un coût, mais un investissement dans une expérience supérieure, accessible et mesurable. Découvrez pourquoi Live Party Wall rend les alternatives traditionnelles irrationnelles d'un point de vue budgétaire.
+            Notre structure tarifaire n'est pas un coût, mais un investissement dans une expérience supérieure, accessible et mesurable. Découvrez pourquoi Partywall rend les alternatives traditionnelles irrationnelles d'un point de vue budgétaire.
           </motion.p>
         </div>
       </section>
@@ -217,7 +217,7 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
                             Usage récurrent ? Passez à l'illimité.
                         </h3>
                         <p className="text-gray-300">
-                            Transformez Live Party Wall en un outil de travail stratégique avec nos abonnements mensuels sans engagement.
+                            Transformez Partywall en un outil de travail stratégique avec nos abonnements mensuels sans engagement.
                         </p>
                     </div>
                     
@@ -397,7 +397,7 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
               transition={{ delay: 0.2 }}
               className="text-lg text-gray-300 max-w-2xl mx-auto mb-8"
             >
-              Live Party Wall n'est pas un produit de plus sur le marché ; c'est une réponse pertinente et puissante aux besoins actuels de digitalisation, d'engagement et de simplicité dans l'événementiel.
+              Partywall n'est pas un produit de plus sur le marché ; c'est une réponse pertinente et puissante aux besoins actuels de digitalisation, d'engagement et de simplicité dans l'événementiel.
             </motion.p>
           </div>
 
@@ -434,7 +434,7 @@ export const Pricing: React.FC<PricingProps> = ({ onAdminClick }) => {
                     Diagnostiquez la Douleur, Vendez le Remède
                   </h4>
                   <p className="text-gray-300">
-                    Ne listez pas les fonctionnalités. Identifiez le "pain point" principal du client (coût, logistique, engagement) et positionnez Live Party Wall comme la solution évidente.
+                    Ne listez pas les fonctionnalités. Identifiez le "pain point" principal du client (coût, logistique, engagement) et positionnez Partywall comme la solution évidente.
                   </p>
                 </div>
               </div>

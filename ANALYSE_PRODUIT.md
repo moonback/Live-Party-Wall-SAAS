@@ -1,4 +1,4 @@
-# 🎯 Analyse Produit - Live Party Wall
+# 🎯 Analyse Produit - Partywall
 
 **Date** : 2026-01-15  
 **Version analysée** : Production actuelle  
@@ -8,7 +8,7 @@
 
 ## 📊 EXÉCUTIF SUMMARY
 
-**Live Party Wall** est une plateforme SaaS solide techniquement avec une architecture moderne (React 19, Supabase, Gemini AI) et des fonctionnalités avancées. Le produit présente un **potentiel viral fort** mais souffre de **frictions UX** et d'un **manque de clarté** dans le parcours utilisateur initial. L'analyse révèle des opportunités majeures d'amélioration de l'engagement, de la différenciation et de la monétisation.
+**Partywall** est une plateforme SaaS solide techniquement avec une architecture moderne (React 19, Supabase, Gemini AI) et des fonctionnalités avancées. Le produit présente un **potentiel viral fort** mais souffre de **frictions UX** et d'un **manque de clarté** dans le parcours utilisateur initial. L'analyse révèle des opportunités majeures d'amélioration de l'engagement, de la différenciation et de la monétisation.
 
 **Score global** : 7.5/10
 - **Technique** : 9/10 ⭐⭐⭐⭐⭐
@@ -635,7 +635,7 @@ export const generateEventStory = async (photos: Photo[]): Promise<Story> => {
 4. **LONG TERME** : Développer l'écosystème (API, intégrations)
 
 ### 💡 Vision Produit
-**Live Party Wall** peut devenir **LA référence** pour les événements interactifs en temps réel. Le produit a toutes les bases techniques. Il faut maintenant :
+**Partywall** peut devenir **LA référence** pour les événements interactifs en temps réel. Le produit a toutes les bases techniques. Il faut maintenant :
 1. **Simplifier** l'expérience utilisateur
 2. **Amplifier** l'engagement et la viralité
 3. **Monétiser** intelligemment avec des features premium

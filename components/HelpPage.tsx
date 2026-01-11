@@ -63,7 +63,7 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
       content: (
         <div className="space-y-4 text-slate-300">
           <p className="text-base leading-relaxed">
-            Bienvenue sur <span className="text-pink-400 font-semibold">Live Party Wall</span> ! 
+            Bienvenue sur <span className="text-pink-400 font-semibold">Partywall</span> ! 
             Cette application vous permet de partager vos meilleurs moments en temps réel avec tous les invités.
           </p>
           <div className="space-y-3">
@@ -908,7 +908,7 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
               Centre d'aide
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              Tout ce que vous devez savoir pour utiliser Live Party Wall
+              Tout ce que vous devez savoir pour utiliser Partywall
             </p>
           </div>
         </div>
@@ -1033,7 +1033,7 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
             </button>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Live Party Wall © 2026
+            Partywall © 2026
           </p>
         </div>
       </div>

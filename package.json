@@ -1,5 +1,5 @@
 {
-  "name": "live-party-wall",
+  "name": "Partywall",
   "private": true,
   "version": "1.1.0",
   "type": "module",
@@ -52,7 +52,7 @@
   },
   "build": {
     "appId": "com.livepartywall.app",
-    "productName": "Live Party Wall",
+    "productName": "Partywall",
     "directories": {
       "output": "release"
     },

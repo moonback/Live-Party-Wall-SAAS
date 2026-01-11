@@ -1,6 +1,6 @@
-# 👥 Guide Invité - Live Party Wall
+# 👥 Guide Invité - Partywall
 
-Guide complet pour les invités utilisant Live Party Wall lors d'un événement.
+Guide complet pour les invités utilisant Partywall lors d'un événement.
 
 ---
 

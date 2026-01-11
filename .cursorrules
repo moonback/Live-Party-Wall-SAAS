@@ -1,8 +1,8 @@
-# Live Party Wall - Cursor Rules
+# Partywall - Cursor Rules
 
 ## 📋 Contexte du Projet
 
-Live Party Wall est une application web React en temps réel qui permet aux invités d'un événement de partager instantanément leurs photos sur grand écran. L'application utilise l'IA (Google Gemini) pour modérer, améliorer et légender automatiquement chaque photo.
+Partywall est une application web React en temps réel qui permet aux invités d'un événement de partager instantanément leurs photos sur grand écran. L'application utilise l'IA (Google Gemini) pour modérer, améliorer et légender automatiquement chaque photo.
 
 **Objectifs principaux** :
 - Expérience photobooth interactive pour événements

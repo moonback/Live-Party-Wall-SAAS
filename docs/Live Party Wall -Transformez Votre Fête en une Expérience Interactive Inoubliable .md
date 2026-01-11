@@ -1,8 +1,8 @@
-Live Party Wall : Transformez Votre Fête en une Expérience Interactive Inoubliable !
+Partywall : Transformez Votre Fête en une Expérience Interactive Inoubliable !
 
 1. Introduction : Vos Invités Deviennent les Stars de l'Événement
 
-Fini le temps où vos invités n'étaient que de simples spectateurs ! Avec Live Party Wall, ils deviennent les véritables créateurs de contenu de votre événement. Le concept est simple et puissant : chaque photo et vidéo qu'ils partagent propulse l'ambiance en s'affichant instantanément sur grand écran, créant une animation collective dynamique et engageante. Chaque invité participe activement à la construction d'une mémoire visuelle partagée.
+Fini le temps où vos invités n'étaient que de simples spectateurs ! Avec Partywall, ils deviennent les véritables créateurs de contenu de votre événement. Le concept est simple et puissant : chaque photo et vidéo qu'ils partagent propulse l'ambiance en s'affichant instantanément sur grand écran, créant une animation collective dynamique et engageante. Chaque invité participe activement à la construction d'une mémoire visuelle partagée.
 
 Pour y parvenir, vos convives disposent d'une panoplie d'outils créatifs pour laisser libre cours à leur imagination.
 
@@ -18,7 +18,7 @@ Mais la participation ne s'arrête pas à la création de contenu ; elle s'éten
 
 3. Une Ambiance Sociale et Ludique : Interagissez en Temps Réel
 
-Live Party Wall intègre des mécaniques inspirées des réseaux sociaux pour transformer votre fête en une véritable communauté éphémère, où chaque interaction compte.
+Partywall intègre des mécaniques inspirées des réseaux sociaux pour transformer votre fête en une véritable communauté éphémère, où chaque interaction compte.
 
 Fonctionnalité	Son Super-Pouvoir pour l'Ambiance
 Réactions Émojis	Les invités peuvent réagir à chaque photo avec 6 types d'émojis (❤️, 😂, 😢, 🔥, 😮, 👍). Les compteurs de réactions se mettent à jour en temps réel sur grand écran, montrant instantanément les publications les plus populaires.
@@ -39,7 +39,7 @@ Toutes ces contributions individuelles, interactions sociales et optimisations p
 
 5. La Fresque Numérique : Un Souvenir Collectif et Durable
 
-L'impact de Live Party Wall va bien au-delà des interactions en direct. La plateforme a été conçue pour créer un souvenir tangible, partageable et durable que tout le monde chérira longtemps après la fin de la fête.
+L'impact de Partywall va bien au-delà des interactions en direct. La plateforme a été conçue pour créer un souvenir tangible, partageable et durable que tout le monde chérira longtemps après la fin de la fête.
 
 * Projection sur Grand Écran L'affichage instantané des contributions sur la scène ou un mur principal crée une animation visuelle permanente qui captive l'audience et devient un point central de l'événement.
 * Téléchargement Facilité Chaque invité peut télécharger ses propres photos, mais aussi exporter une archive ZIP de l'ensemble de la galerie publique, garantissant que personne ne manque un seul instant de ce souvenir collectif.
@@ -47,4 +47,4 @@ L'impact de Live Party Wall va bien au-delà des interactions en direct. La plat
 
 6. Conclusion : Plus qu'une Animation, un Souvenir Partagé
 
-En faisant de vos invités les héros de la soirée, vous ne créez pas seulement une animation, mais une expérience collaborative où chaque participant ajoute sa touche personnelle à une fresque numérique vivante. Live Party Wall transforme un simple événement en un souvenir collectif puissant, vibrant et inoubliable, co-créé par tous ceux qui y ont participé.
+En faisant de vos invités les héros de la soirée, vous ne créez pas seulement une animation, mais une expérience collaborative où chaque participant ajoute sa touche personnelle à une fresque numérique vivante. Partywall transforme un simple événement en un souvenir collectif puissant, vibrant et inoubliable, co-créé par tous ceux qui y ont participé.

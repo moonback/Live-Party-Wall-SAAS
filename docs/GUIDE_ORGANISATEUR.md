@@ -1,6 +1,6 @@
-# 🎛️ Guide Organisateur - Live Party Wall
+# 🎛️ Guide Organisateur - Partywall
 
-Guide complet pour les organisateurs d'événements utilisant Live Party Wall.
+Guide complet pour les organisateurs d'événements utilisant Partywall.
 
 ---
 
@@ -24,7 +24,7 @@ Guide complet pour les organisateurs d'événements utilisant Live Party Wall.
 
 ### Connexion
 
-1. Accédez à la page d'accueil de Live Party Wall
+1. Accédez à la page d'accueil de Partywall
 2. Cliquez sur **"Je suis organisateur"** ou **"Admin"**
 3. Connectez-vous avec votre email et mot de passe
 4. Vous serez redirigé vers votre dashboard
@@ -51,7 +51,7 @@ Les invités peuvent accéder à votre événement via :
 
 ### Multi-événements (Architecture SaaS)
 
-Live Party Wall supporte la gestion de **plusieurs événements simultanément** :
+Partywall supporte la gestion de **plusieurs événements simultanément** :
 
 - **Sélection d'événement** : Utilisez le sélecteur en haut du dashboard pour basculer entre vos événements
 - **Création illimitée** : Créez autant d'événements que nécessaire
@@ -99,7 +99,7 @@ Accédez à la page **Analytics** pour :
 
 ### Modération automatique par IA
 
-Live Party Wall utilise **Google Gemini** pour modérer automatiquement le contenu :
+Partywall utilise **Google Gemini** pour modérer automatiquement le contenu :
 
 - ✅ **Toujours active** : La modération IA ne peut pas être désactivée
 - 🛡️ **Détection de contenu inapproprié** : Images, textes, contexte
@@ -164,7 +164,7 @@ Contrôlez quelles fonctionnalités sont disponibles pour vos invités :
 
 #### Logo personnalisé
 
-- Remplace le titre "Live Party Wall" sur la landing page
+- Remplace le titre "Partywall" sur la landing page
 - **Format recommandé** : PNG avec fond transparent
 - **Taille max** : 2MB
 - **Affichage** : Centré en haut de la page
@@ -343,7 +343,7 @@ Une fois l'aftermovie généré :
 
 ### Rôles disponibles
 
-Live Party Wall supporte 3 rôles pour la gestion d'équipe :
+Partywall supporte 3 rôles pour la gestion d'équipe :
 
 #### 👑 Owner (Propriétaire)
 - **Accès complet** : Toutes les fonctionnalités

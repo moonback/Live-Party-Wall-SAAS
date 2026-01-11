@@ -1,4 +1,4 @@
-# 💼 Live Party Wall — Offre Commerciale Complète
+# 💼 Partywall — Offre Commerciale Complète
 
 ## 🎯 Promesse de Valeur
 
@@ -8,7 +8,7 @@
 
 ## 📦 Offre Standard (Inclus dans tous les packs)
 
-✅ **Accès Live Party Wall** (1 événement)  
+✅ **Accès Partywall** (1 événement)  
 ✅ **QR Code unique** personnalisé  
 ✅ **Mur photo temps réel** (compatible TV / vidéoprojecteur)  
 ✅ **IA Google Gemini** : modération automatique + amélioration + légendes intelligentes  
@@ -86,7 +86,7 @@
 - **Branding léger** (logo, couleurs entreprise)
 - **Modération renforcée** (filtres personnalisés)
 - **Support prioritaire** (réponse sous 2h)
-- **Galerie white-label** (sans mention Live Party Wall)
+- **Galerie white-label** (sans mention Partywall)
 - Export professionnel
 - Statistiques basiques
 
@@ -157,9 +157,9 @@
 
 ---
 
-### 💡 **Solution — Présenter Live Party Wall**
+### 💡 **Solution — Présenter Partywall**
 
-> "Live Party Wall transforme **chaque invité en photobooth** via un simple QR code.  
+> "Partywall transforme **chaque invité en photobooth** via un simple QR code.  
 > Les photos apparaissent **en direct sur écran**, améliorées et légendées automatiquement par l'IA Google Gemini.  
 > Résultat : **100% des invités participent**, créent du contenu, et partagent sur les réseaux sociaux."
 
@@ -209,7 +209,7 @@
 **Objections courantes & réponses :**
 
 **"C'est trop cher"**  
-→ "Un photobooth coûte 3 000-5 000€. Live Party Wall fait mieux pour 10x moins cher."
+→ "Un photobooth coûte 3 000-5 000€. Partywall fait mieux pour 10x moins cher."
 
 **"Mes clients ne sont pas tech"**  
 → "C'est justement l'avantage : zéro app, juste un scan QR code. Même les moins tech y arrivent."
@@ -227,7 +227,7 @@
 |----------|------|------------|--------------|
 | **Photobooth physique** | 3 000 – 5 000€ | 30-40% | 2h + matériel |
 | **Animateur photo** | 800 – 1 500€ | 20-30% | Présent toute la soirée |
-| **Live Party Wall** | **149 – 790€** | **90-100%** | **5 minutes** |
+| **Partywall** | **149 – 790€** | **90-100%** | **5 minutes** |
 
 **➡️ Perçu comme une animation premium (valeur perçue : 1 000€+), vendu comme une évidence (149-790€).**
 

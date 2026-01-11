@@ -1,12 +1,12 @@
-Guide des fonctionnalités de Live Party Wall
+Guide des fonctionnalités de Partywall
 
 Introduction : Donnez vie à vos événements !
 
-Bienvenue dans l'univers de Live Party Wall, l'application qui transforme chaque événement en une expérience interactive où les invités deviennent les véritables créateurs de contenu. Fini les animations passives ! Notre vision est de permettre une animation collective et engageante, où chaque photo et vidéo partagée depuis un smartphone s'affiche en direct sur grand écran, créant un souvenir commun et inoubliable. Ce guide est conçu pour vous faire explorer toutes les fonctionnalités, que vous soyez un invité prêt à capturer l'instant ou un organisateur désireux de piloter une soirée mémorable.
+Bienvenue dans l'univers de Partywall, l'application qui transforme chaque événement en une expérience interactive où les invités deviennent les véritables créateurs de contenu. Fini les animations passives ! Notre vision est de permettre une animation collective et engageante, où chaque photo et vidéo partagée depuis un smartphone s'affiche en direct sur grand écran, créant un souvenir commun et inoubliable. Ce guide est conçu pour vous faire explorer toutes les fonctionnalités, que vous soyez un invité prêt à capturer l'instant ou un organisateur désireux de piloter une soirée mémorable.
 
 Comment ça marche ? La magie en quelques étapes
 
-Le fonctionnement de Live Party Wall est conçu pour être d'une simplicité déconcertante, garantissant une expérience fluide pour tous. Voici le processus en quatre étapes clés :
+Le fonctionnement de Partywall est conçu pour être d'une simplicité déconcertante, garantissant une expérience fluide pour tous. Voici le processus en quatre étapes clés :
 
 1. CRÉATION (Organisateur) L'organisateur crée et personnalise son événement en quelques clics depuis un tableau de bord intuitif. La mise en place est quasi instantanée.
 2. ACCÈS (Invités) Sans aucune application à télécharger ni compte à créer, les invités se connectent instantanément en scannant un QR code ou en visitant une simple URL.
@@ -19,7 +19,7 @@ Le fonctionnement de Live Party Wall est conçu pour être d'une simplicité dé
 
 1. Pour les Invités : Devenez la Star de la Soirée !
 
-Avec Live Party Wall, chaque invité passe du statut de spectateur à celui d'acteur principal de l'événement. Vous disposez d'une panoplie d'outils amusants pour créer, interagir et jouer.
+Avec Partywall, chaque invité passe du statut de spectateur à celui d'acteur principal de l'événement. Vous disposez d'une panoplie d'outils amusants pour créer, interagir et jouer.
 
 1.1. Partagez et Créez Vos Souvenirs
 
@@ -54,7 +54,7 @@ Ces outils transforment l'expérience de l'invité. Voyons maintenant comment l'
 
 2. Pour l'Organisateur : Pilotez une Expérience Inoubliable
 
-Live Party Wall vous donne les commandes avec des outils puissants mais simples pour animer, contrôler et immortaliser votre événement en toute sérénité.
+Partywall vous donne les commandes avec des outils puissants mais simples pour animer, contrôler et immortaliser votre événement en toute sérénité.
 
 2.1. Animez l'Événement en Direct
 
@@ -98,6 +98,6 @@ L'intelligence artificielle (Google Gemini) est le moteur qui tourne en coulisse
 
 Conclusion : Plus qu'une Fête, un Souvenir Collectif
 
-Live Party Wall est bien plus qu'une simple application ; c'est un créateur de souvenirs collectifs. En donnant à chaque invité le pouvoir de devenir un créateur, il transforme n'importe quel rassemblement en une expérience partagée, interactive et profondément mémorable, construite en temps réel par les sourires et les regards de tous les participants.
+Partywall est bien plus qu'une simple application ; c'est un créateur de souvenirs collectifs. En donnant à chaque invité le pouvoir de devenir un créateur, il transforme n'importe quel rassemblement en une expérience partagée, interactive et profondément mémorable, construite en temps réel par les sourires et les regards de tous les participants.
 
 Prêt à orchestrer la création de votre prochain souvenir inoubliable ?

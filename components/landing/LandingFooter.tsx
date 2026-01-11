@@ -14,7 +14,7 @@ export const LandingFooter: React.FC = () => {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
             
-            <span>© 2026 Live Party Wall</span>
+            <span>© 2026 Partywall</span>
             <span>Tous droits réservés</span>
             
           </div>

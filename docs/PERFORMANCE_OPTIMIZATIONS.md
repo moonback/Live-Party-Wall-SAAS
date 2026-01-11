@@ -1,6 +1,6 @@
-# 🚀 Optimisations de Performance - Live Party Wall
+# 🚀 Optimisations de Performance - Partywall
 
-Ce document décrit les optimisations de performance implémentées dans Live Party Wall.
+Ce document décrit les optimisations de performance implémentées dans Partywall.
 
 ## 📋 Table des matières
 

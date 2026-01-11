@@ -1,6 +1,6 @@
-# 🗺️ Roadmap - Live Party Wall
+# 🗺️ Roadmap - Partywall
 
-Feuille de route et fonctionnalités futures pour Live Party Wall.
+Feuille de route et fonctionnalités futures pour Partywall.
 
 ---
 
@@ -200,7 +200,7 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
 
 ## 🌟 Version 2.0 (Fonctionnalités avancées)
 
-**Objectif** : Transformer Live Party Wall en plateforme complète d'engagement événementiel.
+**Objectif** : Transformer Partywall en plateforme complète d'engagement événementiel.
 
 ### Fonctionnalités majeures
 

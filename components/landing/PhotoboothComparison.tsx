@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 /**
- * Section de comparaison entre location de photobooth traditionnel et Live Party Wall
+ * Section de comparaison entre location de photobooth traditionnel et Partywall
  */
 export const PhotoboothComparison: React.FC = () => {
   const photoboothTraditional = {
@@ -163,14 +163,14 @@ export const PhotoboothComparison: React.FC = () => {
             </div>
           </div>
 
-          {/* Live Party Wall - Coût */}
+          {/* Partywall - Coût */}
           <div className="bg-gradient-to-br from-pink-900/30 to-purple-900/30 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border-2 border-pink-500/50 shadow-lg shadow-pink-500/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-3xl -mr-16 -mt-16" />
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-pink-400" />
-                  <h3 className="text-xl font-bold text-white">Live Party Wall</h3>
+                  <h3 className="text-xl font-bold text-white">Partywall</h3>
                 </div>
                 <div className="px-2 py-1 bg-green-500/20 border border-green-500/30 rounded text-xs font-bold text-green-300">
                   BEST VALUE
@@ -262,14 +262,14 @@ export const PhotoboothComparison: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Live Party Wall - Colonne */}
+          {/* Partywall - Colonne */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             className="space-y-6"
           >
-            {/* Image de Live Party Wall */}
+            {/* Image de Partywall */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -278,12 +278,12 @@ export const PhotoboothComparison: React.FC = () => {
             >
               <img
                 src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=800"
-                alt="Live Party Wall - Mur de photos interactif"
+                alt="Partywall - Mur de photos interactif"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-pink-900/80 via-purple-900/40 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-white font-semibold text-sm">Live Party Wall</p>
+                <p className="text-white font-semibold text-sm">Partywall</p>
                 <p className="text-gray-200 text-xs">Solution moderne et interactive</p>
               </div>
             </motion.div>
@@ -292,7 +292,7 @@ export const PhotoboothComparison: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white flex items-center gap-3">
                   <Sparkles className="w-5 h-5 text-pink-400" />
-                  Live Party Wall
+                  Partywall
                 </h3>
                 <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
                   <span className="text-xs font-bold text-green-300">RECOMMANDÉ</span>
@@ -303,7 +303,7 @@ export const PhotoboothComparison: React.FC = () => {
               <div>
                 <h4 className="text-base font-semibold text-green-400 mb-4 flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  Pourquoi choisir Live Party Wall
+                  Pourquoi choisir Partywall
                 </h4>
                 <div className="space-y-2.5">
                   {livePartyWall.advantages.map((advantage, index) => (

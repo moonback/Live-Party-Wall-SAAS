@@ -1,6 +1,6 @@
-# 🏗️ Architecture - Live Party Wall
+# 🏗️ Architecture - Partywall
 
-Ce document décrit l'architecture technique complète de l'application Live Party Wall.
+Ce document décrit l'architecture technique complète de l'application Partywall.
 
 ---
 
@@ -19,7 +19,7 @@ Ce document décrit l'architecture technique complète de l'application Live Par
 
 ## 🎯 Vue d'ensemble
 
-Live Party Wall est une **application web SaaS** construite avec une architecture moderne et scalable :
+Partywall est une **application web SaaS** construite avec une architecture moderne et scalable :
 
 - **Frontend** : React 19 avec TypeScript, Vite, Tailwind CSS
 - **Backend** : Supabase (PostgreSQL, Storage, Realtime, Auth)

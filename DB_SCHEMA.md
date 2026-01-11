@@ -1,4 +1,4 @@
-# 🗄️ Schéma de Base de Données - Live Party Wall
+# 🗄️ Schéma de Base de Données - Partywall
 
 Documentation complète du schéma de base de données Supabase PostgreSQL.
 

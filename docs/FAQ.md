@@ -1,6 +1,6 @@
-# ❓ FAQ - Live Party Wall
+# ❓ FAQ - Partywall
 
-Foire aux questions complète pour Live Party Wall.
+Foire aux questions complète pour Partywall.
 
 ---
 
@@ -17,13 +17,13 @@ Foire aux questions complète pour Live Party Wall.
 
 ## 🌐 Général
 
-### Qu'est-ce que Live Party Wall ?
+### Qu'est-ce que Partywall ?
 
-Live Party Wall est une plateforme SaaS qui permet de créer un mur photo interactif en temps réel pour vos événements. Les invités peuvent partager leurs photos qui apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle.
+Partywall est une plateforme SaaS qui permet de créer un mur photo interactif en temps réel pour vos événements. Les invités peuvent partager leurs photos qui apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle.
 
 ### Pour quels types d'événements ?
 
-Live Party Wall convient à tous types d'événements :
+Partywall convient à tous types d'événements :
 - 💍 Mariages
 - 🎂 Anniversaires
 - 🏢 Événements d'entreprise
@@ -41,14 +41,14 @@ Live Party Wall convient à tous types d'événements :
 
 ### Est-ce gratuit ?
 
-Live Party Wall est open-source et gratuit. Vous devez cependant :
+Partywall est open-source et gratuit. Vous devez cependant :
 - Avoir un compte Supabase (gratuit disponible)
 - Avoir une clé API Google Gemini (gratuite disponible)
 - Héberger l'application (Vercel, Netlify, etc. - gratuit disponible)
 
 ### Puis-je l'utiliser sans connexion internet ?
 
-Non, Live Party Wall nécessite une connexion internet pour :
+Non, Partywall nécessite une connexion internet pour :
 - Synchroniser les photos en temps réel
 - Utiliser l'IA pour les légendes et la modération
 - Stocker les photos dans le cloud
@@ -96,7 +96,7 @@ Il n'y a pas de limite technique. Cependant, pour les très grands événements 
 
 ### Comment fonctionne la modération IA ?
 
-Live Party Wall utilise **Google Gemini** pour modérer automatiquement le contenu :
+Partywall utilise **Google Gemini** pour modérer automatiquement le contenu :
 - ✅ **Toujours active** : La modération IA ne peut pas être désactivée
 - 🛡️ **Détection de contenu inapproprié** : Images, textes, contexte
 - ⚡ **Temps réel** : Vérification avant publication
@@ -140,7 +140,7 @@ Les invités pourront voter et les résultats seront affichés en temps réel.
 
 ### Puis-je gérer plusieurs événements ?
 
-Oui ! Live Party Wall supporte la gestion de plusieurs événements simultanément. Utilisez le sélecteur d'événement en haut du dashboard pour basculer entre vos événements.
+Oui ! Partywall supporte la gestion de plusieurs événements simultanément. Utilisez le sélecteur d'événement en haut du dashboard pour basculer entre vos événements.
 
 ### Comment ajouter des organisateurs à mon équipe ?
 
@@ -260,7 +260,7 @@ Les photos sont stockées tant que l'événement est actif. L'organisateur peut 
 
 ### Comment fonctionne le temps réel ?
 
-Live Party Wall utilise **Supabase Realtime** (WebSockets) pour synchroniser :
+Partywall utilise **Supabase Realtime** (WebSockets) pour synchroniser :
 - Nouvelles photos
 - Likes et réactions
 - Paramètres
@@ -273,13 +273,13 @@ Live Party Wall utilise **Supabase Realtime** (WebSockets) pour synchroniser :
 - **Recommandé** : 5 Mbps pour expérience optimale
 - **Wi-Fi** : Recommandé pour les invités
 
-### Puis-je utiliser Live Party Wall hors ligne ?
+### Puis-je utiliser Partywall hors ligne ?
 
-Non, Live Party Wall nécessite une connexion internet pour fonctionner.
+Non, Partywall nécessite une connexion internet pour fonctionner.
 
 ### Comment fonctionne le cache ?
 
-Live Party Wall utilise un Service Worker pour mettre en cache :
+Partywall utilise un Service Worker pour mettre en cache :
 - Images déjà chargées
 - Ressources statiques
 - Support offline partiel (consultation des photos déjà chargées)
@@ -294,7 +294,7 @@ Il n'y a pas de limite technique. Pour les très grands événements (1000+ phot
 
 ### Mes données sont-elles sécurisées ?
 
-Oui, Live Party Wall utilise :
+Oui, Partywall utilise :
 - **HTTPS** : Toutes les communications sont chiffrées
 - **Row Level Security (RLS)** : Sécurité au niveau des lignes dans Supabase
 - **Authentification JWT** : Gestion sécurisée des sessions
@@ -315,7 +315,7 @@ Oui, vous pouvez :
 
 ### Comment fonctionne la conformité RGPD ?
 
-Live Party Wall est 100% conforme au RGPD avec :
+Partywall est 100% conforme au RGPD avec :
 - **Banner de consentement** : Affichage automatique
 - **4 catégories de cookies** : Essentiels, analytiques, marketing, fonctionnels
 - **Politique de confidentialité** : Page dédiée accessible

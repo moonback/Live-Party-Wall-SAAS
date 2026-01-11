@@ -870,7 +870,7 @@ const Hero: React.FC<HeroProps> = ({ onAdminClick }) => {
         before:content-[''] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top_left,_rgba(236,72,153,0.09)_0%,transparent_80%)] before:pointer-events-none
         after:content-[''] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_bottom_right,_rgba(192,132,252,0.09)_0%,transparent_80%)] after:pointer-events-none
         "
-      aria-label="Présentation Live Party Wall"
+      aria-label="Présentation Partywall"
     >
       
       {/* Mobile Background Image (remplace la scène 3D sur mobile) */}

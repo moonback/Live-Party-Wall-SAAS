@@ -1591,7 +1591,7 @@ export async function generateTimelapseAftermovie(
         
         for (let f = 0; f < outroFrames; f++) {
             const startFrameTime = performance.now();
-            drawTextSlide(ctx, options.width, options.height, 'Merci !', 'Live Party Wall', f / outroFrames);
+            drawTextSlide(ctx, options.width, options.height, 'Merci !', 'Partywall', f / outroFrames);
             await waitForNextFrame(startFrameTime);
         }
         

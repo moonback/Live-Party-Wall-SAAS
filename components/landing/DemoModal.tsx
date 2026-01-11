@@ -63,7 +63,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
             <div className="relative w-full max-w-4xl bg-gray-900 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Démo Live Party Wall</h2>
+                <h2 className="text-xl font-bold text-white">Démo Partywall</h2>
                 <button
                   onClick={onClose}
                   className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
@@ -92,7 +92,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
                 {/* 
                 <iframe
                   src="https://www.youtube.com/embed/VOTRE_VIDEO_ID?autoplay=1"
-                  title="Démo Live Party Wall"
+                  title="Démo Partywall"
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -103,7 +103,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
               {/* Footer */}
               <div className="p-4 border-t border-white/10 bg-gray-900/50">
                 <p className="text-sm text-gray-400 text-center">
-                  Découvrez comment Live Party Wall transforme vos événements en quelques minutes
+                  Découvrez comment Partywall transforme vos événements en quelques minutes
                 </p>
               </div>
             </div>

@@ -1,5 +1,5 @@
 /**
- * Service Worker pour Live Party Wall
+ * Service Worker pour Partywall
  * Gère le cache offline des images et ressources statiques
  */
 

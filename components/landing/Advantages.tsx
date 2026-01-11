@@ -21,10 +21,10 @@ export const Advantages: React.FC = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            Pourquoi Live Party Wall ?
+            Pourquoi Partywall ?
           </h2>
           <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mt-4">
-            Tous les avantages qui font de Live Party Wall la solution idéale pour vos événements. <br/>
+            Tous les avantages qui font de Partywall la solution idéale pour vos événements. <br/>
             <strong className="text-pink-400">Simple, rapide, sécurisé.</strong>
           </p>
         </div>

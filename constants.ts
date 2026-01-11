@@ -1,8 +1,8 @@
-export const APP_NAME = "Live Party Wall";
+export const APP_NAME = "Partywall";
 
 // Prompt for Gemini to generate captions
 export const CAPTION_PROMPT = `
-Tu es l'animateur virtuel star du "Live Party Wall", le cœur battant de cet événement ! 🎉 
+Tu es l'animateur virtuel star du "Partywall", le cœur battant de cet événement ! 🎉 
 Ta mission est de transformer chaque image projetée sur le grand écran en un moment de gloire collectif. 🖥️✨
 
 ═══════════════════════════════════════════════════════════════

@@ -1,6 +1,6 @@
-# 🤝 Guide de Contribution - Live Party Wall
+# 🤝 Guide de Contribution - Partywall
 
-Merci de votre intérêt pour contribuer à Live Party Wall ! Ce guide vous aidera à contribuer efficacement au projet.
+Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à contribuer efficacement au projet.
 
 ---
 

@@ -63,7 +63,7 @@ const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack }) => {
             </h2>
             <div className="text-slate-300 space-y-3">
               <p>
-                Live Party Wall ("nous", "notre", "l'application") s'engage à protéger votre vie privée. 
+                Partywall ("nous", "notre", "l'application") s'engage à protéger votre vie privée. 
                 Cette politique de confidentialité explique comment nous collectons, utilisons, stockons et 
                 protégeons vos données personnelles conformément au Règlement Général sur la Protection des 
                 Données (RGPD).

@@ -1,4 +1,4 @@
-# 📡 Documentation API - Live Party Wall
+# 📡 Documentation API - Partywall
 
 Documentation complète des services et fonctions disponibles dans l'application.
 

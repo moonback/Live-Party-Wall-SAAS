@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎉 Live Party Wall
+# 🎉 Partywall
 
 ![Banner](https://live-party-wall-saas.vercel.app/banner.jpg)
 
@@ -23,7 +23,7 @@
 
 ## ✨ Présentation
 
-**Live Party Wall** est une plateforme SaaS moderne qui transforme chaque événement en une expérience mémorable et interactive. Vos invités deviennent créateurs de contenu : leurs photos apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle pour générer des légendes personnalisées et garantir un contenu approprié.
+**Partywall** est une plateforme SaaS moderne qui transforme chaque événement en une expérience mémorable et interactive. Vos invités deviennent créateurs de contenu : leurs photos apparaissent instantanément sur grand écran, enrichies par l'intelligence artificielle pour générer des légendes personnalisées et garantir un contenu approprié.
 
 **En quelques mots** : Une solution complète pour créer un mur photo interactif en temps réel, avec modération IA, gamification, battles photos, et génération automatique d'aftermovies.
 
@@ -315,7 +315,7 @@ Pour plus de détails, consultez [DB_SCHEMA.md](./DB_SCHEMA.md).
 
 ## 🤖 Intelligence Artificielle
 
-Live Party Wall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
+Partywall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
 
 | Fonctionnalité | Description |
 |----------------|-------------|
@@ -534,7 +534,7 @@ Toutes ces fonctionnalités utilisent **Supabase Realtime** (WebSockets) :
 
 ### 🛡️ Conformité RGPD
 
-Live Party Wall est **100% conforme au RGPD** avec :
+Partywall est **100% conforme au RGPD** avec :
 
 #### 🍪 Gestion des cookies
 - ✅ **Banner de consentement** - Affichage automatique au premier chargement
@@ -619,7 +619,7 @@ Live Party Wall est **100% conforme au RGPD** avec :
 
 ## 🏆 Système de Gamification
 
-Live Party Wall inclut un système de gamification complet pour encourager l'engagement :
+Partywall inclut un système de gamification complet pour encourager l'engagement :
 
 ### 🎖️ Badges (12 types)
 - **📸 Photographe** - Avoir posté le plus de photos
