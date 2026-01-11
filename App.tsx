@@ -35,7 +35,7 @@ const ConsentBanner = lazy(() => import('./components/rgpd/ConsentBanner')); // 
 const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePreferences')); // Préférences cookies
 
 const AppContent: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('landing');
+  const [viewMode, setViewMode] = useState<ViewMode>('admin');
   const [showCookiePreferences, setShowCookiePreferences] = useState(false);
   
   // Contexts
@@ -214,7 +214,7 @@ const AppContent: React.FC = () => {
       }
       addToast('Le mode collage est désactivé', 'info');
     }
-    // Si pas de paramètre mode, on reste sur landing (accessible sans profil)
+    // Si pas de paramètre mode, on démarre sur admin (page de login)
   }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled, addToast]);
 
   // Déterminer le type de transition selon la vue

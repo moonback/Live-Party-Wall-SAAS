@@ -95,9 +95,6 @@ export default defineConfig(({ mode }) => {
                 return 'vendor';
               }
               // Chunks par fonctionnalité
-              if (id.includes('components/landing')) {
-                return 'landing';
-              }
               if (id.includes('components/admin')) {
                 return 'admin';
               }

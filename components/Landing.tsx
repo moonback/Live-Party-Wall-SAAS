@@ -4,11 +4,6 @@ import { Images, Camera, User } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useEvent } from '../context/EventContext';
-import { LandingHeader } from './landing/LandingHeader';
-import { LandingFooter } from './landing/LandingFooter';
-import { TopRightButtons } from './landing/TopRightButtons';
-import { MobileButtons } from './landing/MobileButtons';
-import { NavigationCards } from './landing/NavigationCards';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
 
@@ -197,13 +192,26 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
 
       {/* Top Right Buttons - Desktop only */}
-      <TopRightButtons
-        onSelectMode={onSelectMode}
-        isAdminAuthenticated={isAdminAuthenticated}
-        hasUserProfile={hasUserProfile}
-        statsEnabled={uiConfig.statsEnabled}
-        battleModeEnabled={uiConfig.battleModeEnabled}
-      />
+      {!isMobile && (
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          {isAdminAuthenticated && (
+            <button
+              onClick={() => onSelectMode('admin')}
+              className="px-4 py-2 bg-pink-500/80 hover:bg-pink-600 rounded-lg text-white text-sm font-medium backdrop-blur-sm transition"
+            >
+              Admin
+            </button>
+          )}
+          {uiConfig.statsEnabled && (
+            <button
+              onClick={() => onSelectMode('stats-display')}
+              className="px-4 py-2 bg-purple-500/80 hover:bg-purple-600 rounded-lg text-white text-sm font-medium backdrop-blur-sm transition"
+            >
+              Stats
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Main Content */}
       <main className={`relative z-[2] w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-6 md:gap-6 lg:gap-4 px-3 sm:px-4 md:px-6 h-full ${
@@ -214,12 +222,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         
         {/* Hero Section - Header uniquement si pas d'événement sélectionné */}
         {!currentEvent && (
-          <div className="flex-shrink-0 w-full">
-            <LandingHeader
-              isAuthenticated={isAdminAuthenticated}
-              onAdminClick={() => {}}
-              onScrollToSection={() => {}}
-            />
+          <div className="flex-shrink-0 w-full text-center mb-4">
+            <h1 className="text-3xl font-bold text-white mb-2">Partywall</h1>
+            <p className="text-white/80">Partagez vos moments en temps réel</p>
           </div>
         )}
 
@@ -303,28 +308,61 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         )}
 
         {/* Mobile Buttons Row - Below title on mobile */}
-        <div className="flex-shrink-0 w-full flex justify-center px-2 sm:px-0 lg:mb-1">
-          <MobileButtons
-            onSelectMode={onSelectMode}
-            isAdminAuthenticated={isAdminAuthenticated}
-            hasUserProfile={hasUserProfile}
-            statsEnabled={uiConfig.statsEnabled}
-            battleModeEnabled={uiConfig.battleModeEnabled}
-          />
-        </div>
+        {isMobile && (
+          <div className="flex-shrink-0 w-full flex justify-center gap-2 px-2 mb-2">
+            {isAdminAuthenticated && (
+              <button
+                onClick={() => onSelectMode('admin')}
+                className="px-4 py-2 bg-pink-500/80 hover:bg-pink-600 rounded-lg text-white text-sm font-medium backdrop-blur-sm transition"
+              >
+                Admin
+              </button>
+            )}
+            {uiConfig.statsEnabled && (
+              <button
+                onClick={() => onSelectMode('stats-display')}
+                className="px-4 py-2 bg-purple-500/80 hover:bg-purple-600 rounded-lg text-white text-sm font-medium backdrop-blur-sm transition"
+              >
+                Stats
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Navigation Cards - Centered and Enhanced - Responsive */}
         <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-2 sm:py-4 md:py-3 lg:py-2 px-2 sm:px-4 min-h-0">
-          <NavigationCards
-            options={navigationOptions}
-            mounted={mounted}
-            onSelectMode={onSelectMode}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+            {navigationOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => onSelectMode(option.id as ViewMode)}
+                  className={`relative p-6 rounded-2xl bg-gradient-to-br ${option.gradient} backdrop-blur-sm border border-white/20 hover:scale-105 transition-transform duration-300 text-white text-left group ${
+                    option.isPrimary ? 'sm:col-span-2' : ''
+                  }`}
+                  style={{
+                    boxShadow: `0 8px 32px ${option.glowColor}`,
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <Icon className="w-8 h-8" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-1">{option.title}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Footer - Responsive - Compact sur desktop */}
-        <div className="flex-shrink-0 mt-auto pb-2 sm:pb-3 md:pb-2 lg:pb-1 px-2 sm:px-4">
-          <LandingFooter />
+        <div className="flex-shrink-0 mt-auto pb-2 sm:pb-3 md:pb-2 lg:pb-1 px-2 sm:px-4 text-center">
+          <p className="text-white/60 text-xs">© 2026 Partywall - Partagez vos moments</p>
         </div>
       </main>
 
