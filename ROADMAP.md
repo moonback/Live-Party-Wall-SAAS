@@ -122,10 +122,10 @@ Feuille de route et fonctionnalités futures pour Live Party Wall.
   - [ ] Vérification des types MIME
 
 #### Documentation
-- [ ] **Guide utilisateur complet**
-  - [ ] Guide organisateur
-  - [ ] Guide invité
-  - [ ] FAQ complète
+- [x] **Guide utilisateur complet**
+  - [x] Guide organisateur
+  - [x] Guide invité
+  - [x] FAQ complète
 - [ ] **Vidéos tutoriels**
   - [ ] Création d'un événement
   - [ ] Upload de photos
