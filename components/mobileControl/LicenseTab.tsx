@@ -1,8 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, Calendar, Clock, CheckCircle, XCircle, 
-  AlertTriangle, Shield, Copy, ExternalLink
+  AlertTriangle, Shield, Copy, Sparkles, TrendingUp
 } from 'lucide-react';
 import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
@@ -41,20 +41,26 @@ const LicenseTab: React.FC = () => {
     addToast('Clé de licence copiée', 'success');
   };
 
-  // Ouvrir le gestionnaire de licences
-  const handleOpenLicenseManager = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('mode', 'license-management');
-    window.location.href = url.toString();
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/70">Chargement des informations de licence...</p>
-        </div>
+      <div className="flex items-center justify-center py-16">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <motion.div
+              className="absolute inset-0 border-4 border-pink-500/30 border-t-pink-500 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Key className="w-6 h-6 text-pink-400" />
+            </div>
+          </div>
+          <p className="text-white/70 font-medium">Chargement des informations de licence...</p>
+        </motion.div>
       </div>
     );
   }
@@ -67,112 +73,233 @@ const LicenseTab: React.FC = () => {
   const isValid = licenseValidity?.is_valid ?? false;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-purple-900/30 via-pink-900/30 to-purple-900/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-        <div className="flex items-center gap-4 mb-4">
-          <div className={`p-3 rounded-xl ${
-            isValid 
-              ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30' 
-              : 'bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/30'
-          }`}>
+    <div className="space-y-5">
+      {/* Header avec effet glow */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`relative overflow-hidden bg-gradient-to-br ${
+          isValid
+            ? 'from-green-900/20 via-emerald-900/20 to-green-900/20'
+            : 'from-red-900/20 via-rose-900/20 to-red-900/20'
+        } backdrop-blur-xl rounded-2xl p-6 border ${
+          isValid
+            ? 'border-green-500/30 shadow-lg shadow-green-500/20'
+            : 'border-red-500/30 shadow-lg shadow-red-500/20'
+        }`}
+      >
+        {/* Effet de particules animées */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className={`absolute w-2 h-2 rounded-full ${
+                isValid ? 'bg-green-400/40' : 'bg-red-400/40'
+              }`}
+              initial={{
+                x: Math.random() * 100 + '%',
+                y: Math.random() * 100 + '%',
+                scale: 0,
+              }}
+              animate={{
+                x: Math.random() * 100 + '%',
+                y: Math.random() * 100 + '%',
+                scale: [0, 1, 0],
+                opacity: [0, 0.6, 0],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: i * 0.5,
+                ease: 'easeInOut',
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative flex items-center gap-4">
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className={`p-4 rounded-2xl ${
+              isValid 
+                ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400/50 shadow-lg shadow-green-500/30' 
+                : 'bg-gradient-to-br from-red-500/30 to-rose-500/30 border-2 border-red-400/50 shadow-lg shadow-red-500/30'
+            }`}
+          >
             {isValid ? (
-              <CheckCircle className="w-6 h-6 text-green-400" />
+              <CheckCircle className="w-7 h-7 text-green-300 drop-shadow-lg" />
             ) : (
-              <XCircle className="w-6 h-6 text-red-400" />
+              <XCircle className="w-7 h-7 text-red-300 drop-shadow-lg" />
             )}
-          </div>
+          </motion.div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-1">Licence</h2>
-            <p className={`text-sm font-semibold ${
-              isValid ? 'text-green-400' : 'text-red-400'
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-2xl font-bold text-white">Licence</h2>
+              {isValid && (
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  <Sparkles className="w-5 h-5 text-green-400" />
+                </motion.div>
+              )}
+            </div>
+            <p className={`text-sm font-semibold flex items-center gap-2 ${
+              isValid ? 'text-green-300' : 'text-red-300'
             }`}>
-              {isValid ? 'Licence active' : 'Licence expirée ou invalide'}
+              {isValid ? (
+                <>
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  Licence active
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+                  Licence expirée ou invalide
+                </>
+              )}
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Informations de la licence */}
-      {licenseValidity && (
-        <div className="space-y-4">
-          {/* Statut */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black/40 backdrop-blur-sm rounded-xl p-5 border border-white/10"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-semibold text-white">Statut</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-white/70">Statut de la licence</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                  isValid 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
-                  {licenseValidity.status || 'N/A'}
-                </span>
-              </div>
+      <AnimatePresence>
+        {licenseValidity && (
+          <div className="space-y-4">
+            {/* Statut */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="relative bg-gradient-to-br from-black/50 via-purple-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
+            >
+              {/* Effet de glow subtil */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-purple-500/5 rounded-2xl pointer-events-none" />
               
-              {licenseValidity.license_id && (
-                <div className="flex items-center justify-between">
-                  <span className="text-white/70">ID de la licence</span>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs font-mono text-white/80 bg-black/40 px-2 py-1 rounded">
-                      {licenseValidity.license_id.substring(0, 8)}...
-                    </code>
-                    <button
-                      onClick={() => handleCopyKey(licenseValidity.license_id || null)}
-                      className="p-1 rounded hover:bg-white/10 transition-colors"
-                      title="Copier l'ID"
-                    >
-                      <Copy className="w-4 h-4 text-white/60" />
-                    </button>
-                  </div>
+              <div className="relative flex items-center gap-3 mb-5">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30">
+                  <Shield className="w-5 h-5 text-purple-300" />
                 </div>
-              )}
-            </div>
-          </motion.div>
+                <h3 className="text-lg font-bold text-white">Statut de la licence</h3>
+              </div>
+              <div className="relative space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="text-white/80 font-medium">Statut</span>
+                  <motion.span
+                    whileHover={{ scale: 1.05 }}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                      isValid 
+                        ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/50 shadow-lg shadow-green-500/20' 
+                        : 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/50 shadow-lg shadow-red-500/20'
+                    }`}
+                  >
+                    {licenseValidity.status || 'N/A'}
+                  </motion.span>
+                </div>
+                
+                {licenseValidity.license_id && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                    <span className="text-white/80 font-medium">ID de la licence</span>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs font-mono text-white/90 bg-black/60 px-3 py-1.5 rounded-lg border border-white/10">
+                        {licenseValidity.license_id.substring(0, 8)}...
+                      </code>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleCopyKey(licenseValidity.license_id || null)}
+                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                        title="Copier l'ID"
+                      >
+                        <Copy className="w-4 h-4 text-white/70" />
+                      </motion.button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
 
           {/* Date d'expiration */}
           {licenseValidity.expires_at && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.1 }}
-              className="bg-black/40 backdrop-blur-sm rounded-xl p-5 border border-white/10"
+              className="relative bg-gradient-to-br from-black/50 via-pink-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <Calendar className="w-5 h-5 text-pink-400" />
-                <h3 className="text-lg font-semibold text-white">Date d'expiration</h3>
+              {/* Effet de glow subtil */}
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-pink-500/5 rounded-2xl pointer-events-none" />
+              
+              <div className="relative flex items-center gap-3 mb-5">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-400/30">
+                  <Calendar className="w-5 h-5 text-pink-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Date d'expiration</h3>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-white/70">Expire le</span>
-                  <span className="text-white font-semibold">
+              <div className="relative space-y-4">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white/70 text-sm">Expire le</span>
+                  </div>
+                  <span className="text-white font-bold text-lg">
                     {formatDate(licenseValidity.expires_at)}
                   </span>
                 </div>
                 
                 {daysRemaining !== null && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/70">Jours restants</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      isExpired
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        : isExpiringSoon
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    }`}>
-                      {isExpired 
-                        ? 'Expirée' 
-                        : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
-                      }
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/80 font-medium flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Jours restants
+                      </span>
+                      <motion.span
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        className={`px-4 py-2 rounded-full text-sm font-bold ${
+                          isExpired
+                            ? 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/50 shadow-lg shadow-red-500/20'
+                            : isExpiringSoon
+                            ? 'bg-gradient-to-r from-amber-500/30 to-yellow-500/30 text-amber-300 border border-amber-400/50 shadow-lg shadow-amber-500/20'
+                            : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/50 shadow-lg shadow-green-500/20'
+                        }`}
+                      >
+                        {isExpired 
+                          ? 'Expirée' 
+                          : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
+                        }
+                      </motion.span>
+                    </div>
+                    
+                    {/* Barre de progression visuelle */}
+                    {!isExpired && daysRemaining !== null && (
+                      <div className="space-y-2">
+                        <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/10">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ 
+                              width: `${Math.min(100, Math.max(0, (daysRemaining / 365) * 100))}%` 
+                            }}
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${
+                              isExpiringSoon
+                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
+                                : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                            } shadow-lg`}
+                          />
+                        </div>
+                        <p className="text-xs text-white/60 text-center">
+                          {daysRemaining > 365 
+                            ? `Plus de ${Math.floor(daysRemaining / 365)} an${Math.floor(daysRemaining / 365) > 1 ? 's' : ''} restants`
+                            : daysRemaining > 30
+                            ? `Environ ${Math.floor(daysRemaining / 30)} mois restants`
+                            : ''
+                          }
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -180,106 +307,154 @@ const LicenseTab: React.FC = () => {
           )}
 
           {/* Avertissement si expiration proche */}
-          {isExpiringSoon && !isExpired && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-r from-amber-900/30 to-yellow-900/30 backdrop-blur-sm rounded-xl p-5 border border-amber-500/30"
-            >
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="text-amber-400 font-semibold mb-1">Avertissement</h4>
-                  <p className="text-white/90 text-sm">
-                    Votre licence expire dans {daysRemaining} jour{daysRemaining > 1 ? 's' : ''}. 
-                    Veuillez renouveler votre licence pour continuer à utiliser l'application.
-                  </p>
+          <AnimatePresence>
+            {isExpiringSoon && !isExpired && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                className="relative overflow-hidden bg-gradient-to-r from-amber-900/40 via-yellow-900/40 to-amber-900/40 backdrop-blur-xl rounded-2xl p-5 border-2 border-amber-500/50 shadow-xl shadow-amber-500/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 animate-pulse" />
+                <div className="relative flex items-start gap-4">
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+                    className="p-2 rounded-xl bg-amber-500/20 border border-amber-400/30 flex-shrink-0"
+                  >
+                    <AlertTriangle className="w-6 h-6 text-amber-300" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <h4 className="text-amber-300 font-bold mb-2 text-lg">Avertissement</h4>
+                    <p className="text-white/95 text-sm leading-relaxed">
+                      Votre licence expire dans <span className="font-bold text-amber-300">{daysRemaining} jour{daysRemaining > 1 ? 's' : ''}</span>. 
+                      Veuillez renouveler votre licence pour continuer à utiliser l'application.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
-          {/* Message si expirée */}
-          {isExpired && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-r from-red-900/30 to-rose-900/30 backdrop-blur-sm rounded-xl p-5 border border-red-500/30"
-            >
-              <div className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="text-red-400 font-semibold mb-1">Licence expirée</h4>
-                  <p className="text-white/90 text-sm">
-                    Votre licence a expiré. Veuillez renouveler votre licence pour continuer à utiliser l'application.
-                  </p>
+            {/* Message si expirée */}
+            {isExpired && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                className="relative overflow-hidden bg-gradient-to-r from-red-900/40 via-rose-900/40 to-red-900/40 backdrop-blur-xl rounded-2xl p-5 border-2 border-red-500/50 shadow-xl shadow-red-500/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-rose-500/10 animate-pulse" />
+                <div className="relative flex items-start gap-4">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="p-2 rounded-xl bg-red-500/20 border border-red-400/30 flex-shrink-0"
+                  >
+                    <XCircle className="w-6 h-6 text-red-300" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <h4 className="text-red-300 font-bold mb-2 text-lg">Licence expirée</h4>
+                    <p className="text-white/95 text-sm leading-relaxed">
+                      Votre licence a expiré. Veuillez renouveler votre licence pour continuer à utiliser l'application.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Message si pas de licence */}
-      {!licenseValidity && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-black/40 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center"
-        >
-          <Key className="w-12 h-12 text-white/40 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">Aucune licence trouvée</h3>
-          <p className="text-white/70 text-sm mb-4">
-            Aucune licence active n'a été trouvée pour votre compte.
-          </p>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {!licenseValidity && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="relative overflow-hidden bg-gradient-to-br from-black/50 via-gray-900/30 to-black/50 backdrop-blur-xl rounded-2xl p-10 border border-white/10 shadow-xl text-center"
+          >
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+              className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 mb-6"
+            >
+              <Key className="w-12 h-12 text-white/40" />
+            </motion.div>
+            <h3 className="text-xl font-bold text-white mb-3">Aucune licence trouvée</h3>
+            <p className="text-white/70 text-sm leading-relaxed max-w-sm mx-auto">
+              Aucune licence active n'a été trouvée pour votre compte.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={refreshLicense}
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-pink-500/30"
+      <motion.button
+        whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)' }}
+        whileTap={{ scale: 0.98 }}
+        onClick={refreshLicense}
+        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-pink-500/40 border border-pink-400/30"
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         >
           <Clock className="w-5 h-5" />
-          <span>Actualiser</span>
-        </motion.button>
-
-        
-      </div>
+        </motion.div>
+        <span>Actualiser</span>
+      </motion.button>
 
       {/* Informations utilisateur */}
-      {user && (
-        <div className="bg-black/40 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-          <div className="flex items-center gap-3 mb-3">
-            <Key className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-lg font-semibold text-white">Compte</h3>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-white/70">Email</span>
-              <span className="text-white font-mono text-sm">{user.email}</span>
+      <AnimatePresence>
+        {user && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.2 }}
+            className="relative bg-gradient-to-br from-black/50 via-indigo-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
+          >
+            {/* Effet de glow subtil */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-indigo-500/5 rounded-2xl pointer-events-none" />
+            
+            <div className="relative flex items-center gap-3 mb-5">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/30">
+                <Key className="w-5 h-5 text-indigo-300" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Informations du compte</h3>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/70">ID Utilisateur</span>
-              <div className="flex items-center gap-2">
-                <code className="text-xs font-mono text-white/80 bg-black/40 px-2 py-1 rounded">
-                  {user.id.substring(0, 8)}...
-                </code>
-                <button
-                  onClick={() => handleCopyKey(user.id)}
-                  className="p-1 rounded hover:bg-white/10 transition-colors"
-                  title="Copier l'ID"
-                >
-                  <Copy className="w-4 h-4 text-white/60" />
-                </button>
+            <div className="relative space-y-3">
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 font-medium">Email</span>
+                  <span className="text-white font-mono text-sm font-semibold">{user.email}</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 font-medium">ID Utilisateur</span>
+                  <div className="flex items-center gap-2">
+                    <code className="text-xs font-mono text-white/90 bg-black/60 px-3 py-1.5 rounded-lg border border-white/10">
+                      {user.id.substring(0, 8)}...
+                    </code>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleCopyKey(user.id)}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                      title="Copier l'ID"
+                    >
+                      <Copy className="w-4 h-4 text-white/70" />
+                    </motion.button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
