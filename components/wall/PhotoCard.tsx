@@ -50,7 +50,7 @@ export const PhotoCard = React.memo(({
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.5, delay: (index % 10) * 0.05 }}
-      className={`group relative break-inside-avoid bg-slate-900/80 backdrop-blur-sm rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.3)] transition-all duration-500 hover:z-[25] hover:shadow-[0_20px_60px_rgba(236,72,153,0.5)] border border-slate-700/50
+      className={`group relative break-inside-avoid bg-slate-900/80 backdrop-blur-sm rounded-none overflow-hidden shadow-none transition-all duration-500 hover:z-[25] border-2 border-white
         ${onClick ? 'cursor-zoom-in' : 'cursor-default'}
         ${index === 0 ? 'z-[15]' : 'z-[10]'}
       `}
@@ -60,18 +60,18 @@ export const PhotoCard = React.memo(({
       onMouseLeave={() => setHoveredPhoto(null)}
     >
       {/* Glow effect au hover */}
-      <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-2xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>
+      <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-none blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>
       
       {/* Rayon de lumière */}
-      <div className="absolute inset-0 overflow-hidden rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden rounded-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent via-white/10 to-transparent transform -skew-x-12 animate-light-ray"></div>
       </div>
       
-      {/* Bordure */}
-      <div className="absolute inset-0 rounded-2xl border border-slate-600/50 group-hover:border-pink-400/60 transition-colors duration-500 pointer-events-none"></div>
+      {/* Bordure blanche */}
+      <div className="absolute inset-0 border-2 border-white pointer-events-none"></div>
 
       {/* Media Container */}
-      <div className={`relative overflow-hidden bg-slate-800 rounded-t-2xl ${
+      <div className={`relative overflow-hidden bg-slate-800 rounded-none ${
         isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
           ? 'min-h-[250px]' 
           : 'aspect-auto'
@@ -98,7 +98,7 @@ export const PhotoCard = React.memo(({
         
         {/* Shine Effect */}
         {photo.type === 'photo' && (
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-md">
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-none">
             <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-30 group-hover:animate-shimmer-enhanced" />
           </div>
         )}

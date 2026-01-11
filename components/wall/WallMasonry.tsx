@@ -135,7 +135,7 @@ const VirtualColumn = React.memo(({
                 width: '100%',
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className="pb-4 md:pb-6 lg:pb-8 xl:pb-10"
+              className="pb-0"
             >
               {item.type === 'battle' ? (
                 <PhotoBattleComponent
@@ -277,7 +277,7 @@ export const WallMasonry = React.memo(({
   }, [photos, numColumns, battles, showBattles]);
 
   return (
-    <div className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-1 md:px-2 lg:px-3 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
+    <div className="flex gap-0 w-full px-0 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
       {columnsData.map((colData, i) => (
         <div key={i} className="flex-1 min-w-0 transition-all duration-300 ease-in-out">
           <VirtualColumn 
