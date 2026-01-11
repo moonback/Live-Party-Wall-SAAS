@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, LogIn, Mail, Eye, EyeOff, ArrowLeft, Sparkles, Zap, Shield } from 'lucide-react';
+import { Lock, LogIn, Mail, Eye, EyeOff, ArrowLeft, Shield } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -107,7 +107,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Gardé pour réactivation future de l'inscription
+  const [isSignUp] = useState(false);
   const isElectronApp = isElectron();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -425,7 +426,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                 transition={{ delay: 0.8 }}
                 className="mt-6 space-y-3"
               >
-                <button
+                {/* Bouton d'inscription temporairement caché */}
+                {/* <button
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setPassword('');
@@ -441,7 +443,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                     {isSignUp ? '←' : '→'}
                   </motion.span>
                   {isSignUp ? 'Déjà membre ? Connectez-vous' : 'Pas encore de compte ? Inscrivez-vous'}
-                </button>
+                </button> */}
 
                 {!isElectronApp && (
                   <button
