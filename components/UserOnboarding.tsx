@@ -6,6 +6,9 @@ import { validateAuthorName, validateImageFile, MAX_AUTHOR_NAME_LENGTH } from '.
 import { useAdaptiveCameraResolution } from '../hooks/useAdaptiveCameraResolution';
 import { saveUserAvatar } from '../utils/userAvatar';
 import { registerGuest, isGuestBlocked, getBlockedGuestInfo } from '../services/guestService';
+import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { getStaticAssetPath } from '../utils/electronPaths';
 
 interface UserOnboardingProps {
   onComplete: (userName: string, avatarUrl: string) => void;
@@ -18,15 +21,17 @@ interface UserOnboardingProps {
 const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) => {
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const isMobile = useIsMobile();
   const [step, setStep] = useState<1 | 2>(1);
   const [userName, setUserName] = useState('');
   const [avatarPhoto, setAvatarPhoto] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
-  const [countdown, setCountdown] = useState<number | null>(null);
   const [flash, setFlash] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [backgroundDesktopUrl, setBackgroundDesktopUrl] = useState<string | null>(defaultSettings.background_desktop_url);
+  const [backgroundMobileUrl, setBackgroundMobileUrl] = useState<string | null>(defaultSettings.background_mobile_url);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,6 +104,31 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
       videoRef.current.play().catch(console.error);
     }
   }, [stream, step]);
+
+  // Charger les settings de l'événement pour le fond
+  useEffect(() => {
+    if (!currentEvent?.id) {
+      // Réinitialiser aux valeurs par défaut si pas d'événement
+      setBackgroundDesktopUrl(defaultSettings.background_desktop_url);
+      setBackgroundMobileUrl(defaultSettings.background_mobile_url);
+      return;
+    }
+
+    getSettings(currentEvent.id).then(settings => {
+      setBackgroundDesktopUrl(settings.background_desktop_url ?? defaultSettings.background_desktop_url);
+      setBackgroundMobileUrl(settings.background_mobile_url ?? defaultSettings.background_mobile_url);
+    });
+
+    // Realtime Subscription pour les changements de fond
+    const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
+      setBackgroundDesktopUrl(newSettings.background_desktop_url ?? defaultSettings.background_desktop_url);
+      setBackgroundMobileUrl(newSettings.background_mobile_url ?? defaultSettings.background_mobile_url);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [currentEvent?.id]);
 
   const handleNextStep = () => {
     const nameValidation = validateAuthorName(userName);
@@ -216,8 +246,26 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
   };
 
   return (
-    <div className="h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="relative z-10 w-full max-w-md">
+    <div className="h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Image - Responsive */}
+      <img
+        src={
+          isMobile
+            ? (backgroundMobileUrl || getStaticAssetPath('background-mobile.png'))
+            : (backgroundDesktopUrl || getStaticAssetPath('background-desktop.png'))
+        }
+        alt="Background"
+        className="fixed inset-0 w-full h-full object-cover z-0"
+        style={{
+          minWidth: '100%',
+          minHeight: '100%',
+        }}
+      />
+
+      {/* Overlay sombre pour améliorer la lisibilité */}
+      <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
+
+      <div className="relative z-[2] w-full max-w-md">
         {/* Progress Bar */}
         <div className="mb-6 flex justify-between items-center px-2">
           <div className="flex gap-2 w-full max-w-[120px]">
