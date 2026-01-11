@@ -723,3 +723,4 @@ Tous les types sont définis dans `types.ts` :
 
 **Dernière mise à jour** : 2026-01-15
 
+

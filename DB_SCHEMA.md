@@ -508,3 +508,4 @@ Pour appliquer les migrations :
 
 **Dernière mise à jour** : 2026-01-15
 
+
