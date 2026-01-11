@@ -27,6 +27,9 @@ import { FlyingReactions } from './wall/Overlays/FlyingReactions';
 import { WinnerOverlay } from './wall/Overlays/WinnerOverlay';
 import { TieOverlay } from './wall/Overlays/TieOverlay';
 import { NewPhotoIndicator } from './wall/Overlays/NewPhotoIndicator';
+import { BattleModeActivatedOverlay } from './wall/Overlays/BattleModeActivatedOverlay';
+import { FindMeActivatedOverlay } from './wall/Overlays/FindMeActivatedOverlay';
+import { CollageModeActivatedOverlay } from './wall/Overlays/CollageModeActivatedOverlay';
 import { FloatingQrCode } from './wall/FloatingQrCode';
 
 // Lazy Components
@@ -50,6 +53,12 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   const [hoveredPhoto, setHoveredPhoto] = useState<string | null>(null);
   const [isHoveringControls, setIsHoveringControls] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
+  const [showBattleModeActivated, setShowBattleModeActivated] = useState(false);
+  const [showFindMeActivated, setShowFindMeActivated] = useState(false);
+  const [showCollageModeActivated, setShowCollageModeActivated] = useState(false);
+  const previousBattleModeRef = useRef<boolean | undefined>(undefined);
+  const previousFindMeRef = useRef<boolean | undefined>(undefined);
+  const previousCollageModeRef = useRef<boolean | undefined>(undefined);
 
   // --- Hooks ---
   const { uiConfig, isKiosqueMode, settings } = useWallSettings();
@@ -254,6 +263,82 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
     }
   }, [winnerPhotoDisplay, tieBattleDisplay]);
 
+  // Initialiser les références au premier rendu
+  useEffect(() => {
+    if (previousBattleModeRef.current === undefined) {
+      previousBattleModeRef.current = settings.battle_mode_enabled !== false;
+    }
+    if (previousFindMeRef.current === undefined) {
+      previousFindMeRef.current = settings.find_me_enabled !== false;
+    }
+    if (previousCollageModeRef.current === undefined) {
+      previousCollageModeRef.current = settings.collage_mode_enabled !== false;
+    }
+  }, []);
+
+  // Détecter l'activation du mode Battle
+  useEffect(() => {
+    const currentBattleMode = settings.battle_mode_enabled !== false;
+    const previousBattleMode = previousBattleModeRef.current;
+
+    // Si le mode battle passe de false à true, afficher l'animation
+    if (previousBattleMode !== undefined && previousBattleMode === false && currentBattleMode === true) {
+      setShowBattleModeActivated(true);
+      
+      // Masquer l'animation après 5 secondes
+      const timeout = setTimeout(() => {
+        setShowBattleModeActivated(false);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+
+    // Mettre à jour la référence
+    previousBattleModeRef.current = currentBattleMode;
+  }, [settings.battle_mode_enabled]);
+
+  // Détecter l'activation de Retrouve-moi
+  useEffect(() => {
+    const currentFindMe = settings.find_me_enabled !== false;
+    const previousFindMe = previousFindMeRef.current;
+
+    // Si Retrouve-moi passe de false à true, afficher l'animation
+    if (previousFindMe !== undefined && previousFindMe === false && currentFindMe === true) {
+      setShowFindMeActivated(true);
+      
+      // Masquer l'animation après 5 secondes
+      const timeout = setTimeout(() => {
+        setShowFindMeActivated(false);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+
+    // Mettre à jour la référence
+    previousFindMeRef.current = currentFindMe;
+  }, [settings.find_me_enabled]);
+
+  // Détecter l'activation du Mode Collage
+  useEffect(() => {
+    const currentCollageMode = settings.collage_mode_enabled !== false;
+    const previousCollageMode = previousCollageModeRef.current;
+
+    // Si le mode collage passe de false à true, afficher l'animation
+    if (previousCollageMode !== undefined && previousCollageMode === false && currentCollageMode === true) {
+      setShowCollageModeActivated(true);
+      
+      // Masquer l'animation après 5 secondes
+      const timeout = setTimeout(() => {
+        setShowCollageModeActivated(false);
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+
+    // Mettre à jour la référence
+    previousCollageModeRef.current = currentCollageMode;
+  }, [settings.collage_mode_enabled]);
+
 
   // --- Handlers ---
   const lightboxPhoto = lightboxIndex !== null ? displayedPhotos[lightboxIndex] : null;
@@ -299,6 +384,9 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
       <WinnerOverlay photo={winnerPhotoDisplay} />
       <TieOverlay tieData={tieBattleDisplay} />
       <NewPhotoIndicator show={isLoadingNew} />
+      <BattleModeActivatedOverlay show={showBattleModeActivated} />
+      <FindMeActivatedOverlay show={showFindMeActivated} />
+      <CollageModeActivatedOverlay show={showCollageModeActivated} />
       <FloatingQrCode show={showQrCodes} uploadUrl={uploadUrl} isKiosqueMode={isKiosqueMode} />
 
       {/* Header */}

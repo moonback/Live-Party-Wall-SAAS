@@ -202,18 +202,26 @@ export const PhotoCard = React.memo(({
       )}
 
       {/* Auteur sous la photo */}
-      <div className="pointer-events-none select-none absolute bottom-2 md:bottom-3 left-2 md:left-3 z-30">
-        <div className="flex items-center gap-1.5 md:gap-2 bg-black/80 px-3 md:px-4 py-1 md:py-1.5 rounded-full shadow-lg border border-pink-500/30">
+      <div className="pointer-events-none select-none absolute bottom-3 md:bottom-4 left-3 md:left-4 z-30">
+        <div className="flex items-center gap-2 md:gap-2.5 bg-gradient-to-r from-black/95 via-black/90 to-black/95 backdrop-blur-md px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] border-2 border-white/40 hover:border-white/60 transition-all duration-300 group/author">
+          {/* Glow effect animé */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 rounded-xl blur-md opacity-0 group-hover/author:opacity-100 transition-opacity duration-500"></div>
+          
           {authorHasPhotographerBadge && (
-            <span className="text-base md:text-lg lg:text-xl relative inline-block">
+            <span className="text-lg md:text-xl lg:text-2xl relative inline-block z-10">
               {/* Glow effect pour le badge photographe */}
-              <span className="absolute inset-0 blur-sm opacity-60 animate-pulse">📸</span>
-              <span className="relative drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]">📸</span>
+              <span className="absolute inset-0 blur-md opacity-70 animate-pulse">📸</span>
+              <span className="relative drop-shadow-[0_0_8px_rgba(251,191,36,1)] filter brightness-110">📸</span>
             </span>
           )}
-          <p className="text-xs md:text-sm lg:text-base xl:text-lg font-semibold text-white/90 uppercase tracking-wide truncate max-w-[120px] md:max-w-[150px] lg:max-w-[200px]">
+          <p className="text-sm md:text-base lg:text-lg xl:text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] tracking-wider truncate max-w-[140px] md:max-w-[180px] lg:max-w-[220px] relative z-10">
             {photo.author}
           </p>
+          
+          {/* Effet de brillance subtil */}
+          <div className="absolute inset-0 rounded-xl overflow-hidden opacity-0 group-hover/author:opacity-100 transition-opacity duration-500">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+          </div>
         </div>
       </div>
     </motion.div>
