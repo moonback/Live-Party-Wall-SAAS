@@ -143,7 +143,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       },
       {
         id: 'gallery',
-        title: 'Le mur interactif',
+        title: 'Galerie Interactive',
         description: 'Découvrez toutes les photos de la soirée',
         icon: Images,
         gradient: 'from-indigo-500 via-blue-500 to-cyan-500',

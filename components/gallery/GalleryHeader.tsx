@@ -120,7 +120,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
                     backgroundClip: 'text',
                   }}
                 >
-                  Le <motion.span 
+                  Social <motion.span 
                     className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-indigo-400"
                     animate={{ 
                       backgroundPosition: ['0%', '100%', '0%'],
@@ -138,7 +138,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
                       backgroundClip: 'text',
                     }}
                   >
-                    Mur
+                    Wall
                   </motion.span>
                 </motion.h1>
                 {!isMobile && (
@@ -148,7 +148,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    Live Party Wall
+Le mur social
                   </motion.p>
                 )}
               </div>

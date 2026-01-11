@@ -26,6 +26,19 @@ import { applyWatermarkToImage } from '../utils/watermarkUtils';
 // Lazy load Lightbox
 const Lightbox = lazy(() => import('./Lightbox'));
 
+/**
+ * Galerie Interactive - Vue interactive mobile
+ * 
+ * Vue optimisée pour les invités sur mobile/tablette.
+ * Caractéristiques :
+ * - Interactions complètes (likes, réactions, téléchargements)
+ * - Filtres et recherche
+ * - Mode sélection pour téléchargement en masse
+ * - Battles interactives
+ * - Accessible sans authentification admin
+ * 
+ * À ne pas confondre avec WallView (Mur Live) qui est la vue projection grand écran.
+ */
 interface GuestGalleryProps {
   onBack: () => void;
   onUploadClick: () => void;

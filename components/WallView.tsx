@@ -35,6 +35,18 @@ import { FloatingQrCode } from './wall/FloatingQrCode';
 // Lazy Components
 const Lightbox = lazy(() => import('./Lightbox'));
 
+/**
+ * Mur Live - Vue projection grand écran
+ * 
+ * Vue optimisée pour l'affichage sur grand écran/TV/projection.
+ * Caractéristiques :
+ * - Lecture seule (pas d'interactions utilisateur)
+ * - Optimisée pour TV/grand écran
+ * - Auto-scroll et animations fluides
+ * - Nécessite authentification admin
+ * 
+ * À ne pas confondre avec GuestGallery (Galerie Interactive) qui est la vue interactive mobile.
+ */
 interface WallViewProps {
   photos: Photo[];
   onBack: () => void;

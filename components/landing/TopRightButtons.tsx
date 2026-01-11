@@ -55,13 +55,13 @@ export const TopRightButtons: React.FC<TopRightButtonsProps> = ({
         />
       )}
 
-      {/* Grand Écran Button */}
+      {/* Mur Live Button - Vue projection grand écran (lecture seule, optimisée TV) */}
       {isAdminAuthenticated && (
         <ActionButton
           onClick={() => onSelectMode('wall')}
           icon={Tv}
-          title="Grand Écran"
-          ariaLabel="Grand Écran"
+          title="Mur Live"
+          ariaLabel="Mur Live"
           gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
           glowColor="rgba(99, 102, 241, 0.15)"
         />

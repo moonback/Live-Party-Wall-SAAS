@@ -373,6 +373,7 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
+          {/* Galerie Interactive - Vue interactive mobile (likes, réactions, filtres) */}
           {viewMode === 'gallery' && (
             <TransitionWrapper type="slide-bottom" duration={600}>
                <GuestGallery 
@@ -383,6 +384,7 @@ const AppContent: React.FC = () => {
             </TransitionWrapper>
           )}
 
+          {/* Mur Live - Vue projection grand écran (lecture seule, optimisée TV) */}
           {viewMode === 'wall' && (
             <TransitionWrapper type="fade" duration={500}>
               {isAdminAuthenticated ? (
