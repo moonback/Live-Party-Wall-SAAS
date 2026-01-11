@@ -386,6 +386,11 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - ⏯️ Contrôles de lecture
 - 🔲 Mode plein écran
 - ⏰ Carrousel auto après inactivité
+- 🎬 **Animations d'activation** - Effets visuels spectaculaires lors de l'activation des fonctionnalités :
+  - ⚔️ **Mode Battle** - Animation avec trophées et particules dorées/roses/violettes
+  - 🔍 **Retrouve-moi** - Animation avec icônes de recherche et particules bleues/violettes/roses
+  - 🎨 **Mode Collage** - Animation avec grilles et particules vertes/bleues/violettes
+  - ⏱️ Affichage automatique pendant 5 secondes lors de l'activation depuis le mobile control
 
 ### Analytics
 - 📊 Nombre total photos
@@ -426,6 +431,10 @@ Live Party Wall intègre **Google Gemini 3 Flash** pour :
 - 📊 Stats temps réel
 - ⚔️ Création de battles
 - 🎨 Configuration complète (fond, logo, paramètres)
+- 🎬 **Notifications visuelles** - Animations sur le mur lors de l'activation des fonctionnalités :
+  - Mode Battle, Retrouve-moi, Mode Collage
+  - Effets visuels avec particules, glow et animations fluides
+  - Feedback immédiat pour les invités sur grand écran
 
 ### 🎬 Aftermovies - Génération de vidéos souvenirs
 
