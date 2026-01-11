@@ -24,7 +24,9 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<CollageTemplate>('2x2');
   const [previewCollage, setPreviewCollage] = useState<string | null>(null);
-  const [authorName, setAuthorName] = useState('');
+  const [authorName, setAuthorName] = useState(() => {
+    return localStorage.getItem('party_user_name') || '';
+  });
   const [userDescription, setUserDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
@@ -347,7 +349,12 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
     }
 
     setLoading(true);
-    setLoadingStep('Vérification de la photo...');
+    // Afficher le message d'analyse IA seulement si la génération de légende est activée
+    if (eventSettings.caption_generation_enabled) {
+      setLoadingStep('Vérification de la photo...');
+    } else {
+      setLoadingStep('Traitement du collage...');
+    }
 
     try {
       // Modération IA (toujours activée)
@@ -361,8 +368,12 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
         return;
       }
 
-      setLoadingStep('Génération de la légende...');
-      const caption = await generateImageCaption(previewCollage, eventSettings.event_context);
+      // Générer la légende seulement si activée dans les paramètres
+      let caption = '';
+      if (eventSettings.caption_generation_enabled) {
+        setLoadingStep('Génération de la légende...');
+        caption = await generateImageCaption(previewCollage, eventSettings.event_context);
+      }
 
       if (!currentEvent) {
         addToast("Aucun événement sélectionné", 'error');
@@ -381,6 +392,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
       addToast('Collage ajouté au mur ! 🎉', 'success');
       onCollageUploaded(photo);
+      setLoading(false);
     } catch (error) {
       console.error('Erreur lors de l\'upload:', error);
       addToast('Erreur lors de l\'upload du collage', 'error');
