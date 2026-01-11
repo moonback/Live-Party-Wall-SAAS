@@ -1,0 +1,20 @@
+# robots.txt pour Partywall
+# https://www.partywall.fr/robots.txt
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.partywall.fr/sitemap.xml
+
+# Désactiver l'indexation des fichiers de modèles IA (trop volumineux)
+Disallow: /models/
+
+# Autoriser les ressources publiques
+Allow: /favicon.svg
+Allow: /banner.jpg
+Allow: /manifest.json
+
+# Crawl-delay pour éviter la surcharge
+Crawl-delay: 1
+

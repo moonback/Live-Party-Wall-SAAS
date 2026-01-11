@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  
+  <!-- Page d'accueil -->
+  <url>
+    <loc>https://www.partywall.fr/</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Page d'accueil avec événement (exemple) -->
+  <url>
+    <loc>https://www.partywall.fr/?event=</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Mode galerie -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=gallery</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Mode projection -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=projection</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Mode wall -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=wall</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Mode stats -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=stats</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Mode admin -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=admin</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Mode photobooth -->
+  <url>
+    <loc>https://www.partywall.fr/?mode=photobooth</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+</urlset>
+
