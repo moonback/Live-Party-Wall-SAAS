@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   HelpCircle, 
   Camera, 
@@ -19,7 +19,11 @@ import {
   Trophy,
   User,
   Award,
-  TrendingUp
+  TrendingUp,
+  Search,
+  FileVideo,
+  Smile,
+  X
 } from 'lucide-react';
 
 interface HelpPageProps {
@@ -36,6 +40,7 @@ interface HelpSection {
 
 const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['getting-started']));
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => {
@@ -238,7 +243,8 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
               <li><span className="text-white font-medium">Recherche</span> : Recherchez par nom d'auteur</li>
               <li><span className="text-white font-medium">Filtres</span> : Affichez uniquement photos, vidéos ou tout</li>
               <li><span className="text-white font-medium">Likes</span> : Appuyez sur le cœur pour liker une photo</li>
-              <li><span className="text-white font-medium">Téléchargement</span> : Téléchargez vos photos préférées</li>
+              <li><span className="text-white font-medium">Mode sélection</span> : Sélectionnez plusieurs photos pour téléchargement en ZIP</li>
+              <li><span className="text-white font-medium">Téléchargement</span> : Téléchargez vos photos préférées individuellement ou en groupe</li>
             </ul>
           </div>
           <div className="p-4 rounded-xl bg-white/5 border border-white/10">
@@ -249,6 +255,88 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
             <p className="text-sm">
               Montrez votre appréciation en likant les photos qui vous plaisent. 
               Les photos les plus likées apparaissent en haut lors du tri par popularité.
+              Double-cliquez sur une photo dans la galerie pour liker rapidement.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'reactions',
+      title: 'Réactions émojis',
+      icon: Smile,
+      gradient: 'from-pink-500 via-rose-500 to-red-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Smile className="w-5 h-5 text-pink-400" />
+              Système de réactions
+            </h4>
+            <p className="text-sm mb-3">
+              En plus des likes, vous pouvez ajouter des réactions émojis pour exprimer vos émotions :
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+              <div className="p-3 rounded-lg bg-gradient-to-r from-red-500/10 to-pink-500/10 border border-red-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">❤️</span>
+                  <span className="font-semibold text-white text-sm">Cœur</span>
+                </div>
+                <p className="text-xs text-slate-400">J'adore</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">😂</span>
+                  <span className="font-semibold text-white text-sm">Rire</span>
+                </div>
+                <p className="text-xs text-slate-400">Trop drôle</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">😢</span>
+                  <span className="font-semibold text-white text-sm">Je pleure</span>
+                </div>
+                <p className="text-xs text-slate-400">Émouvant</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">🔥</span>
+                  <span className="font-semibold text-white text-sm">Feu</span>
+                </div>
+                <p className="text-xs text-slate-400">Incroyable</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">😮</span>
+                  <span className="font-semibold text-white text-sm">Wow !</span>
+                </div>
+                <p className="text-xs text-slate-400">Surprenant</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">👍</span>
+                  <span className="font-semibold text-white text-sm">Bravo !</span>
+                </div>
+                <p className="text-xs text-slate-400">Super</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-rose-400" />
+              Comment réagir
+            </h4>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Cliquez sur l'icône <span className="text-white font-medium">😊</span> sous une photo</li>
+              <li>Choisissez une réaction parmi les 6 disponibles</li>
+              <li>Vous pouvez changer votre réaction à tout moment</li>
+              <li>Une seule réaction par photo (mais modifiable)</li>
+              <li>Les compteurs de réactions sont mis à jour en temps réel</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-pink-500/10 to-red-500/10">
+            <p className="text-sm text-pink-300">
+              💡 Astuce : Les réactions permettent d'exprimer plus précisément vos émotions qu'un simple like !
             </p>
           </div>
         </div>
@@ -437,6 +525,67 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
       ),
     },
     {
+      id: 'downloads-aftermovies',
+      title: 'Téléchargements et Aftermovies',
+      icon: FileVideo,
+      gradient: 'from-blue-500 via-indigo-500 to-purple-500',
+      content: (
+        <div className="space-y-4 text-slate-300">
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Download className="w-5 h-5 text-blue-400" />
+              Téléchargement individuel
+            </h4>
+            <p className="text-sm mb-3">
+              Téléchargez vos photos préférées en haute qualité :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Dans la galerie, cliquez sur l'icône <span className="text-white font-medium">📥</span> sur une photo</li>
+              <li>La photo est téléchargée en haute qualité (4K si disponible)</li>
+              <li>Les photos sont téléchargées dans le dossier de téléchargements par défaut</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <Download className="w-5 h-5 text-indigo-400" />
+              Export ZIP groupé
+            </h4>
+            <p className="text-sm mb-3">
+              Téléchargez plusieurs photos en une fois :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Activez le <span className="text-white font-medium">Mode sélection</span> dans la galerie</li>
+              <li>Cochez les photos que vous voulez télécharger</li>
+              <li>Cliquez sur <span className="text-white font-medium">"Télécharger"</span> (icône 📥)</li>
+              <li>Un fichier ZIP est créé avec toutes les photos sélectionnées</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+              <FileVideo className="w-5 h-5 text-purple-400" />
+              Aftermovies (Vidéos souvenirs)
+            </h4>
+            <p className="text-sm mb-3">
+              Les organisateurs peuvent créer des vidéos timelapse à partir des photos de l'événement :
+            </p>
+            <ul className="space-y-2 text-sm list-disc list-inside ml-2">
+              <li>Les aftermovies apparaissent dans la <span className="text-white font-medium">section dédiée</span> de la galerie</li>
+              <li><span className="text-white font-medium">3 formats disponibles</span> : HD (720p), Full HD (1080p), Story (9:16 pour Instagram/TikTok)</li>
+              <li>Cliquez sur un aftermovie pour voir les détails (qualité, nombre de téléchargements)</li>
+              <li>Téléchargez l'aftermovie avec le bouton <span className="text-white font-medium">📥</span></li>
+              <li>Partagez facilement via le <span className="text-white font-medium">QR code</span> ou le lien</li>
+            </ul>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+            <p className="text-sm text-blue-300">
+              💡 Astuce : Les aftermovies sont générés automatiquement par l'organisateur. 
+              Consultez régulièrement la galerie pour voir les nouveaux aftermovies disponibles !
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: 'faq',
       title: 'Questions fréquentes',
       icon: HelpCircle,
@@ -445,43 +594,69 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
         <div className="space-y-4 text-slate-300">
           <div className="space-y-3">
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Dois-je créer un compte ?</h4>
+              <p className="text-sm text-slate-400">
+                Non ! Vous pouvez partager des photos sans compte. Cependant, créer un profil vous permet de voir vos statistiques, gagner des badges et apparaître dans les classements.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">Puis-je supprimer ma photo après l'avoir publiée ?</h4>
               <p className="text-sm text-slate-400">
-                Pour l'instant, les photos ne peuvent pas être supprimées par les invités. 
-                Contactez l'organisateur si nécessaire.
+                Pour l'instant, les photos ne peuvent pas être supprimées par les invités. Contactez l'organisateur si nécessaire.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">Mes photos sont-elles privées ?</h4>
               <p className="text-sm text-slate-400">
-                Non, toutes les photos partagées sont visibles par tous les invités de l'événement. 
-                Ne partagez que des photos que vous êtes à l'aise de montrer publiquement.
+                Non, toutes les photos partagées sont visibles par tous les invités de l'événement. Ne partagez que des photos que vous êtes à l'aise de montrer publiquement.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">Pourquoi ma photo n'apparaît pas ?</h4>
               <p className="text-sm text-slate-400">
-                Plusieurs raisons possibles : la modération automatique l'a rejetée, 
-                un problème de connexion, ou le format/taille du fichier n'est pas supporté.
+                Plusieurs raisons possibles : la modération automatique l'a rejetée, un problème de connexion, ou le format/taille du fichier n'est pas supporté. Attendez quelques secondes, l'upload peut prendre du temps.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Combien de photos puis-je partager ?</h4>
+              <p className="text-sm text-slate-400">
+                Il n'y a pas de limite ! Partagez autant de photos que vous voulez. Les photos sont automatiquement compressées pour optimiser l'espace.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">Puis-je utiliser l'application hors ligne ?</h4>
               <p className="text-sm text-slate-400">
-                Non, une connexion Internet est nécessaire pour partager et voir les photos en temps réel.
+                Non, une connexion Internet est nécessaire pour partager et voir les photos en temps réel. Cependant, les photos déjà chargées peuvent être consultées en cache.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">Comment télécharger une photo ?</h4>
               <p className="text-sm text-slate-400">
-                Dans la galerie, cliquez sur l'icône de téléchargement en bas à droite de chaque photo.
+                Dans la galerie, cliquez sur l'icône de téléchargement (📥) en bas à droite de chaque photo. Pour plusieurs photos, utilisez le mode sélection.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <h4 className="font-semibold text-white mb-2">L'application fonctionne-t-elle sur tous les appareils ?</h4>
               <p className="text-sm text-slate-400">
-                Oui, l'application est compatible avec les smartphones, tablettes et ordinateurs. 
-                Pour la meilleure expérience, utilisez un navigateur récent (Chrome, Safari, Firefox, Edge).
+                Oui, l'application est compatible avec les smartphones, tablettes et ordinateurs. Pour la meilleure expérience, utilisez un navigateur récent (Chrome, Safari, Firefox, Edge).
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Comment fonctionne la recherche "Retrouve-moi" ?</h4>
+              <p className="text-sm text-slate-400">
+                La recherche utilise la reconnaissance faciale (IA) pour trouver toutes les photos où vous apparaissez. Prenez une photo claire de votre visage pour de meilleurs résultats. Toute la reconnaissance se fait localement sur votre appareil.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Puis-je modifier ma réaction ?</h4>
+              <p className="text-sm text-slate-400">
+                Oui ! Vous pouvez changer votre réaction à tout moment. Cliquez sur l'icône 😊 sous une photo et choisissez une nouvelle réaction. Vous ne pouvez avoir qu'une seule réaction par photo à la fois.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <h4 className="font-semibold text-white mb-2">Les photos sont-elles stockées indéfiniment ?</h4>
+              <p className="text-sm text-slate-400">
+                Les photos sont stockées tant que l'événement est actif. L'organisateur peut archiver l'événement à tout moment. Téléchargez vos photos préférées pour les conserver.
               </p>
             </div>
           </div>
@@ -664,6 +839,38 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
     },
   ];
 
+  // Fonction pour ouvrir automatiquement une section lors de la recherche
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      // Trouver les sections correspondantes et les ouvrir
+      const matchingSections = helpSections.filter(section => 
+        section.title.toLowerCase().includes(query.toLowerCase()) ||
+        section.id.toLowerCase().includes(query.toLowerCase())
+      );
+      if (matchingSections.length > 0) {
+        setExpandedSections(prev => {
+          const newSet = new Set(prev);
+          matchingSections.forEach(section => newSet.add(section.id));
+          return newSet;
+        });
+      }
+    } else {
+      // Réinitialiser à la section par défaut si la recherche est vide
+      setExpandedSections(new Set(['getting-started']));
+    }
+  };
+
+  // Filtrer les sections selon la recherche
+  const filteredSections = useMemo(() => {
+    if (!searchQuery.trim()) return helpSections;
+    const query = searchQuery.toLowerCase();
+    return helpSections.filter(section => 
+      section.title.toLowerCase().includes(query) ||
+      section.id.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
   return (
     <div className="min-h-screen w-full bg-slate-950 text-white relative overflow-hidden">
       {/* Animated Background */}
@@ -683,9 +890,9 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
         />
       </div>
 
-      {/* Header */}
+        {/* Header */}
       <div className="relative z-10 w-full max-w-4xl mx-auto p-4 pt-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-6">
           <button
             onClick={onBack}
             className="p-3 rounded-2xl backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white transition-all duration-300 group shadow-lg"
@@ -706,16 +913,56 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Rechercher dans l'aide..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full pl-12 pr-10 py-3 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-300"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setExpandedSections(new Set(['getting-started']));
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 rounded-lg hover:bg-white/10 transition-colors"
+                aria-label="Effacer la recherche"
+              >
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
+            )}
+          </div>
+        </div>
+
+
         {/* Help Sections */}
         <div className="space-y-3 pb-8">
-          {helpSections.map((section) => {
+          {filteredSections.length === 0 && searchQuery.trim() ? (
+            <div className="p-8 text-center rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10">
+              <Search className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-300 text-lg font-semibold mb-2">Aucun résultat trouvé</p>
+              <p className="text-slate-400 text-sm">Essayez avec d'autres mots-clés</p>
+            </div>
+          ) : (
+            filteredSections.map((section) => {
             const Icon = section.icon;
             const isExpanded = expandedSections.has(section.id);
+            const matchesSearch = searchQuery.trim() && (
+              section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              section.id.toLowerCase().includes(searchQuery.toLowerCase())
+            );
 
             return (
               <div
                 key={section.id}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/10"
+                className={`backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/10 ${
+                  matchesSearch ? 'ring-2 ring-pink-500/50' : ''
+                }`}
                 style={{
                   boxShadow: isExpanded 
                     ? '0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
@@ -754,21 +1001,20 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
                 )}
               </div>
             );
-          })}
+          }))}
         </div>
 
         {/* Footer */}
-        <div className="text-center py-8 text-slate-400 text-sm space-y-2">
+        <div className="text-center py-8 text-slate-400 text-sm space-y-3">
           <p>
             Besoin d'aide supplémentaire ? Contactez l'organisateur de l'événement.
           </p>
-          <div className="flex items-center justify-center gap-4 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
             <button
               onClick={() => {
-                // Navigation vers la politique de confidentialité
                 const event = new CustomEvent('navigate', { detail: 'privacy' });
                 window.dispatchEvent(event);
-                onBack(); // Fermer la page d'aide
+                onBack();
               }}
               className="text-blue-400 hover:text-blue-300 underline transition-colors"
             >
@@ -777,10 +1023,9 @@ const HelpPage: React.FC<HelpPageProps> = ({ onBack }) => {
             <span className="text-slate-600">•</span>
             <button
               onClick={() => {
-                // Navigation vers la gestion des données
                 const event = new CustomEvent('navigate', { detail: 'data-management' });
                 window.dispatchEvent(event);
-                onBack(); // Fermer la page d'aide
+                onBack();
               }}
               className="text-blue-400 hover:text-blue-300 underline transition-colors"
             >
