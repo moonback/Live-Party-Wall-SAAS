@@ -236,7 +236,7 @@ Stocke les paramètres de configuration pour chaque événement (relation 1-1 av
 | `background_mobile_url` | TEXT | URL de l'image de fond mobile | NULL |
 | `auto_carousel_enabled` | BOOLEAN | Carrousel automatique activé | DEFAULT false, NOT NULL |
 | `auto_carousel_delay` | INTEGER | Délai carrousel en secondes (5-240) | DEFAULT 10, NULL |
-| `aftermovies_enabled` | BOOLEAN | Aftermovies activés | DEFAULT true, NOT NULL |
+| `aftermovies_enabled` | BOOLEAN | Aftermovies activés | DEFAULT false, NOT NULL |
 | `tags_generation_enabled` | BOOLEAN | Génération tags IA activée | DEFAULT true, NOT NULL |
 | `created_at` | TIMESTAMPTZ | Date de création | DEFAULT now(), NOT NULL |
 | `updated_at` | TIMESTAMPTZ | Date de mise à jour | DEFAULT now(), NOT NULL |

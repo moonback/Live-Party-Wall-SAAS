@@ -4,13 +4,13 @@
 -- Date: 2026-01-15
 -- ==========================================
 
--- Ajouter la colonne 'aftermovies_enabled' avec valeur par défaut true pour rétrocompatibilité
+-- Ajouter la colonne 'aftermovies_enabled' avec valeur par défaut false
 ALTER TABLE public.event_settings
-ADD COLUMN IF NOT EXISTS aftermovies_enabled BOOLEAN NOT NULL DEFAULT true;
+ADD COLUMN IF NOT EXISTS aftermovies_enabled BOOLEAN NOT NULL DEFAULT false;
 
--- Mettre à jour les enregistrements existants pour avoir aftermovies_enabled = true
+-- Mettre à jour les enregistrements existants pour avoir aftermovies_enabled = false
 UPDATE public.event_settings
-SET aftermovies_enabled = true 
+SET aftermovies_enabled = false 
 WHERE aftermovies_enabled IS NULL;
 
 -- Commentaire

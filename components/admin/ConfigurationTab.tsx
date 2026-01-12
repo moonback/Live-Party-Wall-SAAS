@@ -1084,7 +1084,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <input
                       type="checkbox"
                       name="aftermovies_enabled"
-                      checked={localConfig.aftermovies_enabled ?? true}
+                      checked={localConfig.aftermovies_enabled ?? false}
                       onChange={handleConfigChange}
                       className="h-4 w-4 accent-indigo-500 mt-1 flex-shrink-0"
                     />

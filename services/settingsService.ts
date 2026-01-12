@@ -56,7 +56,7 @@ export const defaultSettings: EventSettings = {
   logo_watermark_enabled: false,
   auto_carousel_enabled: true,
   auto_carousel_delay: 20, // 20 secondes par défaut
-  aftermovies_enabled: true,
+  aftermovies_enabled: false,
   caption_language: 'fr' // Français par défaut
 };
 
