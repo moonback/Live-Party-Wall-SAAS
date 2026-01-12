@@ -24,7 +24,7 @@ export const CaptureButton: React.FC<CaptureButtonProps> = ({
     <button
       onClick={onClick}
       disabled={isDisabled}
-      className={`relative w-20 h-20 sm:w-24 sm:h-24 md:w-20 md:h-20 rounded-full border-4 sm:border-[6px] md:border-2 border-white/90 md:border-white/40 flex items-center justify-center bg-transparent transition-all shadow-lg md:shadow-sm hover:shadow-2xl md:hover:shadow-md focus:outline-none focus:ring-4 focus:ring-pink-400/80 pointer-events-auto group
+      className={`relative w-20 h-20 sm:w-24 sm:h-24 md:w-20 md:h-20 landscape:w-16 landscape:h-16 landscape:sm:w-20 landscape:sm:h-20 rounded-full border-4 sm:border-[6px] md:border-2 landscape:border-3 landscape:sm:border-4 border-white/90 md:border-white/40 flex items-center justify-center bg-transparent transition-all shadow-lg md:shadow-sm hover:shadow-2xl md:hover:shadow-md focus:outline-none focus:ring-4 focus:ring-pink-400/80 pointer-events-auto group
         ${isDisabled ? 'opacity-40 scale-95 cursor-not-allowed' : 'hover:bg-white/10 hover:border-white md:hover:bg-transparent md:hover:border-white/40 active:scale-90'}
       `}
       aria-label={mediaType === 'video' ? (isRecording ? 'Arrêter l\'enregistrement' : 'Démarrer l\'enregistrement') : 'Prendre une photo'}
@@ -55,7 +55,7 @@ export const CaptureButton: React.FC<CaptureButtonProps> = ({
       </div>
       
       {/* Bouton principal */}
-      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-16 md:h-16 rounded-full border-2 sm:border-4 md:border border-transparent md:border-white/30 transition-all duration-300 shadow-lg md:shadow-none ${
+      <div className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-16 md:h-16 landscape:w-12 landscape:h-12 landscape:sm:w-16 landscape:sm:h-16 rounded-full border-2 sm:border-4 md:border landscape:border-2 landscape:sm:border-3 border-transparent md:border-white/30 transition-all duration-300 shadow-lg md:shadow-none ${
         isRecording && mediaType === 'video'
           ? 'bg-red-600 animate-pulse border-red-400/50 md:bg-red-500/80 md:border-red-400/40'
           : mediaType === 'video'

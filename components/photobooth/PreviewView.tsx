@@ -126,9 +126,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
 
       {/* Media Preview - Amélioré avec animations */}
       <div className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-black to-slate-900">
-        <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4">
+        <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4 landscape:p-1 landscape:sm:p-2">
           {mediaType === 'video' && preview ? (
-            <div className="relative w-full h-full max-h-[85vh] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <div className="relative w-full h-full max-h-[85vh] landscape:max-h-[90vh] rounded-2xl sm:rounded-3xl landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10">
               <video
                 src={preview}
                 controls
@@ -139,8 +139,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               />
             </div>
           ) : (
-            <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
-              <div className="relative w-full h-full flex items-center justify-center rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black/20">
+            <div className="relative w-full h-full max-h-[85vh] landscape:max-h-[90vh] flex items-center justify-center">
+              <div className="relative w-full h-full flex items-center justify-center rounded-2xl sm:rounded-3xl landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/20">
                 <img 
                   src={preview} 
                   alt="Preview" 
@@ -164,7 +164,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         
         {/* Inputs Container - Sur la même ligne en desktop, empilés en mobile - Version compacte */}
         {showInputs && (
-        <div className={`absolute bottom-[140px] sm:bottom-[100px] left-0 w-full px-3 sm:px-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 z-40 transition-all duration-500 ${
+        <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-0 w-full px-3 sm:px-4 landscape:px-2 landscape:sm:px-3 flex flex-col sm:flex-row landscape:flex-row justify-center gap-2 sm:gap-3 landscape:gap-1.5 landscape:sm:gap-2 z-40 transition-all duration-500 ${
           mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
         }`}>
           {/* Author Name Input - Compact */}
@@ -174,10 +174,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
             <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-pink-500/30 blur-xl transition-opacity duration-300 ${
               isAuthorNameFocused ? 'opacity-100' : 'opacity-0'
             }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
-                <User className="w-3 h-3 sm:w-4 sm:h-4 text-pink-400" />
-                <span className="text-[10px] sm:text-xs text-white/80 font-semibold">Votre nom</span>
+            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 landscape:p-1.5 landscape:sm:p-2 rounded-xl sm:rounded-2xl landscape:rounded-lg w-full border-2 border-white/30 shadow-2xl">
+              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1 landscape:mb-0.5 landscape:gap-1">
+                <User className="w-3 h-3 sm:w-4 sm:h-4 landscape:w-3 landscape:h-3 text-pink-400" />
+                <span className="text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px] text-white/80 font-semibold">Votre nom</span>
               </div>
               <input
                 type="text"
@@ -186,7 +186,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 onFocus={() => setIsAuthorNameFocused(true)}
                 onBlur={() => setIsAuthorNameFocused(false)}
                 placeholder="Entrez votre nom..."
-                className="w-full text-center font-bold text-base sm:text-lg text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300 py-0.5"
+                className="w-full text-center font-bold text-base sm:text-lg landscape:text-sm landscape:sm:text-base text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300 py-0.5 landscape:py-0"
                 maxLength={MAX_AUTHOR_NAME_LENGTH}
                 autoFocus
                 inputMode="text"
@@ -207,10 +207,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
             <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-blue-500/30 blur-xl transition-opacity duration-300 ${
               isDescriptionFocused ? 'opacity-100' : 'opacity-0'
             }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
-                <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" />
-                <span className="text-[10px] sm:text-xs text-white/80 font-semibold">Description (optionnel)</span>
+            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 landscape:p-1.5 landscape:sm:p-2 rounded-xl sm:rounded-2xl landscape:rounded-lg w-full border-2 border-white/30 shadow-2xl">
+              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1 landscape:mb-0.5 landscape:gap-1">
+                <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 landscape:w-3 landscape:h-3 text-blue-400" />
+                <span className="text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px] text-white/80 font-semibold">Description (optionnel)</span>
               </div>
               <textarea
                 value={userDescription}
@@ -218,7 +218,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 onFocus={() => setIsDescriptionFocused(true)}
                 onBlur={() => setIsDescriptionFocused(false)}
                 placeholder="Ajoutez une description..."
-                className="w-full text-center text-xs sm:text-sm text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300 py-0.5"
+                className="w-full text-center text-xs sm:text-sm landscape:text-[10px] landscape:sm:text-xs text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300 py-0.5 landscape:py-0"
                 maxLength={MAX_USER_DESCRIPTION_LENGTH}
                 rows={1}
                 style={{ minHeight: '1.5rem', maxHeight: '4rem' }}
@@ -236,11 +236,11 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       </div>
 
       {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité mobile */}
-      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 pb-4 sm:pb-8 bg-gradient-to-t from-black via-black/98 to-black/90 flex flex-nowrap sm:flex-wrap gap-2 sm:gap-0 sm:space-x-3 sm:space-x-4 z-50 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} overflow-x-auto sm:overflow-visible`}>
+      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 landscape:p-2 landscape:sm:p-3 pb-4 sm:pb-8 landscape:pb-2 landscape:sm:pb-3 bg-gradient-to-t from-black via-black/98 to-black/90 flex flex-nowrap sm:flex-wrap landscape:flex-nowrap gap-2 sm:gap-0 landscape:gap-1.5 landscape:sm:gap-2 sm:space-x-3 sm:space-x-4 z-50 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} overflow-x-auto sm:overflow-visible`}>
         {/* Bouton pour cacher/afficher les inputs - Toujours visible */}
         <button 
           onClick={() => setShowInputs(!showInputs)}
-          className={`group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
+          className={`group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 landscape:w-10 landscape:h-10 landscape:sm:w-12 landscape:sm:h-12 rounded-2xl landscape:rounded-xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
             showInputs 
               ? 'bg-black/95 border-white/50 text-white hover:bg-black hover:border-white/70' 
               : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/90 text-white shadow-blue-500/60'
@@ -276,7 +276,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         <button
           onClick={onRetake}
           disabled={loading}
-          className="group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-white/20 backdrop-blur-xl text-white rounded-2xl font-bold border-2 border-white/40 active:scale-95 transition-all duration-300 hover:bg-white/30 hover:border-white/60 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 landscape:w-10 landscape:h-10 landscape:sm:w-12 landscape:sm:h-12 flex items-center justify-center bg-white/20 backdrop-blur-xl text-white rounded-2xl landscape:rounded-xl font-bold border-2 border-white/40 active:scale-95 transition-all duration-300 hover:bg-white/30 hover:border-white/60 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refaire"
           aria-label="Refaire la photo"
         >
@@ -287,7 +287,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         <button
           onClick={onSubmit}
           disabled={loading}
-          className="group relative flex-1 min-w-[120px] sm:min-w-0 py-4 sm:py-5 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl font-bold shadow-[0_0_30px_rgba(219,39,119,0.6)] hover:shadow-[0_0_50px_rgba(219,39,119,0.8)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border-2 border-pink-400/70 touch-manipulation overflow-hidden"
+          className="group relative flex-1 min-w-[120px] sm:min-w-0 landscape:min-w-[100px] landscape:sm:min-w-0 py-4 sm:py-5 landscape:py-2.5 landscape:sm:py-3 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl landscape:rounded-xl font-bold shadow-[0_0_30px_rgba(219,39,119,0.6)] hover:shadow-[0_0_50px_rgba(219,39,119,0.8)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border-2 border-pink-400/70 touch-manipulation overflow-hidden"
           aria-label={loading ? loadingStep : "Envoyer au mur"}
         >
           {/* Shimmer effect */}
@@ -305,10 +305,10 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               <span className="animate-pulse text-sm sm:text-base font-semibold">{loadingStep}</span>
             </div>
           ) : (
-            <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-2.5 font-semibold text-sm sm:text-base">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
-              <span className="hidden sm:inline">ENVOYER AU MUR</span>
-              <span className="sm:hidden">ENVOYER</span>
+            <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-2.5 landscape:gap-1.5 landscape:sm:gap-2 font-semibold text-sm sm:text-base landscape:text-xs landscape:sm:text-sm">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 landscape:w-3.5 landscape:h-3.5 landscape:sm:w-4 landscape:sm:h-4 animate-pulse" />
+              <span className="hidden sm:inline landscape:hidden">ENVOYER AU MUR</span>
+              <span className="sm:hidden landscape:inline">ENVOYER</span>
             </span>
           )}
         </button>
