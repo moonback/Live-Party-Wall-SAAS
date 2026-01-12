@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowLeft, Camera, Image, Search, X, Filter, CheckSquare, Square, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Camera, Image, Search, X, Filter, CheckSquare, Square, Trash2, Download, Users } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +15,7 @@ interface GalleryHeaderProps {
   onToggleSelectionMode?: () => void;
   selectedCount?: number;
   onBatchDownload?: () => void;
+  onParticipantsClick?: () => void;
 }
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -28,7 +29,8 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   selectionMode = false,
   onToggleSelectionMode,
   selectedCount = 0,
-  onBatchDownload
+  onBatchDownload,
+  onParticipantsClick
 }) => {
   const isMobile = useIsMobile();
   const internalSearchRef = useRef<HTMLInputElement>(null);
@@ -157,6 +159,23 @@ Votre mur social interactif
 
           {/* Center/Right: Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 justify-end">
+            {/* Participants Button (Desktop) - À gauche de la recherche */}
+            {!isMobile && onParticipantsClick && (
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onParticipantsClick}
+                className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl md:px-4 md:py-2.5 md:rounded-2xl bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 text-slate-400 hover:text-indigo-400 transition-all touch-manipulation flex items-center justify-center gap-2 relative overflow-hidden group"
+                title="Voir les participants"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 transition-all duration-300"
+                />
+                <Users className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 relative z-10" />
+                <span className="hidden lg:inline font-semibold text-sm relative z-10">Participants</span>
+              </motion.button>
+            )}
+
             {/* Search Bar (Desktop) */}
             {!isMobile && (
               <motion.div 
@@ -203,6 +222,17 @@ Votre mur social interactif
                   )}
                 </AnimatePresence>
               </motion.div>
+            )}
+
+            {/* Participants Button (Mobile) */}
+            {isMobile && onParticipantsClick && (
+              <button
+                onClick={onParticipantsClick}
+                className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border bg-white/5 border-white/10 text-white hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all touch-manipulation flex items-center justify-center"
+                title="Voir les participants"
+              >
+                <Users className="w-5 h-5" />
+              </button>
             )}
 
             {/* Mobile Search Toggle */}

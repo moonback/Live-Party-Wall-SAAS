@@ -99,18 +99,42 @@ export const GalleryFAB: React.FC<GalleryFABProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <motion.div
-          animate={{ 
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, -5, 0]
+          animate={{
+            scale: [1, 1.15, 1],
+            rotate: [0, 8, -8, 0],
+            boxShadow: [
+              '0px 0px 0px 0px rgba(236,72,153,0.0)',
+              '0px 0px 30px 0px rgba(236,72,153,0.15)',
+              '0px 0px 0px 0px rgba(236,72,153,0.0)'
+            ]
           }}
-          transition={{ 
-            duration: 3,
+          transition={{
+            duration: 2.6,
             repeat: Infinity,
             ease: 'easeInOut'
           }}
-          className="relative z-10"
+          className="relative z-10 flex items-center justify-center"
         >
-          <Camera className={`${isMobile ? 'w-8 h-8' : 'w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10'}`} />
+          <Camera
+            className={`${isMobile
+              ? 'w-9 h-9 drop-shadow-[0_6px_18px_rgba(236,72,153,0.6)]'
+              : 'w-8 h-8 sm:w-9 sm:h-9 md:w-12 md:h-12 drop-shadow-[0_8px_24px_rgba(236,72,153,0.7)]'
+            } transition-all duration-300`}
+          />
+          {/* Flash sparkle */}
+          <motion.div
+            className="absolute right-2 top-2 w-2 h-2 rounded-full bg-white/80 opacity-70 pointer-events-none shadow-[0_0_12px_2px_rgba(255,255,255,0.7)]"
+            animate={{
+              scale: [1, 1.3, 0.7, 1],
+              opacity: [0.7, 1, 0.3, 0.7]
+            }}
+            transition={{
+              duration: 1.35,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 0.6
+            }}
+          />
         </motion.div>
       </motion.button>
     </div>,
