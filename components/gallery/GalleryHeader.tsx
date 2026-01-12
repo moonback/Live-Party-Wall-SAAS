@@ -341,7 +341,7 @@ Votre mur social interactif
               className="mt-3 sm:mt-2 md:mt-4 flex items-center justify-between bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-3 sm:rounded-2xl sm:p-2.5 md:p-3 md:px-6"
             >
               <p className="text-indigo-300 font-bold text-sm sm:text-xs md:text-sm">
-                {selectedCount} élément{selectedCount > 1 ? 's' : ''} sélectionné{selectedCount > 1 ? 's' : ''}
+                {selectedCount} élément{selectedCount > 1 ? 's' : ''} sélectionné à télécharger{selectedCount > 1 ? 's' : ''}
               </p>
               <div className="flex items-center gap-2 sm:gap-1.5 md:gap-2">
                 {onBatchDownload && (
