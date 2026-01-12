@@ -240,79 +240,76 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       </div>
 
       {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité mobile */}
-      <div className={`absolute bottom-0 left-0 w-full p-3 sm:p-6 landscape:p-2 landscape:sm:p-3 pb-4 sm:pb-8 landscape:pb-2 landscape:sm:pb-3 bg-gradient-to-t from-black via-black/98 to-black/90 flex flex-nowrap sm:flex-wrap landscape:flex-nowrap gap-2 sm:gap-0 landscape:gap-1.5 landscape:sm:gap-2 sm:space-x-3 sm:space-x-4 z-50 transition-all duration-500 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} overflow-x-auto sm:overflow-visible`}>
-        {/* Bouton pour cacher/afficher les inputs - Toujours visible */}
-        <button 
+      <div
+        className={`absolute bottom-0 left-0 w-full px-2 py-2 sm:px-4 sm:py-4 landscape:px-1.5 landscape:py-1.5 bg-gradient-to-t from-black via-black/95 to-black/90 flex items-end gap-1 sm:gap-2 landscape:gap-1 z-50 transition-all duration-500 delay-200 ${
+          mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+        } overflow-x-auto sm:overflow-visible`}
+      >
+        {/* Toggle Inputs */}
+        <button
           onClick={() => setShowInputs(!showInputs)}
-          className={`group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 landscape:w-10 landscape:h-10 landscape:sm:w-12 landscape:sm:h-12 rounded-2xl landscape:rounded-xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
-            showInputs 
-              ? 'bg-black/95 border-white/50 text-white hover:bg-black hover:border-white/70' 
-              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/90 text-white shadow-blue-500/60'
+          className={`group relative flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 landscape:w-8 landscape:h-8 rounded-lg backdrop-blur-xl border flex items-center justify-center transition-all duration-300 shadow-xl hover:shadow-lg hover:scale-105 active:scale-95 ${
+            showInputs
+              ? 'bg-black/90 border-white/40 text-white hover:bg-black hover:border-white/60'
+              : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-400/80 text-white shadow-blue-500/30'
           }`}
           title={showInputs ? "Masquer les champs" : "Afficher les champs"}
           aria-label={showInputs ? "Masquer les champs" : "Afficher les champs"}
         >
-          <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
-            showInputs 
-              ? 'bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100' 
-              : 'bg-gradient-to-br from-blue-400/20 to-blue-600/20 opacity-100'
-          }`} />
           {showInputs ? (
-            <EyeOff className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <EyeOff className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" strokeWidth={2.2} />
           ) : (
-            <Eye className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <Eye className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" strokeWidth={2.2} />
           )}
         </button>
-        
-        {/* Bouton Télécharger - Visible en mobile dans la barre du bas */}
+
+        {/* Download button - Mobile only */}
         {mediaType === 'photo' && (
-          <button 
+          <button
             onClick={onDownload}
-            className="group relative flex-shrink-0 w-12 h-12 sm:hidden rounded-2xl bg-black/95 backdrop-blur-xl border-2 border-white/50 flex items-center justify-center hover:bg-black hover:border-white/70 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl"
+            className="group relative flex-shrink-0 w-10 h-10 sm:hidden rounded-lg bg-black/90 backdrop-blur-xl border border-white/40 flex items-center justify-center hover:bg-black hover:border-white/60 active:scale-95 transition-all duration-300 text-white shadow-xl"
             title="Télécharger"
             aria-label="Télécharger la photo"
           >
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Download className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <Download className="w-4 h-4 relative z-10" strokeWidth={2.2} />
           </button>
         )}
-        
+
+        {/* Retake */}
         <button
           onClick={onRetake}
           disabled={loading}
-          className="group relative flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 landscape:w-10 landscape:h-10 landscape:sm:w-12 landscape:sm:h-12 flex items-center justify-center bg-white/20 backdrop-blur-xl text-white rounded-2xl landscape:rounded-xl font-bold border-2 border-white/40 active:scale-95 transition-all duration-300 hover:bg-white/30 hover:border-white/60 hover:scale-110 touch-manipulation shadow-2xl hover:shadow-pink-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 landscape:w-8 landscape:h-8 flex items-center justify-center bg-white/15 text-white rounded-lg font-bold border border-white/30 active:scale-95 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-105 shadow-xl hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refaire"
           aria-label="Refaire la photo"
         >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <span className="text-2xl sm:text-3xl relative z-10 transition-transform duration-300 group-hover:rotate-180">↺</span>
+          <span className="text-xl sm:text-2xl relative z-10 group-hover:rotate-180 transition-transform duration-300">↺</span>
         </button>
-        
+
+        {/* Submit */}
         <button
           onClick={onSubmit}
           disabled={loading}
-          className="group relative flex-1 min-w-[120px] sm:min-w-0 landscape:min-w-[100px] landscape:sm:min-w-0 py-4 sm:py-5 landscape:py-2.5 landscape:sm:py-3 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl landscape:rounded-xl font-bold shadow-[0_0_30px_rgba(219,39,119,0.6)] hover:shadow-[0_0_50px_rgba(219,39,119,0.8)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border-2 border-pink-400/70 touch-manipulation overflow-hidden"
+          className="group relative flex-1 min-w-[70px] sm:min-w-0 py-1.5 sm:py-2 landscape:py-1 landscape:sm:py-1.5 px-2 sm:px-3 landscape:px-1.5 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-lg font-bold shadow-[0_0_10px_rgba(219,39,119,0.4)] hover:shadow-[0_0_12px_rgba(219,39,119,0.6)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border border-pink-400/50 overflow-hidden"
           aria-label={loading ? loadingStep : "Envoyer au mur"}
         >
           {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
           {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-pink-400/0 via-pink-300/30 to-pink-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
-          
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-400/0 via-pink-200/20 to-pink-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none" />
           {loading ? (
-            <div className="relative z-10 flex items-center gap-3">
-              <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-white" viewBox="0 0 24 24">
+            <div className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+              <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 landscape:h-3 landscape:w-3 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span className="animate-pulse text-sm sm:text-base font-semibold">{loadingStep}</span>
+              <span className="animate-pulse text-[10px] sm:text-xs landscape:text-[9px] font-semibold">{loadingStep}</span>
             </div>
           ) : (
-            <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-2.5 landscape:gap-1.5 landscape:sm:gap-2 font-semibold text-sm sm:text-base landscape:text-xs landscape:sm:text-sm">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 landscape:w-3.5 landscape:h-3.5 landscape:sm:w-4 landscape:sm:h-4 animate-pulse" />
+            <span className="relative z-10 flex items-center justify-center gap-1 sm:gap-1.5 landscape:gap-1 font-semibold text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px]">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 landscape:w-2.5 landscape:h-2.5 animate-pulse" />
               <span className="hidden sm:inline landscape:hidden">ENVOYER AU MUR</span>
-              <span className="sm:hidden landscape:inline">ENVOYER</span>
+              <span className="inline sm:hidden landscape:inline">ENVOYER</span>
             </span>
           )}
         </button>
