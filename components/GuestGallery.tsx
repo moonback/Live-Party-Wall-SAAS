@@ -19,6 +19,7 @@ import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
 import { AftermovieCard } from './gallery/AftermovieCard';
+import { LeaderboardModal } from './gallery/LeaderboardModal';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { applyWatermarkToImage } from '../utils/watermarkUtils';
@@ -55,7 +56,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [userId, setUserId] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>('all');
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
@@ -563,7 +564,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         searchInputRef.current?.focus();
       }
       if (e.key === 'Escape') {
-        if (showLeaderboard) setShowLeaderboard(false);
+        if (isLeaderboardModalOpen) setIsLeaderboardModalOpen(false);
         if (selectionMode) {
           setSelectionMode(false);
           setSelectedIds(new Set());
@@ -572,7 +573,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showLeaderboard, selectionMode]);
+  }, [isLeaderboardModalOpen, selectionMode]);
 
   const handleBattleFinished = useCallback((battleId: string, _winnerId: string | null, winnerPhoto?: Photo) => {
     setBattles(prev => prev.filter(b => b.id !== battleId));
@@ -642,8 +643,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onSortChange={setSortBy}
             mediaFilter={mediaFilter}
             onMediaFilterChange={setMediaFilter}
-            showLeaderboard={showLeaderboard}
-            onToggleLeaderboard={() => setShowLeaderboard(!showLeaderboard)}
+            onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
             showBattles={showBattles}
             onToggleBattles={() => setShowBattles(!showBattles)}
             battlesCount={battles.length}
@@ -714,7 +714,6 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             battles={battles}
             showBattles={showBattles}
             battleModeEnabled={settings.battle_mode_enabled !== false}
-            showLeaderboard={showLeaderboard}
             likedPhotoIds={likedPhotoIds}
             downloadingIds={downloadingIds}
             userReactions={userReactions}
@@ -779,6 +778,15 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
           />
         </Suspense>
       )}
+
+      {/* Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={isLeaderboardModalOpen}
+        onClose={() => setIsLeaderboardModalOpen(false)}
+        photos={filteredAndSortedPhotos}
+        guestAvatars={guestAvatars}
+        photosReactions={photosReactions}
+      />
     </div>
   );
 };

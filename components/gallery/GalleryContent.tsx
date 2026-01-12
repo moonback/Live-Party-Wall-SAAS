@@ -5,7 +5,6 @@ import { GuestPhotoCard } from './GuestPhotoCard';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
 import { PhotoCardSkeletons } from '../PhotoCardSkeleton';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import Leaderboard from '../Leaderboard';
 import type { ReactionType } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,7 +14,6 @@ interface GalleryContentProps {
   battles: PhotoBattle[];
   showBattles: boolean;
   battleModeEnabled: boolean;
-  showLeaderboard: boolean;
   likedPhotoIds: Set<string>;
   downloadingIds: Set<string>;
   userReactions: Map<string, ReactionType>;
@@ -257,7 +255,6 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   battles,
   showBattles,
   battleModeEnabled,
-  showLeaderboard,
   likedPhotoIds,
   downloadingIds,
   userReactions,
@@ -347,32 +344,6 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Leaderboard Panel */}
-      <AnimatePresence>
-        {showLeaderboard && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden"
-          >
-            <motion.div 
-              className="bg-gradient-to-br from-slate-900/60 via-slate-800/40 to-slate-900/60 backdrop-blur-xl rounded-xl p-4 sm:rounded-2xl md:rounded-[2.5rem] sm:p-6 md:p-8 border border-yellow-500/20 shadow-2xl relative overflow-hidden"
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-yellow-500/10 to-yellow-500/0 opacity-50 blur-3xl" />
-              <div className="relative z-10">
-                <Leaderboard photos={photos} maxEntries={5} guestAvatars={guestAvatars} photosReactions={photosReactions} />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Grid de photos avec Masonry Style et Virtualisation */}
       <motion.div 
         initial={{ opacity: 0 }}

@@ -12,8 +12,6 @@ interface GalleryFiltersModalProps {
   onSortChange: (sort: SortOption) => void;
   mediaFilter: MediaFilter;
   onMediaFilterChange: (filter: MediaFilter) => void;
-  showLeaderboard: boolean;
-  onToggleLeaderboard: () => void;
   photos: Photo[];
   selectedAuthors: string[];
   onSelectedAuthorsChange: (authors: string[]) => void;
@@ -27,8 +25,6 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
   onSortChange,
   mediaFilter,
   onMediaFilterChange,
-  showLeaderboard,
-  onToggleLeaderboard,
   photos,
   selectedAuthors,
   onSelectedAuthorsChange,
@@ -69,6 +65,7 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
         document.body.style.overflow = originalStyle;
       };
     }
+    return undefined;
   }, [isOpen]);
 
   if (typeof window === 'undefined') {

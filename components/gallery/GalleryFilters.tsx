@@ -10,8 +10,7 @@ interface GalleryFiltersProps {
   onSortChange: (sort: SortOption) => void;
   mediaFilter: MediaFilter;
   onMediaFilterChange: (filter: MediaFilter) => void;
-  showLeaderboard: boolean;
-  onToggleLeaderboard: () => void;
+  onOpenLeaderboard: () => void;
   showBattles: boolean;
   onToggleBattles: () => void;
   battlesCount: number;
@@ -35,8 +34,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
   onSortChange,
   mediaFilter,
   onMediaFilterChange,
-  showLeaderboard,
-  onToggleLeaderboard,
+  onOpenLeaderboard,
   showBattles,
   onToggleBattles,
   battlesCount,
@@ -121,33 +119,16 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
           </motion.button>
         )}
 
-        {/* Leaderboard Toggle - Optimisé pour tenir sur une ligne */}
+        {/* Leaderboard Button - Ouvre la modale */}
         <motion.button
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={onToggleLeaderboard}
-          className={`flex items-center ${isMobile ? 'gap-1 px-2.5 py-2 min-h-[44px] rounded-xl' : 'gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl'} ${isMobile ? 'text-[11px]' : 'text-[10px] sm:text-xs'} font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden ${
-            showLeaderboard
-              ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-500 shadow-lg shadow-yellow-500/20'
-              : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
-          }`}
+          onClick={onOpenLeaderboard}
+          className="flex items-center gap-1 px-2.5 py-2 min-h-[44px] rounded-xl sm:gap-1.5 sm:px-3 sm:py-2.5 sm:rounded-2xl text-[11px] sm:text-[10px] md:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden bg-white/5 border-white/10 text-slate-400 hover:text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/30"
         >
-          {showLeaderboard && (
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-yellow-500/20"
-              animate={{
-                x: ['-100%', '100%'],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'linear'
-              }}
-            />
-          )}
           <motion.div
-            animate={showLeaderboard ? { rotate: [0, -15, 15, 0] } : {}}
-            transition={{ duration: 0.5 }}
+            animate={{ rotate: [0, -15, 15, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             className="relative z-10"
           >
             <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -283,8 +264,6 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
         onSortChange={onSortChange}
         mediaFilter={mediaFilter}
         onMediaFilterChange={onMediaFilterChange}
-        showLeaderboard={showLeaderboard}
-        onToggleLeaderboard={onToggleLeaderboard}
         photos={photos}
         selectedAuthors={selectedAuthors}
         onSelectedAuthorsChange={onSelectedAuthorsChange}
