@@ -523,8 +523,14 @@ export const verifyLicenseByKey = async (
   }
 
   try {
-    // Rechercher la licence par clé
-    // Note: Le nom de la table peut varier, on essaie "licenses" par défaut
+    // Rechercher la licence par clé dans la base de données externe
+    // Cette vérification se fait dans la base Supabase séparée (licenses)
+    logger.info("Verifying license in external database", null, {
+      component: 'licenseService',
+      action: 'verifyLicenseByKey',
+      licenseKey: licenseKey.substring(0, 10) + '...'
+    });
+
     const { data, error } = await licenseSupabase
       .from('licenses')
       .select('*')
@@ -532,22 +538,32 @@ export const verifyLicenseByKey = async (
       .maybeSingle();
 
     if (error) {
-      logger.error("Error verifying license by key", error, { 
+      logger.error("Error verifying license by key in external database", error, { 
         component: 'licenseService', 
         action: 'verifyLicenseByKey',
-        licenseKey: licenseKey.substring(0, 10) + '...' // Log partiel pour sécurité
+        licenseKey: licenseKey.substring(0, 10) + '...',
+        errorCode: error.code,
+        errorMessage: error.message
       });
       return null;
     }
 
     if (!data) {
-      logger.warn("License not found", null, { 
+      logger.warn("License not found in external database", null, { 
         component: 'licenseService', 
         action: 'verifyLicenseByKey',
         licenseKey: licenseKey.substring(0, 10) + '...'
       });
       return null;
     }
+
+    logger.info("License found in external database", null, {
+      component: 'licenseService',
+      action: 'verifyLicenseByKey',
+      licenseId: data.id,
+      status: data.status,
+      planName: data.plan_name
+    });
 
     // Vérifier que la licence est active
     if (data.status !== 'active') {

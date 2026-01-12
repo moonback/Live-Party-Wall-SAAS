@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
 import { getUserEvents, createEvent, deleteEvent } from '../services/eventService';
-import { verifyLicenseByKey } from '../services/licenseService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +11,6 @@ import {
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
   Check, Filter, SortAsc, SortDesc,
   ArrowRight, LayoutDashboard, Settings as SettingsIcon,
-  Key, CheckCircle2
 } from 'lucide-react';
 
 interface EventSelectorProps {
@@ -33,10 +31,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   const [newEventSlug, setNewEventSlug] = useState('');
   const [newEventName, setNewEventName] = useState('');
   const [newEventDescription, setNewEventDescription] = useState('');
-  const [newEventLicenseKey, setNewEventLicenseKey] = useState('');
-  const [verifyingLicense, setVerifyingLicense] = useState(false);
-  const [licenseValid, setLicenseValid] = useState<boolean | null>(null);
-  const [licenseInfo, setLicenseInfo] = useState<{ plan_name?: string; plan_type?: string; expires_at?: string | null } | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -149,46 +143,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     }
   };
 
-  // Vérifier la licence
-  const handleVerifyLicense = async () => {
-    if (!newEventLicenseKey.trim()) {
-      addToast('Veuillez saisir une clé de licence', 'error');
-      return;
-    }
-
-    try {
-      setVerifyingLicense(true);
-      setLicenseValid(null);
-      setLicenseInfo(null);
-
-      const license = await verifyLicenseByKey(newEventLicenseKey.trim(), user?.email);
-      
-      if (license) {
-        setLicenseValid(true);
-        setLicenseInfo({
-          plan_name: license.plan_name,
-          plan_type: license.plan_type,
-          expires_at: license.expires_at
-        });
-        const planInfo = license.plan_name ? ` - Plan: ${license.plan_name} (${license.plan_type})` : '';
-        addToast(`Licence valide${planInfo}`, 'success');
-        
-        // Stocker la clé de licence dans le localStorage pour que LicenseContext puisse la vérifier
-        localStorage.setItem('partywall_license_key', newEventLicenseKey.trim().toUpperCase());
-      } else {
-        setLicenseValid(false);
-        setLicenseInfo(null);
-        addToast('Licence invalide, expirée ou non trouvée', 'error');
-      }
-    } catch (error: any) {
-      console.error('Error verifying license:', error);
-      setLicenseValid(false);
-      setLicenseInfo(null);
-      addToast(error.message || 'Erreur lors de la vérification de la licence', 'error');
-    } finally {
-      setVerifyingLicense(false);
-    }
-  };
 
   // Créer un nouvel événement
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -202,49 +156,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     if (!newEventSlug.trim() || !newEventName.trim()) {
       addToast('Le slug et le nom sont requis', 'error');
       return;
-    }
-
-    // Vérifier la licence avant de créer l'événement
-    if (!newEventLicenseKey.trim()) {
-      addToast('Veuillez saisir une clé de licence valide', 'error');
-      return;
-    }
-
-    // Vérifier que la licence est valide
-    if (licenseValid === false) {
-      addToast('Veuillez vérifier votre licence avant de créer l\'événement', 'error');
-      return;
-    }
-
-    // Si la licence n'a pas encore été vérifiée, la vérifier maintenant
-    if (licenseValid === null) {
-      try {
-        setVerifyingLicense(true);
-        const license = await verifyLicenseByKey(newEventLicenseKey.trim(), user.email);
-        
-        if (!license) {
-          addToast('Licence invalide, expirée ou non trouvée', 'error');
-          setVerifyingLicense(false);
-          return;
-        }
-        
-         setLicenseValid(true);
-         setLicenseInfo({
-           plan_name: license.plan_name,
-           plan_type: license.plan_type,
-           expires_at: license.expires_at
-         });
-         
-         // Stocker la clé de licence dans le localStorage pour que LicenseContext puisse la vérifier
-         localStorage.setItem('partywall_license_key', newEventLicenseKey.trim().toUpperCase());
-         
-         setVerifyingLicense(false);
-      } catch (error: any) {
-        console.error('Error verifying license:', error);
-        addToast(error.message || 'Erreur lors de la vérification de la licence', 'error');
-        setVerifyingLicense(false);
-        return;
-      }
     }
 
     try {
@@ -261,9 +172,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setNewEventSlug('');
       setNewEventName('');
       setNewEventDescription('');
-      setNewEventLicenseKey('');
-      setLicenseValid(null);
-      setLicenseInfo(null);
       addToast('Événement créé avec succès', 'success');
       
       // Sélectionner automatiquement le nouvel événement
@@ -494,93 +402,6 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       </div>
                     </motion.div>
 
-                    <motion.div 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.25 }}
-                      className="space-y-2"
-                    >
-                      <label className="block text-sm font-semibold text-slate-300 flex items-center gap-2">
-                        <Key className="w-4 h-4" />
-                        <span>Clé de licence</span>
-                        <span className="text-xs font-normal text-slate-500">(requis)</span>
-                      </label>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newEventLicenseKey}
-                            onChange={(e) => {
-                              setNewEventLicenseKey(e.target.value.toUpperCase());
-                              setLicenseValid(null);
-                              setLicenseInfo(null);
-                            }}
-                            className="flex-1 bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 shadow-inner"
-                            placeholder="PW-MAR-XXXX-XXXX-XXXX"
-                            required
-                          />
-                          <motion.button
-                            type="button"
-                            onClick={handleVerifyLicense}
-                            disabled={!newEventLicenseKey.trim() || verifyingLicense}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 disabled:shadow-none disabled:cursor-not-allowed"
-                          >
-                            {verifyingLicense ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <CheckCircle2 className="w-4 h-4" />
-                            )}
-                            {verifyingLicense ? 'Vérif...' : 'Vérifier'}
-                          </motion.button>
-                        </div>
-                        {licenseValid === true && licenseInfo && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-3 bg-green-900/20 border border-green-500/30 rounded-xl text-sm"
-                          >
-                            <div className="flex items-center gap-2 text-green-400">
-                              <CheckCircle2 className="w-4 h-4" />
-                              <span className="font-semibold">Licence valide</span>
-                            </div>
-                             <div className="mt-2 text-slate-300 text-xs space-y-1">
-                               {licenseInfo.plan_name && (
-                                 <p>Plan: <span className="font-medium">{licenseInfo.plan_name}</span>
-                                   {licenseInfo.plan_type && (
-                                     <span className="text-slate-400 ml-1">({licenseInfo.plan_type})</span>
-                                   )}
-                                 </p>
-                               )}
-                               {licenseInfo.expires_at ? (
-                                 <p>Expire le: <span className="font-medium">{new Date(licenseInfo.expires_at).toLocaleDateString('fr-FR')}</span></p>
-                               ) : (
-                                 <p className="text-green-400">Licence à vie</p>
-                               )}
-                             </div>
-                          </motion.div>
-                        )}
-                        {licenseValid === false && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-3 bg-red-900/20 border border-red-500/30 rounded-xl text-sm"
-                          >
-                            <div className="flex items-center gap-2 text-red-400">
-                              <AlertTriangle className="w-4 h-4" />
-                              <span className="font-semibold">Licence invalide</span>
-                            </div>
-                            <p className="mt-1 text-slate-400 text-xs">Vérifiez que la clé est correcte et que la licence n'est pas expirée</p>
-                          </motion.div>
-                        )}
-                        <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                          Clé de licence reçue par email lors de votre achat
-                        </p>
-                      </div>
-                    </motion.div>
-                    
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -588,7 +409,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       whileHover={{ scale: 1.02, y: -1 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit"
-                      disabled={creating || verifyingLicense || licenseValid === false}
+                      disabled={creating}
                       className="w-full px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 disabled:shadow-none"
                     >
                       {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}

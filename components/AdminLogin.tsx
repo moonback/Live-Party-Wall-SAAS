@@ -400,6 +400,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                       placeholder="••••••••"
                       required
                       minLength={6}
+                      autoComplete={isSignUp ? 'new-password' : 'current-password'}
                     />
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-pink-400 transition-colors" />
                     <button
@@ -437,6 +438,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                           placeholder="••••••••"
                           required={isSignUp}
                           minLength={6}
+                          autoComplete="new-password"
                         />
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-pink-400 transition-colors" />
                       </div>
