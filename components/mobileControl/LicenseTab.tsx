@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, Calendar, Clock, CheckCircle, XCircle, 
   AlertTriangle, Shield, Copy, Sparkles, TrendingUp,
-  Ban, Loader2
+  Ban, Loader2, Eye, EyeOff, Info
 } from 'lucide-react';
 import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
@@ -16,6 +16,8 @@ const LicenseTab: React.FC = () => {
   const { addToast } = useToast();
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
   const [revoking, setRevoking] = useState(false);
+  const [showFullLicenseId, setShowFullLicenseId] = useState(false);
+  const [showLicenseKey, setShowLicenseKey] = useState(false);
 
   // Calculer les jours restants
   const getDaysRemaining = (expiresAt: string | null): number | null => {
@@ -108,79 +110,46 @@ const LicenseTab: React.FC = () => {
   const isValid = licenseValidity?.is_valid ?? false;
 
   return (
-    <div className="space-y-5">
-      {/* Header avec effet glow */}
+    <div className="space-y-4 md:space-y-6">
+      {/* Header avec statut */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`relative overflow-hidden bg-gradient-to-br ${
+        className={`relative overflow-hidden bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border ${
           isValid
-            ? 'from-green-900/20 via-emerald-900/20 to-green-900/20'
-            : 'from-red-900/20 via-rose-900/20 to-red-900/20'
-        } backdrop-blur-xl rounded-2xl p-6 border ${
-          isValid
-            ? 'border-green-500/30 shadow-lg shadow-green-500/20'
-            : 'border-red-500/30 shadow-lg shadow-red-500/20'
+            ? 'border-green-500/30 shadow-sm shadow-green-500/10'
+            : 'border-red-500/30 shadow-sm shadow-red-500/10'
         }`}
       >
-        {/* Effet de particules animées */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute w-2 h-2 rounded-full ${
-                isValid ? 'bg-green-400/40' : 'bg-red-400/40'
-              }`}
-              initial={{
-                x: Math.random() * 100 + '%',
-                y: Math.random() * 100 + '%',
-                scale: 0,
-              }}
-              animate={{
-                x: Math.random() * 100 + '%',
-                y: Math.random() * 100 + '%',
-                scale: [0, 1, 0],
-                opacity: [0, 0.6, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: i * 0.5,
-                ease: 'easeInOut',
-              }}
-            />
-          ))}
-        </div>
-
         <div className="relative flex items-center gap-4">
           <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className={`p-4 rounded-2xl ${
+            whileHover={{ scale: 1.05 }}
+            className={`p-3 rounded-xl ${
               isValid 
-                ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-2 border-green-400/50 shadow-lg shadow-green-500/30' 
-                : 'bg-gradient-to-br from-red-500/30 to-rose-500/30 border-2 border-red-400/50 shadow-lg shadow-red-500/30'
+                ? 'bg-green-500/20 border border-green-400/30' 
+                : 'bg-red-500/20 border border-red-400/30'
             }`}
           >
             {isValid ? (
-              <CheckCircle className="w-7 h-7 text-green-300 drop-shadow-lg" />
+              <CheckCircle className="w-6 h-6 md:w-7 md:h-7 text-green-400" />
             ) : (
-              <XCircle className="w-7 h-7 text-red-300 drop-shadow-lg" />
+              <XCircle className="w-6 h-6 md:w-7 md:h-7 text-red-400" />
             )}
           </motion.div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl font-bold text-white">Licence</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">Licence</h2>
               {isValid && (
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                 >
-                  <Sparkles className="w-5 h-5 text-green-400" />
+                  <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
                 </motion.div>
               )}
             </div>
             <p className={`text-sm font-semibold flex items-center gap-2 ${
-              isValid ? 'text-green-300' : 'text-red-300'
+              isValid ? 'text-green-400' : 'text-red-400'
             }`}>
               {isValid ? (
                 <>
@@ -207,26 +176,23 @@ const LicenseTab: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="relative bg-gradient-to-br from-black/50 via-purple-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/10 shadow-sm"
             >
-              {/* Effet de glow subtil */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-purple-500/5 rounded-2xl pointer-events-none" />
-              
-              <div className="relative flex items-center gap-3 mb-5">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30">
-                  <Shield className="w-5 h-5 text-purple-300" />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-1.5 rounded-lg bg-pink-500/20">
+                  <Shield className="w-5 h-5 md:w-6 md:h-6 text-pink-400" />
                 </div>
-                <h3 className="text-lg font-bold text-white">Statut de la licence</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-white">Statut de la licence</h3>
               </div>
-              <div className="relative space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-white/80 font-medium">Statut</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                  <span className="text-white/80 font-medium text-sm md:text-base">Statut</span>
                   <motion.span
                     whileHover={{ scale: 1.05 }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide ${
                       isValid 
-                        ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/50 shadow-lg shadow-green-500/20' 
-                        : 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/50 shadow-lg shadow-red-500/20'
+                        ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
+                        : 'bg-red-500/20 text-red-400 border border-red-400/30'
                     }`}
                   >
                     {licenseValidity.status || 'N/A'}
@@ -234,22 +200,79 @@ const LicenseTab: React.FC = () => {
                 </div>
                 
                 {licenseValidity.license_id && (
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                    <span className="text-white/80 font-medium">ID de la licence</span>
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs font-mono text-white/90 bg-black/60 px-3 py-1.5 rounded-lg border border-white/10">
-                        {licenseValidity.license_id.substring(0, 8)}...
-                      </code>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleCopyKey(licenseValidity.license_id || null)}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
-                        title="Copier l'ID"
-                      >
-                        <Copy className="w-4 h-4 text-white/70" />
-                      </motion.button>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/80 font-medium text-sm md:text-base">ID de la licence</span>
+                      <div className="flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setShowFullLicenseId(!showFullLicenseId)}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title={showFullLicenseId ? "Masquer" : "Afficher complet"}
+                        >
+                          {showFullLicenseId ? (
+                            <EyeOff className="w-4 h-4 text-white/70" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-white/70" />
+                          )}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleCopyKey(licenseValidity.license_id || null)}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title="Copier l'ID complet"
+                        >
+                          <Copy className="w-4 h-4 text-white/70" />
+                        </motion.button>
+                      </div>
                     </div>
+                    <code className="block text-xs md:text-sm font-mono text-white/90 bg-black/40 px-3 py-2 rounded border border-white/10 break-all">
+                      {showFullLicenseId ? licenseValidity.license_id : `${licenseValidity.license_id.substring(0, 16)}...`}
+                    </code>
+                  </div>
+                )}
+
+                {/* Clé de licence stockée */}
+                {localStorage.getItem('partywall_license_key') && (
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/80 font-medium text-sm md:text-base flex items-center gap-2">
+                        <Key className="w-4 h-4" />
+                        Clé de licence
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setShowLicenseKey(!showLicenseKey)}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title={showLicenseKey ? "Masquer" : "Afficher"}
+                        >
+                          {showLicenseKey ? (
+                            <EyeOff className="w-4 h-4 text-white/70" />
+                          ) : (
+                            <Eye className="w-4 h-4 text-white/70" />
+                          )}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleCopyKey(localStorage.getItem('partywall_license_key'))}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title="Copier la clé"
+                        >
+                          <Copy className="w-4 h-4 text-white/70" />
+                        </motion.button>
+                      </div>
+                    </div>
+                    <code className="block text-xs md:text-sm font-mono text-white/90 bg-black/40 px-3 py-2 rounded border border-white/10 break-all">
+                      {showLicenseKey 
+                        ? localStorage.getItem('partywall_license_key') 
+                        : `${localStorage.getItem('partywall_license_key')?.substring(0, 16)}...`
+                      }
+                    </code>
                   </div>
                 )}
               </div>
@@ -262,79 +285,96 @@ const LicenseTab: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.1 }}
-              className="relative bg-gradient-to-br from-black/50 via-pink-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/10 shadow-sm"
             >
-              {/* Effet de glow subtil */}
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-pink-500/5 rounded-2xl pointer-events-none" />
-              
-              <div className="relative flex items-center gap-3 mb-5">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-400/30">
-                  <Calendar className="w-5 h-5 text-pink-300" />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-1.5 rounded-lg bg-pink-500/20">
+                  <Calendar className="w-5 h-5 md:w-6 md:h-6 text-pink-400" />
                 </div>
-                <h3 className="text-lg font-bold text-white">Date d'expiration</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-white">Date d'expiration</h3>
               </div>
-              <div className="relative space-y-4">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-white/70 text-sm">Expire le</span>
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white/70 text-sm font-medium">Date d'expiration</span>
+                    <Info className="w-4 h-4 text-white/50" />
                   </div>
-                  <span className="text-white font-bold text-lg">
-                    {formatDate(licenseValidity.expires_at)}
-                  </span>
+                  <div className="space-y-2">
+                    <span className="block text-white font-bold text-lg md:text-xl">
+                      {formatDate(licenseValidity.expires_at)}
+                    </span>
+                    {daysRemaining !== null && !isExpired && (
+                      <span className="block text-white/60 text-xs md:text-sm">
+                        {daysRemaining > 0 
+                          ? `Dans ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
+                          : 'Aujourd\'hui'
+                        }
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 {daysRemaining !== null && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/80 font-medium flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4" />
-                        Jours restants
-                      </span>
-                      <motion.span
-                        initial={{ scale: 0.9 }}
-                        animate={{ scale: 1 }}
-                        className={`px-4 py-2 rounded-full text-sm font-bold ${
-                          isExpired
-                            ? 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/50 shadow-lg shadow-red-500/20'
-                            : isExpiringSoon
-                            ? 'bg-gradient-to-r from-amber-500/30 to-yellow-500/30 text-amber-300 border border-amber-400/50 shadow-lg shadow-amber-500/20'
-                            : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/50 shadow-lg shadow-green-500/20'
-                        }`}
-                      >
-                        {isExpired 
-                          ? 'Expirée' 
-                          : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
-                        }
-                      </motion.span>
-                    </div>
-                    
-                    {/* Barre de progression visuelle */}
-                    {!isExpired && daysRemaining !== null && (
-                      <div className="space-y-2">
-                        <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/10">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ 
-                              width: `${Math.min(100, Math.max(0, (daysRemaining / 365) * 100))}%` 
-                            }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                            className={`h-full rounded-full ${
-                              isExpiringSoon
-                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
-                                : 'bg-gradient-to-r from-green-500 to-emerald-500'
-                            } shadow-lg`}
-                          />
-                        </div>
-                        <p className="text-xs text-white/60 text-center">
-                          {daysRemaining > 365 
-                            ? `Plus de ${Math.floor(daysRemaining / 365)} an${Math.floor(daysRemaining / 365) > 1 ? 's' : ''} restants`
-                            : daysRemaining > 30
-                            ? `Environ ${Math.floor(daysRemaining / 30)} mois restants`
-                            : ''
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-white/80 font-semibold flex items-center gap-2 text-base md:text-lg">
+                          <TrendingUp className="w-5 h-5" />
+                          Jours restants
+                        </span>
+                        <motion.span
+                          initial={{ scale: 0.9 }}
+                          animate={{ scale: 1 }}
+                          className={`px-4 py-2 rounded-full text-sm md:text-base font-bold ${
+                            isExpired
+                              ? 'bg-red-500/20 text-red-400 border border-red-400/30'
+                              : isExpiringSoon
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-400/30'
+                              : 'bg-green-500/20 text-green-400 border border-green-400/30'
+                          }`}
+                        >
+                          {isExpired 
+                            ? 'Expirée' 
+                            : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
                           }
-                        </p>
+                        </motion.span>
                       </div>
-                    )}
+                    
+                      {/* Barre de progression visuelle */}
+                      {!isExpired && daysRemaining !== null && (
+                        <div className="space-y-2">
+                          <div className="h-3 bg-black/40 rounded-full overflow-hidden border border-white/10">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ 
+                                width: `${Math.min(100, Math.max(0, (daysRemaining / 365) * 100))}%` 
+                              }}
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                              className={`h-full rounded-full ${
+                                isExpiringSoon
+                                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
+                                  : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                              }`}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-white/60">
+                            <span>
+                              {daysRemaining > 365 
+                                ? `Plus de ${Math.floor(daysRemaining / 365)} an${Math.floor(daysRemaining / 365) > 1 ? 's' : ''} restants`
+                                : daysRemaining > 30
+                                ? `Environ ${Math.floor(daysRemaining / 30)} mois restants`
+                                : daysRemaining > 7
+                                ? `${Math.floor(daysRemaining / 7)} semaine${Math.floor(daysRemaining / 7) > 1 ? 's' : ''} restantes`
+                                : ''
+                              }
+                            </span>
+                            <span className="font-semibold">
+                              {Math.round((daysRemaining / 365) * 100)}% restant
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -348,21 +388,20 @@ const LicenseTab: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                className="relative overflow-hidden bg-gradient-to-r from-amber-900/40 via-yellow-900/40 to-amber-900/40 backdrop-blur-xl rounded-2xl p-5 border-2 border-amber-500/50 shadow-xl shadow-amber-500/20"
+                className="bg-amber-500/10 backdrop-blur-sm rounded-xl p-4 border border-amber-500/30 shadow-sm"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 animate-pulse" />
-                <div className="relative flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <motion.div
                     animate={{ rotate: [0, -10, 10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
-                    className="p-2 rounded-xl bg-amber-500/20 border border-amber-400/30 flex-shrink-0"
+                    className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-400/30 flex-shrink-0"
                   >
-                    <AlertTriangle className="w-6 h-6 text-amber-300" />
+                    <AlertTriangle className="w-5 h-5 text-amber-400" />
                   </motion.div>
                   <div className="flex-1">
-                    <h4 className="text-amber-300 font-bold mb-2 text-lg">Avertissement</h4>
-                    <p className="text-white/95 text-sm leading-relaxed">
-                      Votre licence expire dans <span className="font-bold text-amber-300">{daysRemaining} jour{daysRemaining > 1 ? 's' : ''}</span>. 
+                    <h4 className="text-amber-400 font-bold mb-1.5 text-base md:text-lg">Avertissement</h4>
+                    <p className="text-white/90 text-sm leading-relaxed">
+                      Votre licence expire dans <span className="font-bold text-amber-400">{daysRemaining} jour{daysRemaining > 1 ? 's' : ''}</span>. 
                       Veuillez renouveler votre licence pour continuer à utiliser l'application.
                     </p>
                   </div>
@@ -376,20 +415,19 @@ const LicenseTab: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                className="relative overflow-hidden bg-gradient-to-r from-red-900/40 via-rose-900/40 to-red-900/40 backdrop-blur-xl rounded-2xl p-5 border-2 border-red-500/50 shadow-xl shadow-red-500/20"
+                className="bg-red-500/10 backdrop-blur-sm rounded-xl p-4 border border-red-500/30 shadow-sm"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-rose-500/10 animate-pulse" />
-                <div className="relative flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
-                    className="p-2 rounded-xl bg-red-500/20 border border-red-400/30 flex-shrink-0"
+                    className="p-1.5 rounded-lg bg-red-500/20 border border-red-400/30 flex-shrink-0"
                   >
-                    <XCircle className="w-6 h-6 text-red-300" />
+                    <XCircle className="w-5 h-5 text-red-400" />
                   </motion.div>
                   <div className="flex-1">
-                    <h4 className="text-red-300 font-bold mb-2 text-lg">Licence expirée</h4>
-                    <p className="text-white/95 text-sm leading-relaxed">
+                    <h4 className="text-red-400 font-bold mb-1.5 text-base md:text-lg">Licence expirée</h4>
+                    <p className="text-white/90 text-sm leading-relaxed">
                       Votre licence a expiré. Veuillez renouveler votre licence pour continuer à utiliser l'application.
                     </p>
                   </div>
@@ -408,16 +446,16 @@ const LicenseTab: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="relative overflow-hidden bg-gradient-to-br from-black/50 via-gray-900/30 to-black/50 backdrop-blur-xl rounded-2xl p-10 border border-white/10 shadow-xl text-center"
+            className="bg-white/10 backdrop-blur-sm rounded-xl p-8 md:p-10 border border-white/10 shadow-sm text-center"
           >
             <motion.div
               animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-              className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 mb-6"
+              className="inline-flex p-3 rounded-xl bg-white/5 border border-white/10 mb-4"
             >
-              <Key className="w-12 h-12 text-white/40" />
+              <Key className="w-8 h-8 md:w-12 md:h-12 text-white/40" />
             </motion.div>
-            <h3 className="text-xl font-bold text-white mb-3">Aucune licence trouvée</h3>
+            <h3 className="text-lg md:text-xl font-bold text-white mb-2">Aucune licence trouvée</h3>
             <p className="text-white/70 text-sm leading-relaxed max-w-sm mx-auto">
               Aucune licence active n'a été trouvée pour votre compte.
             </p>
@@ -428,16 +466,16 @@ const LicenseTab: React.FC = () => {
       {/* Actions */}
       <div className="space-y-3">
         <motion.button
-          whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)' }}
+          whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={refreshLicense}
-          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-pink-500/40 border border-pink-400/30"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-pink-500/30 border border-pink-400/30 text-sm md:text-base"
         >
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           >
-            <Clock className="w-5 h-5" />
+            <Clock className="w-4 h-4 md:w-5 md:h-5" />
           </motion.div>
           <span>Actualiser</span>
         </motion.button>
@@ -450,9 +488,9 @@ const LicenseTab: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowRevokeConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:via-rose-500 hover:to-red-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-red-500/40 border border-red-400/30"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 md:px-6 md:py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:via-rose-500 hover:to-red-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-red-500/30 border border-red-400/30 text-sm md:text-base"
           >
-            <Ban className="w-5 h-5" />
+            <Ban className="w-4 h-4 md:w-5 md:h-5" />
             <span>Révoquer la licence</span>
           </motion.button>
         )}
@@ -473,23 +511,23 @@ const LicenseTab: React.FC = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="max-w-md w-full bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-slate-900/95 backdrop-blur-xl rounded-2xl p-6 border border-red-500/30 shadow-2xl"
+              className="max-w-md w-full bg-white/10 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-red-500/30 shadow-xl"
             >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-400/30">
-                  <AlertTriangle className="w-6 h-6 text-red-400" />
+              <div className="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
+                <div className="p-2 rounded-lg bg-red-500/20 border border-red-400/30">
+                  <AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-1">Révoquer la licence</h3>
-                  <p className="text-sm text-slate-400">Cette action est irréversible</p>
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-1">Révoquer la licence</h3>
+                  <p className="text-xs md:text-sm text-white/60">Cette action est irréversible</p>
                 </div>
               </div>
 
-              <div className="mb-6 p-4 rounded-xl bg-red-900/20 border border-red-500/30">
-                <p className="text-slate-300 text-sm leading-relaxed">
+              <div className="mb-5 md:mb-6 p-3 md:p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                <p className="text-white/90 text-sm leading-relaxed">
                   Êtes-vous sûr de vouloir révoquer votre licence ? Cette action :
                 </p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-400 list-disc list-inside">
+                <ul className="mt-3 space-y-2 text-sm text-white/70 list-disc list-inside">
                   <li>Rendra votre licence immédiatement invalide</li>
                   <li>Bloquera l'accès à l'application</li>
                   <li>Nécessitera une nouvelle licence pour continuer</li>
@@ -502,7 +540,7 @@ const LicenseTab: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowRevokeConfirm(false)}
                   disabled={revoking}
-                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition-all duration-200 border border-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all duration-200 border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
                 >
                   Annuler
                 </motion.button>
@@ -511,7 +549,7 @@ const LicenseTab: React.FC = () => {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleRevokeLicense}
                   disabled={revoking}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 disabled:shadow-none disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 md:py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 disabled:shadow-none disabled:cursor-not-allowed text-sm md:text-base"
                 >
                   {revoking ? (
                     <>
@@ -521,7 +559,7 @@ const LicenseTab: React.FC = () => {
                   ) : (
                     <>
                       <Ban className="w-4 h-4" />
-                      <span>Confirmer la révocation</span>
+                      <span>Confirmer</span>
                     </>
                   )}
                 </motion.button>
@@ -539,29 +577,26 @@ const LicenseTab: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ delay: 0.2 }}
-            className="relative bg-gradient-to-br from-black/50 via-indigo-900/20 to-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-xl"
+            className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/10 shadow-sm"
           >
-            {/* Effet de glow subtil */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-indigo-500/5 rounded-2xl pointer-events-none" />
-            
-            <div className="relative flex items-center gap-3 mb-5">
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/30">
-                <Key className="w-5 h-5 text-indigo-300" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-1.5 rounded-lg bg-pink-500/20">
+                <Key className="w-5 h-5 md:w-6 md:h-6 text-pink-400" />
               </div>
-              <h3 className="text-lg font-bold text-white">Informations du compte</h3>
+              <h3 className="text-lg md:text-xl font-semibold text-white">Informations du compte</h3>
             </div>
-            <div className="relative space-y-3">
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/80 font-medium">Email</span>
-                  <span className="text-white font-mono text-sm font-semibold">{user.email}</span>
+                  <span className="text-white/80 font-medium text-sm md:text-base">Email</span>
+                  <span className="text-white font-mono text-xs md:text-sm font-semibold">{user.email}</span>
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-white/80 font-medium">ID Utilisateur</span>
+                  <span className="text-white/80 font-medium text-sm md:text-base">ID Utilisateur</span>
                   <div className="flex items-center gap-2">
-                    <code className="text-xs font-mono text-white/90 bg-black/60 px-3 py-1.5 rounded-lg border border-white/10">
+                    <code className="text-xs font-mono text-white/90 bg-black/40 px-2.5 py-1 rounded border border-white/10">
                       {user.id.substring(0, 8)}...
                     </code>
                     <motion.button
