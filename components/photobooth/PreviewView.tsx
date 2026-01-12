@@ -162,76 +162,80 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
           )}
         </div>
         
-        {/* Inputs Container - Sur la même ligne en desktop, empilés en mobile - Version compacte */}
+        {/* Author Name Input - Compact en bas à gauche */}
         {showInputs && (
-        <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-0 w-full px-3 sm:px-4 landscape:px-2 landscape:sm:px-3 flex flex-col sm:flex-row landscape:flex-row justify-center gap-2 sm:gap-3 landscape:gap-1.5 landscape:sm:gap-2 z-40 transition-all duration-500 ${
-          mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
-        }`}>
-          {/* Author Name Input - Compact */}
-          <div className={`relative w-full sm:flex-1 sm:max-w-md transition-all duration-300 ${
-            isAuthorNameFocused ? 'scale-105' : 'scale-100'
+          <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-3 sm:left-4 landscape:left-2 landscape:sm:left-3 z-40 transition-all duration-500 ${
+            mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
           }`}>
-            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-pink-500/30 blur-xl transition-opacity duration-300 ${
-              isAuthorNameFocused ? 'opacity-100' : 'opacity-0'
-            }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 landscape:p-1.5 landscape:sm:p-2 rounded-xl sm:rounded-2xl landscape:rounded-lg w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1 landscape:mb-0.5 landscape:gap-1">
-                <User className="w-3 h-3 sm:w-4 sm:h-4 landscape:w-3 landscape:h-3 text-pink-400" />
-                <span className="text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px] text-white/80 font-semibold">Votre nom</span>
-              </div>
-              <input
-                type="text"
-                value={authorName}
-                onChange={(e) => onAuthorNameChange(e.target.value)}
-                onFocus={() => setIsAuthorNameFocused(true)}
-                onBlur={() => setIsAuthorNameFocused(false)}
-                placeholder="Entrez votre nom..."
-                className="w-full text-center font-bold text-base sm:text-lg landscape:text-sm landscape:sm:text-base text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300 py-0.5 landscape:py-0"
-                maxLength={MAX_AUTHOR_NAME_LENGTH}
-                autoFocus
-                inputMode="text"
-                aria-label="Nom de l'auteur"
-              />
-              {authorName.length > 0 && (
-                <div className="text-[10px] sm:text-xs text-white/50 text-center mt-0.5 sm:mt-1 animate-fade-in font-medium">
-                  {authorName.length}/{MAX_AUTHOR_NAME_LENGTH}
+            <div className={`relative transition-all duration-300 ${
+              isAuthorNameFocused ? 'scale-105' : 'scale-100'
+            }`}>
+              <div className={`absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-pink-500/30 blur-xl transition-opacity duration-300 ${
+                isAuthorNameFocused ? 'opacity-100' : 'opacity-0'
+              }`} />
+              <div className="relative bg-black/85 backdrop-blur-xl p-1.5 sm:p-2 landscape:p-1 landscape:sm:p-1.5 rounded-lg sm:rounded-xl landscape:rounded-md border border-white/30 shadow-xl min-w-[140px] sm:min-w-[180px] landscape:min-w-[120px] landscape:sm:min-w-[150px] max-w-[200px] sm:max-w-[250px]">
+                <div className="flex items-center gap-1 mb-0.5 landscape:mb-0">
+                  <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 landscape:w-2.5 landscape:h-2.5 text-pink-400 flex-shrink-0" />
+                  <span className="text-[9px] sm:text-[10px] landscape:text-[8px] landscape:sm:text-[9px] text-white/80 font-semibold truncate">Votre nom</span>
                 </div>
-              )}
+                <input
+                  type="text"
+                  value={authorName}
+                  onChange={(e) => onAuthorNameChange(e.target.value)}
+                  onFocus={() => setIsAuthorNameFocused(true)}
+                  onBlur={() => setIsAuthorNameFocused(false)}
+                  placeholder="Votre nom..."
+                  className="w-full text-left font-semibold text-sm sm:text-base landscape:text-xs landscape:sm:text-sm text-white placeholder-white/40 bg-transparent border-none outline-none focus:ring-0 transition-all duration-300 py-0.5 landscape:py-0"
+                  maxLength={MAX_AUTHOR_NAME_LENGTH}
+                  inputMode="text"
+                  aria-label="Nom de l'auteur"
+                />
+                {authorName.length > 0 && (
+                  <div className="text-[8px] sm:text-[9px] landscape:text-[7px] text-white/50 text-left mt-0.5 animate-fade-in font-medium">
+                    {authorName.length}/{MAX_AUTHOR_NAME_LENGTH}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* User Description Input - Compact */}
-          <div className={`relative w-full sm:flex-1 sm:max-w-md transition-all duration-300 delay-100 ${
-            isDescriptionFocused ? 'scale-105' : 'scale-100'
+        {/* User Description Input - Centré en haut si nécessaire */}
+        {showInputs && (
+          <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-0 w-full px-3 sm:px-4 landscape:px-2 landscape:sm:px-3 flex justify-center z-40 transition-all duration-500 ${
+            mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
           }`}>
-            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-blue-500/30 blur-xl transition-opacity duration-300 ${
-              isDescriptionFocused ? 'opacity-100' : 'opacity-0'
-            }`} />
-            <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 landscape:p-1.5 landscape:sm:p-2 rounded-xl sm:rounded-2xl landscape:rounded-lg w-full border-2 border-white/30 shadow-2xl">
-              <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1 landscape:mb-0.5 landscape:gap-1">
-                <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 landscape:w-3 landscape:h-3 text-blue-400" />
-                <span className="text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px] text-white/80 font-semibold">Description (optionnel)</span>
-              </div>
-              <textarea
-                value={userDescription}
-                onChange={(e) => onUserDescriptionChange(e.target.value)}
-                onFocus={() => setIsDescriptionFocused(true)}
-                onBlur={() => setIsDescriptionFocused(false)}
-                placeholder="Ajoutez une description..."
-                className="w-full text-center text-xs sm:text-sm landscape:text-[10px] landscape:sm:text-xs text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300 py-0.5 landscape:py-0"
-                maxLength={MAX_USER_DESCRIPTION_LENGTH}
-                rows={1}
-                style={{ minHeight: '1.5rem', maxHeight: '4rem' }}
-                aria-label="Description de la photo"
-              />
-              {userDescription.length > 0 && (
-                <div className="text-[10px] sm:text-xs text-white/50 text-center mt-0.5 sm:mt-1 animate-fade-in font-medium">
-                  {userDescription.length}/{MAX_USER_DESCRIPTION_LENGTH}
+            <div className={`relative w-full sm:max-w-md transition-all duration-300 delay-100 ${
+              isDescriptionFocused ? 'scale-105' : 'scale-100'
+            }`}>
+              <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-blue-500/30 blur-xl transition-opacity duration-300 ${
+                isDescriptionFocused ? 'opacity-100' : 'opacity-0'
+              }`} />
+              <div className="relative bg-black/80 backdrop-blur-2xl p-2 sm:p-2.5 landscape:p-1.5 landscape:sm:p-2 rounded-xl sm:rounded-2xl landscape:rounded-lg w-full border-2 border-white/30 shadow-2xl">
+                <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1 landscape:mb-0.5 landscape:gap-1">
+                  <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 landscape:w-3 landscape:h-3 text-blue-400" />
+                  <span className="text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px] text-white/80 font-semibold">Description (optionnel)</span>
                 </div>
-              )}
+                <textarea
+                  value={userDescription}
+                  onChange={(e) => onUserDescriptionChange(e.target.value)}
+                  onFocus={() => setIsDescriptionFocused(true)}
+                  onBlur={() => setIsDescriptionFocused(false)}
+                  placeholder="Ajoutez une description..."
+                  className="w-full text-center text-xs sm:text-sm landscape:text-[10px] landscape:sm:text-xs text-white placeholder-white/50 bg-transparent border-none outline-none focus:ring-0 resize-none transition-all duration-300 py-0.5 landscape:py-0"
+                  maxLength={MAX_USER_DESCRIPTION_LENGTH}
+                  rows={1}
+                  style={{ minHeight: '1.5rem', maxHeight: '4rem' }}
+                  aria-label="Description de la photo"
+                />
+                {userDescription.length > 0 && (
+                  <div className="text-[10px] sm:text-xs text-white/50 text-center mt-0.5 sm:mt-1 animate-fade-in font-medium">
+                    {userDescription.length}/{MAX_USER_DESCRIPTION_LENGTH}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         )}
       </div>
 
