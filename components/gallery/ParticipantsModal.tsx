@@ -267,7 +267,11 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                             {/* Bouton de téléchargement en haut à droite */}
                             <button
                               onClick={(e) => handleDownload(photo, e)}
-                              className="absolute top-2 right-2 p-1.5 sm:p-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 touch-manipulation"
+                              className={`absolute top-2 right-2 p-1.5 sm:p-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg text-white z-10 touch-manipulation ${
+                                isMobile 
+                                  ? 'opacity-100' 
+                                  : 'opacity-0 group-hover:opacity-100'
+                              } transition-opacity`}
                               title="Télécharger"
                             >
                               <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
