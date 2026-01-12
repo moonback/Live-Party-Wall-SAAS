@@ -138,29 +138,38 @@ export const LicenseProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [checkLicense, isAuthenticated, user]);
 
   // Calculer si la licence est valide
-  // Si l'utilisateur est authentifié, on doit avoir une licence valide
-  // Si l'utilisateur n'est pas authentifié, on permet l'accès (pages publiques)
-  // Sur Electron, on est strict : pas de licence = pas d'accès
+  // IMPORTANT : Chaque utilisateur authentifié DOIT avoir sa propre licence valide
+  // Seuls les utilisateurs non authentifiés (invités) peuvent accéder aux pages publiques sans licence
   const isValid = React.useMemo(() => {
-    // Si l'utilisateur n'est pas authentifié, permettre l'accès (pages publiques)
+    // Si l'utilisateur n'est pas authentifié, permettre l'accès (pages publiques pour invités)
+    // Les invités peuvent uploader des photos sans licence
     if (!isAuthenticated || !user) {
       return true;
     }
 
+    // Pour les utilisateurs authentifiés (organisateurs), la licence est OBLIGATOIRE
     // Si on est en train de charger, on bloque l'accès jusqu'à ce que la vérification soit terminée
     if (loading) {
       return false;
     }
 
-    // Si on est sur Electron, on est strict : pas de licence valide = pas d'accès
-    if (isElectron()) {
-      return licenseValidity?.is_valid === true;
-    }
-
-    // Sinon, on vérifie la validité de la licence
+    // RÈGLE STRICTE : Un utilisateur authentifié DOIT avoir une licence valide
+    // Pas de licence = pas d'accès (même en mode web)
     // Si licenseValidity est null après le chargement, cela signifie qu'il n'y a pas de licence
     // Dans ce cas, on bloque l'accès
-    return licenseValidity?.is_valid === true;
+    const hasValidLicense = licenseValidity?.is_valid === true;
+    
+    if (!hasValidLicense) {
+      logger.warn("Authenticated user without valid license, blocking access", null, {
+        component: 'LicenseContext',
+        action: 'isValid',
+        userId: user.id,
+        hasLicenseValidity: !!licenseValidity,
+        licenseStatus: licenseValidity?.status
+      });
+    }
+    
+    return hasValidLicense;
   }, [isAuthenticated, user, loading, licenseValidity]);
 
   return (

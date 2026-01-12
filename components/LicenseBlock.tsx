@@ -128,15 +128,27 @@ const LicenseBlock: React.FC = () => {
           </motion.div>
           {/* Titre */}
           <h1 className="mt-6 text-4xl sm:text-5xl font-extrabold text-center mb-3 bg-gradient-to-r from-red-400 via-rose-400 to-orange-400 bg-clip-text text-transparent drop-shadow-md tracking-tight">
-            Licence expirée
+            {licenseValidity?.status === null || !licenseValidity ? 'Licence requise' : 'Licence expirée'}
           </h1>
           {/* Message principal stylisé */}
           <p className="text-lg text-slate-300 text-center mb-8 leading-relaxed px-3 font-medium">
-            Votre licence d'utilisation a expiré ou n'est plus valide.<br />
-            <span className="text-rose-200 font-semibold">
-              Veuillez renouveler votre licence
-            </span>{" "}
-            pour continuer à utiliser l'application.
+            {licenseValidity?.status === null || !licenseValidity ? (
+              <>
+                Aucune licence n'est créée automatiquement lors de l'inscription.<br />
+                <span className="text-rose-200 font-semibold">
+                  Chaque organisateur doit saisir sa propre clé de licence
+                </span>{" "}
+                reçue par email pour accéder à l'application.
+              </>
+            ) : (
+              <>
+                Votre licence d'utilisation a expiré ou n'est plus valide.<br />
+                <span className="text-rose-200 font-semibold">
+                  Veuillez renouveler votre licence
+                </span>{" "}
+                pour continuer à utiliser l'application.
+              </>
+            )}
           </p>
         </div>
 

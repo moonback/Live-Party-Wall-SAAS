@@ -163,15 +163,18 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
 
       const license = await verifyLicenseByKey(newEventLicenseKey.trim(), user?.email);
       
-       if (license) {
-         setLicenseValid(true);
-         setLicenseInfo({
-           plan_name: license.plan_name,
-           plan_type: license.plan_type,
-           expires_at: license.expires_at
-         });
-         const planInfo = license.plan_name ? ` - Plan: ${license.plan_name} (${license.plan_type})` : '';
-         addToast(`Licence valide${planInfo}`, 'success');
+      if (license) {
+        setLicenseValid(true);
+        setLicenseInfo({
+          plan_name: license.plan_name,
+          plan_type: license.plan_type,
+          expires_at: license.expires_at
+        });
+        const planInfo = license.plan_name ? ` - Plan: ${license.plan_name} (${license.plan_type})` : '';
+        addToast(`Licence valide${planInfo}`, 'success');
+        
+        // Stocker la clé de licence dans le localStorage pour que LicenseContext puisse la vérifier
+        localStorage.setItem('partywall_license_key', newEventLicenseKey.trim().toUpperCase());
       } else {
         setLicenseValid(false);
         setLicenseInfo(null);
@@ -231,6 +234,10 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
            plan_type: license.plan_type,
            expires_at: license.expires_at
          });
+         
+         // Stocker la clé de licence dans le localStorage pour que LicenseContext puisse la vérifier
+         localStorage.setItem('partywall_license_key', newEventLicenseKey.trim().toUpperCase());
+         
          setVerifyingLicense(false);
       } catch (error: any) {
         console.error('Error verifying license:', error);

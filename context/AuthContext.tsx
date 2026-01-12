@@ -59,6 +59,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (error) throw error;
 
+    // IMPORTANT : Aucune licence n'est créée automatiquement lors de l'inscription.
+    // Chaque utilisateur doit saisir manuellement sa clé de licence après l'inscription.
+    // L'utilisateur sera bloqué par LicenseContext jusqu'à ce qu'il saisisse une licence valide.
+    
     // Si l'email confirmation est désactivée, la session est créée immédiatement
     if (data.session) {
       setSession(data.session);
