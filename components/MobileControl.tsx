@@ -20,7 +20,6 @@ import ModerationTab from './mobileControl/ModerationTab';
 import BattlesTab from './mobileControl/BattlesTab';
 import GuestsTab from './mobileControl/GuestsTab';
 import AftermoviesTab from './mobileControl/AftermoviesTab';
-import LicenseTab from './mobileControl/LicenseTab';
 import SettingsTab from './mobileControl/SettingsTab';
 
 interface MobileControlProps {
@@ -40,6 +39,10 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       setActiveTab('overview');
     }
     if (activeTab === 'aftermovies' && settings.aftermovies_enabled === false) {
+      setActiveTab('overview');
+    }
+    // Rediriger si l'onglet license est actif (retiré du contrôle mobile)
+    if (activeTab === 'license') {
       setActiveTab('overview');
     }
   }, [activeTab, settings.battle_mode_enabled, settings.aftermovies_enabled]);
@@ -404,11 +407,6 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         {/* Aftermovies */}
         {activeTab === 'aftermovies' && (
           <AftermoviesTab onRefresh={handleRefresh} />
-        )}
-
-        {/* Licence */}
-        {activeTab === 'license' && (
-          <LicenseTab />
         )}
 
         {/* Paramètres */}
