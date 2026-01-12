@@ -832,6 +832,44 @@ export const subscribeToLikesUpdates = (
 };
 
 /**
+ * Update photo caption (Owner only).
+ */
+export const updatePhotoCaption = async (photoId: string, caption: string): Promise<void> => {
+  if (!isSupabaseConfigured()) throw new Error("Supabase n'est pas configuré");
+
+  try {
+    const { error } = await supabase
+      .from('photos')
+      .update({ caption: caption.trim() || null })
+      .eq('id', photoId);
+
+    if (error) throw error;
+  } catch (error) {
+    logger.error("Error updating photo caption", error, { component: 'photoService', action: 'updatePhotoCaption', photoId });
+    throw error;
+  }
+};
+
+/**
+ * Clear photo caption (Owner only).
+ */
+export const clearPhotoCaption = async (photoId: string): Promise<void> => {
+  if (!isSupabaseConfigured()) throw new Error("Supabase n'est pas configuré");
+
+  try {
+    const { error } = await supabase
+      .from('photos')
+      .update({ caption: null })
+      .eq('id', photoId);
+
+    if (error) throw error;
+  } catch (error) {
+    logger.error("Error clearing photo caption", error, { component: 'photoService', action: 'clearPhotoCaption', photoId });
+    throw error;
+  }
+};
+
+/**
  * Delete a photo (Admin only).
  */
 export const deletePhoto = async (photoId: string, photoUrl: string): Promise<void> => {

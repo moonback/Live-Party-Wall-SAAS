@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspens
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
 import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
-import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
+import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, clearPhotoCaption, deletePhoto } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
@@ -462,6 +462,71 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
   }, [addToast, settings.logo_url, settings.logo_watermark_enabled]);
 
+  const handleUpdateCaption = useCallback(async (photoId: string, caption: string) => {
+    try {
+      await updatePhotoCaption(photoId, caption);
+      
+      // Mettre à jour la photo dans la liste locale
+      setPhotos(prev => prev.map(p => 
+        p.id === photoId ? { ...p, caption: caption.trim() || null } : p
+      ));
+    } catch (error) {
+      logger.error("Erreur lors de la mise à jour de la légende", error, { component: 'GuestGallery', action: 'handleUpdateCaption', photoId });
+      addToast("Erreur lors de la mise à jour de la légende", 'error');
+      throw error;
+    }
+  }, [addToast]);
+
+  const handleClearCaption = useCallback(async (photoId: string) => {
+    try {
+      await clearPhotoCaption(photoId);
+      
+      // Mettre à jour la photo dans la liste locale
+      setPhotos(prev => prev.map(p => 
+        p.id === photoId ? { ...p, caption: null } : p
+      ));
+    } catch (error) {
+      logger.error("Erreur lors de la suppression de la légende", error, { component: 'GuestGallery', action: 'handleClearCaption', photoId });
+      addToast("Erreur lors de la suppression de la légende", 'error');
+      throw error;
+    }
+  }, [addToast]);
+
+  const handleDeletePhoto = useCallback(async (photoId: string, photoUrl: string) => {
+    try {
+      await deletePhoto(photoId, photoUrl);
+      
+      // Retirer la photo de la liste locale
+      setPhotos(prev => prev.filter(p => p.id !== photoId));
+      
+      // Retirer aussi des autres états
+      setLikedPhotoIds(prev => {
+        const next = new Set(prev);
+        next.delete(photoId);
+        return next;
+      });
+      setUserReactions(prev => {
+        const next = new Map(prev);
+        next.delete(photoId);
+        return next;
+      });
+      setPhotosReactions(prev => {
+        const next = new Map(prev);
+        next.delete(photoId);
+        return next;
+      });
+      
+      // Retirer aussi des battles si la photo était dans une battle
+      setBattles(prev => prev.filter(b => 
+        b.photo1.id !== photoId && b.photo2.id !== photoId
+      ));
+    } catch (error) {
+      logger.error("Erreur lors de la suppression de la photo", error, { component: 'GuestGallery', action: 'handleDeletePhoto', photoId });
+      addToast("Erreur lors de la suppression", 'error');
+      throw error;
+    }
+  }, [addToast]);
+
   const handleBatchDownload = async () => {
     if (selectedIds.size === 0) return;
     
@@ -732,6 +797,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectedIds={selectedIds}
             onSelect={handleSelect}
             scrollContainerRef={parentRef}
+            onUpdateCaption={handleUpdateCaption}
+            onClearCaption={handleClearCaption}
+            onDeletePhoto={handleDeletePhoto}
           />
         </div>
       </div>

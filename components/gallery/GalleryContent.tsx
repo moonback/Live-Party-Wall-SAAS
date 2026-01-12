@@ -32,6 +32,9 @@ interface GalleryContentProps {
   selectedIds?: Set<string>;
   onSelect?: (id: string) => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
+  onClearCaption?: (photoId: string) => Promise<void>;
+  onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
 }
 
 type ColumnItem = 
@@ -59,6 +62,9 @@ interface VirtualColumnProps {
   onSelect?: (id: string) => void;
   numColumns: number;
   isMobile: boolean;
+  onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
+  onClearCaption?: (photoId: string) => Promise<void>;
+  onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
 }
 
 const VirtualColumn = React.memo(({ 
@@ -81,7 +87,10 @@ const VirtualColumn = React.memo(({
   selectedIds,
   onSelect,
   numColumns,
-  isMobile
+  isMobile,
+  onUpdateCaption,
+  onClearCaption,
+  onDeletePhoto
 }: VirtualColumnProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
@@ -237,6 +246,9 @@ const VirtualColumn = React.memo(({
                   selectionMode={selectionMode}
                   isSelected={selectedIds.has(item.photo.id)}
                   onSelect={onSelect}
+                  onUpdateCaption={onUpdateCaption}
+                  onClearCaption={onClearCaption}
+                  onDeletePhoto={onDeletePhoto}
                 />
               </motion.div>
             )}
@@ -272,7 +284,10 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   selectionMode = false,
   selectedIds = new Set(),
   onSelect,
-  scrollContainerRef
+  scrollContainerRef,
+  onUpdateCaption,
+  onClearCaption,
+  onDeletePhoto
 }) => {
   const isMobile = useIsMobile();
   const defaultScrollRef = useRef<HTMLDivElement>(null);
@@ -380,6 +395,9 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onSelect={onSelect}
               numColumns={numColumns}
               isMobile={isMobile}
+              onUpdateCaption={onUpdateCaption}
+              onClearCaption={onClearCaption}
+              onDeletePhoto={onDeletePhoto}
             />
           </motion.div>
         ))}

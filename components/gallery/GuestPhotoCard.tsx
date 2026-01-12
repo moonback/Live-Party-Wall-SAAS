@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Image, Video, Tag, Share2, MoreVertical, CheckCircle, Circle } from 'lucide-react';
-import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
+import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X } from 'lucide-react';
+import { getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useSwipe } from '../../hooks/useSwipe';
-import { getUserAvatar } from '../../utils/userAvatar';
+import { getUserAvatar, getCurrentUserName } from '../../utils/userAvatar';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
@@ -30,6 +30,9 @@ interface GuestPhotoCardProps {
   selectionMode?: boolean;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
+  onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
+  onClearCaption?: (photoId: string) => Promise<void>;
+  onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
 }
 
 export const GuestPhotoCard = React.memo(({ 
@@ -48,22 +51,32 @@ export const GuestPhotoCard = React.memo(({
   guestAvatars,
   selectionMode = false,
   isSelected = false,
-  onSelect
+  onSelect,
+  onUpdateCaption,
+  onClearCaption,
+  onDeletePhoto
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const { addToast } = useToast();
-  const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showReactionsMenu, setShowReactionsMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showEditCaptionModal, setShowEditCaptionModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editingCaption, setEditingCaption] = useState('');
+  const [isUpdatingCaption, setIsUpdatingCaption] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const likeButtonRef = useRef<HTMLButtonElement>(null);
   const reactionsMenuRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+  const currentUserName = getCurrentUserName();
+  const isOwner = currentUserName === photo.author;
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressing = useRef<boolean>(false);
   const photoBadge = getPhotoBadge(photo, allPhotos);
-  const authorHasPhotographerBadge = hasPhotographerBadge(photo.author, allPhotos);
   
   const authorAvatar = guestAvatars?.get(photo.author) || getUserAvatar(photo.author);
   
@@ -170,9 +183,15 @@ export const GuestPhotoCard = React.memo(({
       ) {
         setShowReactionsMenu(false);
       }
+      if (
+        moreMenuRef.current &&
+        !moreMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowMoreMenu(false);
+      }
     };
 
-    if (showReactionsMenu) {
+    if (showReactionsMenu || showMoreMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
@@ -181,7 +200,7 @@ export const GuestPhotoCard = React.memo(({
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [showReactionsMenu]);
+  }, [showReactionsMenu, showMoreMenu]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -221,7 +240,7 @@ export const GuestPhotoCard = React.memo(({
     lastTapTime.current = now;
   }, [onLike, photo.id, selectionMode]);
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = () => {
     if (selectionMode && onSelect) {
       onSelect(photo.id);
     }
@@ -264,6 +283,58 @@ export const GuestPhotoCard = React.memo(({
       addToast('Erreur lors du partage', 'error');
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const handleEditCaption = () => {
+    setEditingCaption(photo.caption || '');
+    setShowEditCaptionModal(true);
+    setShowMoreMenu(false);
+  };
+
+  const handleSaveCaption = async () => {
+    if (!onUpdateCaption) return;
+    
+    setIsUpdatingCaption(true);
+    try {
+      await onUpdateCaption(photo.id, editingCaption.trim());
+      setShowEditCaptionModal(false);
+      addToast('Légende mise à jour', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la mise à jour', 'error');
+    } finally {
+      setIsUpdatingCaption(false);
+    }
+  };
+
+  const handleClearCaption = async () => {
+    if (!onClearCaption) return;
+    
+    setIsUpdatingCaption(true);
+    try {
+      await onClearCaption(photo.id);
+      setShowMoreMenu(false);
+      addToast('Légende supprimée', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setIsUpdatingCaption(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!onDeletePhoto) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDeletePhoto(photo.id, photo.url);
+      setShowDeleteConfirm(false);
+      setShowMoreMenu(false);
+      addToast('Photo supprimée', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
   
@@ -318,9 +389,68 @@ export const GuestPhotoCard = React.memo(({
             {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
           </p>
         </div>
-        <button className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center`}>
-          <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
-        </button>
+        <div className="relative">
+                <button
+                  onClick={() => {
+                    if (isOwner) {
+                      setShowMoreMenu(!showMoreMenu);
+                    }
+                  }}
+            className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center ${isOwner ? 'cursor-pointer' : ''}`}
+          >
+            <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+          </button>
+          
+          {/* Menu déroulant pour le propriétaire */}
+          <AnimatePresence>
+            {showMoreMenu && isOwner && (
+              <motion.div
+                ref={moreMenuRef}
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                className={`absolute ${isMobile ? 'top-full right-0 mt-2' : 'top-full right-0 mt-2'} bg-slate-900/95 backdrop-blur-xl ${isMobile ? 'rounded-xl p-2' : 'rounded-xl sm:rounded-2xl p-1.5 sm:p-2'} shadow-2xl border border-white/10 z-50 ${isMobile ? 'min-w-[160px]' : 'min-w-[180px]'}`}
+              >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditCaption();
+                  }}
+                  className="w-full flex items-center gap-2 sm:gap-2.5 px-3 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-all touch-manipulation text-left"
+                >
+                  <Edit2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} flex-shrink-0`} />
+                  <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Modifier la légende</span>
+                </button>
+                {photo.caption && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClearCaption();
+                    }}
+                    disabled={isUpdatingCaption}
+                    className="w-full flex items-center gap-2 sm:gap-2.5 px-3 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl hover:bg-orange-500/10 text-slate-300 hover:text-orange-400 transition-all touch-manipulation text-left disabled:opacity-50"
+                  >
+                    <Trash2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} flex-shrink-0`} />
+                    <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Effacer la légende</span>
+                  </button>
+                )}
+                <div className="h-px bg-white/5 my-1" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteConfirm(true);
+                    setShowMoreMenu(false);
+                  }}
+                  disabled={isDeleting}
+                  className="w-full flex items-center gap-2 sm:gap-2.5 px-3 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl hover:bg-red-500/10 text-slate-300 hover:text-red-400 transition-all touch-manipulation text-left disabled:opacity-50"
+                >
+                  <Trash2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} flex-shrink-0`} />
+                  <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Supprimer la photo</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Media Container */}
@@ -365,7 +495,6 @@ export const GuestPhotoCard = React.memo(({
             className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
             loading="lazy"
             style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
-            onError={() => setImageError(true)}
           />
         )}
 
@@ -543,11 +672,134 @@ export const GuestPhotoCard = React.memo(({
           </p>
         </div>
       </div>
+
+      {/* Modal de modification de légende */}
+      <AnimatePresence>
+        {showEditCaptionModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200]"
+              onClick={() => setShowEditCaptionModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={`fixed ${isMobile ? 'inset-x-4 top-1/2 -translate-y-1/2' : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md'} bg-slate-900 border border-white/10 shadow-2xl ${isMobile ? 'rounded-2xl p-4' : 'rounded-2xl sm:rounded-3xl p-4 sm:p-6'} z-[201]`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-black text-white`}>Modifier la légende</h3>
+                <button
+                  onClick={() => setShowEditCaptionModal(false)}
+                  className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center rounded-lg hover:bg-white/5`}
+                >
+                  <X className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+                </button>
+              </div>
+              
+              <textarea
+                value={editingCaption}
+                onChange={(e) => setEditingCaption(e.target.value)}
+                placeholder="Entrez votre légende..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 resize-none min-h-[100px] text-sm sm:text-base"
+                autoFocus
+              />
+              
+              <div className="flex items-center gap-2 sm:gap-3 mt-4">
+                <button
+                  onClick={() => setShowEditCaptionModal(false)}
+                  disabled={isUpdatingCaption}
+                  className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all touch-manipulation font-medium text-sm sm:text-base disabled:opacity-50`}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveCaption}
+                  disabled={isUpdatingCaption}
+                  className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white transition-all touch-manipulation font-bold text-sm sm:text-base disabled:opacity-50 flex items-center justify-center gap-2`}
+                >
+                  {isUpdatingCaption ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Enregistrement...</span>
+                    </>
+                  ) : (
+                    'Enregistrer'
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Modal de confirmation de suppression */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200]"
+              onClick={() => setShowDeleteConfirm(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={`fixed ${isMobile ? 'inset-x-4 top-1/2 -translate-y-1/2' : 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md'} bg-slate-900 border border-red-500/20 shadow-2xl ${isMobile ? 'rounded-2xl p-4' : 'rounded-2xl sm:rounded-3xl p-4 sm:p-6'} z-[201]`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} font-black text-white`}>Supprimer la photo</h3>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center rounded-lg hover:bg-white/5 disabled:opacity-50`}
+                >
+                  <X className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+                </button>
+              </div>
+              
+              <p className={`${isMobile ? 'text-sm' : 'text-base'} text-slate-300 mb-6`}>
+                Êtes-vous sûr de vouloir supprimer cette photo ? Cette action est irréversible.
+              </p>
+              
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeleting}
+                  className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all touch-manipulation font-medium text-sm sm:text-base disabled:opacity-50`}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDeletePhoto}
+                  disabled={isDeleting}
+                  className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition-all touch-manipulation font-bold text-sm sm:text-base disabled:opacity-50 flex items-center justify-center gap-2`}
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Suppression...</span>
+                    </>
+                  ) : (
+                    'Supprimer'
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 });
-
-GuestPhotoCard.displayName = 'GuestPhotoCard';
 
 GuestPhotoCard.displayName = 'GuestPhotoCard';
 
