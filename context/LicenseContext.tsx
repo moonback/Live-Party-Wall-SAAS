@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { checkLicenseValidity, updateLicenseLastCheck } from '../services/licenseService';
+import { checkLicenseValidity, updateLicenseLastCheck, verifyLicenseByKey } from '../services/licenseService';
 import { LicenseValidity } from '../types';
 import { logger } from '../utils/logger';
 import { isElectron } from '../utils/electronPaths';
+
+const STORED_LICENSE_KEY = 'partywall_license_key';
 
 interface LicenseContextType {
   licenseValidity: LicenseValidity | null;
@@ -39,7 +41,58 @@ export const LicenseProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     try {
       setLoading(true);
-      const validity = await checkLicenseValidity(user.id);
+      
+      // D'abord, essayer de vérifier dans la base principale
+      let validity = await checkLicenseValidity(user.id);
+      
+      // Si la licence n'est pas valide dans la base principale, vérifier dans la base séparée
+      if (!validity.is_valid) {
+        const storedLicenseKey = localStorage.getItem(STORED_LICENSE_KEY);
+        if (storedLicenseKey) {
+          try {
+            const externalLicense = await verifyLicenseByKey(storedLicenseKey, user.email);
+            if (externalLicense) {
+              // Calculer les jours restants
+              let daysRemaining: number | null = null;
+              if (externalLicense.expires_at) {
+                const expiresAt = new Date(externalLicense.expires_at);
+                const now = new Date();
+                const diff = expiresAt.getTime() - now.getTime();
+                daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+              }
+              
+              // Créer un objet LicenseValidity à partir de la licence externe
+              validity = {
+                is_valid: true,
+                license_id: externalLicense.id,
+                expires_at: externalLicense.expires_at,
+                status: externalLicense.status,
+                days_remaining: daysRemaining
+              };
+              
+              logger.info("License validated from external database", null, {
+                component: 'LicenseContext',
+                action: 'checkLicense',
+                licenseKey: storedLicenseKey.substring(0, 10) + '...'
+              });
+            } else {
+              // La clé stockée n'est plus valide, la supprimer
+              localStorage.removeItem(STORED_LICENSE_KEY);
+              logger.warn("Stored license key is no longer valid, removed from storage", null, {
+                component: 'LicenseContext',
+                action: 'checkLicense'
+              });
+            }
+          } catch (error) {
+            logger.error("Error verifying external license", error, {
+              component: 'LicenseContext',
+              action: 'checkLicense'
+            });
+            // En cas d'erreur, on garde le résultat de la base principale
+          }
+        }
+      }
+      
       setLicenseValidity(validity);
 
       // Mettre à jour la date de dernière vérification si la licence est valide

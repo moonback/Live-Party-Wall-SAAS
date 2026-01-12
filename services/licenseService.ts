@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { licenseSupabase, isLicenseSupabaseConfigured } from './licenseSupabaseClient';
 import { License, LicenseRow, LicenseValidity, LicenseUpdate, LicenseStatus } from '../types';
 import { logger } from '../utils/logger';
 import { isElectron } from '../utils/electronPaths';
@@ -474,6 +475,200 @@ const generateLicenseKey = (): string => {
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = Math.random().toString(36).substring(2, 10).toUpperCase();
   return `${prefix}-${timestamp}-${random}`;
+};
+
+/**
+ * Interface pour les licences dans la base Supabase séparée
+ * Structure correspondant à la table licenses réelle
+ */
+export interface ExternalLicense {
+  id: string;
+  user_id: string;
+  license_key: string;
+  plan_name: string;
+  plan_type: 'event' | 'monthly' | 'lifetime';
+  status: 'active' | 'expired' | 'revoked' | 'cancelled';
+  purchase_date: string;
+  expires_at: string | null;
+  features: any[] | null; // JSONB array
+  metadata: Record<string, any> | null; // JSONB object
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Vérifie une licence par clé dans la base Supabase séparée
+ * @param licenseKey - Clé de licence à vérifier
+ * @param userEmail - Email de l'utilisateur pour vérifier la correspondance (optionnel)
+ * @returns Promise résolue avec les informations de la licence ou null si non trouvée/invalide
+ */
+export const verifyLicenseByKey = async (
+  licenseKey: string,
+  userEmail?: string
+): Promise<ExternalLicense | null> => {
+  if (!isLicenseSupabaseConfigured() || !licenseSupabase) {
+    logger.warn("License Supabase not configured, cannot verify license", null, { 
+      component: 'licenseService', 
+      action: 'verifyLicenseByKey' 
+    });
+    return null;
+  }
+
+  if (!licenseKey || !licenseKey.trim()) {
+    logger.warn("Empty license key provided", null, { 
+      component: 'licenseService', 
+      action: 'verifyLicenseByKey' 
+    });
+    return null;
+  }
+
+  try {
+    // Rechercher la licence par clé
+    // Note: Le nom de la table peut varier, on essaie "licenses" par défaut
+    const { data, error } = await licenseSupabase
+      .from('licenses')
+      .select('*')
+      .eq('license_key', licenseKey.trim().toUpperCase())
+      .maybeSingle();
+
+    if (error) {
+      logger.error("Error verifying license by key", error, { 
+        component: 'licenseService', 
+        action: 'verifyLicenseByKey',
+        licenseKey: licenseKey.substring(0, 10) + '...' // Log partiel pour sécurité
+      });
+      return null;
+    }
+
+    if (!data) {
+      logger.warn("License not found", null, { 
+        component: 'licenseService', 
+        action: 'verifyLicenseByKey',
+        licenseKey: licenseKey.substring(0, 10) + '...'
+      });
+      return null;
+    }
+
+    // Vérifier que la licence est active
+    if (data.status !== 'active') {
+      logger.warn("License is not active", null, { 
+        component: 'licenseService', 
+        action: 'verifyLicenseByKey',
+        status: data.status,
+        licenseKey: licenseKey.substring(0, 10) + '...'
+      });
+      return null;
+    }
+
+    // Vérifier que la licence n'est pas expirée (si expires_at est défini)
+    if (data.expires_at) {
+      const expiresAt = new Date(data.expires_at);
+      const now = new Date();
+      if (expiresAt < now) {
+        logger.warn("License has expired", null, { 
+          component: 'licenseService', 
+          action: 'verifyLicenseByKey',
+          expiresAt: data.expires_at,
+          licenseKey: licenseKey.substring(0, 10) + '...'
+        });
+        return null;
+      }
+    }
+
+    // Note: L'email n'est pas stocké directement dans la table licenses
+    // Il faudrait faire une jointure avec la table profiles via user_id si nécessaire
+    // Pour l'instant, on ne vérifie pas l'email car il n'est pas dans la table licenses
+
+    // Retourner les informations de la licence
+    return {
+      id: data.id,
+      user_id: data.user_id,
+      license_key: data.license_key,
+      plan_name: data.plan_name,
+      plan_type: data.plan_type,
+      status: data.status,
+      purchase_date: data.purchase_date,
+      expires_at: data.expires_at,
+      features: data.features || null,
+      metadata: data.metadata || null,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
+  } catch (error) {
+    logger.error("Error in verifyLicenseByKey", error, { 
+      component: 'licenseService', 
+      action: 'verifyLicenseByKey' 
+    });
+    return null;
+  }
+};
+
+/**
+ * Révoque une licence par clé dans la base Supabase séparée
+ * @param licenseKey - Clé de licence à révoquer
+ * @returns Promise résolue avec true si la révocation réussit, false sinon
+ */
+export const revokeLicenseByKey = async (licenseKey: string): Promise<boolean> => {
+  if (!isLicenseSupabaseConfigured() || !licenseSupabase) {
+    logger.warn("License Supabase not configured, cannot revoke license", null, { 
+      component: 'licenseService', 
+      action: 'revokeLicenseByKey' 
+    });
+    return false;
+  }
+
+  if (!licenseKey || !licenseKey.trim()) {
+    logger.warn("Empty license key provided", null, { 
+      component: 'licenseService', 
+      action: 'revokeLicenseByKey' 
+    });
+    return false;
+  }
+
+  try {
+    // Mettre à jour le statut de la licence à 'revoked'
+    const { data, error } = await licenseSupabase
+      .from('licenses')
+      .update({ 
+        status: 'revoked',
+        updated_at: new Date().toISOString()
+      })
+      .eq('license_key', licenseKey.trim().toUpperCase())
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      logger.error("Error revoking license by key", error, { 
+        component: 'licenseService', 
+        action: 'revokeLicenseByKey',
+        licenseKey: licenseKey.substring(0, 10) + '...'
+      });
+      return false;
+    }
+
+    if (!data) {
+      logger.warn("License not found for revocation", null, { 
+        component: 'licenseService', 
+        action: 'revokeLicenseByKey',
+        licenseKey: licenseKey.substring(0, 10) + '...'
+      });
+      return false;
+    }
+
+    logger.info("License revoked successfully", null, {
+      component: 'licenseService',
+      action: 'revokeLicenseByKey',
+      licenseKey: licenseKey.substring(0, 10) + '...'
+    });
+
+    return true;
+  } catch (error) {
+    logger.error("Error in revokeLicenseByKey", error, { 
+      component: 'licenseService', 
+      action: 'revokeLicenseByKey' 
+    });
+    return false;
+  }
 };
 
 /**

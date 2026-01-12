@@ -1,8 +1,10 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { AlertTriangle, Clock, Shield, Mail, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, Clock, Shield, Mail, LogOut, Key, CheckCircle2, Loader2 } from 'lucide-react';
 import { useLicense } from '../context/LicenseContext';
 import { useAuth } from '../context/AuthContext';
+import { verifyLicenseByKey } from '../services/licenseService';
+import { useToast } from '../context/ToastContext';
 import { isElectron } from '../utils/electronPaths';
 
 /**
@@ -10,8 +12,13 @@ import { isElectron } from '../utils/electronPaths';
  * Design amélioré pour plus de clarté et d'impact visuel.
  */
 const LicenseBlock: React.FC = () => {
-  const { licenseValidity, loading } = useLicense();
-  const { isAuthenticated, signOut } = useAuth();
+  const { licenseValidity, loading, refreshLicense } = useLicense();
+  const { isAuthenticated, signOut, user } = useAuth();
+  const { addToast } = useToast();
+  const [licenseKey, setLicenseKey] = useState('');
+  const [verifyingLicense, setVerifyingLicense] = useState(false);
+  const [showLicenseInput, setShowLicenseInput] = useState(false);
+  const [licenseVerified, setLicenseVerified] = useState<{ plan_name?: string; plan_type?: string; expires_at?: string | null } | null>(null);
 
   // Loader design amélioré
   if (loading) {
@@ -59,6 +66,46 @@ const LicenseBlock: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Vérifier la licence saisie
+  const handleVerifyLicense = async () => {
+    if (!licenseKey.trim()) {
+      addToast('Veuillez saisir une clé de licence', 'error');
+      return;
+    }
+
+    try {
+      setVerifyingLicense(true);
+      setLicenseVerified(null);
+
+      const license = await verifyLicenseByKey(licenseKey.trim(), user?.email);
+      
+      if (license) {
+        setLicenseVerified({
+          plan_name: license.plan_name,
+          plan_type: license.plan_type,
+          expires_at: license.expires_at
+        });
+        addToast(`Licence valide - Plan: ${license.plan_name} (${license.plan_type})`, 'success');
+        
+        // Stocker la clé de licence dans le localStorage pour que LicenseContext puisse la vérifier
+        localStorage.setItem('partywall_license_key', licenseKey.trim().toUpperCase());
+        
+        // Rafraîchir la vérification de licence dans le contexte
+        // Le contexte vérifiera maintenant la licence dans la base séparée
+        await refreshLicense();
+      } else {
+        setLicenseVerified(null);
+        addToast('Licence invalide, expirée ou non trouvée', 'error');
+      }
+    } catch (error: any) {
+      console.error('Error verifying license:', error);
+      setLicenseVerified(null);
+      addToast(error.message || 'Erreur lors de la vérification de la licence', 'error');
+    } finally {
+      setVerifyingLicense(false);
+    }
   };
 
   return (
@@ -156,6 +203,103 @@ const LicenseBlock: React.FC = () => {
               </div>
             </motion.div>
           )}
+
+          {/* Section de saisie de licence */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="px-5 py-4 rounded-xl bg-gradient-to-br from-slate-800/60 via-slate-900/80 to-slate-800/60 border border-slate-700/50 shadow-lg"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Key className="w-5 h-5 text-indigo-400" />
+              <h3 className="text-lg font-semibold text-slate-200">Ajouter une licence</h3>
+            </div>
+            
+            {!showLicenseInput ? (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowLicenseInput(true)}
+                className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30"
+              >
+                <Key className="w-4 h-4" />
+                <span>Saisir une clé de licence</span>
+              </motion.button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={licenseKey}
+                    onChange={(e) => {
+                      setLicenseKey(e.target.value.toUpperCase());
+                      setLicenseVerified(null);
+                    }}
+                    placeholder="PW-MAR-XXXX-XXXX-XXXX"
+                    className="flex-1 bg-slate-950/80 border border-slate-700/50 rounded-lg px-4 py-3 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200"
+                    disabled={verifyingLicense}
+                  />
+                  <motion.button
+                    type="button"
+                    onClick={handleVerifyLicense}
+                    disabled={!licenseKey.trim() || verifyingLicense}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 disabled:shadow-none disabled:cursor-not-allowed"
+                  >
+                    {verifyingLicense ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4" />
+                    )}
+                    {verifyingLicense ? 'Vérif...' : 'Vérifier'}
+                  </motion.button>
+                </div>
+
+                {licenseVerified && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-green-900/20 border border-green-500/30 rounded-lg text-sm"
+                  >
+                    <div className="flex items-center gap-2 text-green-400 mb-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="font-semibold">Licence valide</span>
+                    </div>
+                    <div className="text-slate-300 text-xs space-y-1">
+                      {licenseVerified.plan_name && (
+                        <p>Plan: <span className="font-medium">{licenseVerified.plan_name}</span>
+                          {licenseVerified.plan_type && (
+                            <span className="text-slate-400 ml-1">({licenseVerified.plan_type})</span>
+                          )}
+                        </p>
+                      )}
+                      {licenseVerified.expires_at ? (
+                        <p>Expire le: <span className="font-medium">{new Date(licenseVerified.expires_at).toLocaleDateString('fr-FR')}</span></p>
+                      ) : (
+                        <p className="text-green-400">Licence à vie</p>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2">
+                      La licence a été vérifiée. Si elle est associée à votre compte, l'application se rafraîchira automatiquement.
+                    </p>
+                  </motion.div>
+                )}
+
+                <button
+                  onClick={() => {
+                    setShowLicenseInput(false);
+                    setLicenseKey('');
+                    setLicenseVerified(null);
+                  }}
+                  className="w-full text-sm text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            )}
+          </motion.div>
         </div>
          {/* Actions améliorées */}
          <div className="flex flex-col gap-3 px-7 pb-7">

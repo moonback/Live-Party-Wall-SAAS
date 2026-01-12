@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, Calendar, Clock, CheckCircle, XCircle, 
-  AlertTriangle, Shield, Copy, Sparkles, TrendingUp
+  AlertTriangle, Shield, Copy, Sparkles, TrendingUp,
+  Ban, Loader2
 } from 'lucide-react';
 import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { revokeLicenseByKey } from '../../services/licenseService';
 
 const LicenseTab: React.FC = () => {
   const { licenseValidity, loading, refreshLicense } = useLicense();
   const { user } = useAuth();
   const { addToast } = useToast();
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
+  const [revoking, setRevoking] = useState(false);
 
   // Calculer les jours restants
   const getDaysRemaining = (expiresAt: string | null): number | null => {
@@ -39,6 +43,37 @@ const LicenseTab: React.FC = () => {
     if (!key) return;
     navigator.clipboard.writeText(key);
     addToast('Clé de licence copiée', 'success');
+  };
+
+  // Révoquer la licence
+  const handleRevokeLicense = async () => {
+    const storedLicenseKey = localStorage.getItem('partywall_license_key');
+    if (!storedLicenseKey) {
+      addToast('Aucune clé de licence trouvée à révoquer', 'error');
+      return;
+    }
+
+    try {
+      setRevoking(true);
+      const success = await revokeLicenseByKey(storedLicenseKey);
+      
+      if (success) {
+        // Supprimer la clé du localStorage
+        localStorage.removeItem('partywall_license_key');
+        addToast('Licence révoquée avec succès', 'success');
+        setShowRevokeConfirm(false);
+        
+        // Rafraîchir le contexte pour bloquer l'application
+        await refreshLicense();
+      } else {
+        addToast('Erreur lors de la révocation de la licence', 'error');
+      }
+    } catch (error: any) {
+      console.error('Error revoking license:', error);
+      addToast(error.message || 'Erreur lors de la révocation de la licence', 'error');
+    } finally {
+      setRevoking(false);
+    }
   };
 
   if (loading) {
@@ -391,20 +426,110 @@ const LicenseTab: React.FC = () => {
       </AnimatePresence>
 
       {/* Actions */}
-      <motion.button
-        whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)' }}
-        whileTap={{ scale: 0.98 }}
-        onClick={refreshLicense}
-        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-pink-500/40 border border-pink-400/30"
-      >
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+      <div className="space-y-3">
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: '0 10px 30px rgba(236, 72, 153, 0.4)' }}
+          whileTap={{ scale: 0.98 }}
+          onClick={refreshLicense}
+          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:from-purple-500 hover:via-pink-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-pink-500/40 border border-pink-400/30"
         >
-          <Clock className="w-5 h-5" />
-        </motion.div>
-        <span>Actualiser</span>
-      </motion.button>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          >
+            <Clock className="w-5 h-5" />
+          </motion.div>
+          <span>Actualiser</span>
+        </motion.button>
+
+        {/* Bouton de révocation */}
+        {isValid && localStorage.getItem('partywall_license_key') && (
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowRevokeConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:via-rose-500 hover:to-red-500 text-white rounded-xl font-bold transition-all duration-300 shadow-xl shadow-red-500/40 border border-red-400/30"
+          >
+            <Ban className="w-5 h-5" />
+            <span>Révoquer la licence</span>
+          </motion.button>
+        )}
+      </div>
+
+      {/* Confirmation de révocation */}
+      <AnimatePresence>
+        {showRevokeConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => !revoking && setShowRevokeConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-md w-full bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-slate-900/95 backdrop-blur-xl rounded-2xl p-6 border border-red-500/30 shadow-2xl"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-400/30">
+                  <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Révoquer la licence</h3>
+                  <p className="text-sm text-slate-400">Cette action est irréversible</p>
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 rounded-xl bg-red-900/20 border border-red-500/30">
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Êtes-vous sûr de vouloir révoquer votre licence ? Cette action :
+                </p>
+                <ul className="mt-3 space-y-2 text-sm text-slate-400 list-disc list-inside">
+                  <li>Rendra votre licence immédiatement invalide</li>
+                  <li>Bloquera l'accès à l'application</li>
+                  <li>Nécessitera une nouvelle licence pour continuer</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowRevokeConfirm(false)}
+                  disabled={revoking}
+                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition-all duration-200 border border-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Annuler
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleRevokeLicense}
+                  disabled={revoking}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 text-white rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 disabled:shadow-none disabled:cursor-not-allowed"
+                >
+                  {revoking ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Révocation...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Ban className="w-4 h-4" />
+                      <span>Confirmer la révocation</span>
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Informations utilisateur */}
       <AnimatePresence>
