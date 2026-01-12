@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Guest, Photo } from '../../types';
-import { Users, X, Camera, Video, Heart } from 'lucide-react';
+import { Users, X, Camera, Video, Heart, Download } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllGuests } from '../../services/guestService';
@@ -127,6 +127,32 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, selectedParticipant]);
 
+  // Fonction pour télécharger une photo/vidéo
+  const handleDownload = async (photo: Photo, e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêcher la propagation du clic
+    
+    try {
+      const response = await fetch(photo.url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Générer un nom de fichier basé sur la date et le type
+      const extension = photo.type === 'video' ? 'mp4' : 'jpg';
+      const timestamp = new Date(photo.created_at || Date.now()).toISOString().split('T')[0];
+      const filename = `${selectedParticipantData?.name || 'photo'}_${timestamp}_${photo.id}.${extension}`;
+      link.download = filename;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      logger.error('Error downloading photo', error, { photoId: photo.id });
+    }
+  };
+
   if (typeof window === 'undefined') {
     return null;
   }
@@ -238,6 +264,14 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                                 loading="lazy"
                               />
                             )}
+                            {/* Bouton de téléchargement en haut à droite */}
+                            <button
+                              onClick={(e) => handleDownload(photo, e)}
+                              className="absolute top-2 right-2 p-1.5 sm:p-2 bg-black/60 hover:bg-black/80 backdrop-blur-sm rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 touch-manipulation"
+                              title="Télécharger"
+                            >
+                              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </button>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                               <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2 text-white text-xs">
                                 {photo.type === 'video' && <Video className="w-3 h-3" />}
