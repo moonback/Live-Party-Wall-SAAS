@@ -636,7 +636,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
       {/* Filters */}
       <div className="sticky top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-1">
+        <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-1">
           <GalleryFilters
             sortBy={sortBy}
             onSortChange={setSortBy}
@@ -669,7 +669,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         ref={parentRef} 
         className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
       >
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-6">
           {/* Section Aftermovies ultra-compacte */}
           {settings.aftermovies_enabled !== false && aftermovies.length > 0 && showAftermovies && (
             <motion.div

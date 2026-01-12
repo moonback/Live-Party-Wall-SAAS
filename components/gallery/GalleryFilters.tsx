@@ -74,14 +74,14 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
 
   return (
     <>
-      <div className={`flex flex-wrap items-center ${isMobile ? 'gap-2 px-3 py-3' : 'gap-2 sm:gap-3 px-2 sm:px-1 py-3 sm:py-4'} overflow-x-auto scrollbar-hide`}>
+      <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:gap-3 sm:px-2 md:px-1 sm:py-4 overflow-x-auto scrollbar-hide">
         {/* Battles Toggle */}
         {battleModeEnabled && (
           <motion.button
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={onToggleBattles}
-            className={`flex items-center ${isMobile ? 'gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl' : 'gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl'} ${isMobile ? 'text-xs' : 'text-[10px] sm:text-xs'} font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden ${
+            className={`flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl sm:gap-2 sm:px-4 sm:py-2 sm:rounded-2xl text-xs sm:text-[10px] md:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden ${
               showBattles
                 ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400 shadow-lg shadow-indigo-500/20'
                 : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
@@ -105,12 +105,12 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               transition={{ duration: 0.5 }}
               className="relative z-10"
             >
-              <Zap className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'}`} />
+              <Zap className="w-4 h-4 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
             </motion.div>
             <span className="relative z-10">Battles</span>
             {battlesCount > 0 && (
               <motion.span 
-                className={`bg-indigo-500 text-white ${isMobile ? 'px-1.5 py-0.5 rounded-full text-[9px]' : 'px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px]'} font-black relative z-10`}
+                className="bg-indigo-500 text-white px-1.5 py-0.5 rounded-full text-[9px] sm:px-1 md:px-1.5 sm:text-[8px] md:text-[9px] font-black relative z-10"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500 }}
@@ -150,7 +150,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             transition={{ duration: 0.5 }}
             className="relative z-10"
           >
-            <Trophy className={`${isMobile ? 'w-3.5 h-3.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'}`} />
+            <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </motion.div>
           <span className="whitespace-nowrap relative z-10">Classement</span>
         </motion.button>
@@ -161,7 +161,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={onToggleAftermovies}
-            className={`flex items-center ${isMobile ? 'gap-1 px-2.5 py-2 min-h-[44px] rounded-xl' : 'gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl'} ${isMobile ? 'text-[11px]' : 'text-[10px] sm:text-xs'} font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden ${
+            className={`flex items-center gap-1 px-2.5 py-2 min-h-[44px] rounded-xl sm:gap-1.5 sm:px-3 sm:py-2.5 sm:rounded-2xl text-[11px] sm:text-[10px] md:text-xs font-bold transition-all border touch-manipulation flex-shrink-0 relative overflow-hidden ${
               showAftermovies
                 ? 'bg-purple-500/20 border-purple-500/50 text-purple-400 shadow-lg shadow-purple-500/20'
                 : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
@@ -185,12 +185,12 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               transition={{ duration: 0.5 }}
               className="relative z-10"
             >
-              <Video className={`${isMobile ? 'w-3.5 h-3.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'}`} />
+              <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </motion.div>
             <span className="whitespace-nowrap relative z-10">Aftermovies</span>
             {aftermoviesCount > 0 && (
               <motion.span 
-                className={`bg-purple-500 text-white ${isMobile ? 'px-1 py-0.5 rounded-full text-[8px]' : 'px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px]'} font-black ml-0.5 relative z-10`}
+                className="bg-purple-500 text-white px-1 py-0.5 rounded-full text-[8px] sm:px-1.5 sm:text-[9px] font-black ml-0.5 relative z-10"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 500 }}
@@ -207,7 +207,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={onFindMeClick}
-            className={`flex items-center ${isMobile ? 'gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl' : 'gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl'} ${isMobile ? 'text-xs' : 'text-[10px] sm:text-xs'} font-bold transition-all bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 text-pink-400 border border-pink-500/30 touch-manipulation flex-shrink-0 relative overflow-hidden group`}
+            className="flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl sm:gap-2 sm:px-4 sm:py-2 sm:rounded-2xl text-xs sm:text-[10px] md:text-xs font-bold transition-all bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 text-pink-400 border border-pink-500/30 touch-manipulation flex-shrink-0 relative overflow-hidden group"
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-pink-500/30"
@@ -232,7 +232,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               }}
               className="relative z-10"
             >
-              <User className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'}`} />
+              <User className="w-4 h-4 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
             </motion.div>
             <span className="relative z-10">Retrouve-moi</span>
           </motion.button>
@@ -249,7 +249,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             whileTap={{ scale: 0.9 }}
             key={author}
             onClick={() => onSelectedAuthorsChange(selectedAuthors.filter(a => a !== author))}
-            className={`flex items-center ${isMobile ? 'gap-1.5 px-3 py-2 min-h-[44px] rounded-xl' : 'gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl'} bg-pink-500/10 border border-pink-500/30 text-pink-400 ${isMobile ? 'text-xs' : 'text-[9px] sm:text-[10px]'} font-bold uppercase tracking-tight touch-manipulation flex-shrink-0 relative overflow-hidden group shadow-lg shadow-pink-500/10`}
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl sm:gap-2 sm:px-2.5 md:px-3 sm:py-1.5 md:py-2 sm:rounded-lg md:rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400 text-xs sm:text-[9px] md:text-[10px] font-bold uppercase tracking-tight touch-manipulation flex-shrink-0 relative overflow-hidden group shadow-lg shadow-pink-500/10"
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-pink-500/20"
@@ -268,7 +268,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               transition={{ duration: 0.2 }}
               className="relative z-10"
             >
-              <X className={`${isMobile ? 'w-3.5 h-3.5' : 'w-2.5 h-2.5 sm:w-3 sm:h-3'}`} />
+              <X className="w-3.5 h-3.5 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3" />
             </motion.div>
           </motion.button>
           ))}

@@ -184,7 +184,7 @@ const VirtualColumn = React.memo(({
               width: '100%',
               transform: `translateY(${virtualRow.start}px)`,
             }}
-            className={isMobile ? 'pb-3' : 'pb-3 sm:pb-4 md:pb-6'}
+            className="pb-3 sm:pb-4 md:pb-6"
           >
             {item.type === 'battle' ? (
               <motion.div
@@ -315,7 +315,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (loading) {
     return (
-      <div className={`grid grid-cols-1 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6'}`}>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4 md:gap-6">
         <PhotoCardSkeletons count={8} columns={isMobile ? 1 : 4} />
       </div>
     );
@@ -326,17 +326,17 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`text-center ${isMobile ? 'py-12 px-4' : 'py-16 sm:py-20 md:py-24 px-4 sm:px-6'}`}
+        className="text-center py-12 px-4 sm:py-16 md:py-20 lg:py-24 sm:px-6"
       >
-        <div className={`${isMobile ? 'text-5xl mb-4' : 'text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6'}`}>
+        <div className="text-5xl mb-4 sm:text-6xl md:text-7xl sm:mb-6">
           {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
         </div>
-        <h3 className={`${isMobile ? 'text-lg mb-2' : 'text-xl sm:text-2xl mb-1.5 sm:mb-2'} font-black text-white`}>
+        <h3 className="text-lg mb-2 sm:text-xl md:text-2xl sm:mb-1.5 md:mb-2 font-black text-white">
           {searchQuery || mediaFilter !== 'all' 
             ? 'Aucun résultat' 
             : 'Le mur est vide'}
         </h3>
-        <p className={`text-slate-500 max-w-xs mx-auto ${isMobile ? 'text-sm' : 'text-xs sm:text-sm'}`}>
+        <p className="text-slate-500 max-w-xs mx-auto text-sm sm:text-xs md:text-sm">
           {searchQuery || mediaFilter !== 'all' 
             ? 'Essayez de modifier vos filtres ou votre recherche.' 
             : 'Soyez le premier à capturer un moment magique !'}
@@ -358,7 +358,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
             className="overflow-hidden"
           >
             <motion.div 
-              className={`bg-gradient-to-br from-slate-900/60 via-slate-800/40 to-slate-900/60 backdrop-blur-xl ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8'} border border-yellow-500/20 shadow-2xl relative overflow-hidden`}
+              className="bg-gradient-to-br from-slate-900/60 via-slate-800/40 to-slate-900/60 backdrop-blur-xl rounded-xl p-4 sm:rounded-2xl md:rounded-[2.5rem] sm:p-6 md:p-8 border border-yellow-500/20 shadow-2xl relative overflow-hidden"
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1 }}
@@ -378,7 +378,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`flex flex-col ${isMobile ? 'gap-3' : 'md:flex-row gap-3 sm:gap-4 md:gap-6'}`}
+        className="flex flex-col gap-3 md:flex-row sm:gap-4 md:gap-6"
       >
         {columnsData.map((colData, colIdx) => (
           <motion.div 

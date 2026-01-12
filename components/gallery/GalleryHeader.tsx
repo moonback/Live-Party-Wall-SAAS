@@ -68,33 +68,33 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className={`sticky top-0 z-50 transition-all duration-500 ${
         isScrolled 
-          ? `bg-slate-900/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl ${isMobile ? 'py-2' : 'py-1.5 sm:py-2'}` 
-          : `bg-transparent ${isMobile ? 'py-3' : 'py-2.5 sm:py-4 md:py-6'}`
+          ? `bg-slate-900/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl py-2 md:py-1.5` 
+          : `bg-transparent py-3 md:py-4 lg:py-6`
       }`}
     >
-      <div className={`max-w-7xl mx-auto ${isMobile ? 'px-3' : 'px-2 sm:px-4 md:px-6 lg:px-8'}`}>
-        <div className={`flex items-center justify-between ${isMobile ? 'gap-2' : 'gap-2 sm:gap-4'}`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           {/* Left: Back + Logo */}
-          <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3 md:gap-4'}`}>
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <motion.button 
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={onBack} 
-              className={`${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 rounded-xl sm:rounded-2xl'} bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 group touch-manipulation flex items-center justify-center relative overflow-hidden`}
+              className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl md:p-2 md:rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 group touch-manipulation flex items-center justify-center relative overflow-hidden"
               aria-label="Retour"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 transition-all duration-300" />
-              <ArrowLeft className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'} text-white group-hover:text-pink-400 relative z-10 transition-all duration-300`} />
+              <ArrowLeft className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white group-hover:text-pink-400 relative z-10 transition-all duration-300" />
             </motion.button>
             
             <motion.div 
-              className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 sm:gap-3'}`}
+              className="flex items-center gap-2 sm:gap-3"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
               <motion.div 
-                className={`${isMobile ? 'hidden' : 'hidden sm:flex'} p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg relative overflow-hidden`}
+                className="hidden sm:flex p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg relative overflow-hidden"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
@@ -103,7 +103,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               </motion.div>
               <div>
                 <motion.h1 
-                  className={`${isMobile ? 'text-base' : 'text-lg sm:text-xl md:text-2xl'} font-black tracking-tight text-white`}
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl font-black tracking-tight text-white"
                   animate={{ 
                     backgroundPosition: ['0%', '100%', '0%'],
                   }}
@@ -156,7 +156,7 @@ Votre mur social interactif
           </div>
 
           {/* Center/Right: Actions */}
-          <div className={`flex items-center ${isMobile ? 'gap-1.5' : 'gap-1.5 sm:gap-2 md:gap-3'} flex-1 justify-end`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 justify-end">
             {/* Search Bar (Desktop) */}
             {!isMobile && (
               <motion.div 
@@ -221,14 +221,14 @@ Votre mur social interactif
             {onToggleSelectionMode && (
               <button
                 onClick={onToggleSelectionMode}
-                className={`flex items-center ${isMobile ? 'gap-1.5 p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:px-4 md:py-2.5 rounded-xl sm:rounded-2xl'} border transition-all touch-manipulation ${
+                className={`flex items-center gap-1.5 p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:gap-2 sm:p-2 md:px-4 md:py-2.5 md:rounded-2xl border transition-all touch-manipulation justify-center md:justify-start ${
                   selectionMode 
                     ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400' 
                     : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                 }`}
                 title="Mode sélection"
               >
-                {selectionMode ? <CheckSquare className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} /> : <Square className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />}
+                {selectionMode ? <CheckSquare className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" /> : <Square className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />}
                 <span className="hidden lg:inline font-semibold text-sm">Sélectionner</span>
               </button>
             )}
@@ -236,13 +236,13 @@ Votre mur social interactif
             {/* Filters Button */}
             <button
               onClick={onFiltersClick}
-              className={`${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 md:px-4 md:py-2.5 rounded-xl sm:rounded-2xl'} border transition-all flex items-center ${isMobile ? 'justify-center' : 'gap-1.5 sm:gap-2'} touch-manipulation ${
+              className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-4 md:py-2.5 md:rounded-2xl border transition-all flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation ${
                 isFiltersModalOpen
                   ? 'bg-pink-500/20 border-pink-500/50 text-pink-400'
                   : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
               }`}
             >
-              <Filter className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+              <Filter className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
               <span className="hidden lg:inline font-semibold text-sm">Filtres</span>
             </button>
 
@@ -251,7 +251,7 @@ Votre mur social interactif
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={onUploadClick}
-              className={`bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white ${isMobile ? 'p-2.5 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-2.5 md:px-5 md:py-2.5 rounded-xl sm:rounded-2xl'} font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center ${isMobile ? 'justify-center' : 'gap-1.5 sm:gap-2'} touch-manipulation relative overflow-hidden group`}
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-5 md:py-2.5 md:rounded-2xl font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation relative overflow-hidden group"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -265,7 +265,7 @@ Votre mur social interactif
                   ease: 'linear'
                 }}
               />
-              <Camera className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'} relative z-10`} />
+              <Camera className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 relative z-10" />
               <span className="hidden md:inline relative z-10">Publier</span>
             </motion.button>
           </div>
@@ -308,18 +308,18 @@ Votre mur social interactif
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
-              className={`${isMobile ? 'mt-3' : 'mt-2 sm:mt-4'} flex items-center justify-between bg-indigo-500/10 border border-indigo-500/30 ${isMobile ? 'rounded-xl p-3' : 'rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:px-6'}`}
+              className="mt-3 sm:mt-2 md:mt-4 flex items-center justify-between bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-3 sm:rounded-2xl sm:p-2.5 md:p-3 md:px-6"
             >
-              <p className={`text-indigo-300 font-bold ${isMobile ? 'text-sm' : 'text-xs sm:text-sm'}`}>
+              <p className="text-indigo-300 font-bold text-sm sm:text-xs md:text-sm">
                 {selectedCount} élément{selectedCount > 1 ? 's' : ''} sélectionné{selectedCount > 1 ? 's' : ''}
               </p>
-              <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'}`}>
+              <div className="flex items-center gap-2 sm:gap-1.5 md:gap-2">
                 {onBatchDownload && (
                   <button
                     onClick={onBatchDownload}
-                    className={`${isMobile ? 'p-2.5 min-h-[44px] rounded-xl' : 'p-1.5 sm:p-2 rounded-lg sm:rounded-xl'} hover:bg-white/10 text-white transition-colors flex items-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} ${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium touch-manipulation`}
+                    className="p-2.5 min-h-[44px] rounded-xl sm:p-1.5 sm:rounded-lg md:p-2 md:rounded-xl hover:bg-white/10 text-white transition-colors flex items-center gap-2 sm:gap-1.5 md:gap-2 text-sm sm:text-xs md:text-sm font-medium touch-manipulation"
                   >
-                    <Download className={`${isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} text-indigo-400`} />
+                    <Download className="w-5 h-5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-indigo-400" />
                     <span className="hidden sm:inline">Télécharger</span>
                   </button>
                 )}
