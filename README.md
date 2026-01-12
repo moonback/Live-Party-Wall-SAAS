@@ -2,7 +2,7 @@
 
 # 🎉 Partywall
 
-![Banner](https://Partywall-saas.vercel.app/banner.jpg)
+![Banner](https://live.Partywall.fr/banner.jpg)
 
 ### Transformez chaque événement en une expérience mémorable et interactive
 
