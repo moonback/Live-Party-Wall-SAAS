@@ -200,7 +200,28 @@ const LicenseBlock: React.FC = () => {
                whileTap={{ scale: 0.96 }}
                onClick={async () => {
                  try {
+                   // Déconnexion
                    await signOut();
+                   
+                   // Nettoyer le localStorage et sessionStorage pour s'assurer que la session est bien supprimée
+                   // Supprimer les clés Supabase qui pourraient être en cache
+                   const cleanStorage = (storage: Storage) => {
+                     const keysToRemove: string[] = [];
+                     for (let i = 0; i < storage.length; i++) {
+                       const key = storage.key(i);
+                       if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+                         keysToRemove.push(key);
+                       }
+                     }
+                     keysToRemove.forEach(key => storage.removeItem(key));
+                   };
+                   
+                   cleanStorage(localStorage);
+                   cleanStorage(sessionStorage);
+                   
+                   // Attendre un peu pour s'assurer que tout est bien nettoyé
+                   await new Promise(resolve => setTimeout(resolve, 500));
+                   
                    // Sur Electron, recharger la page pour réinitialiser l'application
                    // Cela permet de revenir à l'écran de login (mode=admin par défaut dans Electron)
                    if (isElectron()) {
@@ -211,7 +232,23 @@ const LicenseBlock: React.FC = () => {
                    }
                  } catch (error) {
                    console.error('Erreur lors de la déconnexion:', error);
-                   // En cas d'erreur, forcer le rechargement
+                   // En cas d'erreur, nettoyer quand même et forcer le rechargement
+                   try {
+                     const cleanStorage = (storage: Storage) => {
+                       const keysToRemove: string[] = [];
+                       for (let i = 0; i < storage.length; i++) {
+                         const key = storage.key(i);
+                         if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+                           keysToRemove.push(key);
+                         }
+                       }
+                       keysToRemove.forEach(key => storage.removeItem(key));
+                     };
+                     cleanStorage(localStorage);
+                     cleanStorage(sessionStorage);
+                   } catch (e) {
+                     // Ignorer les erreurs de nettoyage
+                   }
                    window.location.reload();
                  }
                }}
