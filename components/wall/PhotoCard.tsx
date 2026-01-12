@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { Photo, ReactionCounts } from '../../types';
@@ -7,14 +7,13 @@ import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamification
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
 import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
 import { useSettings } from '../../context/SettingsContext';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface PhotoCardProps {
   photo: Photo;
   index: number;
   onClick?: () => void;
   allPhotos: Photo[];
-  hoveredPhoto: string | null;
-  setHoveredPhoto: (id: string | null) => void;
   reactions?: ReactionCounts;
 }
 
@@ -23,7 +22,6 @@ export const PhotoCard = React.memo(({
   index, 
   onClick, 
   allPhotos, 
-  setHoveredPhoto, 
   reactions 
 }: PhotoCardProps) => {
   const { settings } = useSettings();
@@ -34,15 +32,8 @@ export const PhotoCard = React.memo(({
     ? (photo.orientation || 'unknown')
     : 'unknown';
     
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
-  
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   return (
     <motion.div 
@@ -56,8 +47,6 @@ export const PhotoCard = React.memo(({
       `}
       whileHover={onClick ? { scale: 1.05 } : undefined}
       onClick={onClick}
-      onMouseEnter={() => setHoveredPhoto(photo.id)}
-      onMouseLeave={() => setHoveredPhoto(null)}
     >
       {/* Glow effect au hover */}
       <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-none blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>

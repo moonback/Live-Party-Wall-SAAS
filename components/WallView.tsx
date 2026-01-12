@@ -62,7 +62,6 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showControls, setShowControls] = useState(true);
   const [showQrCodes, setShowQrCodes] = useState(true);
-  const [hoveredPhoto, setHoveredPhoto] = useState<string | null>(null);
   const [isHoveringControls, setIsHoveringControls] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const [showBattleModeActivated, setShowBattleModeActivated] = useState(false);
@@ -514,8 +513,6 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
             battles={battles}
             showBattles={showBattles}
             scrollRef={scrollRef}
-            hoveredPhoto={hoveredPhoto}
-            setHoveredPhoto={setHoveredPhoto}
             photosReactions={photosReactions}
             onBattleFinished={handleBattleFinished}
           />

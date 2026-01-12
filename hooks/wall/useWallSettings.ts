@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { getSettings, subscribeToSettings, defaultSettings } from '../../services/settingsService';
 import { AUTO_SCROLL_SPEED, KiosqueTransitionType } from '../../constants';
 import { useSettings } from '../../context/SettingsContext';
+import { useEvent } from '../../context/EventContext';
 
 export const useWallSettings = () => {
   const { settings: globalSettings } = useSettings();
+  const { currentEvent } = useEvent();
   const [uiConfig, setUiConfig] = useState({
     title: defaultSettings.event_title,
     subtitle: defaultSettings.event_subtitle,
@@ -19,8 +21,19 @@ export const useWallSettings = () => {
 
   useEffect(() => {
     const loadConfig = async () => {
-      const settings = await getSettings();
-      updateUiConfig(settings);
+      // Si pas d'événement, utiliser les valeurs par défaut
+      if (!currentEvent?.id) {
+        updateUiConfig(defaultSettings);
+        return;
+      }
+
+      try {
+        const settings = await getSettings(currentEvent.id);
+        updateUiConfig(settings);
+      } catch (error) {
+        // En cas d'erreur, utiliser les valeurs par défaut
+        updateUiConfig(defaultSettings);
+      }
     };
 
     const updateUiConfig = (settings: any) => {
@@ -39,14 +52,17 @@ export const useWallSettings = () => {
 
     loadConfig();
 
-    const subscription = subscribeToSettings((newSettings) => {
+    // S'abonner aux changements de settings seulement si un événement est chargé
+    if (currentEvent?.id) {
+      const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
         updateUiConfig(newSettings);
-    });
+      });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [currentEvent?.id]);
 
   return {
     uiConfig,

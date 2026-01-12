@@ -6,15 +6,13 @@ import PhotoCard from './PhotoCard';
 import { WallPhotoCardSkeleton } from '../WallPhotoCardSkeleton';
 
 export type ColumnItem = 
-  | { type: 'photo'; photo: Photo; originalIndex: number; rotation: number; animationDelay: number }
+  | { type: 'photo'; photo: Photo; originalIndex: number }
   | { type: 'battle'; battle: PhotoBattle };
 
 interface VirtualColumnProps {
   data: ColumnItem[];
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   allPhotos: Photo[];
-  hoveredPhoto: string | null;
-  setHoveredPhoto: (id: string | null) => void;
   photosReactions: Map<string, ReactionCounts>;
   onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
   numColumns: number;
@@ -24,8 +22,6 @@ const VirtualColumn = React.memo(({
   data, 
   scrollContainerRef, 
   allPhotos, 
-  hoveredPhoto, 
-  setHoveredPhoto, 
   photosReactions,
   onBattleFinished,
   numColumns
@@ -42,22 +38,8 @@ const VirtualColumn = React.memo(({
     const MIN_PHOTOS_TOTAL = 100;
     const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
     
-    // Estimation moyenne de la hauteur basée sur les photos dans cette colonne
-    let avgHeight = 400;
-    if (data.length > 0) {
-      const heights = data.slice(0, Math.min(10, data.length)).map(item => {
-        if (item.type === 'battle') return 420; // Hauteur améliorée pour le nouveau design
-        const orientation = item.photo.orientation || 'unknown';
-        switch (orientation) {
-          case 'portrait': return 560;
-          case 'landscape': return 280;
-          case 'square': return 400;
-          default: return 400;
-        }
-      });
-      avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length;
-    }
-    
+    // Estimation moyenne de la hauteur (400px par défaut)
+    const avgHeight = 400;
     const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
     
     const overscanNeeded = Math.max(
@@ -66,7 +48,7 @@ const VirtualColumn = React.memo(({
     );
     
     return Math.min(overscanNeeded, data.length);
-  }, [numColumns, data.length, viewportHeight, data]);
+  }, [numColumns, data.length, viewportHeight]);
 
   const virtualizer = useVirtualizer({
     count: data.length,
@@ -149,8 +131,6 @@ const VirtualColumn = React.memo(({
                   photo={item.photo} 
                   index={item.originalIndex} 
                   allPhotos={allPhotos}
-                  hoveredPhoto={hoveredPhoto}
-                  setHoveredPhoto={setHoveredPhoto}
                   reactions={photosReactions.get(item.photo.id)}
                 />
               )}
@@ -167,8 +147,6 @@ interface WallMasonryProps {
   battles: PhotoBattle[];
   showBattles: boolean;
   scrollRef: React.RefObject<HTMLDivElement | null>;
-  hoveredPhoto: string | null;
-  setHoveredPhoto: (id: string | null) => void;
   photosReactions: Map<string, ReactionCounts>;
   onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
 }
@@ -178,8 +156,6 @@ export const WallMasonry = React.memo(({
   battles,
   showBattles,
   scrollRef,
-  hoveredPhoto,
-  setHoveredPhoto,
   photosReactions,
   onBattleFinished
 }: WallMasonryProps) => {
@@ -247,9 +223,6 @@ export const WallMasonry = React.memo(({
     
     // Distribution intelligente des photos : toujours mettre dans la colonne la plus courte
     photos.forEach((photo, index) => {
-      const rotation = ((index * 137) % 6) - 3;
-      const animationDelay = Math.min(index * 30, 800);
-      
       // Trouver la colonne la plus courte
       let shortestColumnIndex = 0;
       let shortestHeight = columnHeights[0];
@@ -264,9 +237,7 @@ export const WallMasonry = React.memo(({
       const item: ColumnItem = {
         type: 'photo',
         photo,
-        originalIndex: index,
-        rotation,
-        animationDelay
+        originalIndex: index
       };
       
       cols[shortestColumnIndex].push(item);
@@ -284,8 +255,6 @@ export const WallMasonry = React.memo(({
             data={colData} 
             scrollContainerRef={scrollRef} 
             allPhotos={photos}
-            hoveredPhoto={hoveredPhoto}
-            setHoveredPhoto={setHoveredPhoto}
             photosReactions={photosReactions}
             numColumns={numColumns}
             onBattleFinished={onBattleFinished}
