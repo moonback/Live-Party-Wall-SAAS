@@ -148,20 +148,21 @@ export const PhotoCard = React.memo(({
       
       {/* Badge NEW - Bandeau au-dessus du nom */}
       {index === 0 && (
-        <div className="pointer-events-none select-none absolute bottom-12 md:bottom-14 lg:bottom-16 left-2 md:left-3 z-30 animate-bounce-slow">
+        <div className="pointer-events-none select-none absolute bottom-12 md:bottom-14 lg:bottom-16 left-2 md:left-3 z-30 animate-bounce-slow flex items-center gap-2">
           <div className="relative">
-            {/* Glow effect animé */}
-            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500/60 via-purple-500/60 to-cyan-400/60 blur-lg opacity-75 animate-pulse"></div>
+            {/* Effet de halo animé modernisé */}
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500/70 via-purple-500/60 to-cyan-400/60 blur-2xl opacity-90 animate-pulse-xs shadow-xl" />
             
-            {/* Bandeau principal */}
-            <div className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 backdrop-blur-md px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-white/60 shadow-[0_0_15px_rgba(236,72,153,0.6)] flex items-center justify-center">
-              <span className="text-[10px] md:text-xs lg:text-sm font-black text-white italic drop-shadow-[0_0_6px_rgba(236,72,153,0.8)] relative z-10 tracking-wide">
-                NEW
+            {/* Bandeau principal, épuré et plus lisible */}
+            <div className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400/90 backdrop-blur-md px-4 lg:px-5 py-1.5 md:py-2 rounded-full border border-white/80 shadow-[0_0_22px_rgba(236,72,153,0.23)] flex items-center justify-center">
+              {/* Icône sparkle pour plus de dynamique */}
+              <span className="mr-1.5 text-xs md:text-sm lg:text-base animate-spin-slower">✨</span>
+              <span className="text-xs md:text-sm lg:text-base font-extrabold text-white tracking-widest drop-shadow-[0_1px_7px_rgba(236,72,153,0.65)] relative z-10 italic">
+                New
               </span>
-              
-              {/* Effet de brillance */}
-              <div className="absolute inset-0 rounded-full overflow-hidden opacity-0 animate-pulse">
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+              {/* Brillance persistante subtile */}
+              <div className="absolute inset-0 rounded-full overflow-hidden opacity-30 pointer-events-none animate-pulse-slow">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced" />
               </div>
             </div>
           </div>
@@ -191,25 +192,22 @@ export const PhotoCard = React.memo(({
       )}
 
       {/* Auteur sous la photo */}
-      <div className="pointer-events-none select-none absolute bottom-3 md:bottom-4 left-3 md:left-4 z-30">
-        <div className="flex items-center gap-2 md:gap-2.5 bg-gradient-to-r from-black/95 via-black/90 to-black/95 backdrop-blur-md px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] border-2 border-white/40 hover:border-white/60 transition-all duration-300 group/author">
-          {/* Glow effect animé */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 rounded-xl blur-md opacity-0 group-hover/author:opacity-100 transition-opacity duration-500"></div>
-          
+      <div className="pointer-events-none select-none absolute bottom-1 md:bottom-2 left-1 md:left-2 z-30">
+        <div className="flex items-center gap-1 bg-gradient-to-r from-black/90 via-black/85 to-black/90 backdrop-blur px-1.5 md:px-2 py-1 rounded-md shadow-[0_1px_4px_rgba(0,0,0,0.4)] border border-white/20 hover:border-white/30 transition-all duration-300 group/author relative min-h-[22px]">
+          {/* Glow effect resserré */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 rounded-md blur-sm opacity-0 group-hover/author:opacity-70 transition-opacity duration-300"></div>
           {authorHasPhotographerBadge && (
-            <span className="text-lg md:text-xl lg:text-2xl relative inline-block z-10">
-              {/* Glow effect pour le badge photographe */}
-              <span className="absolute inset-0 blur-md opacity-70 animate-pulse">📸</span>
-              <span className="relative drop-shadow-[0_0_8px_rgba(251,191,36,1)] filter brightness-110">📸</span>
+            <span className="text-xs md:text-sm relative inline-block z-10 leading-none">
+              <span className="absolute inset-0 blur-[1.5px] opacity-50 animate-pulse">📸</span>
+              <span className="relative drop-shadow-[0_0_3px_rgba(251,191,36,1)] filter brightness-110">📸</span>
             </span>
           )}
-          <p className="text-sm md:text-base lg:text-lg xl:text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] tracking-wider truncate max-w-[140px] md:max-w-[180px] lg:max-w-[220px] relative z-10">
+          <p className="text-xs md:text-sm font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)] tracking-wider truncate max-w-[60px] md:max-w-[90px] relative z-10 leading-none">
             {photo.author}
           </p>
-          
-          {/* Effet de brillance subtil */}
-          <div className="absolute inset-0 rounded-xl overflow-hidden opacity-0 group-hover/author:opacity-100 transition-opacity duration-500">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
+          {/* Brillance minimale */}
+          <div className="absolute inset-0 rounded-md overflow-hidden opacity-0 group-hover/author:opacity-50 transition-opacity duration-300">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/8 to-transparent transform -skew-x-12 animate-shimmer-enhanced"></div>
           </div>
         </div>
       </div>
