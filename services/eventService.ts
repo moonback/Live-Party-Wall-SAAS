@@ -127,7 +127,7 @@ export const getEventBySlug = async (slug: string): Promise<Event | null> => {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('slug', slug.toLowerCase())
       .eq('is_active', true)
       .single();
@@ -152,7 +152,7 @@ export const getEventById = async (id: string): Promise<Event | null> => {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('id', id)
       .single();
 
@@ -177,7 +177,7 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
     // Récupérer les événements où l'utilisateur est owner
     const { data: ownedEvents, error: ownedError } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
@@ -201,7 +201,7 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
       const eventIds = organizerRows.map(row => row.event_id);
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('*')
+        .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
         .in('id', eventIds);
 
       if (eventsError) {
@@ -423,7 +423,7 @@ export const getEventOrganizers = async (eventId: string): Promise<EventOrganize
   try {
     const { data, error } = await supabase
       .from('event_organizers')
-      .select('*')
+      .select('id, event_id, user_id, role, created_at')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true });
 

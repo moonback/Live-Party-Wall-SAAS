@@ -326,7 +326,7 @@ export const getPhotos = async (
   if (all || !page) {
     const { data: photosData, error: photosError } = await supabase
       .from('photos')
-      .select('*')
+      .select('id, url, caption, author, created_at, type, duration, tags, user_description, event_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true });
 
@@ -404,7 +404,7 @@ export const getPhotos = async (
   // Récupérer les photos paginées
   const { data: photosData, error: photosError } = await supabase
     .from('photos')
-    .select('*')
+    .select('id, url, caption, author, created_at, type, duration, tags, user_description, event_id')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
     .range(from, to);
@@ -489,7 +489,7 @@ export const getPhotosByAuthor = async (eventId: string, authorName: string): Pr
     // Récupérer toutes les photos de l'auteur pour cet événement
     const { data: photosData, error: photosError } = await supabase
       .from('photos')
-      .select('*')
+      .select('id, url, caption, author, created_at, type, duration, user_description, event_id')
       .eq('event_id', eventId)
       .eq('author', authorName)
       .order('created_at', { ascending: false });

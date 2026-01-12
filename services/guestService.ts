@@ -25,20 +25,20 @@ export const isGuestBlocked = async (eventId: string, guestName: string): Promis
       logger.debug("cleanup_expired_blocks RPC error", rpcError, { component: 'guestService', action: 'isGuestBlocked' });
     }
 
-    const { data, error } = await supabase
+    // ⚡ OPTIMISATION : Utiliser head: true avec count pour vérifier l'existence
+    const { count, error } = await supabase
       .from('blocked_guests')
-      .select('*')
+      .select('*', { count: 'exact', head: true })
       .eq('event_id', eventId)
       .eq('name', guestName)
-      .gt('expires_at', new Date().toISOString())
-      .limit(1);
+      .gt('expires_at', new Date().toISOString());
 
     if (error) {
       logger.error("Error checking blocked guest", error, { component: 'guestService', action: 'isGuestBlocked', guestName });
       return false;
     }
 
-    return (data && data.length > 0);
+    return (count || 0) > 0;
   } catch (error) {
     logger.error("Error in isGuestBlocked", error, { component: 'guestService', action: 'isGuestBlocked', guestName });
     return false;
@@ -59,7 +59,7 @@ export const getBlockedGuestInfo = async (eventId: string, guestName: string): P
   try {
     const { data, error } = await supabase
       .from('blocked_guests')
-      .select('*')
+      .select('id, name, blocked_at, expires_at, created_at, event_id')
       .eq('event_id', eventId)
       .eq('name', guestName)
       .gt('expires_at', new Date().toISOString())
@@ -233,7 +233,7 @@ export const getGuestByName = async (eventId: string, guestName: string): Promis
   try {
     const { data, error } = await supabase
       .from('guests')
-      .select('*')
+      .select('id, name, avatar_url, created_at, updated_at, event_id')
       .eq('event_id', eventId)
       .eq('name', guestName)
       .order('created_at', { ascending: false })
@@ -266,7 +266,7 @@ export const getAllGuests = async (eventId: string): Promise<Guest[]> => {
   try {
     const { data, error } = await supabase
       .from('guests')
-      .select('*')
+      .select('id, name, avatar_url, created_at, updated_at, event_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false });
 

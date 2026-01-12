@@ -69,7 +69,7 @@ export const getSettings = async (eventId: string): Promise<EventSettings> => {
   try {
     const { data, error } = await supabase
       .from('event_settings')
-      .select('*')
+      .select('id, event_id, event_title, event_subtitle, scroll_speed, slide_transition, decorative_frame_enabled, decorative_frame_url, caption_generation_enabled, content_moderation_enabled, video_capture_enabled, collage_mode_enabled, stats_enabled, event_context, find_me_enabled, ar_scene_enabled, battle_mode_enabled, auto_battles_enabled, tags_generation_enabled, alert_text, background_desktop_url, background_mobile_url, logo_url, logo_watermark_enabled, auto_carousel_enabled, auto_carousel_delay, aftermovies_enabled, caption_language')
       .eq('event_id', eventId)
       .limit(1)
       .maybeSingle();
@@ -109,7 +109,7 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
     // pour préserver les valeurs non modifiées (sans passer par getSettings qui retourne des defaults)
     const { data: existingSettingsRow } = await supabase
       .from('event_settings')
-      .select('*')
+      .select('id, event_id, event_title, event_subtitle, scroll_speed, slide_transition, decorative_frame_enabled, decorative_frame_url, caption_generation_enabled, content_moderation_enabled, video_capture_enabled, collage_mode_enabled, stats_enabled, event_context, find_me_enabled, ar_scene_enabled, battle_mode_enabled, auto_battles_enabled, tags_generation_enabled, alert_text, background_desktop_url, background_mobile_url, logo_url, logo_watermark_enabled, auto_carousel_enabled, auto_carousel_delay, aftermovies_enabled, caption_language')
       .eq('event_id', eventId)
       .limit(1)
       .maybeSingle();

@@ -48,7 +48,7 @@ const getPhotoById = async (photoId: string): Promise<Photo | null> => {
   try {
     const { data, error } = await supabase
       .from('photos')
-      .select('*')
+      .select('id, url, caption, author, created_at, type, duration, likes_count')
       .eq('id', photoId)
       .single();
 
@@ -105,7 +105,7 @@ const getPhotosByIds = async (photoIds: string[]): Promise<Map<string, Photo>> =
     try {
       const { data, error } = await supabase
         .from('photos')
-        .select('*')
+        .select('id, url, caption, author, created_at, type, duration, likes_count')
         .in('id', uncachedIds);
 
       if (error) {
@@ -233,7 +233,7 @@ export const getFinishedBattles = async (eventId: string, limit: number = 20): P
     // Récupérer les battles terminées pour cet événement
     const { data: battles, error } = await supabase
       .from('photo_battles')
-      .select('*')
+      .select('id, photo1_id, photo2_id, status, winner_id, votes1_count, votes2_count, created_at, finished_at, expires_at, event_id')
       .eq('event_id', eventId)
       .eq('status', 'finished')
       .order('finished_at', { ascending: false })
@@ -291,7 +291,7 @@ export const getActiveBattles = async (eventId: string, userId?: string): Promis
     // Récupérer les battles actives pour cet événement
     const { data: battles, error } = await supabase
       .from('photo_battles')
-      .select('*')
+      .select('id, photo1_id, photo2_id, status, winner_id, votes1_count, votes2_count, created_at, finished_at, expires_at, event_id')
       .eq('event_id', eventId)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
@@ -404,10 +404,10 @@ export const createBattle = async (
 
     if (!data) return null;
 
-    const [photo1, photo2] = await Promise.all([
-      getPhotoById(photo1Id),
-      getPhotoById(photo2Id),
-    ]);
+    // ⚡ OPTIMISATION : Utiliser getPhotosByIds() au lieu de getPhotoById() en parallèle
+    const photosMap = await getPhotosByIds([photo1Id, photo2Id]);
+    const photo1 = photosMap.get(photo1Id);
+    const photo2 = photosMap.get(photo2Id);
 
     if (!photo1 || !photo2) {
       throw new Error('Impossible de récupérer les photos');
@@ -552,7 +552,7 @@ export const voteForBattle = async (
     // Vérifier que la battle existe et est active
     const { data: battle, error: battleError } = await supabase
       .from('photo_battles')
-      .select('*')
+      .select('id, photo1_id, photo2_id, status, votes1_count, votes2_count, event_id')
       .eq('id', battleId)
       .eq('status', 'active')
       .single();
@@ -679,7 +679,7 @@ export const finishBattle = async (battleId: string): Promise<PhotoBattle | null
     // Récupérer la battle
     const { data: battle, error: battleError } = await supabase
       .from('photo_battles')
-      .select('*')
+      .select('id, photo1_id, photo2_id, status, votes1_count, votes2_count, event_id')
       .eq('id', battleId)
       .single();
 
@@ -714,11 +714,10 @@ export const finishBattle = async (battleId: string): Promise<PhotoBattle | null
       throw updateError || new Error('Erreur lors de la mise à jour');
     }
 
-    // Récupérer les photos
-    const [photo1, photo2] = await Promise.all([
-      getPhotoById(battleRow.photo1_id),
-      getPhotoById(battleRow.photo2_id),
-    ]);
+    // ⚡ OPTIMISATION : Utiliser getPhotosByIds() au lieu de getPhotoById() en parallèle
+    const photosMap = await getPhotosByIds([battleRow.photo1_id, battleRow.photo2_id]);
+    const photo1 = photosMap.get(battleRow.photo1_id);
+    const photo2 = photosMap.get(battleRow.photo2_id);
 
     if (!photo1 || !photo2) {
       throw new Error('Impossible de récupérer les photos');
@@ -756,11 +755,10 @@ export const subscribeToBattleUpdates = (
         const battleRow = payload.new as BattleRow;
         if (!battleRow) return;
 
-        // Utiliser le cache pour les photos
-        const [photo1, photo2] = await Promise.all([
-          getPhotoById(battleRow.photo1_id),
-          getPhotoById(battleRow.photo2_id),
-        ]);
+        // ⚡ OPTIMISATION : Utiliser getPhotosByIds() au lieu de getPhotoById() en parallèle
+        const photosMap = await getPhotosByIds([battleRow.photo1_id, battleRow.photo2_id]);
+        const photo1 = photosMap.get(battleRow.photo1_id);
+        const photo2 = photosMap.get(battleRow.photo2_id);
 
         if (photo1 && photo2) {
           // Utiliser les compteurs de la base (les triggers SQL les maintiennent à jour)
@@ -782,17 +780,16 @@ export const subscribeToBattleUpdates = (
         // On récupère juste la battle mise à jour (les compteurs sont déjà à jour)
         const { data: battle } = await supabase
           .from('photo_battles')
-          .select('*')
+          .select('id, photo1_id, photo2_id, status, winner_id, votes1_count, votes2_count, created_at, finished_at, expires_at, event_id')
           .eq('id', battleId)
           .single();
 
         if (battle) {
           const battleRow = battle as BattleRow;
-          // Utiliser le cache pour les photos
-          const [photo1, photo2] = await Promise.all([
-            getPhotoById(battleRow.photo1_id),
-            getPhotoById(battleRow.photo2_id),
-          ]);
+          // ⚡ OPTIMISATION : Utiliser getPhotosByIds() au lieu de getPhotoById() en parallèle
+          const photosMap = await getPhotosByIds([battleRow.photo1_id, battleRow.photo2_id]);
+          const photo1 = photosMap.get(battleRow.photo1_id);
+          const photo2 = photosMap.get(battleRow.photo2_id);
 
           if (photo1 && photo2) {
             const photoBattle = await convertBattleRowToPhotoBattle(battleRow, photo1, photo2);
@@ -834,10 +831,10 @@ export const subscribeToNewBattles = (eventId: string, onNewBattle: (battle: Pho
         // Filtrer par event_id côté client (RLS devrait déjà le faire, mais on double-vérifie)
         if (!battleRow || battleRow.event_id !== eventId) return;
 
-        const [photo1, photo2] = await Promise.all([
-          getPhotoById(battleRow.photo1_id),
-          getPhotoById(battleRow.photo2_id),
-        ]);
+        // ⚡ OPTIMISATION : Utiliser getPhotosByIds() au lieu de getPhotoById() en parallèle
+        const photosMap = await getPhotosByIds([battleRow.photo1_id, battleRow.photo2_id]);
+        const photo1 = photosMap.get(battleRow.photo1_id);
+        const photo2 = photosMap.get(battleRow.photo2_id);
 
         if (photo1 && photo2) {
           const photoBattle = await convertBattleRowToPhotoBattle(battleRow, photo1, photo2);
