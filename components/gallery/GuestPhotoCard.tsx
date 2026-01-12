@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Image, Video, Tag, Share2, MoreVertical, CheckCircle, Circle } from 'lucide-react';
-import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
+import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2 } from 'lucide-react';
+import { getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useSwipe } from '../../hooks/useSwipe';
-import { getUserAvatar } from '../../utils/userAvatar';
+import { getUserAvatar, getCurrentUserName } from '../../utils/userAvatar';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EditCaptionModal } from './EditCaptionModal';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -30,6 +31,8 @@ interface GuestPhotoCardProps {
   selectionMode?: boolean;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
+  onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
+  onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
 }
 
 export const GuestPhotoCard = React.memo(({ 
@@ -48,22 +51,30 @@ export const GuestPhotoCard = React.memo(({
   guestAvatars,
   selectionMode = false,
   isSelected = false,
-  onSelect
+  onSelect,
+  onUpdateCaption,
+  onDeletePhoto
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const { addToast } = useToast();
-  const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showReactionsMenu, setShowReactionsMenu] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showEditCaptionModal, setShowEditCaptionModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const likeButtonRef = useRef<HTMLButtonElement>(null);
   const reactionsMenuRef = useRef<HTMLDivElement>(null);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const optionsButtonRef = useRef<HTMLButtonElement>(null);
+  
+  const currentUserName = getCurrentUserName();
+  const isOwner = currentUserName === photo.author;
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressing = useRef<boolean>(false);
   const photoBadge = getPhotoBadge(photo, allPhotos);
-  const authorHasPhotographerBadge = hasPhotographerBadge(photo.author, allPhotos);
   
   const authorAvatar = guestAvatars?.get(photo.author) || getUserAvatar(photo.author);
   
@@ -170,9 +181,18 @@ export const GuestPhotoCard = React.memo(({
       ) {
         setShowReactionsMenu(false);
       }
+      
+      if (
+        optionsMenuRef.current &&
+        optionsButtonRef.current &&
+        !optionsMenuRef.current.contains(e.target as Node) &&
+        !optionsButtonRef.current.contains(e.target as Node)
+      ) {
+        setShowOptionsMenu(false);
+      }
     };
 
-    if (showReactionsMenu) {
+    if (showReactionsMenu || showOptionsMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
     }
@@ -181,7 +201,7 @@ export const GuestPhotoCard = React.memo(({
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [showReactionsMenu]);
+  }, [showReactionsMenu, showOptionsMenu]);
 
   const handleDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -221,9 +241,32 @@ export const GuestPhotoCard = React.memo(({
     lastTapTime.current = now;
   }, [onLike, photo.id, selectionMode]);
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = () => {
     if (selectionMode && onSelect) {
       onSelect(photo.id);
+    }
+  };
+
+  const handleUpdateCaption = async (caption: string) => {
+    if (!onUpdateCaption) return;
+    await onUpdateCaption(photo.id, caption);
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!onDeletePhoto || isDeleting) return;
+    
+    const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cette photo ? Cette action est irréversible.');
+    if (!confirmed) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDeletePhoto(photo.id, photo.url);
+      addToast('Photo supprimée avec succès', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setIsDeleting(false);
+      setShowOptionsMenu(false);
     }
   };
 
@@ -318,9 +361,62 @@ export const GuestPhotoCard = React.memo(({
             {new Date(photo.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
           </p>
         </div>
-        <button className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center`}>
-          <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
-        </button>
+        {isOwner && (onUpdateCaption || onDeletePhoto) ? (
+          <div className="relative">
+            <button
+              ref={optionsButtonRef}
+              onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+              className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center relative`}
+            >
+              <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+            </button>
+            
+            <AnimatePresence>
+              {showOptionsMenu && (
+                <motion.div
+                  ref={optionsMenuRef}
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                  className={`absolute ${isMobile ? 'top-full right-0 mt-2' : 'top-full right-0 mt-2 sm:mt-3'} bg-slate-900/95 backdrop-blur-xl ${isMobile ? 'rounded-xl p-2' : 'rounded-xl sm:rounded-2xl p-1.5 sm:p-2'} shadow-2xl border border-white/10 z-50 ${isMobile ? 'min-w-[160px]' : 'min-w-[180px]'}`}
+                >
+                  {onUpdateCaption && (
+                    <button
+                      onClick={() => {
+                        setShowEditCaptionModal(true);
+                        setShowOptionsMenu(false);
+                      }}
+                      className={`w-full flex items-center ${isMobile ? 'gap-2 px-3 py-2.5 min-h-[44px] rounded-lg' : 'gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl'} text-left transition-all touch-manipulation hover:bg-white/5 text-slate-300 hover:text-white`}
+                    >
+                      <Edit2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} text-pink-400`} />
+                      <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Modifier la légende</span>
+                    </button>
+                  )}
+                  {onDeletePhoto && (
+                    <button
+                      onClick={handleDeletePhoto}
+                      disabled={isDeleting}
+                      className={`w-full flex items-center ${isMobile ? 'gap-2 px-3 py-2.5 min-h-[44px] rounded-lg mt-1' : 'gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl mt-1'} text-left transition-all touch-manipulation hover:bg-red-500/10 text-slate-300 hover:text-red-400 disabled:opacity-50`}
+                    >
+                      {isDeleting ? (
+                        <div className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} border-2 border-red-400 border-t-transparent rounded-full animate-spin`} />
+                      ) : (
+                        <Trash2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} text-red-400`} />
+                      )}
+                      <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>
+                        {isDeleting ? 'Suppression...' : 'Supprimer'}
+                      </span>
+                    </button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <button className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center`}>
+            <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
+          </button>
+        )}
       </div>
 
       {/* Media Container */}
@@ -365,7 +461,7 @@ export const GuestPhotoCard = React.memo(({
             className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
             loading="lazy"
             style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
-            onError={() => setImageError(true)}
+            onError={() => {}}
           />
         )}
 
@@ -543,11 +639,20 @@ export const GuestPhotoCard = React.memo(({
           </p>
         </div>
       </div>
+
+      {/* Edit Caption Modal */}
+      {onUpdateCaption && (
+        <EditCaptionModal
+          isOpen={showEditCaptionModal}
+          onClose={() => setShowEditCaptionModal(false)}
+          currentCaption={photo.caption || ''}
+          onSave={handleUpdateCaption}
+          photoAuthor={photo.author}
+        />
+      )}
     </motion.div>
   );
 });
-
-GuestPhotoCard.displayName = 'GuestPhotoCard';
 
 GuestPhotoCard.displayName = 'GuestPhotoCard';
 

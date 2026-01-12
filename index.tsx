@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 // Enregistrer le Service Worker pour le cache offline
-if ('serviceWorker' in navigator) {
+// Désactiver en développement pour éviter les conflits avec Vite HMR
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
@@ -27,6 +28,30 @@ if ('serviceWorker' in navigator) {
         console.error('[SW] Service Worker registration failed:', error);
       });
   });
+} else if ('serviceWorker' in navigator) {
+  // En développement, désinscrire tous les service workers existants immédiatement
+  // et nettoyer les caches
+  (async () => {
+    try {
+      // Désinscrire tous les service workers
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('[SW] Service Worker unregistered in development mode');
+      }
+      
+      // Nettoyer tous les caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const name of cacheNames) {
+          await caches.delete(name);
+          console.log('[SW] Cache deleted:', name);
+        }
+      }
+    } catch (error) {
+      console.warn('[SW] Error cleaning up service workers:', error);
+    }
+  })();
 }
 
 const rootElement = document.getElementById('root');

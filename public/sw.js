@@ -106,7 +106,29 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Ignorer les requêtes de développement Vite (HMR, etc.)
-  if (url.pathname.startsWith('/@') || url.pathname.includes('vite')) {
+  // Ces patterns doivent être vérifiés AVANT toute interception
+  const pathname = url.pathname;
+  const search = url.search || '';
+  const href = url.href;
+  
+  const isDevResource = 
+    pathname.startsWith('/@') || 
+    pathname.includes('/@vite/') ||
+    pathname.includes('/@react-refresh') ||
+    pathname.includes('/@vite/client') ||
+    pathname.includes('vite/dist/client') ||
+    pathname.includes('@react-refresh') ||
+    pathname.includes('@vite') ||
+    href.includes('@vite/client') ||
+    href.includes('@react-refresh') ||
+    (pathname.endsWith('.css') && search.length > 0) || // CSS générés dynamiquement par Vite (avec query params)
+    (pathname.includes('index.css') && search.length > 0) || // index.css avec query params (Vite HMR)
+    pathname === '/index.css' || // index.css directement (peut être généré par Vite)
+    pathname.includes('/node_modules/.vite/'); // Ressources Vite internes
+  
+  if (isDevResource) {
+    // Ne pas intercepter du tout - laisser passer la requête normalement
+    // Cela permet à Vite de gérer ces ressources directement
     return;
   }
 
@@ -166,13 +188,33 @@ async function cacheFirst(request) {
     
     return networkResponse;
   } catch (error) {
-    console.error('[SW] Error in cacheFirst:', error);
+    // En développement, ne pas logger d'erreur pour les ressources HMR/Vite
+    const url = new URL(request.url);
+    const isDevResource = url.pathname.includes('client') || 
+                         url.pathname.includes('@react-refresh') ||
+                         url.pathname.includes('@vite') ||
+                         (url.pathname.endsWith('.css') && url.search.includes('?'));
+    
+    if (!isDevResource) {
+      console.error('[SW] Error in cacheFirst:', error);
+    }
+    
     // En cas d'erreur, retourner une réponse de fallback si disponible
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    // Sinon, retourner une réponse d'erreur
+    
+    // Pour les ressources de développement, laisser passer la requête sans intercepter
+    // Cela permet à Vite de gérer ces ressources normalement
+    if (isDevResource) {
+      return fetch(request).catch(() => {
+        // Si même le fetch direct échoue, retourner une réponse vide pour éviter les erreurs
+        return new Response('', { status: 200 });
+      });
+    }
+    
+    // Pour les autres erreurs, retourner une réponse d'erreur
     return new Response('Network error', { status: 408 });
   }
 }

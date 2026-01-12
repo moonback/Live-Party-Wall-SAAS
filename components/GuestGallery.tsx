@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspens
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
 import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
-import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates } from '../services/photoService';
+import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, deletePhoto } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
@@ -419,6 +419,55 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
   }, [addToast, downloadingAftermovieIds]);
 
+  const handleUpdateCaption = useCallback(async (photoId: string, caption: string) => {
+    try {
+      await updatePhotoCaption(photoId, caption);
+      
+      // Mettre à jour la photo dans la liste locale
+      setPhotos(prev => prev.map(p => 
+        p.id === photoId ? { ...p, caption: caption.trim() || null } : p
+      ));
+      
+      addToast('Légende mise à jour', 'success');
+    } catch (error) {
+      logger.error("Erreur lors de la mise à jour de la légende", error, { component: 'GuestGallery', action: 'handleUpdateCaption', photoId });
+      addToast("Erreur lors de la mise à jour de la légende", 'error');
+      throw error;
+    }
+  }, [addToast]);
+
+  const handleDeletePhoto = useCallback(async (photoId: string, photoUrl: string) => {
+    try {
+      await deletePhoto(photoId, photoUrl);
+      
+      // Retirer la photo de la liste locale
+      setPhotos(prev => prev.filter(p => p.id !== photoId));
+      
+      // Retirer aussi des autres états
+      setLikedPhotoIds(prev => {
+        const next = new Set(prev);
+        next.delete(photoId);
+        return next;
+      });
+      setUserReactions(prev => {
+        const next = new Map(prev);
+        next.delete(photoId);
+        return next;
+      });
+      setPhotosReactions(prev => {
+        const next = new Map(prev);
+        next.delete(photoId);
+        return next;
+      });
+      
+      addToast('Photo supprimée', 'success');
+    } catch (error) {
+      logger.error("Erreur lors de la suppression de la photo", error, { component: 'GuestGallery', action: 'handleDeletePhoto', photoId });
+      addToast("Erreur lors de la suppression", 'error');
+      throw error;
+    }
+  }, [addToast]);
+
   const handleDownload = useCallback(async (photo: Photo) => {
     setDownloadingIds(prev => new Set(prev).add(photo.id));
     
@@ -732,6 +781,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectedIds={selectedIds}
             onSelect={handleSelect}
             scrollContainerRef={parentRef}
+            onUpdateCaption={handleUpdateCaption}
+            onDeletePhoto={handleDeletePhoto}
           />
         </div>
       </div>
