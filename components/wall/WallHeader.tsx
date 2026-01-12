@@ -1,6 +1,5 @@
 import React from 'react';
 import { Camera, Users, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface WallHeaderProps {
   title: string;
@@ -16,11 +15,10 @@ interface WallHeaderProps {
 
 export const WallHeader = React.memo(({ title, subtitle, stats, showControls, isHoveringControls }: WallHeaderProps) => {
   return (
-    <motion.div 
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: showControls ? 0 : -20, opacity: showControls ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
-      className={`z-50 absolute top-4 left-0 w-full px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none gap-4`}
+    <div 
+      className={`z-50 absolute top-4 left-0 w-full px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center pointer-events-none gap-4 transition-all duration-300 ${
+        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-5'
+      }`}
       onMouseEnter={() => isHoveringControls(true)}
       onMouseLeave={() => isHoveringControls(false)}
     >
@@ -49,7 +47,7 @@ export const WallHeader = React.memo(({ title, subtitle, stats, showControls, is
       </div>
 
       {/* Stats - Hidden on mobile */}
-      <div className="pointer-events-auto hidden md:flex items-center gap-2 lg:gap-3 bg-gradient-to-br from-black/40 via-black/30 to-black/40 backdrop-blur-xl p-2 rounded-2xl border border-white/10 shadow-2xl transition-all hover:bg-black/50 hover:border-white/20">
+      <div className="pointer-events-auto hidden md:flex items-center gap-2 lg:gap-3 bg-gradient-to-br from-black/40 via-black/30 to-black/40 p-2 rounded-2xl border border-white/10 shadow-lg transition-all duration-200 hover:bg-black/50 hover:border-white/20">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-br from-pink-500/20 to-pink-600/10 hover:from-pink-500/30 hover:to-pink-600/20 transition-all border border-pink-500/20 group/stat">
             <Camera className="w-3.5 h-3.5 text-pink-400 group-hover/stat:scale-110 transition-transform" />
             <span className="text-xs font-extrabold text-white/95">{stats.totalPhotos}</span>
@@ -65,7 +63,7 @@ export const WallHeader = React.memo(({ title, subtitle, stats, showControls, is
             <span className="text-xs font-extrabold text-white/95">{stats.timeSinceLast}</span>
           </div>
       </div>
-    </motion.div>
+    </div>
   );
 });
 

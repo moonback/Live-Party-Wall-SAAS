@@ -1,6 +1,5 @@
 import React from 'react';
 import { Play, Pause } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface WallFooterProps {
   showControls: boolean;
@@ -31,11 +30,10 @@ export const WallFooter = React.memo(({
   if (isKiosqueMode) return null;
 
   return (
-    <motion.div
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: showControls ? 0 : 20, opacity: showControls ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed bottom-0 left-0 w-full bg-gradient-to-r from-black/90 via-black/80 to-black/90 backdrop-blur-xl border-t-2 border-white/20 p-2 md:p-3 flex items-center justify-between gap-2 md:gap-4 z-50 shadow-[0_-6px_30px_rgba(0,0,0,0.4)]"
+    <div
+      className={`fixed bottom-0 left-0 w-full bg-gradient-to-r from-black/90 via-black/80 to-black/90 border-t-2 border-white/20 p-2 md:p-3 flex items-center justify-between gap-2 md:gap-4 z-50 shadow-lg transition-all duration-300 ${
+        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+      }`}
       onMouseEnter={() => isHoveringControls(true)}
       onMouseLeave={() => isHoveringControls(false)}
       style={{ pointerEvents: showControls ? 'auto' : 'none' }}
@@ -43,10 +41,9 @@ export const WallFooter = React.memo(({
 
       {/* LIVE pill + Ticker */}
       <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-        <div className="flex items-center gap-1 md:gap-2 bg-pink-700/20 px-3 md:px-4 py-1 rounded-full border border-pink-400/30 shadow shadow-pink-700/20 backdrop-blur-sm shrink-0">
+        <div className="flex items-center gap-1 md:gap-2 bg-pink-700/20 px-3 md:px-4 py-1 rounded-full border border-pink-400/30 shadow-md shrink-0">
           <span className="relative flex">
-            <span className="w-2.5 h-2.5 md:w-3 md:h-3 bg-pink-400 rounded-full animate-pulse shadow-pink-400/60 shadow" />
-            <span className="absolute inset-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-pink-400 rounded-full animate-ping opacity-40" />
+            <span className="w-2.5 h-2.5 md:w-3 md:h-3 bg-pink-400 rounded-full animate-pulse shadow-pink-400/40" />
           </span>
           <span className="text-pink-200 text-xs md:text-base font-extrabold uppercase tracking-wide">En Direct</span>
         </div>
@@ -78,7 +75,7 @@ export const WallFooter = React.memo(({
           <span>{isPaused ? 'En pause' : 'Auto-scroll'}</span>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 });
 

@@ -1,6 +1,6 @@
 /**
- * Utilitaires pour forcer le chargement d'images en qualité 4K (3840x2160)
- * pour l'affichage sur le mur
+ * Utilitaires pour optimiser le chargement d'images pour le mur
+ * Optimisé pour réduire la consommation de ressources
  */
 
 // Résolution 4K standard
@@ -9,17 +9,21 @@ export const RESOLUTION_4K = {
   height: 2160
 };
 
+// Résolution optimisée pour le mur (réduit la consommation mémoire)
+export const RESOLUTION_OPTIMIZED = {
+  width: 1920,
+  height: 1080
+};
+
 /**
- * Génère une URL d'image optimisée pour 4K
- * Charge l'image originale en pleine résolution (sans transformation)
- * Supabase Storage ne supporte pas les transformations d'image par défaut,
- * donc on charge directement l'image originale qui est déjà en haute qualité
+ * Génère une URL d'image optimisée
+ * Charge l'image avec une résolution adaptée à la taille d'affichage réelle
  * 
  * @param originalUrl - URL originale de l'image
- * @param force4K - Forcer le 4K même si l'image est plus petite (défaut: true)
- * @returns URL de l'image originale en pleine résolution
+ * @param maxWidth - Largeur maximale souhaitée (défaut: 1920px pour optimiser les performances)
+ * @returns URL de l'image optimisée
  */
-export function get4KImageUrl(originalUrl: string, force4K: boolean = true): string {
+export function get4KImageUrl(originalUrl: string, maxWidth: number = RESOLUTION_OPTIMIZED.width): string {
   if (!originalUrl) return originalUrl;
 
   // Si l'URL est déjà une data URL (base64), retourner tel quel
@@ -27,19 +31,26 @@ export function get4KImageUrl(originalUrl: string, force4K: boolean = true): str
     return originalUrl;
   }
 
-  // Pour Supabase Storage, on charge directement l'image originale
-  // Les images sont déjà uploadées en haute qualité (sans compression)
-  // On retire tous les paramètres de transformation pour charger l'original
+  // Pour Supabase Storage, on peut utiliser les transformations d'image si disponibles
+  // Sinon, on charge l'image originale mais on limite la résolution côté client
   try {
     const url = new URL(originalUrl);
     
-    // Retirer tous les paramètres de transformation pour forcer l'image originale
-    // Cela garantit que l'image est chargée en pleine résolution
-    url.searchParams.delete('width');
-    url.searchParams.delete('height');
-    url.searchParams.delete('quality');
-    url.searchParams.delete('resize');
-    url.searchParams.delete('transform');
+    // Si maxWidth est spécifié et inférieur à 4K, on peut essayer d'ajouter un paramètre de transformation
+    // Note: Supabase Storage peut supporter width/height selon la configuration
+    if (maxWidth < RESOLUTION_4K.width) {
+      // Essayer d'utiliser les transformations Supabase si disponibles
+      // Sinon, le navigateur redimensionnera l'image
+      url.searchParams.set('width', maxWidth.toString());
+      url.searchParams.set('quality', '85'); // Qualité réduite pour optimiser la taille
+    } else {
+      // Pour 4K, retirer les paramètres pour charger l'original
+      url.searchParams.delete('width');
+      url.searchParams.delete('height');
+      url.searchParams.delete('quality');
+      url.searchParams.delete('resize');
+      url.searchParams.delete('transform');
+    }
     
     return url.toString();
   } catch {
@@ -50,20 +61,19 @@ export function get4KImageUrl(originalUrl: string, force4K: boolean = true): str
 
 /**
  * Génère un srcset pour différentes résolutions (responsive images)
- * Pour le mur, on charge toujours l'image originale en 4K
- * Le navigateur choisira automatiquement la meilleure résolution disponible
+ * Optimisé pour charger des images adaptées à la taille d'affichage
  * 
  * @param originalUrl - URL originale de l'image
- * @returns String srcset pour l'attribut srcset (vide car on charge toujours l'original)
+ * @param maxWidth - Largeur maximale (défaut: 1920px)
+ * @returns String srcset pour l'attribut srcset
  */
-export function get4KImageSrcSet(originalUrl: string): string {
+export function get4KImageSrcSet(originalUrl: string, maxWidth: number = RESOLUTION_OPTIMIZED.width): string {
   if (!originalUrl || originalUrl.startsWith('data:')) {
     return '';
   }
 
-  // Pour le mur, on charge toujours l'image originale en pleine résolution
-  // Le navigateur gérera automatiquement l'affichage selon la taille de l'écran
-  // On retourne une chaîne vide car on utilise directement l'URL 4K dans src
+  // Pour optimiser les performances, on retourne une chaîne vide
+  // Le navigateur utilisera directement l'URL optimisée dans src
   return '';
 }
 

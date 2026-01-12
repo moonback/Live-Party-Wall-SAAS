@@ -4,6 +4,7 @@ import { Photo, PhotoBattle, ReactionCounts } from '../../types';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
 import PhotoCard from './PhotoCard';
 import { WallPhotoCardSkeleton } from '../WallPhotoCardSkeleton';
+import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 
 export type ColumnItem = 
   | { type: 'photo'; photo: Photo; originalIndex: number }
@@ -12,19 +13,21 @@ export type ColumnItem =
 interface VirtualColumnProps {
   data: ColumnItem[];
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
-  allPhotos: Photo[];
   photosReactions: Map<string, ReactionCounts>;
   onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
   numColumns: number;
+  photoBadges: Map<string, { type: string; emoji: string } | null>;
+  authorBadges: Map<string, boolean>;
 }
 
 const VirtualColumn = React.memo(({ 
   data, 
   scrollContainerRef, 
-  allPhotos, 
   photosReactions,
   onBattleFinished,
-  numColumns
+  numColumns,
+  photoBadges,
+  authorBadges
 }: VirtualColumnProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
@@ -35,16 +38,20 @@ const VirtualColumn = React.memo(({
   }, []);
 
   const overscan = useMemo(() => {
-    const MIN_PHOTOS_TOTAL = 100;
+    const MIN_PHOTOS_TOTAL = 50; // Réduit de 100 à 50
     const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
     
     // Estimation moyenne de la hauteur (400px par défaut)
     const avgHeight = 400;
     const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
     
-    const overscanNeeded = Math.max(
-      photosPerColumn - visiblePhotosInViewport + 20,
-      Math.ceil(MIN_PHOTOS_TOTAL / numColumns)
+    // Overscan réduit à max 10 éléments
+    const overscanNeeded = Math.min(
+      Math.max(
+        photosPerColumn - visiblePhotosInViewport + 10, // Réduit de 20 à 10
+        Math.ceil(MIN_PHOTOS_TOTAL / numColumns)
+      ),
+      10 // Max 10 éléments en overscan
     );
     
     return Math.min(overscanNeeded, data.length);
@@ -130,7 +137,8 @@ const VirtualColumn = React.memo(({
                 <PhotoCard 
                   photo={item.photo} 
                   index={item.originalIndex} 
-                  allPhotos={allPhotos}
+                  photoBadge={photoBadges.get(item.photo.id) || null}
+                  authorHasPhotographerBadge={authorBadges.get(item.photo.author) || false}
                   reactions={photosReactions.get(item.photo.id)}
                 />
               )}
@@ -140,7 +148,30 @@ const VirtualColumn = React.memo(({
       )}
     </div>
   );
+}, (prevProps, nextProps) => {
+  // Comparaison personnalisée pour React.memo
+  return (
+    prevProps.data.length === nextProps.data.length &&
+    prevProps.data.every((item, index) => {
+      const nextItem = nextProps.data[index];
+      if (!nextItem) return false;
+      if (item.type !== nextItem.type) return false;
+      if (item.type === 'battle' && nextItem.type === 'battle') {
+        return item.battle.id === nextItem.battle.id;
+      }
+      if (item.type === 'photo' && nextItem.type === 'photo') {
+        return item.photo.id === nextItem.photo.id;
+      }
+      return false;
+    }) &&
+    prevProps.numColumns === nextProps.numColumns &&
+    prevProps.photosReactions === nextProps.photosReactions &&
+    prevProps.photoBadges === nextProps.photoBadges &&
+    prevProps.authorBadges === nextProps.authorBadges
+  );
 });
+
+VirtualColumn.displayName = 'VirtualColumn';
 
 interface WallMasonryProps {
   photos: Photo[];
@@ -188,29 +219,49 @@ export const WallMasonry = React.memo(({
     };
   }, []);
 
-  const columnsData = useMemo(() => {
-    const cols = Array.from({ length: numColumns }, () => [] as ColumnItem[]);
-    const columnHeights = new Array(numColumns).fill(0);
-    
-    // Fonction pour estimer la hauteur d'un élément
-    const estimateHeight = (item: ColumnItem): number => {
-      if (item.type === 'battle') return 420; // Hauteur améliorée pour le nouveau design
+  // Pré-calculer les badges une seule fois
+  const photoBadges = useMemo(() => {
+    const badges = new Map<string, { type: string; emoji: string } | null>();
+    photos.forEach(photo => {
+      const badge = getPhotoBadge(photo, photos, photosReactions);
+      badges.set(photo.id, badge ? { type: badge.type, emoji: badge.emoji } : null);
+    });
+    return badges;
+  }, [photos, photosReactions]);
+
+  const authorBadges = useMemo(() => {
+    const badges = new Map<string, boolean>();
+    const uniqueAuthors = new Set(photos.map(p => p.author));
+    uniqueAuthors.forEach(author => {
+      badges.set(author, hasPhotographerBadge(author, photos, photosReactions));
+    });
+    return badges;
+  }, [photos, photosReactions]);
+
+  // Mémoriser la fonction estimateHeight pour éviter les recalculs
+  const estimateHeight = useMemo(() => {
+    return (item: ColumnItem): number => {
+      if (item.type === 'battle') return 420;
       
-      // Estimation basée sur l'orientation de la photo
       const orientation = item.photo.orientation || 'unknown';
       const baseHeight = 400;
       
       switch (orientation) {
         case 'portrait':
-          return baseHeight * 1.4; // Photos portrait plus hautes
+          return baseHeight * 1.4;
         case 'landscape':
-          return baseHeight * 0.7; // Photos landscape plus courtes
+          return baseHeight * 0.7;
         case 'square':
           return baseHeight;
         default:
           return baseHeight;
       }
     };
+  }, []);
+
+  const columnsData = useMemo(() => {
+    const cols = Array.from({ length: numColumns }, () => [] as ColumnItem[]);
+    const columnHeights = new Array(numColumns).fill(0);
     
     // Ajouter les battles d'abord
     if (showBattles && battles.length > 0) {
@@ -245,7 +296,7 @@ export const WallMasonry = React.memo(({
     });
     
     return cols;
-  }, [photos, numColumns, battles, showBattles]);
+  }, [photos, numColumns, battles, showBattles, estimateHeight]);
 
   return (
     <div className="flex gap-0 w-full px-0 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
@@ -254,10 +305,11 @@ export const WallMasonry = React.memo(({
           <VirtualColumn 
             data={colData} 
             scrollContainerRef={scrollRef} 
-            allPhotos={photos}
             photosReactions={photosReactions}
             numColumns={numColumns}
             onBattleFinished={onBattleFinished}
+            photoBadges={photoBadges}
+            authorBadges={authorBadges}
           />
         </div>
       ))}

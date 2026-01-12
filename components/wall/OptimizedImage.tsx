@@ -95,13 +95,14 @@ export const OptimizedImage = React.memo<OptimizedImageProps>(({
       
       {/* Image réelle */}
       <img 
-        src={get4KImageUrl(src, true)} 
-        srcSet={get4KImageSrcSet(src)}
+        src={get4KImageUrl(src, 1920)} 
+        srcSet={get4KImageSrcSet(src, 1920)}
         sizes={get4KImageSizes()}
         alt={alt} 
         className={`${getImageClasses(orientation, isMobile)} ${className} transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'} relative z-10`}
         loading="lazy"
         decoding="async"
+        fetchPriority="low"
         onLoad={handleLoad}
         onError={handleError}
         style={{ 

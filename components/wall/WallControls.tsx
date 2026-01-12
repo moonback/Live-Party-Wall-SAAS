@@ -38,7 +38,7 @@ export const WallControls = React.memo(({
           border-2 border-white/20 rounded-full shadow-2xl shadow-pink-400/10
           backdrop-blur-2xl transition-all duration-300 hover:scale-110 pointer-events-auto group"
       >
-        <span className="absolute -inset-1.5 md:-inset-2 bg-gradient-to-br from-pink-500/20 via-purple-600/15 to-cyan-500/15 rounded-full blur-[10px] opacity-100 pointer-events-none animate-pulse-slow"></span>
+        <span className="absolute -inset-1.5 md:-inset-2 bg-gradient-to-br from-pink-500/15 via-purple-600/10 to-cyan-500/10 rounded-full blur-md opacity-60 pointer-events-none"></span>
         <Settings className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-white drop-shadow-[0_2px_12px_rgba(236,72,153,0.3)]" />
       </button>
     );
@@ -52,7 +52,7 @@ export const WallControls = React.memo(({
       onMouseEnter={() => isHoveringControls(true)}
       onMouseLeave={() => isHoveringControls(false)}
     >
-        <div className="bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70 backdrop-blur-xl border-2 border-white/15 p-2 md:p-3 lg:p-4 rounded-2xl md:rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex items-center gap-2 md:gap-3 lg:gap-4 transform transition-all duration-300 hover:scale-105 hover:border-white/30 hover:bg-slate-900/90 pointer-events-auto">
+        <div className="bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-900/70 border-2 border-white/15 p-2 md:p-3 lg:p-4 rounded-2xl md:rounded-3xl shadow-lg flex items-center gap-2 md:gap-3 lg:gap-4 transform transition-all duration-200 hover:scale-[1.02] hover:border-white/30 hover:bg-slate-900/90 pointer-events-auto">
         
         {/* Auto Scroll Toggle */}
         <button 
