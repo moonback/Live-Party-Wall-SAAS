@@ -3,7 +3,7 @@
  */
 
 export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
-export type FrameType = 'none' | 'polaroid' | 'neon' | 'gold' | 'simple';
+export type FrameType = 'none';
 
 /**
  * Applique un filtre CSS à une image via canvas
@@ -18,22 +18,10 @@ export const applyImageFilter = (
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       // 1. Définir la taille du canvas
-      // Pour le polaroid, on a besoin de plus de place
-      let canvasWidth = img.width;
-      let canvasHeight = img.height;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (frame === 'polaroid') {
-        const padding = Math.max(img.width, img.height) * 0.1;
-        const bottomPadding = padding * 3;
-        canvasWidth = img.width + (padding * 2);
-        canvasHeight = img.height + padding + bottomPadding;
-        offsetX = padding;
-        offsetY = padding;
-      } else if (frame === 'simple' || frame === 'neon' || frame === 'gold') {
-         // Bordure interne, pas de changement de taille
-      }
+      const canvasWidth = img.width;
+      const canvasHeight = img.height;
+      const offsetX = 0;
+      const offsetY = 0;
 
       const canvas = document.createElement('canvas');
       canvas.width = canvasWidth;
@@ -43,17 +31,6 @@ export const applyImageFilter = (
       if (!ctx) {
         reject(new Error('Canvas context not available'));
         return;
-      }
-
-      // 2. Fond (pour polaroid)
-      if (frame === 'polaroid') {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // Ombre légère interne
-        ctx.shadowColor = 'rgba(0,0,0,0.2)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
       }
 
       // 3. Appliquer le filtre
@@ -79,31 +56,8 @@ export const applyImageFilter = (
       ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
       ctx.restore();
 
-      // 4. Appliquer les cadres (Overlay)
-      if (frame === 'neon') {
-        const lineWidth = Math.min(canvas.width, canvas.height) * 0.03;
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = '#ec4899'; // Pink-500
-        ctx.shadowColor = '#ec4899';
-        ctx.shadowBlur = 20;
-        ctx.strokeRect(lineWidth/2, lineWidth/2, canvas.width - lineWidth, canvas.height - lineWidth);
-      } else if (frame === 'gold') {
-        const lineWidth = Math.min(canvas.width, canvas.height) * 0.04;
-        ctx.lineWidth = lineWidth;
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#bf953f');
-        gradient.addColorStop(0.25, '#fcf6ba');
-        gradient.addColorStop(0.5, '#b38728');
-        gradient.addColorStop(0.75, '#fbf5b7');
-        gradient.addColorStop(1, '#aa771c');
-        ctx.strokeStyle = gradient;
-        ctx.strokeRect(lineWidth/2, lineWidth/2, canvas.width - lineWidth, canvas.height - lineWidth);
-      } else if (frame === 'simple') {
-        const lineWidth = Math.min(canvas.width, canvas.height) * 0.05;
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = '#ffffff';
-        ctx.strokeRect(lineWidth/2, lineWidth/2, canvas.width - lineWidth, canvas.height - lineWidth);
-      }
+      // Les cadres générés par code ont été retirés
+      // Seuls les cadres PNG personnalisés sont disponibles via les settings
 
       // Qualité maximale HD pour les cadres
       resolve(canvas.toDataURL('image/jpeg', 1.0));

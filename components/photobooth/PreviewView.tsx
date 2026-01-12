@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Frame, Palette, Sparkles, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { Download, Palette, Sparkles, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { FilterSelector } from './FilterSelector';
 import { FilterType, FrameType } from '../../utils/imageFilters';
 import { MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH } from '../../constants';
@@ -92,23 +92,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
               }`} />
               <Palette className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
             </button>
-            <button 
-              onClick={onToggleFrames}
-              className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
-                showFrames 
-                  ? 'bg-gradient-to-br from-pink-500 to-pink-600 border-pink-400/70 text-white shadow-pink-500/50' 
-                  : 'bg-black/80 border-white/30 text-white hover:bg-black/90 hover:border-white/50'
-              }`}
-              title="Cadres"
-              aria-label="Ouvrir les cadres"
-            >
-              <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
-                showFrames 
-                  ? 'bg-gradient-to-br from-pink-400/20 to-pink-600/20 opacity-100' 
-                  : 'bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100'
-              }`} />
-              <Frame className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
-            </button>
+            
           </>
         )}
       </div>

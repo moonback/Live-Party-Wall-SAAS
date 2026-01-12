@@ -41,21 +41,8 @@ export const FilterSelector: React.FC<FilterSelectorProps> = ({
           ))}
         </>
       )}
-      {showFrames && (
-        <>
-          {(['none', 'polaroid', 'neon', 'gold', 'simple'] as FrameType[]).map(f => (
-            <button
-              key={f}
-              onClick={() => onFrameChange(f)}
-              className={`px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold capitalize whitespace-nowrap transition-colors touch-manipulation ${
-                activeFrame === f ? 'bg-pink-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </>
-      )}
+      {/* Les cadres générés par code ont été retirés */}
+      {/* Seuls les cadres PNG personnalisés sont disponibles via les settings */}
     </div>
   );
 };
