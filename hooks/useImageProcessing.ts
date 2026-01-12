@@ -38,6 +38,12 @@ export const useImageProcessing = () => {
     });
   };
 
+  // Fonction pour définir l'image originale depuis un dataUrl (pour les captures caméra)
+  const setOriginalImageFromDataUrl = (dataUrl: string) => {
+    setOriginalImage(dataUrl);
+    // Le preview sera mis à jour automatiquement par le useEffect qui applique les filtres
+  };
+
   const reset = () => {
     setOriginalImage(null);
     setPreview(null);
@@ -54,6 +60,7 @@ export const useImageProcessing = () => {
     setActiveFrame,
     setPreview,
     loadImage,
+    setOriginalImageFromDataUrl,
     reset
   };
 };

@@ -77,6 +77,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     setActiveFrame,
     setPreview,
     loadImage,
+    setOriginalImageFromDataUrl,
     reset: resetImageProcessing
   } = useImageProcessing();
   
@@ -176,7 +177,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         if (forBurst) {
           return dataUrl;
         } else {
-          setPreview(dataUrl);
+          // Définir l'image originale pour que les filtres puissent être appliqués
+          setOriginalImageFromDataUrl(dataUrl);
           stopCamera();
           return null;
         }
@@ -233,7 +235,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
   const handleBurstPhotoConfirm = () => {
     if (selectedBurstIndex !== null && burstPhotos[selectedBurstIndex]) {
-      setPreview(burstPhotos[selectedBurstIndex]);
+      // Définir l'image originale pour que les filtres puissent être appliqués
+      setOriginalImageFromDataUrl(burstPhotos[selectedBurstIndex]);
       setBurstPhotos([]);
       setSelectedBurstIndex(null);
       setIsCapturingBurst(false);
