@@ -205,32 +205,32 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+          <div className="absolute top-0 left-1/4 w-80 h-80 bg-indigo-500/4 blur-[100px] rounded-full animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-teal-500/4 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
         <motion.div 
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-10 max-w-md w-full text-center border border-slate-800/50 relative z-10 shadow-2xl shadow-black/20"
+          transition={{ duration: 0.3 }}
+          className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-xl p-8 max-w-md w-full text-center border border-slate-800/50 relative z-10 shadow-xl shadow-black/20"
         >
           <motion.div 
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl flex items-center justify-center border border-slate-700/50 shadow-lg"
+            whileHover={{ scale: 1.05, rotate: 3 }}
+            className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-slate-800/70 to-slate-900/70 rounded-xl flex items-center justify-center border border-slate-700/40"
           >
-            <Calendar className="w-10 h-10 text-slate-400" />
+            <Calendar className="w-8 h-8 text-slate-400" />
           </motion.div>
-          <h2 className="text-2xl font-bold mb-3 text-slate-100 bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
+          <h2 className="text-xl font-bold mb-2 text-slate-100 bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
             Connexion requise
           </h2>
-          <p className="text-slate-400 mb-8 text-sm leading-relaxed">Vous devez être connecté pour accéder à votre tableau de bord d'événements.</p>
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">Vous devez être connecté pour accéder à votre tableau de bord d'événements.</p>
           {onBack && !isElectron() && (
             <motion.button
-              whileHover={{ scale: 1.05, y: -1 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
               onClick={onBack}
-              className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl font-semibold text-sm text-white transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
+              className="w-full px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-semibold text-sm text-white transition-all duration-200 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35"
             >
               Retour à l'accueil
             </motion.button>
@@ -241,36 +241,35 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-8 lg:p-12 relative text-slate-100 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 p-3 md:p-6 lg:p-8 relative text-slate-100 overflow-x-hidden">
       {/* Arrière-plan amélioré avec effets de profondeur */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/5 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/2 blur-[140px] rounded-full"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+        <div className="absolute top-0 left-1/4 w-80 h-80 bg-indigo-500/4 blur-[100px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-teal-500/4 blur-[100px] rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header Section - Design premium */}
+        {/* Header Section - Design compact et moderne */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8"
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <motion.div 
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="p-3 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 shadow-lg shadow-indigo-500/10"
+              whileHover={{ scale: 1.05, rotate: 3 }}
+              className="p-2.5 rounded-lg bg-gradient-to-br from-indigo-500/15 to-purple-500/15 border border-indigo-500/25"
             >
-              <Calendar className="w-6 h-6 text-indigo-400" />
+              <Calendar className="w-5 h-5 text-indigo-400" />
             </motion.div>
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-slate-100 mb-1 bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold text-slate-100 bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
                 Mes événements
               </h1>
-              <p className="text-sm text-slate-400 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+              <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <span className="w-1 h-1 rounded-full bg-slate-500"></span>
                 Gérez vos Party Walls
               </p>
             </div>
@@ -278,13 +277,14 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
           <motion.button
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            whileHover={{ scale: 1.05, y: -1 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl font-semibold text-sm text-white transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-semibold text-sm text-white transition-all duration-200 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35"
           >
-            <Plus className="w-5 h-5" />
-            <span>Nouvel événement</span>
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Nouvel événement</span>
+            <span className="sm:hidden">Nouveau</span>
           </motion.button>
         </motion.div>
 
@@ -292,21 +292,21 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
         <AnimatePresence>
           {showCreateForm && (
             <motion.div 
-              initial={{ opacity: 0, y: -20, height: 0 }}
+              initial={{ opacity: 0, y: -10, height: 0 }}
               animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -20, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden mb-8"
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden mb-6"
             >
-              <div className="bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-slate-800/50 shadow-2xl shadow-black/20">
-                <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+              <div className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-xl p-5 sm:p-6 border border-slate-800/50 shadow-xl shadow-black/20">
+                <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-800/50">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-0.5 h-5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
                     <div>
-                      <h2 className="text-xl font-bold text-slate-100 mb-1">
+                      <h2 className="text-lg font-bold text-slate-100">
                         Créer un nouvel événement
                       </h2>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-xs text-slate-500 mt-0.5">
                         Configurez votre Party Wall
                       </p>
                     </div>
@@ -315,21 +315,21 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setShowCreateForm(false)} 
-                    className="p-2.5 rounded-xl border border-slate-700/50 bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 transition-all duration-200 shadow-lg shadow-black/10"
+                    className="p-2 rounded-lg border border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60 text-slate-400 hover:text-slate-200 transition-all duration-200"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </motion.button>
                 </div>
 
-                <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-6">
+                <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-4">
                     <motion.div 
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 }}
-                      className="space-y-2"
+                      className="space-y-1.5"
                     >
-                      <label className="block text-sm font-semibold text-slate-300 flex items-center gap-2">
+                      <label className="block text-xs font-semibold text-slate-300 flex items-center gap-2">
                         <span>Nom public</span>
                         <span className="text-xs font-normal text-slate-500">(requis)</span>
                       </label>
@@ -337,11 +337,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                         type="text"
                         value={newEventName}
                         onChange={(e) => setNewEventName(e.target.value)}
-                        className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 shadow-inner"
+                        className="w-full bg-slate-950/80 border border-slate-800/50 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200"
                         placeholder="Ex: Mariage de Sophie & Marc"
                         required
                       />
-                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <p className="text-xs text-slate-500 flex items-center gap-1">
                         <span className="w-1 h-1 rounded-full bg-slate-600"></span>
                         Nom affiché sur le mur et dans les exports
                       </p>
@@ -350,51 +350,50 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.15 }}
-                      className="space-y-2"
+                      className="space-y-1.5"
                     >
-                      <label className="block text-sm font-semibold text-slate-300 flex items-center gap-2">
+                      <label className="block text-xs font-semibold text-slate-300 flex items-center gap-2">
                         <span>URL personnalisée</span>
                         <span className="text-xs font-normal text-slate-500">(unique)</span>
                       </label>
                       <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm group-focus-within:text-indigo-400 transition-colors">/</span>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs group-focus-within:text-indigo-400 transition-colors">/</span>
                         <input
                           type="text"
                           value={newEventSlug}
                           onChange={(e) => setNewEventSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                          className="w-full pl-8 bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200 shadow-inner"
+                          className="w-full pl-7 bg-slate-950/80 border border-slate-800/50 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 font-mono placeholder:text-slate-500 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:bg-slate-950 transition-all duration-200"
                           placeholder="mariage-sophie-marc"
                           required
                         />
                       </div>
-                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <p className="text-xs text-slate-500 flex items-center gap-1">
                         <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                        L'URL sera : <span className="font-mono text-indigo-400">live.partywall.com/?event={newEventSlug || '...'}</span>
+                        <span className="font-mono text-indigo-400 text-xs">?event={newEventSlug || '...'}</span>
                       </p>
                     </motion.div>
                   </div>
                   
-                  <div className="space-y-6 flex flex-col justify-between">
+                  <div className="space-y-4 flex flex-col justify-between">
                     <motion.div 
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="space-y-2"
+                      className="space-y-1.5"
                     >
-                      <label className="block text-sm font-semibold text-slate-300">
+                      <label className="block text-xs font-semibold text-slate-300">
                         Description courte
                       </label>
                       <textarea
                         value={newEventDescription}
                         onChange={(e) => setNewEventDescription(e.target.value.substring(0, 100))}
                         rows={3}
-                        className="w-full bg-slate-950/80 border border-slate-800/50 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 focus:bg-slate-950 outline-none transition-all duration-200 resize-none shadow-inner"
+                        className="w-full bg-slate-950/80 border border-slate-800/50 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 focus:bg-slate-950 outline-none transition-all duration-200 resize-none"
                         placeholder="Un petit mot pour vos invités..."
                       />
                       <div className="flex items-center justify-between">
-                        <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                          Description optionnelle
+                        <p className="text-xs text-slate-500">
+                          Optionnel
                         </p>
                         <span className={`text-xs font-medium ${newEventDescription.length >= 90 ? 'text-amber-400' : 'text-slate-500'}`}>
                           {newEventDescription.length}/100
@@ -406,13 +405,13 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: 1.01, y: -1 }}
+                      whileTap={{ scale: 0.99 }}
                       type="submit"
                       disabled={creating}
-                      className="w-full px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 disabled:shadow-none"
+                      className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 disabled:shadow-none"
                     >
-                      {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                      {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                       {creating ? 'Création...' : 'Créer l\'événement'}
                     </motion.button>
                   </div>
@@ -427,42 +426,42 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-col md:flex-row gap-3 mb-6"
+          className="flex flex-col sm:flex-row gap-2.5 mb-5"
         >
           <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher parmi vos événements..."
-              className="w-full pl-12 pr-4 py-3 bg-slate-950/80 border border-slate-800/50 rounded-xl focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 text-sm text-slate-100 outline-none transition-all duration-200 placeholder:text-slate-500 shadow-inner"
+              className="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-800/50 rounded-lg focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 text-sm text-slate-100 outline-none transition-all duration-200 placeholder:text-slate-500"
             />
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              className="px-4 py-3 bg-gradient-to-br from-slate-900/80 to-slate-800/80 border border-slate-800/50 rounded-xl hover:border-slate-700/50 transition-all duration-200 flex items-center gap-2 text-sm font-medium text-slate-300 shadow-lg shadow-black/10"
+              className="px-3 py-2.5 bg-slate-900/60 border border-slate-800/50 rounded-lg hover:border-slate-700/50 transition-all duration-200 flex items-center gap-2 text-xs font-medium text-slate-300"
               title="Changer l'ordre de tri"
             >
               {sortOrder === 'desc' ? <SortDesc className="w-4 h-4" /> : <SortAsc className="w-4 h-4" />}
-              <span className="hidden sm:inline">{sortOrder === 'desc' ? 'Plus récents' : 'Plus anciens'}</span>
+              <span className="hidden sm:inline">{sortOrder === 'desc' ? 'Récent' : 'Ancien'}</span>
             </motion.button>
             
             <div className="relative group">
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'created_at' | 'name')}
-                className="appearance-none pl-4 pr-10 py-3 bg-gradient-to-br from-slate-900/80 to-slate-800/80 border border-slate-800/50 rounded-xl hover:border-slate-700/50 transition-all duration-200 outline-none text-sm font-medium text-slate-300 cursor-pointer focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/30 shadow-lg shadow-black/10"
+                className="appearance-none pl-3 pr-8 py-2.5 bg-slate-900/60 border border-slate-800/50 rounded-lg hover:border-slate-700/50 transition-all duration-200 outline-none text-xs font-medium text-slate-300 cursor-pointer focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
               >
-                <option value="created_at" className="bg-slate-900">Par date</option>
-                <option value="name" className="bg-slate-900">Par nom</option>
+                <option value="created_at" className="bg-slate-900">Date</option>
+                <option value="name" className="bg-slate-900">Nom</option>
               </select>
-              <Filter className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-indigo-400 transition-colors" />
+              <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none group-hover:text-indigo-400 transition-colors" />
             </div>
           </div>
         </motion.div>
@@ -472,43 +471,43 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-24 space-y-4"
+            className="flex flex-col items-center justify-center py-16 space-y-3"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl"></div>
-              <Loader2 className="w-10 h-10 animate-spin text-indigo-500 relative z-10" />
+              <div className="absolute inset-0 bg-indigo-500/15 rounded-full blur-lg"></div>
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-500 relative z-10" />
             </div>
-            <p className="text-slate-400 text-sm font-medium">Chargement de vos événements...</p>
+            <p className="text-slate-400 text-xs font-medium">Chargement de vos événements...</p>
           </motion.div>
         ) : filteredAndSortedEvents.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-2xl p-12 text-center border border-slate-800/50 shadow-2xl shadow-black/20"
+            className="bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-xl p-8 text-center border border-slate-800/50 shadow-xl shadow-black/20"
           >
             <motion.div 
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl flex items-center justify-center border border-slate-700/50 shadow-lg"
+              whileHover={{ scale: 1.05, rotate: 3 }}
+              className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-slate-800/70 to-slate-900/70 rounded-xl flex items-center justify-center border border-slate-700/40"
             >
-              <Calendar className="w-10 h-10 text-slate-400" />
+              <Calendar className="w-8 h-8 text-slate-400" />
             </motion.div>
-            <h3 className="text-2xl font-bold mb-3 text-slate-100">Aucun résultat trouvé</h3>
-            <p className="text-slate-400 max-w-md mx-auto mb-8 text-sm leading-relaxed">
+            <h3 className="text-xl font-bold mb-2 text-slate-100">Aucun résultat trouvé</h3>
+            <p className="text-slate-400 max-w-md mx-auto mb-6 text-sm leading-relaxed">
               {searchQuery ? `Aucun événement correspondant à "${searchQuery}"` : "Commencez en créant votre premier événement."}
             </p>
             {!searchQuery && (
               <motion.button 
-                whileHover={{ scale: 1.05, y: -1 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setShowCreateForm(true)}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40"
+                className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg font-semibold text-sm transition-all duration-200 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35"
               >
                 Créer un événement
               </motion.button>
             )}
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-8">
             <AnimatePresence mode="popLayout">
               {filteredAndSortedEvents.map((event, index) => {
                 const isSelected = currentEvent?.id === event.id;
@@ -520,62 +519,62 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                   <motion.div
                     layout
                     key={event.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.03, duration: 0.3 }}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    className={`group relative bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border transition-all duration-200 flex flex-col shadow-lg ${
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.02, duration: 0.25 }}
+                    whileHover={{ y: -2, scale: 1.005 }}
+                    className={`group relative bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-xl p-4 border transition-all duration-200 flex flex-col shadow-md ${
                       isSelected 
-                        ? 'border-indigo-500/50 shadow-2xl shadow-indigo-500/20 ring-2 ring-indigo-500/20' 
-                        : 'border-slate-800/50 hover:border-slate-700/50 hover:shadow-xl hover:shadow-black/20'
+                        ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/15 ring-1 ring-indigo-500/20' 
+                        : 'border-slate-800/50 hover:border-slate-700/50 hover:shadow-lg hover:shadow-black/15'
                     }`}
                   >
                     {/* Event Status & Actions */}
-                    <div className="flex justify-between items-start mb-5">
+                    <div className="flex justify-between items-start mb-3">
                       <motion.div 
                         whileHover={{ scale: 1.05 }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-lg ${
+                        className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 ${
                           event.is_active 
-                            ? 'bg-gradient-to-r from-teal-500/20 to-emerald-500/20 text-teal-400 border border-teal-500/30' 
-                            : 'bg-slate-800/80 text-slate-400 border border-slate-700/50'
+                            ? 'bg-teal-500/15 text-teal-400 border border-teal-500/25' 
+                            : 'bg-slate-800/60 text-slate-400 border border-slate-700/40'
                         }`}
                       >
-                        <div className={`w-2 h-2 rounded-full shadow-sm ${event.is_active ? 'bg-teal-400 animate-pulse' : 'bg-slate-500'}`}></div>
+                        <div className={`w-1.5 h-1.5 rounded-full ${event.is_active ? 'bg-teal-400 animate-pulse' : 'bg-slate-500'}`}></div>
                         {event.is_active ? 'Actif' : 'Archivé'}
                       </motion.div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <motion.button 
-                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => copyEventLink(event.slug, event.id, e)}
-                          className={`p-2 rounded-xl transition-all duration-200 shadow-lg ${
+                          className={`p-1.5 rounded-lg transition-all duration-200 ${
                             isCopied 
-                              ? 'bg-gradient-to-r from-teal-500/30 to-emerald-500/30 text-teal-400 border border-teal-500/40' 
-                              : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 border border-slate-700/50 hover:border-slate-600/50'
+                              ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30' 
+                              : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/40 hover:border-slate-600/50'
                           }`}
                           title="Copier le lien"
                         >
-                          {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                         </motion.button>
                         
                         {!isSelected && (
                           <motion.button 
-                            whileHover={{ scale: 1.1, rotate: -5 }}
+                            whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               setConfirmDeleteId(showConfirm ? null : event.id);
                             }}
-                            className={`p-2 rounded-xl transition-all duration-200 shadow-lg ${
+                            className={`p-1.5 rounded-lg transition-all duration-200 ${
                               showConfirm 
-                                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white border border-red-500/40' 
-                                : 'bg-slate-800/80 text-slate-400 hover:text-red-400 border border-slate-700/50 hover:border-red-500/30'
+                                ? 'bg-red-600/90 text-white border border-red-500/40' 
+                                : 'bg-slate-800/60 text-slate-400 hover:text-red-400 border border-slate-700/40 hover:border-red-500/30'
                             }`}
                             title="Supprimer"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </motion.button>
                         )}
                       </div>
@@ -588,23 +587,23 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                           initial={{ opacity: 0, scale: 0.95 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          className="absolute inset-0 z-20 bg-slate-950/95 backdrop-blur-xl rounded-2xl flex flex-col items-center justify-center p-6 text-center"
+                          className="absolute inset-0 z-20 bg-slate-950/95 backdrop-blur-xl rounded-xl flex flex-col items-center justify-center p-4 text-center"
                         >
                           <motion.div 
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-xl flex items-center justify-center mb-4 border border-red-500/40 shadow-lg shadow-red-500/20"
+                            className="w-12 h-12 bg-red-500/15 rounded-lg flex items-center justify-center mb-3 border border-red-500/30"
                           >
-                            <AlertTriangle className="w-7 h-7 text-red-400" />
+                            <AlertTriangle className="w-6 h-6 text-red-400" />
                           </motion.div>
-                          <h4 className="text-lg font-bold mb-2 text-slate-100">Supprimer l'événement ?</h4>
-                          <p className="text-slate-400 text-sm mb-6 leading-relaxed">Cette action est <span className="font-semibold text-red-400">irréversible</span> et supprimera toutes les photos associées.</p>
-                          <div className="flex gap-3 w-full">
+                          <h4 className="text-base font-bold mb-1.5 text-slate-100">Supprimer l'événement ?</h4>
+                          <p className="text-slate-400 text-xs mb-4 leading-relaxed">Cette action est <span className="font-semibold text-red-400">irréversible</span> et supprimera toutes les photos associées.</p>
+                          <div className="flex gap-2 w-full">
                             <motion.button 
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                               onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
-                              className="flex-1 px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 rounded-xl font-semibold text-sm text-slate-300 transition-all duration-200 border border-slate-700/50 shadow-lg"
+                              className="flex-1 px-3 py-2 bg-slate-800/80 hover:bg-slate-700/80 rounded-lg font-semibold text-xs text-slate-300 transition-all duration-200 border border-slate-700/50"
                             >
                               Annuler
                             </motion.button>
@@ -613,9 +612,9 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                               whileTap={{ scale: 0.98 }}
                               onClick={(e) => handleDeleteEvent(event, e)}
                               disabled={isDeleting}
-                              className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 rounded-xl font-semibold text-sm text-white transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 disabled:shadow-none"
+                              className="flex-1 px-3 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 disabled:from-red-600/50 disabled:to-rose-600/50 rounded-lg font-semibold text-xs text-white transition-all duration-200 flex items-center justify-center gap-1.5 shadow-md shadow-red-500/25 hover:shadow-lg hover:shadow-red-500/35 disabled:shadow-none"
                             >
-                              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Supprimer'}
+                              {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Supprimer'}
                             </motion.button>
                           </div>
                         </motion.div>
@@ -623,63 +622,63 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                     </AnimatePresence>
 
                     {/* Event Content */}
-                    <div className="flex-1 mb-5">
-                      <h3 className={`text-xl font-bold mb-3 transition-colors ${isSelected ? 'text-slate-100' : 'text-slate-200'}`}>
+                    <div className="flex-1 mb-3">
+                      <h3 className={`text-base font-bold mb-2 transition-colors line-clamp-1 ${isSelected ? 'text-slate-100' : 'text-slate-200'}`}>
                         {event.name}
                       </h3>
-                      <p className="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-4">
-                        {event.description || "Aucune description fournie pour cet événement."}
+                      <p className="text-slate-400 text-xs leading-relaxed line-clamp-2 mb-3">
+                        {event.description || "Aucune description fournie."}
                       </p>
                       
-                      <div className="flex items-center gap-2 text-slate-500 text-xs font-mono bg-slate-950/80 py-2.5 px-4 rounded-xl border border-slate-800/50 w-fit shadow-inner">
-                        <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                      <div className="flex items-center gap-1.5 text-slate-500 text-xs font-mono bg-slate-950/60 py-1.5 px-2.5 rounded-lg border border-slate-800/40 w-fit">
+                        <ExternalLink className="w-3 h-3 text-slate-400" />
                         <span className="text-indigo-400">?event={event.slug}</span>
                       </div>
                     </div>
 
                     {/* Footer Info & Select Button */}
-                    <div className="pt-5 border-t border-slate-800/50 flex flex-col gap-4">
+                    <div className="pt-3 border-t border-slate-800/50 flex flex-col gap-3">
                       <div className="flex items-center justify-between text-xs text-slate-500">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-slate-500" />
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-500" />
                           <span>{new Date(event.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
                         {isSelected && (
-                          <div className="flex items-center gap-2 text-indigo-400 px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
-                            <LayoutDashboard className="w-4 h-4" />
+                          <div className="flex items-center gap-1.5 text-indigo-400 px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/25">
+                            <LayoutDashboard className="w-3.5 h-3.5" />
                             <span className="text-xs font-semibold">Sélectionné</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <motion.button
-                          whileHover={{ scale: 1.02, y: -1 }}
-                          whileTap={{ scale: 0.98 }}
+                          whileHover={{ scale: 1.01, y: -1 }}
+                          whileTap={{ scale: 0.99 }}
                           onClick={() => handleSelectEvent(event)}
-                          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-xs transition-all duration-200 ${
                             isSelected 
-                              ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-400 border border-indigo-500/30 cursor-default shadow-lg shadow-indigo-500/10' 
-                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40'
+                              ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 cursor-default' 
+                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35'
                           }`}
                         >
                           {isSelected ? 'Tableau de bord' : 'Ouvrir'}
-                          {!isSelected && <ArrowRight className="w-4 h-4" />}
+                          {!isSelected && <ArrowRight className="w-3.5 h-3.5" />}
                         </motion.button>
                         
                         <motion.button
-                          whileHover={{ scale: 1.1, rotate: 5 }}
-                          whileTap={{ scale: 0.9 }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (onSettingsClick) {
                               onSettingsClick(event);
                             }
                           }}
-                          className="p-3 rounded-xl border border-slate-800/50 bg-slate-900/50 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-all duration-200 shadow-lg shadow-black/10"
+                          className="p-2 rounded-lg border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-all duration-200"
                           title="Paramètres de l'événement"
                         >
-                          <SettingsIcon className="w-5 h-5" />
+                          <SettingsIcon className="w-4 h-4" />
                         </motion.button>
                       </div>
                     </div>
