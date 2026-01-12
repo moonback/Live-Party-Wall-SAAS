@@ -52,7 +52,7 @@ export interface Aftermovie {
   download_count?: number; // Nombre de téléchargements
 }
 
-export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'privacy' | 'data-management' | 'license-management';
+export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'privacy' | 'data-management';
 
 export interface ToastMessage {
   id: string;

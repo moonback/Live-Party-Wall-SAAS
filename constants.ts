@@ -1,9 +1,5 @@
 export const APP_NAME = "Partywall";
 
-// License Manager Password (default: "licence")
-// Can be overridden via VITE_LICENSE_MANAGER_PASSWORD environment variable
-export const LICENSE_MANAGER_PASSWORD = import.meta.env.VITE_LICENSE_MANAGER_PASSWORD || 'licence';
-
 // Prompt for Gemini to generate captions
 export const CAPTION_PROMPT = `
 Tu es l'animateur virtuel star du "Partywall", le cœur battant de cet événement ! 🎉 

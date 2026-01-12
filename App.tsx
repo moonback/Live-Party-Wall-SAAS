@@ -35,7 +35,6 @@ const DataManagement = lazy(() => import('./components/rgpd/DataManagement')); /
 const ConsentBanner = lazy(() => import('./components/rgpd/ConsentBanner')); // Banner de consentement
 const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePreferences')); // Préférences cookies
 const LicenseBlock = lazy(() => import('./components/LicenseBlock')); // Blocage de licence
-const LicensePasswordGate = lazy(() => import('./components/LicensePasswordGate')); // Porte d'accès protégée pour gestion des licences
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -173,10 +172,6 @@ const AppContent: React.FC = () => {
       setViewMode('wall');
     } else if (modeParam === 'admin') {
       setViewMode('admin');
-    } else if (modeParam === 'license-management') {
-      // Route cachée - accessible uniquement via URL directe, pas visible dans l'UI
-      // Nécessite une authentification admin
-      setViewMode('license-management');
     } else if (modeParam === 'gallery') {
       if (!isRegistered) {
         setViewMode('onboarding');
@@ -267,8 +262,8 @@ const AppContent: React.FC = () => {
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
-        {/* Vérification de la licence - Bloque l'application si expirée (sauf pour license-management) */}
-        {!licenseLoading && !isLicenseValid && viewMode !== 'license-management' && (
+        {/* Vérification de la licence - Bloque l'application si expirée */}
+        {!licenseLoading && !isLicenseValid && (
           <Suspense fallback={
             <div className="flex items-center justify-center min-h-screen">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
@@ -300,7 +295,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {!eventLoading && !eventError && (isLicenseValid || viewMode === 'license-management') && (
+        {!eventLoading && !eventError && isLicenseValid && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
@@ -351,20 +346,8 @@ const AppContent: React.FC = () => {
               </TransitionWrapper>
             )}
 
-            {/* Mode gestion des licences - accessible uniquement via URL directe ?mode=license-management, protégé par mot de passe */}
-            {viewMode === 'license-management' && (
-              <TransitionWrapper type="scale" duration={600}>
-                <LicensePasswordGate 
-                  onBack={() => {
-                    // Retourner à l'accueil
-                    setViewMode('landing');
-                  }}
-                />
-              </TransitionWrapper>
-            )}
-
-            {/* Si pas d'événement et pas en mode admin/license-management, afficher l'écran sans événement */}
-            {viewMode !== 'admin' && viewMode !== 'license-management' && !currentEvent && (
+            {/* Si pas d'événement et pas en mode admin, afficher l'écran sans événement */}
+            {viewMode !== 'admin' && !currentEvent && (
               <TransitionWrapper type="fade" duration={500}>
                 <Accueil
                   onAdminClick={() => setViewMode('admin')}

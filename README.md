@@ -139,8 +139,6 @@ Créer une animation collective et engageante où chaque photo devient un moment
 │   ├── admin/             # Dashboard admin
 │   ├── photobooth/        # Photobooth avec caméra
 │   ├── rgpd/              # Composants RGPD (consentement, politique, gestion données)
-│   ├── LicenseManager.tsx # Gestionnaire de licences
-│   ├── LicensePasswordGate.tsx # Protection par mot de passe
 │   └── LicenseBlock.tsx    # Écran de blocage licence
 │
 ├── 🔧 services/            # Logique métier isolée
@@ -226,10 +224,6 @@ VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
 # Google Gemini API
 # Obtenez votre clé sur https://makersuite.google.com/app/apikey
 GEMINI_API_KEY=votre_cle_api_gemini
-
-# License Manager Password (optionnel)
-# Mot de passe pour accéder au gestionnaire de licences (défaut: "licence")
-VITE_LICENSE_MANAGER_PASSWORD=licence
 ```
 
 **Note** : Les variables préfixées par `VITE_` sont accessibles côté client. La clé Gemini est utilisée côté client pour les appels API directs.
@@ -494,31 +488,12 @@ Partywall inclut un système de licences complet pour gérer l'accès à l'appli
 - ✅ **Statuts flexibles** - Licences actives, expirées, suspendues ou annulées
 - ✅ **Suivi détaillé** - Historique des vérifications, dates d'activation et d'expiration
 
-#### Gestionnaire de licences
-- 🔐 **Protection par mot de passe** - Accès sécurisé via mot de passe (défaut: "licence")
-- 🌐 **Route protégée** - Accessible uniquement via `?mode=license-management`
-- 👥 **Sélection d'utilisateurs** - Interface de recherche et sélection d'utilisateurs
-- 📝 **CRUD complet** - Création, modification, suppression de licences
-- 🔍 **Recherche et filtres** - Recherche par utilisateur, filtre par statut
-- 📊 **Vue détaillée** - Affichage complet des informations de licence (statut, expiration, notes)
-
-#### Configuration
-- **Mot de passe par défaut** : `licence`
-- **Personnalisation** : Variable d'environnement `VITE_LICENSE_MANAGER_PASSWORD`
-- **Session** : Authentification stockée dans `sessionStorage` (expire à la fermeture du navigateur)
-
-#### Utilisation
-1. **Accéder au gestionnaire** : `?mode=license-management`
-2. **Saisir le mot de passe** : Par défaut "licence" (configurable via `.env`)
-3. **Créer une licence** : Sélectionner un utilisateur, définir la date d'expiration
-4. **Gérer les licences** : Modifier, suspendre ou supprimer des licences existantes
 
 #### Blocage de l'application
 Si la licence est expirée ou invalide :
 - 🚫 L'application affiche un écran de blocage
 - 📅 Affichage de la date d'expiration et des jours restants
 - 🔄 Bouton de réessai pour vérifier à nouveau
-- 🔑 Accès au gestionnaire de licences (si authentifié)
 - 🚪 Bouton de déconnexion
 
 ### 🎬 Aftermovies - Génération de vidéos souvenirs
