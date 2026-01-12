@@ -267,8 +267,8 @@ const AppContent: React.FC = () => {
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
-        {/* Vérification de la licence - Bloque l'application si expirée (sauf pour license-management et admin) */}
-        {!licenseLoading && !isLicenseValid && viewMode !== 'license-management' && viewMode !== 'admin' && (
+        {/* Vérification de la licence - Bloque l'application si expirée (sauf pour license-management) */}
+        {!licenseLoading && !isLicenseValid && viewMode !== 'license-management' && (
           <Suspense fallback={
             <div className="flex items-center justify-center min-h-screen">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
@@ -300,7 +300,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {!eventLoading && !eventError && (isLicenseValid || viewMode === 'license-management' || viewMode === 'admin') && (
+        {!eventLoading && !eventError && (isLicenseValid || viewMode === 'license-management') && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>

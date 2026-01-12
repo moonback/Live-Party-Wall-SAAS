@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Clock, Shield, Mail, LogOut } from 'lucide-react';
 import { useLicense } from '../context/LicenseContext';
 import { useAuth } from '../context/AuthContext';
+import { isElectron } from '../utils/electronPaths';
 
 /**
  * Composant qui bloque l'application si la licence est expirée ou invalide
@@ -200,10 +201,18 @@ const LicenseBlock: React.FC = () => {
                onClick={async () => {
                  try {
                    await signOut();
-                   // Rediriger vers la page d'accueil après déconnexion
-                   window.location.href = '/';
+                   // Sur Electron, recharger la page pour réinitialiser l'application
+                   // Cela permet de revenir à l'écran de login (mode=admin par défaut dans Electron)
+                   if (isElectron()) {
+                     window.location.reload();
+                   } else {
+                     // En web, rediriger vers la page d'accueil
+                     window.location.href = '/';
+                   }
                  } catch (error) {
                    console.error('Erreur lors de la déconnexion:', error);
+                   // En cas d'erreur, forcer le rechargement
+                   window.location.reload();
                  }
                }}
                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-red-800/80 via-red-900/80 to-rose-900/80 hover:from-red-700 hover:to-rose-700 text-white rounded-lg font-semibold transition-all duration-200 border-2 border-red-600/30 shadow-lg shadow-red-900/20 hover:shadow-xl hover:shadow-red-800/30 text-base"

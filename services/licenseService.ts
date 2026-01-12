@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { License, LicenseRow, LicenseValidity, LicenseUpdate, LicenseStatus } from '../types';
 import { logger } from '../utils/logger';
+import { isElectron } from '../utils/electronPaths';
 
 /**
  * Vérifie la validité de la licence pour l'utilisateur actuel
@@ -9,7 +10,18 @@ import { logger } from '../utils/logger';
  */
 export const checkLicenseValidity = async (userId?: string): Promise<LicenseValidity> => {
   if (!isSupabaseConfigured()) {
-    // En mode développement sans Supabase, on peut permettre l'accès
+    // Sur Electron, on bloque l'accès si Supabase n'est pas configuré
+    if (isElectron()) {
+      logger.error("Supabase not configured in Electron, blocking access", null, { component: 'licenseService', action: 'checkLicenseValidity' });
+      return {
+        is_valid: false,
+        license_id: null,
+        expires_at: null,
+        status: null,
+        days_remaining: null
+      };
+    }
+    // En mode développement web sans Supabase, on peut permettre l'accès
     logger.warn("Supabase not configured, allowing access", null, { component: 'licenseService', action: 'checkLicenseValidity' });
     return {
       is_valid: true,

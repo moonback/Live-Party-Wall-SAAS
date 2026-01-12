@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import { checkLicenseValidity, updateLicenseLastCheck } from '../services/licenseService';
 import { LicenseValidity } from '../types';
 import { logger } from '../utils/logger';
+import { isElectron } from '../utils/electronPaths';
 
 interface LicenseContextType {
   licenseValidity: LicenseValidity | null;
@@ -83,7 +84,31 @@ export const LicenseProvider: React.FC<{ children: ReactNode }> = ({ children })
     return () => clearInterval(interval);
   }, [checkLicense, isAuthenticated, user]);
 
-  const isValid = licenseValidity?.is_valid ?? true; // Par défaut, on permet l'accès si pas de licence (pour développement)
+  // Calculer si la licence est valide
+  // Si l'utilisateur est authentifié, on doit avoir une licence valide
+  // Si l'utilisateur n'est pas authentifié, on permet l'accès (pages publiques)
+  // Sur Electron, on est strict : pas de licence = pas d'accès
+  const isValid = React.useMemo(() => {
+    // Si l'utilisateur n'est pas authentifié, permettre l'accès (pages publiques)
+    if (!isAuthenticated || !user) {
+      return true;
+    }
+
+    // Si on est en train de charger, on bloque l'accès jusqu'à ce que la vérification soit terminée
+    if (loading) {
+      return false;
+    }
+
+    // Si on est sur Electron, on est strict : pas de licence valide = pas d'accès
+    if (isElectron()) {
+      return licenseValidity?.is_valid === true;
+    }
+
+    // Sinon, on vérifie la validité de la licence
+    // Si licenseValidity est null après le chargement, cela signifie qu'il n'y a pas de licence
+    // Dans ce cas, on bloque l'accès
+    return licenseValidity?.is_valid === true;
+  }, [isAuthenticated, user, loading, licenseValidity]);
 
   return (
     <LicenseContext.Provider
