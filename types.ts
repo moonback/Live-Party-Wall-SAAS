@@ -390,3 +390,46 @@ export interface AftermovieRow {
   created_by: string | null;
   download_count?: number;
 }
+
+// License Types
+export type LicenseStatus = 'active' | 'expired' | 'suspended' | 'cancelled';
+
+export interface License {
+  id: string;
+  user_id: string;
+  license_key: string;
+  status: LicenseStatus;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+  activated_at: string | null;
+  last_check_at: string | null;
+  notes: string | null;
+}
+
+export interface LicenseRow {
+  id: string;
+  user_id: string;
+  license_key: string;
+  status: LicenseStatus;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+  activated_at: string | null;
+  last_check_at: string | null;
+  notes: string | null;
+}
+
+export interface LicenseValidity {
+  is_valid: boolean;
+  license_id: string | null;
+  expires_at: string | null;
+  status: LicenseStatus | null;
+  days_remaining: number | null;
+}
+
+export interface LicenseUpdate {
+  status?: LicenseStatus;
+  expires_at?: string;
+  notes?: string | null;
+}

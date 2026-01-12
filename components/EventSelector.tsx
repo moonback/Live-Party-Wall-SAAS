@@ -10,7 +10,7 @@ import {
   Plus, Calendar, Search, Loader2, Clock, 
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
   Check, Filter, SortAsc, SortDesc,
-  ArrowRight, LayoutDashboard, Settings as SettingsIcon
+  ArrowRight, LayoutDashboard, Settings as SettingsIcon,
 } from 'lucide-react';
 
 interface EventSelectorProps {
@@ -142,6 +142,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setDeletingEventId(null);
     }
   };
+
 
   // Créer un nouvel événement
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -400,11 +401,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                         </span>
                       </div>
                     </motion.div>
-                    
+
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.25 }}
+                      transition={{ delay: 0.3 }}
                       whileHover={{ scale: 1.02, y: -1 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit"

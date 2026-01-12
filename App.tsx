@@ -6,6 +6,7 @@ import { EventProvider, useEvent } from './context/EventContext';
 import { PhotosProvider, usePhotos } from './context/PhotosContext';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LicenseProvider, useLicense } from './context/LicenseContext';
 import TransitionWrapper from './components/TransitionWrapper';
 import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
@@ -33,6 +34,7 @@ const PrivacyPolicy = lazy(() => import('./components/rgpd/PrivacyPolicy')); // 
 const DataManagement = lazy(() => import('./components/rgpd/DataManagement')); // Gestion des données
 const ConsentBanner = lazy(() => import('./components/rgpd/ConsentBanner')); // Banner de consentement
 const CookiePreferencesModal = lazy(() => import('./components/rgpd/CookiePreferences')); // Préférences cookies
+const LicenseBlock = lazy(() => import('./components/LicenseBlock')); // Blocage de licence
 
 const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -44,6 +46,7 @@ const AppContent: React.FC = () => {
   const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { addToast, toasts, removeToast } = useToast();
+  const { isValid: isLicenseValid, loading: licenseLoading } = useLicense();
 
   // Fonction helper pour vérifier si l'utilisateur est inscrit pour l'événement actuel
   const isUserRegistered = (): boolean => {
@@ -259,6 +262,17 @@ const AppContent: React.FC = () => {
 
       {/* Main Content with Advanced Transitions */}
       <div className="w-full h-full relative z-10">
+        {/* Vérification de la licence - Bloque l'application si expirée */}
+        {!licenseLoading && !isLicenseValid && (
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+            </div>
+          }>
+            <LicenseBlock />
+          </Suspense>
+        )}
+
         {/* Afficher un message d'erreur si l'événement n'est pas chargé ou s'il y a une erreur */}
         {eventLoading && (
           <div className="flex items-center justify-center min-h-screen">
@@ -281,7 +295,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {!eventLoading && !eventError && (
+        {!eventLoading && !eventError && isLicenseValid && (
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-screen">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
@@ -557,16 +571,21 @@ const App: React.FC = () => {
   return (
     <ToastProvider>
       <AuthProvider>
-        <EventProvider>
-          <SettingsProvider>
-            <PhotosProvider>
-              <AppContent />
-            </PhotosProvider>
-          </SettingsProvider>
-        </EventProvider>
+        <LicenseProvider>
+          <EventProvider>
+            <SettingsProvider>
+              <PhotosProvider>
+                <AppContent />
+              </PhotosProvider>
+            </SettingsProvider>
+          </EventProvider>
+        </LicenseProvider>
       </AuthProvider>
     </ToastProvider>
   );
 };
 
 export default App;
+
+
+

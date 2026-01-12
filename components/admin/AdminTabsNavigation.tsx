@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu 
+  Zap, Users, Menu, Key
 } from 'lucide-react';
 import { AdminTab } from './types';
 
@@ -37,6 +37,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
 }) => {
   const tabs = [
     { id: 'events' as AdminTab, label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
+    { id: 'license' as AdminTab, label: 'Licence', icon: Key, alwaysVisible: true },
     { id: 'moderation' as AdminTab, label: 'Modération', icon: ImageIcon, count: photosCount, requiresEvent: true },
     { id: 'analytics' as AdminTab, label: 'Analytics', icon: BarChart2, requiresEvent: true },
     { id: 'configuration' as AdminTab, label: 'Configuration', icon: Settings, requiresEvent: true },

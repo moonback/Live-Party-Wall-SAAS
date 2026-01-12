@@ -7,10 +7,10 @@ const CACHE_VERSION = 'v1.0.0';
 const CACHE_NAME = `Partywall-${CACHE_VERSION}`;
 
 // Ressources critiques à mettre en cache immédiatement
+// Note: On utilise des chemins relatifs pour éviter les problèmes de base path
 const CRITICAL_RESOURCES = [
   '/',
   '/index.html',
-  '/index.css',
   '/manifest.json',
   '/favicon.svg',
 ];
@@ -34,16 +34,36 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[SW] Caching critical resources');
-        return cache.addAll(CRITICAL_RESOURCES);
-      })
-      .then(() => {
-        // Forcer l'activation immédiate
+        
+        // Mettre en cache chaque ressource individuellement pour éviter que l'échec d'une ressource bloque tout
+        const cachePromises = CRITICAL_RESOURCES.map(async (resource) => {
+          try {
+            const response = await fetch(resource);
+            // Ne mettre en cache que les réponses réussies (200-299)
+            if (response && response.status >= 200 && response.status < 300) {
+              await cache.put(resource, response);
+              console.log('[SW] Cached:', resource);
+            } else {
+              console.warn('[SW] Failed to cache (status ' + response.status + '):', resource);
+            }
+          } catch (error) {
+            // Ne pas bloquer l'installation si une ressource ne peut pas être mise en cache
+            console.warn('[SW] Failed to cache:', resource, error.message);
+          }
+        });
+        
+        // Attendre que toutes les tentatives de cache soient terminées
+        await Promise.allSettled(cachePromises);
+        
+        // Forcer l'activation immédiate même si certaines ressources n'ont pas pu être mises en cache
         return self.skipWaiting();
       })
       .catch((error) => {
         console.error('[SW] Error during installation:', error);
+        // Même en cas d'erreur, on active le service worker pour ne pas bloquer l'application
+        return self.skipWaiting();
       })
   );
 });
