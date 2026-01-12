@@ -20,6 +20,7 @@ import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
 import { AftermovieCard } from './gallery/AftermovieCard';
 import { LeaderboardModal } from './gallery/LeaderboardModal';
+import { ParticipantsModal } from './gallery/ParticipantsModal';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { applyWatermarkToImage } from '../utils/watermarkUtils';
@@ -57,6 +58,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
+  const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>('all');
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
@@ -698,6 +700,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         onToggleSelectionMode={toggleSelectionMode}
         selectedCount={selectedIds.size}
         onBatchDownload={handleBatchDownload}
+        onParticipantsClick={() => setIsParticipantsModalOpen(true)}
       />
 
       {/* Filters */}
@@ -854,6 +857,13 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         photos={filteredAndSortedPhotos}
         guestAvatars={guestAvatars}
         photosReactions={photosReactions}
+      />
+
+      {/* Participants Modal */}
+      <ParticipantsModal
+        isOpen={isParticipantsModalOpen}
+        onClose={() => setIsParticipantsModalOpen(false)}
+        guestAvatars={guestAvatars}
       />
     </div>
   );

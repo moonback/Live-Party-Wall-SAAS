@@ -5,4 +5,5 @@ export { GalleryFiltersModal } from './GalleryFiltersModal';
 export { GalleryContent } from './GalleryContent';
 export { GalleryFAB } from './GalleryFAB';
 export { LeaderboardModal } from './LeaderboardModal';
+export { ParticipantsModal } from './ParticipantsModal';
 
