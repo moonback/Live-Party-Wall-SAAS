@@ -81,8 +81,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   
   const isMobile = useIsMobile();
   
-  // Sidebar state - ouverte par défaut sur desktop, fermée sur mobile
-  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  // Sidebar state - fermée par défaut
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<GalleryViewMode>(() => {
