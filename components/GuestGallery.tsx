@@ -668,28 +668,10 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-900/30 rounded-full blur-[180px] animate-pulse-slow"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-pink-900/30 rounded-full blur-[180px]" style={{ animationName: 'pulseSlow', animationDuration: '8s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationDelay: '2s' }}></div>
-      </div>
-      {/* Grain Texture */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-
-      {/* Floating Particles Effect */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 rounded-full bg-white/10 blur-sm animate-float"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + i * 12}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i * 0.5}s`,
-            }}
-          />
-        ))}
+      {/* Background Decor - Optimisé pour performance */}
+      <div className="fixed inset-0 pointer-events-none opacity-10">
+        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-900/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-pink-900/20 rounded-full blur-[120px]"></div>
       </div>
 
       {/* Header */}

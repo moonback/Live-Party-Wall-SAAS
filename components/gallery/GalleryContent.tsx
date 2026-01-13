@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Photo, PhotoBattle } from '../../types';
 import { GuestPhotoCard } from './GuestPhotoCard';
@@ -6,7 +6,7 @@ import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
 import { PhotoCardSkeletons } from '../PhotoCardSkeleton';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { ReactionType } from '../../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface GalleryContentProps {
   loading: boolean;
@@ -101,13 +101,14 @@ const VirtualColumn = React.memo(({
   }, []);
 
   const overscan = useMemo(() => {
-    const MIN_PHOTOS_TOTAL = 100;
+    // Optimisation : réduire l'overscan pour améliorer les performances
+    const MIN_PHOTOS_TOTAL = 50; // Réduit de 100 à 50
     const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
     
     // Estimation moyenne de la hauteur basée sur les photos dans cette colonne
     let avgHeight = 400;
     if (data.length > 0) {
-      const heights = data.slice(0, Math.min(10, data.length)).map(item => {
+      const heights = data.slice(0, Math.min(5, data.length)).map(item => { // Réduit de 10 à 5
         if (item.type === 'battle') return 420;
         const orientation = item.photo.orientation || 'unknown';
         switch (orientation) {
@@ -122,8 +123,9 @@ const VirtualColumn = React.memo(({
     
     const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
     
+    // Réduire l'overscan pour moins de rendus
     const overscanNeeded = Math.max(
-      photosPerColumn - visiblePhotosInViewport + 20,
+      photosPerColumn - visiblePhotosInViewport + 10, // Réduit de 20 à 10
       Math.ceil(MIN_PHOTOS_TOTAL / numColumns)
     );
     
@@ -194,17 +196,10 @@ const VirtualColumn = React.memo(({
             className="pb-3 sm:pb-4 md:pb-6"
           >
             {item.type === 'battle' ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.4,
-                  ease: [0.16, 1, 0.3, 1]
-                }}
-                whileHover={{ scale: 1.02 }}
+              <div
                 className="relative"
+                style={{ willChange: 'transform' }}
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <PhotoBattleComponent
                   battle={item.battle}
                   userId={userId}
@@ -215,20 +210,12 @@ const VirtualColumn = React.memo(({
                     onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
                   } : undefined}
                 />
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  duration: 0.5,
-                  delay: Math.min(item.originalIndex * 0.03, 0.5),
-                  ease: [0.16, 1, 0.3, 1]
-                }}
-                whileHover={{ y: -4 }}
+              <div
                 className="relative group"
+                style={{ willChange: 'transform' }}
               >
-                <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 group-hover:from-pink-500/20 group-hover:via-purple-500/20 group-hover:to-indigo-500/20 rounded-2xl blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
                 <GuestPhotoCard
                   photo={item.photo}
                   isLiked={likedPhotoIds.has(item.photo.id)}
@@ -250,7 +237,7 @@ const VirtualColumn = React.memo(({
                   onClearCaption={onClearCaption}
                   onDeletePhoto={onDeletePhoto}
                 />
-              </motion.div>
+              </div>
             )}
           </div>
         );
@@ -292,14 +279,32 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   const isMobile = useIsMobile();
   const defaultScrollRef = useRef<HTMLDivElement>(null);
   const scrollRef = scrollContainerRef || defaultScrollRef;
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Optimisation : calculer le nombre de colonnes de manière adaptative
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Nombre de colonnes adaptatif selon la largeur de l'écran
+  const numColumns = useMemo(() => {
+    if (isMobile) return 1;
+    if (windowWidth < 640) return 1; // sm
+    if (windowWidth < 768) return 2; // md
+    if (windowWidth < 1024) return 3; // lg
+    if (windowWidth < 1280) return 4; // xl
+    return 4; // 2xl+
+  }, [isMobile, windowWidth]);
 
   // Trier les battles par date de création (plus récentes en premier)
   const battlesForGrid = useMemo(() => {
     return [...battles].sort((a, b) => b.createdAt - a.createdAt);
   }, [battles]);
-
-  // Nombre de colonnes selon le breakpoint
-  const numColumns = isMobile ? 1 : 4;
 
   // Préparer les données pour chaque colonne avec virtualisation
   const columnsData = useMemo(() => {
@@ -335,10 +340,8 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (photos.length === 0) {
     return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center py-12 px-4 sm:py-16 md:py-20 lg:py-24 sm:px-6"
+      <div 
+        className="text-center py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6"
       >
         <div className="text-5xl mb-4 sm:text-6xl md:text-7xl sm:mb-6">
           {searchQuery || mediaFilter !== 'all' ? '🔍' : '📸'}
@@ -353,26 +356,20 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
             ? 'Essayez de modifier vos filtres ou votre recherche.' 
             : 'Soyez le premier à capturer un moment magique !'}
         </p>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Grid de photos avec Masonry Style et Virtualisation */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col gap-3 md:flex-row sm:gap-4 md:gap-6"
+      <div 
+        className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6 md:flex-row"
       >
         {columnsData.map((colData, colIdx) => (
-          <motion.div 
+          <div 
             key={colIdx} 
             className="flex-1 min-w-0"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: colIdx * 0.1, duration: 0.4 }}
           >
             <VirtualColumn
               data={colData}
@@ -399,9 +396,9 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onClearCaption={onClearCaption}
               onDeletePhoto={onDeletePhoto}
             />
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 };
