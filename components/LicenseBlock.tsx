@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Clock, Shield, Mail, LogOut } from 'lucide-react';
+import { AlertTriangle, Clock, Shield, LogOut } from 'lucide-react';
 import { useLicense } from '../context/LicenseContext';
 import { useAuth } from '../context/AuthContext';
 import { isElectron } from '../utils/electronPaths';
@@ -88,11 +88,24 @@ const LicenseBlock: React.FC = () => {
           <p className="text-lg text-slate-300 text-center mb-8 leading-relaxed px-3 font-medium">
             {licenseValidity?.status === null || !licenseValidity ? (
               <>
-                Aucune licence n'est créée automatiquement lors de l'inscription.<br />
+                Aucune licence attribuée automatiquement lors de l'inscription.<br />
                 <span className="text-rose-200 font-semibold">
-                  Chaque organisateur doit saisir sa propre clé de licence
                 </span>{" "}
-                reçue par email pour accéder à l'application.
+                <span className="block mt-3 text-yellow-200 font-semibold">
+                  Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6&nbsp;heures maximum.<br />
+                  Merci de vérifier votre email et de patienter.
+                </span>
+              <a
+                href="https://partywall.fr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white font-semibold text-lg shadow-lg hover:scale-105 hover:brightness-110 transition-all duration-150"
+              >
+                Commander une licence sur partywall.fr
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
               </>
             ) : (
               <>
@@ -100,7 +113,11 @@ const LicenseBlock: React.FC = () => {
                 <span className="text-rose-200 font-semibold">
                   Veuillez renouveler votre licence
                 </span>{" "}
-                pour continuer à utiliser l'application.
+                pour continuer à utiliser l'application.<br />
+                <span className="block mt-3 text-yellow-200 font-semibold">
+                  Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6&nbsp;heures maximum.<br />
+                  Merci de vérifier votre email et de patienter.
+                </span>
               </>
             )}
           </p>
@@ -174,27 +191,6 @@ const LicenseBlock: React.FC = () => {
          {/* Actions améliorées */}
          <div className="flex flex-col gap-3 px-7 pb-7">
            <div className="flex flex-col sm:flex-row sm:justify-center gap-3">
-             <motion.button
-               whileHover={{ scale: 1.03, y: -1 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={() => {
-                 // Ouvrir le client email avec un message pré-rempli
-                 const subject = encodeURIComponent('Renouvellement de licence - Partywall');
-                 const body = encodeURIComponent(
-                   `Bonjour,\n\nJe souhaite renouveler ma licence pour l'application Partywall.\n\n` +
-                   `Informations de licence:\n` +
-                   `- Date d'expiration: ${formatDate(expiresAt)}\n` +
-                   `- Statut: ${status}\n\n` +
-                   `Merci de me contacter pour le renouvellement.\n\nCordialement`
-                 );
-                 window.location.href = `mailto:support@partywall.fr?subject=${subject}&body=${body}`;
-               }}
-               className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-700 via-purple-700 to-fuchsia-700 hover:from-indigo-600 hover:to-purple-600 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg shadow-fuchsia-800/20 hover:shadow-xl hover:shadow-fuchsia-600/30 border-2 border-indigo-400/20 text-base"
-             >
-               <Mail className="w-5 h-5" />
-               <span>Contacter le support</span>
-             </motion.button>
-
              <motion.button
                whileHover={{ scale: 1.02, y: -1 }}
                whileTap={{ scale: 0.96 }}
