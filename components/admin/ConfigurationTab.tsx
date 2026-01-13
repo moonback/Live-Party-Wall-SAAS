@@ -1251,7 +1251,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <input
                       type="checkbox"
                       name="auto_carousel_enabled"
-                      checked={localConfig.auto_carousel_enabled ?? true}
+                      checked={localConfig.auto_carousel_enabled ?? false}
                       onChange={handleConfigChange}
                       className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
                     />
