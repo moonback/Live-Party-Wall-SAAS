@@ -779,9 +779,13 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
               <div className="relative flex items-center justify-center">
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-cyan-500/30 rounded-full blur-2xl scale-150" />
-                {/* Icon container */}
+                {/* Icon container - IMAGE icon.png */}
                 <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
-                  <Camera className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white drop-shadow-lg" />
+                  <img
+                    src={getStaticAssetPath('icon.png')}
+                    alt="Partywall Icon"
+                    className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain drop-shadow-lg"
+                  />
                   {/* Sparkle effect */}
                   <motion.div
                     animate={{ rotate: 360 }}

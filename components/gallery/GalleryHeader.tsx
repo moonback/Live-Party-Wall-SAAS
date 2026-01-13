@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowLeft, Camera, Image, Search, X, Filter, CheckSquare, Square, Trash2, Download, Users } from 'lucide-react';
+import { ArrowLeft, Camera, Search, X, Filter, CheckSquare, Square, Download, Users } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSettings } from '../../context/SettingsContext';
+import { getStaticAssetPath } from '../../utils/electronPaths';
 
 interface GalleryHeaderProps {
   onBack: () => void;
@@ -41,6 +43,8 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   const searchRef = searchInputRef || internalSearchRef;
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { settings } = useSettings();
+  const logoUrl = settings.logo_url || getStaticAssetPath('logo-accueil.png');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,12 +121,16 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               transition={{ delay: 0.1 }}
             >
               <motion.div 
-                className="hidden sm:flex p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg relative overflow-hidden"
-                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="hidden sm:flex p-1.5 sm:p-2 bg-white/10 rounded-xl sm:rounded-2xl border border-white/20 shadow-lg relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 hover:from-pink-500/30 hover:via-purple-500/30 hover:to-indigo-500/30 transition-all duration-500" />
-                <Image className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400 relative z-10" />
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="h-6 w-auto sm:h-7 sm:w-auto max-w-[60px] sm:max-w-[80px] object-contain relative z-10"
+                  loading="lazy"
+                />
               </motion.div>
               <div>
                 <motion.h1 

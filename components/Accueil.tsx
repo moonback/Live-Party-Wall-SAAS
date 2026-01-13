@@ -35,19 +35,11 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
             <div className="relative flex items-center justify-center">
-              <svg 
-                className="relative w-20 h-20 text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2]" 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                <circle cx="12" cy="13" r="3"/>
-              </svg>
+              <img
+                src={getStaticAssetPath('logo-accueil.png')}
+                alt="Partywall Logo"
+                className="relative w-20 h-20 drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2] object-contain"
+              />
             </div>
           </div>
           

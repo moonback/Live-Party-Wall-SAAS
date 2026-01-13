@@ -210,37 +210,34 @@
         transform: scale(0.75);
       }
 
-      .splash-logo-camera {
+      .splash-logo-image {
         position: relative;
-        width: 40px;
-        height: 40px;
-        color: white;
-        filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.5));
+        width: 120px;
+        height: auto;
+        max-width: 200px;
+        filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
         z-index: 2;
+        object-fit: contain;
       }
 
       @media (min-width: 640px) {
-        .splash-logo-camera {
-          width: 50px;
-          height: 50px;
+        .splash-logo-image {
+          width: 160px;
+          max-width: 250px;
         }
       }
 
-      .splash-logo-sparkles {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 16px;
-        height: 16px;
-        color: #fbcfe8;
-        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-        animation: sparklePulse 2s ease-in-out infinite;
-        z-index: 3;
+      @media (min-width: 1024px) {
+        .splash-logo-image {
+          width: 200px;
+          max-width: 300px;
+        }
       }
 
       .splash-title {
         position: relative;
-        font-family: 'Pacifico', cursive;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
         font-size: clamp(2.5rem, 8vw, 4.5rem);
         line-height: 1.2;
         text-align: center;
@@ -543,19 +540,13 @@
     <!-- Splash Screen -->
     <div id="splash-screen">
       <div class="splash-logo-container">
-        <!-- Icon Wrapper avec Camera et Sparkles -->
+        <!-- Logo -->
         <div class="splash-logo-icon-wrapper">
-          <svg class="splash-logo-camera" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-            <circle cx="12" cy="13" r="3"/>
-          </svg>
-          <svg class="splash-logo-sparkles" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-            <path d="M5 3v4"/>
-            <path d="M19 17v4"/>
-            <path d="M3 5h4"/>
-            <path d="M17 19h4"/>
-          </svg>
+          <img 
+            src="/logo-accueil.png" 
+            alt="Partywall Logo" 
+            class="splash-logo-image"
+          />
         </div>
       </div>
       <h1 class="splash-title">

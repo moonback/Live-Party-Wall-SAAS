@@ -1,26 +1,27 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Lock, LogIn, Mail, Eye, EyeOff, ArrowLeft, Shield, CheckCircle, AlertCircle, CheckCircle2, XCircle, Loader2, Info } from 'lucide-react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
-import { isElectron } from '../utils/electronPaths';
+import { isElectron, getStaticAssetPath } from '../utils/electronPaths';
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
   onBack: () => void;
 }
 
-// Composant de particule flottante
+// Composant de particule flottante optimisé
 const FloatingParticle: React.FC<{ delay: number; duration: number; x: number; y: number }> = ({ delay, duration, x, y }) => {
   return (
     <motion.div
-      className="absolute w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 opacity-40"
-      initial={{ x, y, scale: 0 }}
+      className="absolute w-1.5 h-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 opacity-30"
+      style={{ willChange: 'transform, opacity' }}
+      initial={{ x, y, scale: 0, opacity: 0 }}
       animate={{
-        x: [x, x + Math.random() * 200 - 100],
-        y: [y, y + Math.random() * 200 - 100],
+        x: [x, x + Math.random() * 150 - 75],
+        y: [y, y + Math.random() * 150 - 75],
         scale: [0, 1, 0],
-        opacity: [0, 0.6, 0],
+        opacity: [0, 0.4, 0],
       }}
       transition={{
         duration,
@@ -32,68 +33,30 @@ const FloatingParticle: React.FC<{ delay: number; duration: number; x: number; y
   );
 };
 
-// Composant de ligne animée
-const AnimatedLine: React.FC<{ delay: number; path: string }> = ({ delay, path }) => {
-  return (
-    <motion.svg
-      className="absolute inset-0 w-full h-full"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay }}
-    >
-      <motion.path
-        d={path}
-        fill="none"
-        stroke="url(#gradient)"
-        strokeWidth="1"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-      />
-      <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ec4899" stopOpacity="0.5" />
-          <stop offset="50%" stopColor="#a855f7" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#ec4899" stopOpacity="0.5" />
-        </linearGradient>
-      </defs>
-    </motion.svg>
-  );
-};
-
-// Composant de forme géométrique flottante
-const FloatingShape: React.FC<{ delay: number; size: number; color: string }> = ({ delay, size, color }) => {
-  const x = useMotionValue(Math.random() * window.innerWidth);
-  const y = useMotionValue(Math.random() * window.innerHeight);
-  const springX = useSpring(x, { stiffness: 50, damping: 20 });
-  const springY = useSpring(y, { stiffness: 50, damping: 20 });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      x.set(Math.random() * window.innerWidth);
-      y.set(Math.random() * window.innerHeight);
-    }, 5000 + delay * 1000);
-
-    return () => clearInterval(interval);
-  }, [x, y, delay]);
-
+// Composant de forme géométrique flottante optimisé
+const FloatingShape: React.FC<{ delay: number; size: number; color: string; initialX: number; initialY: number }> = ({ delay, size, color, initialX, initialY }) => {
   return (
     <motion.div
-      className={`absolute ${color} opacity-20 blur-xl`}
+      className={`absolute ${color} opacity-15 blur-2xl`}
       style={{
         width: size,
         height: size,
         borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-        x: springX,
-        y: springY,
+        willChange: 'transform',
+        x: initialX,
+        y: initialY,
       }}
       animate={{
-        rotate: [0, 360],
-        scale: [1, 1.2, 1],
+        x: [initialX, initialX + 100, initialX - 50, initialX],
+        y: [initialY, initialY + 80, initialY - 60, initialY],
+        rotate: [0, 180, 360],
+        scale: [1, 1.1, 1],
       }}
       transition={{
-        rotate: { duration: 20 + delay * 5, repeat: Infinity, ease: 'linear' },
-        scale: { duration: 4 + delay, repeat: Infinity, ease: 'easeInOut' },
+        x: { duration: 15 + delay * 3, repeat: Infinity, ease: 'easeInOut' },
+        y: { duration: 18 + delay * 3, repeat: Infinity, ease: 'easeInOut' },
+        rotate: { duration: 25 + delay * 5, repeat: Infinity, ease: 'linear' },
+        scale: { duration: 5 + delay, repeat: Infinity, ease: 'easeInOut' },
       }}
     />
   );
@@ -302,54 +265,59 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
     }
   }, [signUpSuccess]);
 
-  // Générer des particules
-  const particles = Array.from({ length: 30 }, (_, i) => ({
+  // Générer des particules optimisées (réduit de 30 à 8)
+  const particles = useMemo(() => Array.from({ length: 8 }, (_, i) => ({
     id: i,
     delay: Math.random() * 2,
-    duration: 3 + Math.random() * 4,
+    duration: 4 + Math.random() * 3,
     x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
     y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
-  }));
+  })), []);
+
+  // Générer des formes flottantes optimisées (réduit de 8 à 3)
+  const floatingShapes = useMemo(() => {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const height = typeof window !== 'undefined' ? window.innerHeight : 1080;
+    return Array.from({ length: 3 }, (_, i) => ({
+      id: i,
+      delay: i * 0.8,
+      size: 250 + Math.random() * 200,
+      color: i % 2 === 0 ? 'bg-pink-500' : 'bg-purple-500',
+      initialX: Math.random() * width * 0.8,
+      initialY: Math.random() * height * 0.8,
+    }));
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden text-white font-sans">
-      {/* Arrière-plan avec formes géométriques animées */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {Array.from({ length: 8 }).map((_, i) => (
+      {/* Arrière-plan avec formes géométriques animées optimisées */}
+      <div className="absolute inset-0 z-0 overflow-hidden" style={{ willChange: 'contents' }}>
+        {floatingShapes.map(shape => (
           <FloatingShape
-            key={i}
-            delay={i * 0.5}
-            size={200 + Math.random() * 300}
-            color={i % 2 === 0 ? 'bg-pink-500' : 'bg-purple-500'}
+            key={shape.id}
+            delay={shape.delay}
+            size={shape.size}
+            color={shape.color}
+            initialX={shape.initialX}
+            initialY={shape.initialY}
           />
         ))}
       </div>
 
-      {/* Grille animée */}
-      <div className="absolute inset-0 z-0 opacity-20">
-        <div className="absolute inset-0" style={{
+      {/* Grille statique optimisée */}
+      <div 
+        className="absolute inset-0 z-0 opacity-10"
+        style={{
           backgroundImage: `
-            linear-gradient(rgba(236, 72, 153, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(236, 72, 153, 0.1) 1px, transparent 1px)
+            linear-gradient(rgba(236, 72, 153, 0.15) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(236, 72, 153, 0.15) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px',
-        }}>
-          <motion.div
-            className="absolute inset-0"
-            animate={{
-              backgroundPosition: ['0 0', '50px 50px'],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-          />
-        </div>
-      </div>
+          backgroundSize: '60px 60px',
+        }}
+      />
 
-      {/* Particules flottantes */}
-      <div className="absolute inset-0 z-0">
+      {/* Particules flottantes optimisées */}
+      <div className="absolute inset-0 z-0" style={{ willChange: 'contents' }}>
         {particles.map(particle => (
           <FloatingParticle
             key={particle.id}
@@ -359,13 +327,6 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
             y={particle.y}
           />
         ))}
-      </div>
-
-      {/* Lignes animées */}
-      <div className="absolute inset-0 z-0">
-        <AnimatedLine delay={0} path="M0,100 Q250,50 500,100 T1000,100" />
-        <AnimatedLine delay={1} path="M0,300 Q250,250 500,300 T1000,300" />
-        <AnimatedLine delay={2} path="M0,500 Q250,450 500,500 T1000,500" />
       </div>
 
       {/* Contenu principal centré */}
@@ -378,14 +339,15 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
         >
           {/* Carte de connexion avec effet glassmorphism */}
           <div className="relative">
-            {/* Effet de lueur derrière la carte */}
+            {/* Effet de lueur derrière la carte optimisé */}
             <motion.div
-              className="absolute -inset-1 bg-gradient-to-r from-pink-600 via-purple-600 to-pink-600 rounded-3xl blur-xl opacity-50"
+              className="absolute -inset-1 bg-gradient-to-r from-pink-600 via-purple-600 to-pink-600 rounded-3xl blur-xl opacity-40"
+              style={{ willChange: 'opacity' }}
               animate={{
-                opacity: [0.3, 0.6, 0.3],
+                opacity: [0.3, 0.5, 0.3],
               }}
               transition={{
-                duration: 3,
+                duration: 4,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
@@ -404,10 +366,12 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
+                {/* Logo */}
                 <motion.div
-                  className="relative mb-6"
+                  className="relative mb-4"
+                  style={{ willChange: 'transform' }}
                   animate={{
-                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.03, 1],
                   }}
                   transition={{
                     duration: 4,
@@ -415,15 +379,22 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                     ease: 'easeInOut',
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl blur-lg opacity-50"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-xl opacity-40 scale-110"></div>
                   <motion.div
-                    className="relative w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
-                    whileHover={{ scale: 1.1, rotate: 360 }}
-                    transition={{ duration: 0.5 }}
+                    className="relative w-24 h-24 flex items-center justify-center"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <Lock className="w-10 h-10 text-white" />
+                    <img
+                      src={getStaticAssetPath('logo-accueil.png')}
+                      alt="Partywall Logo"
+                      className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(236,72,153,0.5)]"
+                    />
                   </motion.div>
                 </motion.div>
+
+                
+                
 
                 <motion.h2
                   className="text-3xl lg:text-4xl font-black text-center mb-2"
@@ -729,11 +700,12 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBack }) => {
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ willChange: 'transform' }}
                     animate={{
                       x: ['-100%', '100%'],
                     }}
                     transition={{
-                      duration: 2,
+                      duration: 3,
                       repeat: Infinity,
                       ease: 'linear',
                     }}

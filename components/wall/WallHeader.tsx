@@ -1,6 +1,8 @@
 import React from 'react';
 import { Camera, Users, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSettings } from '../../context/SettingsContext';
+import { getStaticAssetPath } from '../../utils/electronPaths';
 
 interface WallHeaderProps {
   title: string;
@@ -15,6 +17,9 @@ interface WallHeaderProps {
 }
 
 export const WallHeader = React.memo(({ title, subtitle, stats, showControls, isHoveringControls }: WallHeaderProps) => {
+  const { settings } = useSettings();
+  const logoUrl = settings.logo_url || getStaticAssetPath('logo-accueil.png');
+  
   return (
     <motion.div 
       initial={{ y: -100, opacity: 0 }}
@@ -25,27 +30,30 @@ export const WallHeader = React.memo(({ title, subtitle, stats, showControls, is
       onMouseLeave={() => isHoveringControls(false)}
     >
       {/* Titre & Branding */}
-      <div className="pointer-events-auto flex flex-col gap-1.5">
-         <div className="relative group cursor-default">
-           <h1 className="relative font-handwriting text-2xl md:text-4xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.40)] transform transition-all duration-300 group-hover:scale-105 origin-left">
-             <span className="bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent">
-               {title}
-             </span>
-             <span className="text-pink-400 animate-pulse">.</span>
-           </h1>
-         </div>
-         
-         <div className="flex items-center gap-2 ml-1">
-           <div className="h-[2px] w-10 bg-gradient-to-r from-transparent via-pink-400/50 to-transparent"></div>
-           <span className="text-xs md:text-sm font-bold tracking-[0.2em] text-white/70 uppercase bg-clip-text text-transparent bg-gradient-to-r from-pink-200 via-purple-200 to-cyan-200">
-             {subtitle}
-           </span>
-           <div className="h-[2px] w-10 bg-gradient-to-l from-transparent via-cyan-400/50 to-transparent"></div>
-         </div>
-         
-         <p className="text-[9px] md:text-[10px] text-white/30 font-light tracking-wider ml-1 mt-0.5">
-           by Maysson Dev
-         </p>
+      <div className="pointer-events-auto flex flex-row items-center gap-6">
+        {/* Logo à gauche */}
+        <div className="flex-shrink-0 flex items-center justify-center">
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-8 md:h-12 w-auto max-w-[80px] md:max-w-[120px] object-contain drop-shadow-lg rounded-xl bg-white/10 border border-white/20"
+            loading="lazy"
+          />
+        </div>
+        {/* Titre et sous-titre à droite du logo */}
+        <div className="flex flex-col justify-center">
+          {/* Titre amélioré */}
+          <h1 className="font-sans font-extrabold tracking-tight text-[1.6rem] md:text-[2.2rem] lg:text-4xl text-white leading-tight bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent drop-shadow-[0_3px_28px_rgba(236,72,153,0.17)]">
+            <span className="">
+              {title}
+            </span>
+            <span className="text-pink-400 ml-0.5 animate-pulse font-black text-3xl md:text-4xl align-baseline">.</span>
+          </h1>
+          {/* Sous-titre design pro */}
+          <span className="mt-1 text-sm md:text-base lg:text-lg font-medium tracking-wide text-white/60 uppercase bg-clip-text text-transparent bg-gradient-to-r from-pink-200 via-purple-200 to-cyan-200 drop-shadow-sm">
+            {subtitle}
+          </span>
+        </div>
       </div>
 
       {/* Stats - Hidden on mobile */}
