@@ -1,30 +1,34 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Photo, PhotoBattle, ReactionCounts } from '../../types';
+import { Photo, PhotoBattle, ReactionCounts, Badge } from '../../types';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
 import PhotoCard from './PhotoCard';
 import { WallPhotoCardSkeleton } from '../WallPhotoCardSkeleton';
+import { getPhotoBadge, hasPhotographerBadge } from '../../services/gamificationService';
+import { useSettings } from '../../context/SettingsContext';
 
 export type ColumnItem = 
-  | { type: 'photo'; photo: Photo; originalIndex: number }
+  | { type: 'photo'; photo: Photo; originalIndex: number; photoBadge: Badge | null; authorHasPhotographerBadge: boolean }
   | { type: 'battle'; battle: PhotoBattle };
 
 interface VirtualColumnProps {
   data: ColumnItem[];
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
-  allPhotos: Photo[];
   photosReactions: Map<string, ReactionCounts>;
   onBattleFinished: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
   numColumns: number;
+  logoUrl?: string | null;
+  logoWatermarkEnabled?: boolean;
 }
 
 const VirtualColumn = React.memo(({ 
   data, 
   scrollContainerRef, 
-  allPhotos, 
   photosReactions,
   onBattleFinished,
-  numColumns
+  numColumns,
+  logoUrl,
+  logoWatermarkEnabled
 }: VirtualColumnProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
@@ -34,6 +38,7 @@ const VirtualColumn = React.memo(({
     return () => window.removeEventListener('resize', updateViewportHeight);
   }, []);
 
+  // Mémoriser le calcul de overscan avec des dépendances stables
   const overscan = useMemo(() => {
     const MIN_PHOTOS_TOTAL = 100;
     const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
@@ -130,8 +135,11 @@ const VirtualColumn = React.memo(({
                 <PhotoCard 
                   photo={item.photo} 
                   index={item.originalIndex} 
-                  allPhotos={allPhotos}
+                  photoBadge={item.photoBadge}
+                  authorHasPhotographerBadge={item.authorHasPhotographerBadge}
                   reactions={photosReactions.get(item.photo.id)}
+                  logoUrl={logoUrl}
+                  logoWatermarkEnabled={logoWatermarkEnabled}
                 />
               )}
             </div>
@@ -160,6 +168,31 @@ export const WallMasonry = React.memo(({
   onBattleFinished
 }: WallMasonryProps) => {
   const [numColumns, setNumColumns] = useState(1);
+  const { settings } = useSettings();
+  
+  // Pré-calculer les badges pour toutes les photos (une seule fois)
+  const photoBadgesMap = useMemo(() => {
+    const badgesMap = new Map<string, Badge | null>();
+    const photographerBadgesMap = new Map<string, boolean>();
+    
+    // Calculer les badges pour chaque photo
+    photos.forEach((photo) => {
+      const badge = getPhotoBadge(photo, photos, photosReactions);
+      badgesMap.set(photo.id, badge);
+      
+      // Calculer le badge photographer pour l'auteur
+      if (!photographerBadgesMap.has(photo.author)) {
+        const hasBadge = hasPhotographerBadge(photo.author, photos, photosReactions);
+        photographerBadgesMap.set(photo.author, hasBadge);
+      }
+    });
+    
+    return { badgesMap, photographerBadgesMap };
+  }, [photos, photosReactions]);
+  
+  // Extraire uniquement les valeurs nécessaires des settings
+  const logoUrl = settings.logo_url;
+  const logoWatermarkEnabled = settings.logo_watermark_enabled;
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -234,10 +267,16 @@ export const WallMasonry = React.memo(({
         }
       }
       
+      // Récupérer les badges pré-calculés
+      const photoBadge = photoBadgesMap.badgesMap.get(photo.id) || null;
+      const authorHasPhotographerBadge = photoBadgesMap.photographerBadgesMap.get(photo.author) || false;
+      
       const item: ColumnItem = {
         type: 'photo',
         photo,
-        originalIndex: index
+        originalIndex: index,
+        photoBadge,
+        authorHasPhotographerBadge
       };
       
       cols[shortestColumnIndex].push(item);
@@ -245,7 +284,7 @@ export const WallMasonry = React.memo(({
     });
     
     return cols;
-  }, [photos, numColumns, battles, showBattles]);
+  }, [photos, numColumns, battles, showBattles, photoBadgesMap]);
 
   return (
     <div className="flex gap-0 w-full px-0 mx-auto max-w-[100%] items-start transition-all duration-300 ease-in-out">
@@ -254,10 +293,11 @@ export const WallMasonry = React.memo(({
           <VirtualColumn 
             data={colData} 
             scrollContainerRef={scrollRef} 
-            allPhotos={photos}
             photosReactions={photosReactions}
             numColumns={numColumns}
             onBattleFinished={onBattleFinished}
+            logoUrl={logoUrl}
+            logoWatermarkEnabled={logoWatermarkEnabled}
           />
         </div>
       ))}
