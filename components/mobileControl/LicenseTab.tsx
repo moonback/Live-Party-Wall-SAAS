@@ -201,146 +201,218 @@ const LicenseTab: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-5 border border-white/10 shadow-sm"
+              className="relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-slate-700/50 shadow-xl"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="p-1.5 rounded-lg bg-pink-500/20">
-                  <Shield className="w-4 h-4 md:w-5 md:h-5 text-pink-400" />
+              {/* Effet de brillance animé */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${
+                isValid 
+                  ? 'from-green-500/5 via-emerald-500/5 to-green-500/5' 
+                  : 'from-red-500/5 via-rose-500/5 to-red-500/5'
+              } opacity-50`} />
+              
+              {/* Header amélioré */}
+              <div className="relative flex items-center gap-3 mb-4">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className={`relative p-2.5 rounded-xl ${
+                    isValid 
+                      ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/30 shadow-lg shadow-green-500/10' 
+                      : 'bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-400/30 shadow-lg shadow-red-500/10'
+                  }`}
+                >
+                  <Shield className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isValid ? 'text-green-400' : 'text-red-400'
+                  }`} />
+                  {isValid && (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute inset-0 rounded-xl bg-green-400/20 blur-md"
+                    />
+                  )}
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-0.5">Statut de la licence</h3>
+                  <p className="text-xs text-slate-400">Informations détaillées sur votre licence</p>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold text-white">Statut de la licence</h3>
               </div>
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/10">
-                  <span className="text-white/80 font-medium text-xs md:text-sm">Statut</span>
-                  <motion.span
+
+              <div className="relative space-y-3">
+                {/* Statut avec design amélioré */}
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="relative flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm shadow-inner"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-2 h-2 rounded-full ${
+                      isValid ? 'bg-green-400 animate-pulse' : 'bg-red-400 animate-pulse'
+                    }`} />
+                    <span className="text-white/90 font-semibold text-sm md:text-base">Statut</span>
+                  </div>
+                  <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg ${
                       isValid 
-                        ? 'bg-green-500/20 text-green-400 border border-green-400/30' 
-                        : 'bg-red-500/20 text-red-400 border border-red-400/30'
+                        ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/40 shadow-green-500/20' 
+                        : 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/40 shadow-red-500/20'
                     }`}
                   >
                     {licenseValidity.status || 'N/A'}
-                  </motion.span>
-                </div>
+                    {isValid && (
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="absolute inset-0 rounded-lg bg-green-400/20 blur-sm"
+                      />
+                    )}
+                  </motion.div>
+                </motion.div>
                 
+                {/* ID de la licence avec design amélioré */}
                 {licenseValidity.license_id && (
-                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/80 font-medium text-xs md:text-sm">ID de la licence</span>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="relative p-3.5 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-indigo-500/20 border border-indigo-400/30">
+                          <Shield className="w-3.5 h-3.5 text-indigo-400" />
+                        </div>
+                        <span className="text-white/90 font-semibold text-sm">ID de la licence</span>
+                      </div>
                       <div className="flex items-center gap-1.5">
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => setShowFullLicenseId(!showFullLicenseId)}
-                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
                           title={showFullLicenseId ? "Masquer" : "Afficher complet"}
                         >
                           {showFullLicenseId ? (
-                            <EyeOff className="w-3.5 h-3.5 text-white/70" />
+                            <EyeOff className="w-4 h-4 text-slate-300" />
                           ) : (
-                            <Eye className="w-3.5 h-3.5 text-white/70" />
+                            <Eye className="w-4 h-4 text-slate-300" />
                           )}
                         </motion.button>
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(99, 102, 241, 0.2)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleCopyKey(licenseValidity.license_id || null)}
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors border border-indigo-400/30"
                           title="Copier l'ID complet"
                         >
-                          <Copy className="w-3.5 h-3.5 text-white/70" />
+                          <Copy className="w-4 h-4 text-indigo-300" />
                         </motion.button>
                       </div>
                     </div>
-                    <code className="block text-xs font-mono text-white/90 bg-black/40 px-2.5 py-1.5 rounded border border-white/10 break-all">
+                    <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
                       {showFullLicenseId ? licenseValidity.license_id : `${licenseValidity.license_id.substring(0, 16)}...`}
                     </code>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Numéro de licence depuis la base de données */}
                 {activeLicense?.license_key && (
-                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/80 font-medium text-xs md:text-sm flex items-center gap-1.5">
-                        <Key className="w-3.5 h-3.5" />
-                        Numéro de licence
-                      </span>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="relative p-3.5 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-purple-500/20 border border-purple-400/30">
+                          <Key className="w-3.5 h-3.5 text-purple-400" />
+                        </div>
+                        <span className="text-white/90 font-semibold text-sm">Numéro de licence</span>
+                      </div>
                       <div className="flex items-center gap-1.5">
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => setShowLicenseNumber(!showLicenseNumber)}
-                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
                           title={showLicenseNumber ? "Masquer" : "Afficher"}
                         >
                           {showLicenseNumber ? (
-                            <EyeOff className="w-3.5 h-3.5 text-white/70" />
+                            <EyeOff className="w-4 h-4 text-slate-300" />
                           ) : (
-                            <Eye className="w-3.5 h-3.5 text-white/70" />
+                            <Eye className="w-4 h-4 text-slate-300" />
                           )}
                         </motion.button>
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(168, 85, 247, 0.2)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleCopyKey(activeLicense.license_key)}
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-colors border border-purple-400/30"
                           title="Copier le numéro"
                         >
-                          <Copy className="w-3.5 h-3.5 text-white/70" />
+                          <Copy className="w-4 h-4 text-purple-300" />
                         </motion.button>
                       </div>
                     </div>
-                    <code className="block text-xs font-mono text-white/90 bg-black/40 px-2.5 py-1.5 rounded border border-white/10 break-all">
+                    <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
                       {showLicenseNumber 
                         ? activeLicense.license_key 
                         : `${activeLicense.license_key.substring(0, 16)}...`
                       }
                     </code>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Clé de licence stockée (fallback) */}
                 {!activeLicense?.license_key && localStorage.getItem('partywall_license_key') && (
-                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/80 font-medium text-xs md:text-sm flex items-center gap-1.5">
-                        <Key className="w-3.5 h-3.5" />
-                        Clé de licence (local)
-                      </span>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="relative p-3.5 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-amber-500/30 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                          <Key className="w-3.5 h-3.5 text-amber-400" />
+                        </div>
+                        <span className="text-white/90 font-semibold text-sm">Clé de licence (local)</span>
+                      </div>
                       <div className="flex items-center gap-1.5">
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => setShowLicenseKey(!showLicenseKey)}
-                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
                           title={showLicenseKey ? "Masquer" : "Afficher"}
                         >
                           {showLicenseKey ? (
-                            <EyeOff className="w-3.5 h-3.5 text-white/70" />
+                            <EyeOff className="w-4 h-4 text-slate-300" />
                           ) : (
-                            <Eye className="w-3.5 h-3.5 text-white/70" />
+                            <Eye className="w-4 h-4 text-slate-300" />
                           )}
                         </motion.button>
                         <motion.button
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.1, backgroundColor: 'rgba(245, 158, 11, 0.2)' }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleCopyKey(localStorage.getItem('partywall_license_key'))}
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors border border-amber-400/30"
                           title="Copier la clé"
                         >
-                          <Copy className="w-3.5 h-3.5 text-white/70" />
+                          <Copy className="w-4 h-4 text-amber-300" />
                         </motion.button>
                       </div>
                     </div>
-                    <code className="block text-xs font-mono text-white/90 bg-black/40 px-2.5 py-1.5 rounded border border-white/10 break-all">
+                    <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
                       {showLicenseKey 
                         ? localStorage.getItem('partywall_license_key') 
                         : `${localStorage.getItem('partywall_license_key')?.substring(0, 16)}...`
                       }
                     </code>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </motion.div>
