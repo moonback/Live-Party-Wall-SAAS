@@ -160,25 +160,45 @@ const LicenseBlock: React.FC = () => {
           {/* Effet de brillance animé en arrière-plan */}
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-indigo-500/5 pointer-events-none" />
           
-          {/* Header avec icône et titre */}
+          {/* Motif décoratif en arrière-plan */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-72 h-72 bg-pink-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+          </div>
+          
+          {/* Header avec logo et titre */}
           <div className="relative px-6 pt-8 pb-6">
+            {/* Logo Partywall */}
             <motion.div
               variants={iconVariants}
               initial="hidden"
               animate="visible"
-              className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 border-2 border-pink-500/30 flex items-center justify-center shadow-lg backdrop-blur-sm"
+              className="relative mx-auto mb-6 flex justify-center items-center"
             >
-              <AlertTriangle className="w-10 h-10 text-pink-400" />
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 rounded-full blur-2xl scale-150"></div>
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 border-2 border-pink-500/30 flex items-center justify-center shadow-2xl backdrop-blur-sm p-3">
+                <img
+                  src="/icon.png"
+                  alt="Partywall Logo"
+                  className="w-full h-full object-contain drop-shadow-lg"
+                  draggable={false}
+                />
+              </div>
             </motion.div>
-            
-            <motion.h1
+
+            {/* Titre avec icône d'alerte */}
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
-              className="text-3xl sm:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent"
+              className="flex items-center justify-center gap-3 mb-4"
             >
-              {isLicenseRequired ? 'Licence requise' : 'Licence expirée'}
-            </motion.h1>
+              <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7 text-pink-400" />
+              <h1 className="text-3xl sm:text-4xl font-bold text-center bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                {isLicenseRequired ? 'Licence requise' : 'Licence expirée'}
+              </h1>
+            </motion.div>
 
             {/* Message principal */}
             <motion.div
@@ -202,12 +222,21 @@ const LicenseBlock: React.FC = () => {
                 )}
               </p>
               
-              <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border border-pink-500/20 backdrop-blur-sm">
-                <p className="text-sm text-pink-200 font-medium">
-                  💡 Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6 heures maximum.
-                  <br />
-                  Merci de vérifier votre email et de patienter.
-                </p>
+              <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-indigo-500/10 border border-pink-500/20 backdrop-blur-sm">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500/20 to-purple-500/20 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-pink-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-pink-200 font-medium leading-relaxed">
+                      Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6 heures maximum.
+                      <br />
+                      <span className="text-xs text-pink-300/80 mt-1 block">
+                        Merci de vérifier votre email et de patienter.
+                      </span>
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {isLicenseRequired && (
@@ -217,10 +246,10 @@ const LicenseBlock: React.FC = () => {
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center justify-center gap-2 mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-pink-500/20 hover:shadow-xl hover:shadow-pink-500/40 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 mt-6 px-8 py-4 rounded-xl bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 text-white font-bold text-base shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/50 transition-all duration-200 border border-pink-400/30"
                 >
-                  Commander une licence
-                  <ExternalLink className="w-4 h-4" />
+                  <span>Commander une licence</span>
+                  <ExternalLink className="w-5 h-5" />
                 </motion.a>
               )}
             </motion.div>
