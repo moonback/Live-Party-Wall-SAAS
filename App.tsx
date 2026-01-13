@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { ViewMode } from './types';
 import Toast from './components/Toast';
 import { ToastProvider, useToast } from './context/ToastContext';
@@ -45,8 +45,19 @@ const AppContent: React.FC = () => {
   const { photos } = usePhotos();
   const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
-  const { addToast, toasts, removeToast } = useToast();
+  const { addToast: addToastContext, toasts, removeToast } = useToast();
+  const addToastRef = useRef(addToastContext);
   const { isValid: isLicenseValid, loading: licenseLoading } = useLicense();
+  
+  // Mettre à jour la référence à chaque changement
+  useEffect(() => {
+    addToastRef.current = addToastContext;
+  }, [addToastContext]);
+  
+  // Wrapper pour addToast qui utilise la référence
+  const addToast = (message: string, type?: 'success' | 'error' | 'info') => {
+    addToastRef.current(message, type);
+  };
 
   // Fonction helper pour vérifier si l'utilisateur est inscrit pour l'événement actuel
   const isUserRegistered = (): boolean => {
@@ -107,14 +118,14 @@ const AppContent: React.FC = () => {
               // Rediriger vers landing si on est sur un mode qui nécessite un profil
               if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
                 setViewMode('landing');
-                addToast('Votre compte a été supprimé. Veuillez vous réinscrire.', 'info');
+                addToastRef.current('Votre compte a été supprimé. Veuillez vous réinscrire.', 'info');
               }
             } else if (storedEventId && storedEventId !== currentEvent.id) {
               // L'invité est inscrit pour un autre événement
               // On garde ses données mais on demande une nouvelle inscription pour cet événement
               if (['guest', 'gallery', 'collage', 'findme'].includes(viewMode)) {
                 setViewMode('onboarding');
-                addToast('Vous devez vous inscrire pour cet événement', 'info');
+                addToastRef.current('Vous devez vous inscrire pour cet événement', 'info');
               }
             } else {
               // Pas d'événement stocké, l'invité doit s'inscrire
@@ -199,7 +210,7 @@ const AppContent: React.FC = () => {
         } else {
           setViewMode('gallery');
         }
-        addToast('La fonctionnalité Retrouve-moi est désactivée', 'info');
+        addToastRef.current('La fonctionnalité Retrouve-moi est désactivée', 'info');
       }
     } else if (modeParam === 'battle-results') {
       setViewMode('battle-results');
@@ -215,10 +226,10 @@ const AppContent: React.FC = () => {
       } else {
         setViewMode('guest');
       }
-      addToast('Le mode collage est désactivé', 'info');
+      addToastRef.current('Le mode collage est désactivé', 'info');
     }
     // Si pas de paramètre mode, on reste sur landing (accessible sans profil)
-  }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled, addToast]);
+  }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled]);
 
   // Déterminer le type de transition selon la vue
   const getTransitionType = (mode: ViewMode): 'fade' | 'slide-left' | 'slide-right' | 'slide-bottom' | 'scale' | 'zoom-bounce' => {
