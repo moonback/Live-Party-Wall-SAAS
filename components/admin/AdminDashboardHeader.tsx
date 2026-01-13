@@ -54,9 +54,23 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
     return `${getBaseUrl()}?event=${currentEvent.slug}`;
   };
 
-  const handleOpenEventLink = () => {
+  const handleOpenEventLink = async () => {
     const url = getEventUrl();
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    if (!url) return;
+    
+    // Dans Electron, utiliser l'API pour ouvrir avec la même session
+    if (isElectron() && window.electronAPI) {
+      try {
+        await window.electronAPI.openWindow(url);
+      } catch (error) {
+        logger.error('Erreur lors de l\'ouverture de la fenêtre', error, { component: 'AdminDashboardHeader', action: 'openEventLink' });
+        // Fallback vers window.open si l'API échoue
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      // En web, utiliser window.open normalement
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleConfirm = () => {

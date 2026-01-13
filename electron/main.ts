@@ -10,6 +10,7 @@ const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 let mainWindow: BrowserWindow | null = null;
+const allWindows: BrowserWindow[] = [];
 
 /**
  * Obtient le chemin de base de l'application
@@ -153,8 +154,15 @@ function createWindow(): void {
 
   // Gérer la fermeture de la fenêtre
   mainWindow.on('closed', () => {
+    const index = allWindows.indexOf(mainWindow!);
+    if (index > -1) {
+      allWindows.splice(index, 1);
+    }
     mainWindow = null;
   });
+
+  // Ajouter à la liste des fenêtres
+  allWindows.push(mainWindow);
 }
 
 /**
@@ -264,6 +272,65 @@ app.whenReady().then(() => {
   ipcMain.handle('app:close', () => {
     app.quit();
   });
+
+  // Gérer l'ouverture d'une nouvelle fenêtre avec la même session
+  ipcMain.handle('app:openWindow', (event, url: string) => {
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    if (!senderWindow) return null;
+
+    // Obtenir la session de la fenêtre source pour la partager
+    const session = senderWindow.webContents.session;
+
+    const appBasePath = getAppBasePath();
+    
+    // Chemin du preload script
+    let preloadPath: string;
+    if (app.isPackaged) {
+      preloadPath = path.join(appBasePath, 'dist-electron/preload/preload.js');
+    } else {
+      preloadPath = path.join(__dirname, '../preload/preload.js');
+    }
+
+    // Créer une nouvelle fenêtre avec la même session
+    const newWindow = new BrowserWindow({
+      width: 1280,
+      height: 720,
+      minWidth: 800,
+      minHeight: 600,
+      webPreferences: {
+        preload: preloadPath,
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false,
+        session: session, // Partager la session avec la fenêtre principale
+      },
+      show: false,
+    });
+
+    // Afficher la fenêtre une fois le contenu chargé
+    newWindow.once('ready-to-show', () => {
+      newWindow.show();
+      if (isDev) {
+        newWindow.webContents.openDevTools();
+      }
+    });
+
+    // Charger l'URL
+    newWindow.loadURL(url);
+
+    // Gérer la fermeture
+    newWindow.on('closed', () => {
+      const index = allWindows.indexOf(newWindow);
+      if (index > -1) {
+        allWindows.splice(index, 1);
+      }
+    });
+
+    // Ajouter à la liste des fenêtres
+    allWindows.push(newWindow);
+
+    return newWindow.id;
+  });
 });
 
 // Quitter quand toutes les fenêtres sont fermées, sauf sur macOS
@@ -273,12 +340,59 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Gérer les erreurs de sécurité
+// Gérer les erreurs de sécurité et intercepter window.open()
 app.on('web-contents-created', (_, contents) => {
-  contents.on('new-window', (navigationEvent, navigationURL) => {
-    navigationEvent.preventDefault();
-    // Optionnel : ouvrir dans le navigateur externe
-    // require('electron').shell.openExternal(navigationURL);
+  contents.setWindowOpenHandler(({ url }) => {
+    // Intercepter window.open() et créer une nouvelle fenêtre avec la même session
+    const senderWindow = BrowserWindow.fromWebContents(contents);
+    if (!senderWindow) {
+      return { action: 'deny' };
+    }
+
+    const session = senderWindow.webContents.session;
+    const appBasePath = getAppBasePath();
+    
+    let preloadPath: string;
+    if (app.isPackaged) {
+      preloadPath = path.join(appBasePath, 'dist-electron/preload/preload.js');
+    } else {
+      preloadPath = path.join(__dirname, '../preload/preload.js');
+    }
+
+    const newWindow = new BrowserWindow({
+      width: 1280,
+      height: 720,
+      minWidth: 800,
+      minHeight: 600,
+      webPreferences: {
+        preload: preloadPath,
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: false,
+        session: session, // Partager la session avec la fenêtre source
+      },
+      show: false,
+    });
+
+    newWindow.once('ready-to-show', () => {
+      newWindow.show();
+      if (isDev) {
+        newWindow.webContents.openDevTools();
+      }
+    });
+
+    newWindow.loadURL(url);
+
+    newWindow.on('closed', () => {
+      const index = allWindows.indexOf(newWindow);
+      if (index > -1) {
+        allWindows.splice(index, 1);
+      }
+    });
+
+    allWindows.push(newWindow);
+
+    return { action: 'deny' }; // On a déjà créé la fenêtre manuellement
   });
 });
 

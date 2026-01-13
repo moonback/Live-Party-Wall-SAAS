@@ -59,6 +59,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   closeApp: () => {
     return ipcRenderer.invoke('app:close');
   },
+
+  // Ouvrir une nouvelle fenêtre avec la même session
+  openWindow: (url: string) => {
+    return ipcRenderer.invoke('app:openWindow', url);
+  },
 });
 
 // Types pour TypeScript (sera utilisé dans l'application React)
@@ -68,6 +73,7 @@ export type ElectronAPI = {
   getLocalIP: () => string | null;
   isElectron: () => boolean;
   closeApp: () => Promise<void>;
+  openWindow: (url: string) => Promise<number | null>;
 };
 
 // Déclaration globale pour TypeScript

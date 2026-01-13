@@ -27,6 +27,13 @@ export interface ElectronAPI {
    * Ferme l'application Electron
    */
   closeApp: () => Promise<void>;
+  
+  /**
+   * Ouvre une nouvelle fenêtre avec la même session que la fenêtre actuelle
+   * @param url - URL à charger dans la nouvelle fenêtre
+   * @returns ID de la fenêtre créée ou null en cas d'erreur
+   */
+  openWindow: (url: string) => Promise<number | null>;
 }
 
 declare global {
