@@ -1,8 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu, Key
+  Zap, Users, Menu, Key, X
 } from 'lucide-react';
 import { AdminTab } from './types';
 
@@ -53,113 +53,113 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
     return true;
   });
 
-  const getTabLabel = (tabId: AdminTab) => {
-    return tabs.find(t => t.id === tabId)?.label || '';
-  };
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
+  const SidebarContent = () => (
+    <div className="h-full flex flex-col">
+      {/* Header Sidebar */}
+      <div className="p-4 border-b border-slate-800/50">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Navigation</h2>
+          <button
+            onClick={onMobileMenuToggle}
+            className="lg:hidden p-1.5 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-slate-200"
+            aria-label="Fermer le menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+        {visibleTabs.map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                onTabChange(tab.id);
+                if (tab.id === 'guests' && onLoadGuests) onLoadGuests();
+                if (tab.id === 'events' && onLoadEvents) onLoadEvents();
+                // Fermer le menu mobile après sélection
+                if (isMobileMenuOpen) onMobileMenuToggle();
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 min-h-[44px] group ${
+                isActive
+                  ? 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
+              }`}
+            >
+              <Icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`} />
+              <span className="text-sm font-medium flex-1 text-left">{tab.label}</span>
+              {tab.count !== undefined && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold min-w-[24px] text-center ${
+                  isActive
+                    ? 'bg-indigo-500/30 text-indigo-200'
+                    : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-300'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+    </div>
+  );
 
   return (
-    <div className="mb-6">
+    <>
       {/* Bouton menu hamburger pour mobile */}
       <button
-        data-mobile-menu
         onClick={onMobileMenuToggle}
-        className="sm:hidden flex items-center gap-3 px-4 py-3 mb-4 w-full bg-slate-900/50 backdrop-blur-sm hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-800"
-        aria-label="Menu de navigation"
+        className="lg:hidden fixed top-24 left-4 z-40 flex items-center gap-2 px-3 py-2 bg-slate-900/95 backdrop-blur-sm hover:bg-slate-800/95 rounded-lg transition-colors border border-slate-800 shadow-xl"
+        aria-label="Ouvrir le menu"
         aria-expanded={isMobileMenuOpen}
       >
-        <Menu className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90' : ''}`} />
+        <Menu className={`w-5 h-5 text-slate-300 transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90' : ''}`} />
         <span className="text-sm font-medium text-slate-200">
-          {getTabLabel(activeTab)}
-        </span>
-        <span className="ml-auto text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300 font-medium">
-          {activeTab === 'events' && eventsCount}
-          {activeTab === 'moderation' && photosCount}
-          {activeTab === 'battles' && battlesCount}
-          {activeTab === 'guests' && guestsCount}
+          {tabs.find(t => t.id === activeTab)?.label || 'Menu'}
         </span>
       </button>
 
-      {/* Menu mobile dropdown */}
-      {isMobileMenuOpen && (
-        <div data-mobile-menu className="sm:hidden mb-4 bg-slate-900/50 backdrop-blur-sm rounded-lg border border-slate-800 overflow-hidden">
-          <div className="p-2 space-y-1">
-            {visibleTabs.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    onTabChange(tab.id);
-                    onMobileMenuToggle();
-                    if (tab.id === 'guests' && onLoadGuests) onLoadGuests();
-                    if (tab.id === 'events' && onLoadEvents) onLoadEvents();
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors border min-h-[44px] ${
-                    isActive
-                      ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
-                      : 'bg-slate-800/50 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/80'
-                  }`}
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm font-medium flex-1 text-left">{tab.label}</span>
-                  {tab.count !== undefined && (
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      isActive ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-700 text-slate-300'
-                    }`}>{tab.count}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Overlay mobile */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={onMobileMenuToggle}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Navigation horizontale pour desktop */}
-      <div className="hidden sm:block">
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-lg border border-slate-800 p-2">
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-            {visibleTabs.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    onTabChange(tab.id);
-                    if (tab.id === 'guests' && onLoadGuests) onLoadGuests();
-                    if (tab.id === 'events' && onLoadEvents) onLoadEvents();
-                  }}
-                  className={`relative flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all whitespace-nowrap min-h-[44px] flex-shrink-0 ${
-                    isActive
-                      ? 'text-slate-100'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {isActive && (
-                    <div className="absolute inset-0 bg-indigo-500/10 rounded-lg border border-indigo-500/30"></div>
-                  )}
-                  <div className="relative flex items-center gap-2">
-                    <Icon className={`w-4 h-4 flex-shrink-0 transition-all ${isActive ? 'text-indigo-400' : ''}`} />
-                    <span className="text-sm font-medium">{tab.label}</span>
-                    {tab.count !== undefined && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        isActive
-                          ? 'bg-indigo-500/30 text-indigo-200'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}>{tab.count}</span>
-                    )}
-                  </div>
-                  {isActive && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-0.5 bg-indigo-500 rounded-full"></div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Sidebar Desktop (toujours visible) */}
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/50 z-30">
+        <SidebarContent />
+      </aside>
+
+      {/* Sidebar Mobile (drawer) */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.aside
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: 'easeInOut' }}
+            className="lg:hidden fixed left-0 top-0 h-screen w-72 bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/50 z-50 shadow-2xl"
+          >
+            <SidebarContent />
+          </motion.aside>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
-

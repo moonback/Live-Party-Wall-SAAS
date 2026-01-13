@@ -348,7 +348,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-slate-800/20 blur-[120px] rounded-full"></div>
       </div>
 
-      <div className="relative z-10 p-4 sm:p-6 md:p-8">
+      <AdminTabsNavigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        currentEvent={!!currentEvent}
+        photosCount={photos.length}
+        battlesCount={0}
+        guestsCount={guests.length}
+        eventsCount={events.length}
+        battleModeEnabled={config.battle_mode_enabled !== false}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onLoadGuests={loadGuests}
+        onLoadEvents={loadEvents}
+      />
+
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:pl-72">
         <AdminDashboardHeader
           onBack={onBack}
           onLogout={handleLogout}
@@ -360,21 +375,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           isExportingWithMetadata={isExportingWithMetadata}
           exportProgress={exportProgress}
           currentEventName={currentEvent?.name}
-        />
-
-        <AdminTabsNavigation
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          currentEvent={!!currentEvent}
-          photosCount={photos.length}
-          battlesCount={0}
-          guestsCount={guests.length}
-          eventsCount={events.length}
-          battleModeEnabled={config.battle_mode_enabled !== false}
-          isMobileMenuOpen={isMobileMenuOpen}
-          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          onLoadGuests={loadGuests}
-          onLoadEvents={loadEvents}
         />
 
         {/* Contenu de l'onglet Événements */}
