@@ -6,6 +6,8 @@ import { usePhotos } from '../../context/PhotosContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
+import { Crown } from 'lucide-react';
 import { generateTimelapseAftermovie } from '../../services/aftermovieService';
 import { uploadAftermovieToStorage, getAftermovies, deleteAftermovie } from '../../services/aftermovieShareService';
 import { smartSelectPhotos } from '../../services/aftermovieAIService';
@@ -38,6 +40,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const { settings: config } = useSettings();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { isFeatureEnabled, licenseValidity } = useLicenseFeatures();
   
   const [aftermovieStart, setAftermovieStart] = useState<string>('');
   const [aftermovieEnd, setAftermovieEnd] = useState<string>('');
@@ -682,34 +685,60 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               <div className="text-sm font-semibold text-slate-100">Standard</div>
               <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 12 Mbps</div>
             </button>
-            <button
-              type="button"
-              onClick={() => setAftermoviePresetMode('qualite')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                aftermoviePresetMode === 'qualite'
-                  ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
-            >
-              <Award className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
-              <div className="text-sm font-semibold text-slate-100">Qualité</div>
-              <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setAftermoviePresetMode('story')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                aftermoviePresetMode === 'story'
-                  ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
-            >
-              <Video className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
-              <div className="text-sm font-semibold text-slate-100">Story</div>
-              <div className="text-xs text-slate-400 mt-1">9:16 • 30 FPS • 10 Mbps</div>
-            </button>
+            {/* Mode Qualité - Premium */}
+            {isFeatureEnabled('aftermovies_enabled', licenseValidity?.license_key) ? (
+              <button
+                type="button"
+                onClick={() => setAftermoviePresetMode('qualite')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  aftermoviePresetMode === 'qualite'
+                    ? 'border-indigo-500 bg-indigo-500/10'
+                    : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+                }`}
+                disabled={isGeneratingAftermovie}
+              >
+                <Award className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
+                <div className="text-sm font-semibold text-slate-100">Qualité</div>
+                <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
+              </button>
+            ) : (
+              <div className="relative p-4 rounded-lg border-2 border-amber-500/30 bg-slate-900/30 opacity-50 cursor-not-allowed">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-400" />
+                  <span className="text-xs font-semibold text-amber-300">Passer à Pro</span>
+                </div>
+                <Award className="w-6 h-6 mb-2 mx-auto text-slate-500" />
+                <div className="text-sm font-semibold text-slate-500">Qualité</div>
+                <div className="text-xs text-slate-600 mt-1">1080p • 30 FPS • 20 Mbps</div>
+              </div>
+            )}
+            {/* Mode Story - Premium */}
+            {isFeatureEnabled('aftermovies_enabled', licenseValidity?.license_key) ? (
+              <button
+                type="button"
+                onClick={() => setAftermoviePresetMode('story')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  aftermoviePresetMode === 'story'
+                    ? 'border-indigo-500 bg-indigo-500/10'
+                    : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+                }`}
+                disabled={isGeneratingAftermovie}
+              >
+                <Video className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
+                <div className="text-sm font-semibold text-slate-100">Story</div>
+                <div className="text-xs text-slate-400 mt-1">9:16 • 30 FPS • 10 Mbps</div>
+              </button>
+            ) : (
+              <div className="relative p-4 rounded-lg border-2 border-amber-500/30 bg-slate-900/30 opacity-50 cursor-not-allowed">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-400" />
+                  <span className="text-xs font-semibold text-amber-300">Passer à Pro</span>
+                </div>
+                <Video className="w-6 h-6 mb-2 mx-auto text-slate-500" />
+                <div className="text-sm font-semibold text-slate-500">Story</div>
+                <div className="text-xs text-slate-600 mt-1">9:16 • 30 FPS • 10 Mbps</div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1230,73 +1259,95 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                 </div>
               </label>
 
-              {/* Section Amélioration IA */}
-              <div className="pt-2 border-t border-slate-800">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                  <h4 className="text-sm font-semibold text-slate-100">Amélioration IA 🤖</h4>
+              {/* Section Amélioration IA - Premium */}
+              {isFeatureEnabled('aftermovies_enabled', licenseValidity?.license_key) ? (
+                <div className="pt-2 border-t border-slate-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <h4 className="text-sm font-semibold text-slate-100">Amélioration IA 🤖</h4>
+                  </div>
+
+                  <label className="flex items-start gap-3 cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      checked={aftermovieEnableAIEnhancement}
+                      onChange={(e) => setAftermovieEnableAIEnhancement(e.target.checked)}
+                      className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                      disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-slate-100">Activer l'amélioration IA</div>
+                      <div className="text-xs text-slate-400">Utilise l'IA pour rendre l'aftermovie plus interactif et optimisé.</div>
+                    </div>
+                  </label>
+
+                  {aftermovieEnableAIEnhancement && (
+                    <div className="pl-6 space-y-3 border-l-2 border-purple-500/30">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={aftermovieEnableSmartSelection}
+                          onChange={(e) => setAftermovieEnableSmartSelection(e.target.checked)}
+                          className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                          disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                        />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-slate-100">Sélection intelligente</div>
+                          <div className="text-xs text-slate-400">Sélectionne automatiquement les meilleures photos (qualité, moments clés, diversité).</div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={aftermovieEnableSmartTransitions}
+                          onChange={(e) => setAftermovieEnableSmartTransitions(e.target.checked)}
+                          className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                          disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                        />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-slate-100">Transitions intelligentes</div>
+                          <div className="text-xs text-slate-400">Choisit la meilleure transition selon le contenu de chaque photo.</div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={aftermovieEnableSmartDuration}
+                          onChange={(e) => setAftermovieEnableSmartDuration(e.target.checked)}
+                          className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
+                          disabled={isGeneratingAftermovie || isAnalyzingPhotos}
+                        />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-slate-100">Durées intelligentes</div>
+                          <div className="text-xs text-slate-400">Ajuste la durée selon l'importance des moments (plus long pour moments clés).</div>
+                        </div>
+                      </label>
+                    </div>
+                  )}
                 </div>
-
-                <label className="flex items-start gap-3 cursor-pointer mb-3">
-                  <input
-                    type="checkbox"
-                    checked={aftermovieEnableAIEnhancement}
-                    onChange={(e) => setAftermovieEnableAIEnhancement(e.target.checked)}
-                    className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
-                    disabled={isGeneratingAftermovie || isAnalyzingPhotos}
-                  />
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-slate-100">Activer l'amélioration IA</div>
-                    <div className="text-xs text-slate-400">Utilise l'IA pour rendre l'aftermovie plus interactif et optimisé.</div>
+              ) : (
+                <div className="pt-2 border-t border-slate-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-slate-500" />
+                    <h4 className="text-sm font-semibold text-slate-500">Amélioration IA 🤖</h4>
+                    <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                      <Crown className="w-3 h-3 text-amber-300" />
+                      <span className="text-xs font-bold text-amber-300">PRO</span>
+                    </div>
                   </div>
-                </label>
-
-                {aftermovieEnableAIEnhancement && (
-                  <div className="pl-6 space-y-3 border-l-2 border-purple-500/30">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={aftermovieEnableSmartSelection}
-                        onChange={(e) => setAftermovieEnableSmartSelection(e.target.checked)}
-                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
-                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-slate-100">Sélection intelligente</div>
-                        <div className="text-xs text-slate-400">Sélectionne automatiquement les meilleures photos (qualité, moments clés, diversité).</div>
+                  <div className="p-3 rounded-lg bg-slate-900/50 border border-amber-500/30 opacity-75">
+                    <div className="flex items-start gap-2">
+                      <Crown className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-amber-300 mb-1">Fonctionnalité Pro</div>
+                        <div className="text-xs text-slate-400">Passez à Pro pour activer l'amélioration IA et rendre vos aftermovies plus interactifs et optimisés.</div>
                       </div>
-                    </label>
-
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={aftermovieEnableSmartTransitions}
-                        onChange={(e) => setAftermovieEnableSmartTransitions(e.target.checked)}
-                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
-                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-slate-100">Transitions intelligentes</div>
-                        <div className="text-xs text-slate-400">Choisit la meilleure transition selon le contenu de chaque photo.</div>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={aftermovieEnableSmartDuration}
-                        onChange={(e) => setAftermovieEnableSmartDuration(e.target.checked)}
-                        className="h-4 w-4 accent-purple-500 mt-0.5 flex-shrink-0"
-                        disabled={isGeneratingAftermovie || isAnalyzingPhotos}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-slate-100">Durées intelligentes</div>
-                        <div className="text-xs text-slate-400">Ajuste la durée selon l'importance des moments (plus long pour moments clés).</div>
-                      </div>
-                    </label>
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Section Transitions */}
               <div className="pt-2 border-t border-slate-800">
