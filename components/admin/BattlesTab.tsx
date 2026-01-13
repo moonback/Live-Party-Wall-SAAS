@@ -6,6 +6,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { createBattle, getActiveBattles, finishBattle, subscribeToNewBattles } from '../../services/battleService';
 import { Photo, PhotoBattle } from '../../types';
+import { Card, Button, SectionHeader } from './ui';
 
 interface BattlesTabProps {
   // Props si nécessaire
@@ -171,91 +172,82 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Section Battles Automatiques */}
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <div className="mb-6">
-          <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
-            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
-            </div>
-            Battles Automatiques
-          </h2>
-          <p className="text-sm text-slate-400">
-            Activez les battles automatiques pour créer une battle aléatoire à intervalles réguliers.
-          </p>
-        </div>
+      <Card variant="default">
+        <SectionHeader
+          icon={Sparkles}
+          title="Battles Automatiques"
+          description="Activez les battles automatiques pour créer une battle aléatoire à intervalles réguliers."
+          className="mb-6"
+        />
 
-        <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${autoBattleEnabled ? 'bg-teal-500/20' : 'bg-slate-700/50'}`}>
-              <Zap className={`w-5 h-5 ${autoBattleEnabled ? 'text-teal-400' : 'text-slate-400'}`} />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-100">Battles Automatiques</h3>
-              <p className="text-sm text-slate-400">
-                {autoBattleEnabled 
-                  ? `Actives - Une battle est créée toutes les ${AUTO_BATTLE_INTERVAL} minutes`
-                  : 'Inactives - Les battles doivent être créées manuellement'}
-              </p>
-              {autoBattleEnabled && (
-                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Intervalle fixe : {AUTO_BATTLE_INTERVAL} minutes (non modifiable)
+        <Card variant="outlined" className="p-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`p-2 rounded-lg flex-shrink-0 ${autoBattleEnabled ? 'bg-teal-500/20' : 'bg-slate-700/50'}`}>
+                <Zap className={`w-5 h-5 ${autoBattleEnabled ? 'text-teal-400' : 'text-slate-400'}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-slate-100">Battles Automatiques</h3>
+                <p className="text-sm text-slate-400">
+                  {autoBattleEnabled 
+                    ? `Actives - Une battle est créée toutes les ${AUTO_BATTLE_INTERVAL} minutes`
+                    : 'Inactives - Les battles doivent être créées manuellement'}
                 </p>
-              )}
+                {autoBattleEnabled && (
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Intervalle fixe : {AUTO_BATTLE_INTERVAL} minutes (non modifiable)
+                  </p>
+                )}
+              </div>
             </div>
+            <Button
+              variant={autoBattleEnabled ? 'danger' : 'success'}
+              onClick={handleToggleAutoBattles}
+            >
+              {autoBattleEnabled ? 'Désactiver' : 'Activer'}
+            </Button>
           </div>
-          <button
-            onClick={handleToggleAutoBattles}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              autoBattleEnabled
-                ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30'
-                : 'bg-teal-500/20 hover:bg-teal-500/30 text-teal-400 border border-teal-500/30'
-            }`}
-          >
-            {autoBattleEnabled ? 'Désactiver' : 'Activer'}
-          </button>
-        </div>
-      </div>
+        </Card>
+      </Card>
 
       {/* Bouton Nouvelle Battle */}
       {!showCreateBattleForm && (
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-          <button
+        <Card variant="default">
+          <Button
+            variant="primary"
+            fullWidth
+            size="lg"
             onClick={() => setShowCreateBattleForm(true)}
-            className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 border border-indigo-500/30 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
+            icon={Zap}
           >
-            <Zap className="w-5 h-5" />
-            <span>Nouvelle Battle</span>
-          </button>
-        </div>
+            Nouvelle Battle
+          </Button>
+        </Card>
       )}
 
       {/* Section Création de Battle */}
       {showCreateBattleForm && (
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+        <Card variant="default">
           <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
-                <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                  <Zap className="w-5 h-5 text-indigo-400" />
-                </div>
-                Créer une Photo Battle
-              </h2>
-              <p className="text-sm text-slate-400">
-                Sélectionnez deux photos pour créer une battle. Les invités voteront pour leur photo préférée.
-              </p>
-            </div>
-            <button
+            <SectionHeader
+              icon={Zap}
+              title="Créer une Photo Battle"
+              description="Sélectionnez deux photos pour créer une battle. Les invités voteront pour leur photo préférée."
+            />
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setShowCreateBattleForm(false);
                 setSelectedPhoto1(null);
                 setSelectedPhoto2(null);
               }}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-slate-200"
+              icon={X}
               title="Fermer"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <span className="sr-only">Fermer</span>
+            </Button>
           </div>
 
           {/* Sélection des photos */}
@@ -341,30 +333,26 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
           </div>
 
           {/* Bouton Créer */}
-          <button
+          <Button
+            variant="primary"
+            fullWidth
+            size="lg"
             onClick={handleCreateBattle}
             disabled={!selectedPhoto1 || !selectedPhoto2 || isCreatingBattle || selectedPhoto1.id === selectedPhoto2.id}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+            isLoading={isCreatingBattle}
+            icon={isCreatingBattle ? undefined : Zap}
           >
-            {isCreatingBattle ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                <span>Création en cours...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5" />
-                <span>Créer la Battle</span>
-              </>
-            )}
-          </button>
+            Créer la Battle
+          </Button>
 
           {/* Liste des photos pour sélection */}
-          <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 mt-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-100">
+          <Card variant="default" className="mt-6">
+            <div className="mb-4 flex items-center gap-2">
               <ImageIcon className="w-5 h-5 text-indigo-400" />
-              Sélectionner des photos ({allPhotos.length} disponibles)
-            </h3>
+              <h3 className="text-lg font-semibold text-slate-100">
+                Sélectionner des photos ({allPhotos.length} disponibles)
+              </h3>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
               {allPhotos.map(photo => {
                 const isSelected1 = selectedPhoto1?.id === photo.id;
@@ -410,19 +398,18 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
                 );
               })}
             </div>
-          </div>
-        </div>
+          </Card>
+        </Card>
       )}
 
       {/* Battles Actives */}
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-100">
-          <Trophy className="w-5 h-5 text-indigo-400" />
-          Battles Actives 
-          <span className="text-indigo-400 px-2 py-0.5 bg-indigo-400/10 rounded-lg text-xs font-medium ml-2">
-            {battles.length}
-          </span>
-        </h3>
+      <Card variant="default">
+        <SectionHeader
+          icon={Trophy}
+          title="Battles Actives"
+          badge={battles.length}
+          className="mb-4"
+        />
         {loading ? (
           <div className="flex justify-center items-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
@@ -516,7 +503,7 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
                       </div>
                       {timeRemaining !== null && (
                         <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-                          isEndingSoon ? 'bg-yellow-500/30 text-yellow-300 animate-pulse' : 'bg-slate-700/40 text-slate-300'
+                          isEndingSoon ? 'bg-yellow-500/30 text-yellow-300' : 'bg-slate-700/40 text-slate-300'
                         }`}>
                           <Clock className="w-3 h-3" />
                           <span>
@@ -526,18 +513,19 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
                         </div>
                       )}
                     </div>
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => handleFinishBattle(battle.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium rounded-lg text-[10px] transition-colors"
+                      icon={Trophy}
                     >
-                      <Trophy className="w-3 h-3" />
                       <span className="hidden sm:inline">Terminer</span>
                       <span className="sm:hidden">Fin</span>
-                    </button>
+                    </Button>
                   </div>
                   {/* Info overlay if battle is ending soon */}
                   {isEndingSoon && (
-                    <div className="absolute top-1.5 right-1.5 bg-yellow-400/90 text-yellow-950 text-[9px] font-medium px-2 py-1 rounded-lg shadow flex items-center gap-1 animate-pulse">
+                    <div className={`absolute top-1.5 right-1.5 bg-yellow-400/90 text-yellow-950 text-[9px] font-medium px-2 py-1 rounded-lg shadow flex items-center gap-1 ${typeof window !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'animate-pulse' : ''}`}>
                       <Clock className="w-3 h-3" />
                       <span>Fin proche !</span>
                     </div>
@@ -547,7 +535,7 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
             })}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

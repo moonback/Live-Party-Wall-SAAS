@@ -9,6 +9,7 @@ import { useEvent } from '../../context/EventContext';
 import { generateTimelapseAftermovie } from '../../services/aftermovieService';
 import { uploadAftermovieToStorage, getAftermovies, deleteAftermovie } from '../../services/aftermovieShareService';
 import { smartSelectPhotos } from '../../services/aftermovieAIService';
+import { Card, Button, Badge, SectionHeader, Modal, Input, LoadingSpinner } from './ui';
 import { 
   AFTERMOVIE_PRESETS, 
   AFTERMOVIE_DEFAULT_TARGET_SECONDS, 
@@ -512,23 +513,18 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   };
 
   return (
-    <div className="max-w-12xl mx-auto">
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <div className="mb-6">
-          <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
-            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-              <Video className="w-5 h-5 text-indigo-400" />
-            </div>
-            Génération Aftermovie (Timelapse)
-          </h2>
-          <p className="text-sm text-slate-400">
-            Génère une vidéo WebM depuis les photos de la plage sélectionnée (100% navigateur).
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto">
+      <Card variant="default">
+        <SectionHeader
+          icon={Video}
+          title="Génération Aftermovie (Timelapse)"
+          description="Génère une vidéo WebM depuis les photos de la plage sélectionnée (100% navigateur)."
+          className="mb-6"
+        />
 
         {/* Section Aftermovies existants */}
         {existingAftermovies.length > 0 && (
-          <div className="mb-6 bg-slate-950/50 border border-slate-800 rounded-lg p-4">
+          <Card variant="default" className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
@@ -541,16 +537,17 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={loadExistingAftermovies}
                 disabled={loadingAftermovies}
-                className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                isLoading={loadingAftermovies}
+                icon={RefreshCw}
                 title="Actualiser la liste"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingAftermovies ? 'animate-spin' : ''}`} />
                 Actualiser
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -621,19 +618,17 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                           )}
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => handleDeleteAftermovie(aftermovie)}
                         disabled={isDeleting}
-                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        isLoading={isDeleting}
+                        icon={isDeleting ? RefreshCw : Trash2}
                         title="Supprimer l'aftermovie"
                       >
-                        {isDeleting ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
+                        <span className="sr-only">Supprimer</span>
+                      </Button>
                     </div>
                     <a
                       href={aftermovie.url}
@@ -647,7 +642,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                 );
               })}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Presets simplifiés */}
@@ -657,56 +652,56 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
             <button
               type="button"
               onClick={() => setAftermoviePresetMode('rapide')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              disabled={isGeneratingAftermovie}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
                 aftermoviePresetMode === 'rapide'
                   ? 'border-indigo-500 bg-indigo-500/10'
                   : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Zap className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'rapide' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <Zap className={`w-6 h-6 mb-2 ${aftermoviePresetMode === 'rapide' ? 'text-indigo-400' : 'text-slate-400'}`} />
               <div className="text-sm font-semibold text-slate-100">Rapide</div>
               <div className="text-xs text-slate-400 mt-1">720p • 24 FPS • 4 Mbps</div>
             </button>
             <button
               type="button"
               onClick={() => setAftermoviePresetMode('standard')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              disabled={isGeneratingAftermovie}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
                 aftermoviePresetMode === 'standard'
                   ? 'border-indigo-500 bg-indigo-500/10'
                   : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Star className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'standard' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <Star className={`w-6 h-6 mb-2 ${aftermoviePresetMode === 'standard' ? 'text-indigo-400' : 'text-slate-400'}`} />
               <div className="text-sm font-semibold text-slate-100">Standard</div>
               <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 12 Mbps</div>
             </button>
             <button
               type="button"
               onClick={() => setAftermoviePresetMode('qualite')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              disabled={isGeneratingAftermovie}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
                 aftermoviePresetMode === 'qualite'
                   ? 'border-indigo-500 bg-indigo-500/10'
                   : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Award className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <Award className={`w-6 h-6 mb-2 ${aftermoviePresetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
               <div className="text-sm font-semibold text-slate-100">Qualité</div>
               <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
             </button>
             <button
               type="button"
               onClick={() => setAftermoviePresetMode('story')}
-              className={`p-4 rounded-lg border-2 transition-all ${
+              disabled={isGeneratingAftermovie}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
                 aftermoviePresetMode === 'story'
                   ? 'border-indigo-500 bg-indigo-500/10'
                   : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
-              }`}
-              disabled={isGeneratingAftermovie}
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Video className={`w-6 h-6 mb-2 mx-auto ${aftermoviePresetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
+              <Video className={`w-6 h-6 mb-2 ${aftermoviePresetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
               <div className="text-sm font-semibold text-slate-100">Story</div>
               <div className="text-xs text-slate-400 mt-1">9:16 • 30 FPS • 10 Mbps</div>
             </button>
@@ -1430,50 +1425,42 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
 
             {/* Boutons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                fullWidth
                 onClick={handleGenerate}
-                className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
                 disabled={isGeneratingAftermovie || photosLoading}
+                isLoading={isGeneratingAftermovie}
               >
-                {isGeneratingAftermovie ? 'Génération…' : 'Générer & Télécharger'}
-              </button>
+                Générer & Télécharger
+              </Button>
 
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 onClick={() => {
                   if (aftermovieAbortRef.current) {
                     aftermovieAbortRef.current.abort();
                   }
                 }}
-                className="px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!isGeneratingAftermovie}
               >
                 Annuler
-              </button>
+              </Button>
             </div>
 
             {/* Bouton Upload & Partage */}
             {lastGeneratedBlob && (
               <div className="mt-4">
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  fullWidth
                   onClick={handleUploadAndShare}
-                  className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   disabled={isUploading || !currentEvent}
+                  isLoading={isUploading}
+                  icon={isUploading ? Upload : Share2}
                 >
-                  {isUploading ? (
-                    <>
-                      <Upload className="w-4 h-4 animate-pulse" />
-                      Upload en cours…
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-4 h-4" />
-                      Uploader & Partager
-                    </>
-                  )}
-                </button>
+                  Uploader & Partager
+                </Button>
               </div>
             )}
 
@@ -1540,30 +1527,14 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                         className="flex-1 bg-slate-900/70 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-mono text-xs"
                         onClick={(e) => (e.target as HTMLInputElement).select()}
                       />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
+                      <Button
+                        variant={copied ? 'success' : 'primary'}
                         onClick={handleCopyLink}
-                        className={`px-5 py-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
-                          copied
-                            ? 'bg-green-600 hover:bg-green-700 text-white border border-green-500/50'
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-500/50'
-                        }`}
+                        icon={copied ? Check : Copy}
                         title="Copier le lien"
                       >
-                        {copied ? (
-                          <>
-                            <Check className="w-5 h-5" />
-                            <span>Copié !</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-5 h-5" />
-                            <span>Copier</span>
-                          </>
-                        )}
-                      </motion.button>
+                        {copied ? 'Copié !' : 'Copier'}
+                      </Button>
                     </div>
                   </div>
 
@@ -1594,87 +1565,74 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Modal plein écran pour sélection de photos */}
-      {isFullscreenSelection && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-bold text-white">Sélection des photos</h2>
-              <div className="text-sm text-slate-400">
-                {aftermovieSelectedPhotoIds.size} / {aftermovieRangePhotos.length} sélectionnée{aftermovieSelectedPhotoIds.size > 1 ? 's' : ''}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Recherche */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher..."
-                  value={selectionSearchQuery}
-                  onChange={(e) => setSelectionSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 outline-none"
-                />
-              </div>
-              {/* Vue grille/liste */}
-              <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
-                <button
-                  onClick={() => setSelectionViewMode('grid')}
-                  className={`p-2 rounded transition-colors ${
-                    selectionViewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setSelectionViewMode('list')}
-                  className={`p-2 rounded transition-colors ${
-                    selectionViewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-              <button
-                onClick={() => setIsFullscreenSelection(false)}
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Modal
+        isOpen={isFullscreenSelection}
+        onClose={() => setIsFullscreenSelection(false)}
+        title={`Sélection des photos (${aftermovieSelectedPhotoIds.size} / ${aftermovieRangePhotos.length})`}
+        size="full"
+        className="flex flex-col max-h-[90vh]"
+      >
+        {/* Header avec recherche et vues */}
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <Input
+            placeholder="Rechercher..."
+            value={selectionSearchQuery}
+            onChange={(e) => setSelectionSearchQuery(e.target.value)}
+            icon={Search}
+            iconPosition="left"
+            className="flex-1 min-w-[200px]"
+          />
+          {/* Vue grille/liste */}
+          <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
+            <Button
+              size="sm"
+              variant={selectionViewMode === 'grid' ? 'primary' : 'ghost'}
+              onClick={() => setSelectionViewMode('grid')}
+              icon={Grid3x3}
+              title="Vue grille"
+            >
+              <span className="sr-only">Vue grille</span>
+            </Button>
+            <Button
+              size="sm"
+              variant={selectionViewMode === 'list' ? 'primary' : 'ghost'}
+              onClick={() => setSelectionViewMode('list')}
+              icon={List}
+              title="Vue liste"
+            >
+              <span className="sr-only">Vue liste</span>
+            </Button>
           </div>
+        </div>
 
-          {/* Actions rapides */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/30">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)))}
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
-              >
-                Tout sélectionner
-              </button>
-              <button
-                onClick={() => setAftermovieSelectedPhotoIds(new Set())}
-                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm font-medium transition-colors"
-              >
-                Tout désélectionner
-              </button>
-            </div>
-            <div className="text-sm text-slate-400">
-              Double-cliquez sur une photo pour la sélectionner/désélectionner
-            </div>
+        {/* Actions rapides */}
+        <div className="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => setAftermovieSelectedPhotoIds(new Set(aftermovieRangePhotos.map((p) => p.id)))}
+            >
+              Tout sélectionner
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setAftermovieSelectedPhotoIds(new Set())}
+            >
+              Tout désélectionner
+            </Button>
           </div>
+          <div className="text-sm text-slate-400">
+            Double-cliquez sur une photo pour la sélectionner/désélectionner
+          </div>
+        </div>
 
-          {/* Grille de photos */}
-          <div className="flex-1 overflow-y-auto p-6">
+        {/* Grille de photos */}
+        <div className="flex-1 overflow-y-auto">
             {selectionViewMode === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                 {aftermovieRangePhotos
@@ -1854,8 +1812,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
               </div>
             )}
           </div>
-        </motion.div>
-      )}
+      </Modal>
     </div>
   );
 };

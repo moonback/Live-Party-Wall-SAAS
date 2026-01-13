@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCw, Trash2, Image as ImageIcon, Video } from 'lucide-react';
 import { Photo } from '../../types';
+import { Card, Button, LoadingSpinner } from './ui';
 
 interface ModerationTabProps {
   photos: Photo[];
@@ -17,27 +18,28 @@ export const ModerationTab: React.FC<ModerationTabProps> = ({
 }) => {
   return (
     <>
-      <div className="flex justify-end mb-4">
-        <button 
+      <div className="flex justify-end mb-6">
+        <Button
+          variant="ghost"
           onClick={onRefresh}
-          className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 hover:bg-slate-800/50 rounded-lg transition-colors text-sm text-slate-300 border border-slate-800"
+          icon={RefreshCw}
           title="Rafraîchir la liste"
         >
-          <RefreshCw className="w-4 h-4" />
-          <span>Actualiser</span>
-        </button>
+          Actualiser
+        </Button>
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
+          <LoadingSpinner size="md" />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {photos.map(photo => (
-            <div 
-              key={photo.id} 
-              className="relative group bg-slate-900/50 backdrop-blur-sm rounded-lg overflow-hidden border border-slate-800 hover:border-slate-700 transition-all"
+            <Card
+              key={photo.id}
+              variant="default"
+              className="relative group overflow-hidden p-0"
             >
               <div className="aspect-square bg-slate-950 relative overflow-hidden">
                 {photo.type === 'video' ? (
@@ -68,13 +70,14 @@ export const ModerationTab: React.FC<ModerationTabProps> = ({
                 )}
                 
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
-                  <button
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => onDelete(photo)}
-                    className="p-3 bg-red-600 hover:bg-red-700 rounded-full text-white transform hover:scale-110 transition-all shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    icon={Trash2}
                     title="Supprimer la photo"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                    className="rounded-full min-h-[44px] min-w-[44px] p-0"
+                  />
                 </div>
               </div>
 
@@ -94,7 +97,7 @@ export const ModerationTab: React.FC<ModerationTabProps> = ({
                   })}
                 </p>
               </div>
-            </div>
+            </Card>
           ))}
 
           {photos.length === 0 && (

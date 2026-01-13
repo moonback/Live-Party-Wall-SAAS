@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCw, Users, Camera, Heart, Trash2, CheckCircle2 } from 'lucide-react';
 import { Guest } from '../../types';
+import { Card, Button, Badge, SectionHeader, StatCard, LoadingSpinner } from './ui';
 
 interface GuestStats {
   photosCount: number;
@@ -29,76 +30,58 @@ export const GuestsTab: React.FC<GuestsTabProps> = ({
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header avec statistiques */}
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
+      <Card variant="default">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-100 mb-1 flex items-center gap-2">
-              <Users className="w-5 h-5 text-teal-400" />
-              Invités connectés
-            </h2>
-            <p className="text-sm text-slate-400">
-              Gérez tous les invités qui ont créé un profil
-            </p>
-          </div>
-          <button
+          <SectionHeader
+            icon={Users}
+            title="Invités connectés"
+            description="Gérez tous les invités qui ont créé un profil"
+          />
+          <Button
+            variant="ghost"
             onClick={onRefresh}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900/50 hover:bg-slate-800/50 rounded-lg transition-colors text-sm text-slate-300 border border-slate-800 disabled:opacity-50"
+            isLoading={loading}
+            icon={RefreshCw}
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Actualiser</span>
-          </button>
+            Actualiser
+          </Button>
         </div>
 
         {/* Statistiques globales */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-slate-950/50 rounded-lg p-4 border border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-teal-500/10 rounded-lg border border-teal-500/20">
-                <Users className="w-5 h-5 text-teal-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-slate-100">{guests.length}</p>
-                <p className="text-xs text-slate-400">Total invités</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-slate-950/50 rounded-lg p-4 border border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                <Camera className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-slate-100">{totalPhotos}</p>
-                <p className="text-xs text-slate-400">Photos totales</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-slate-950/50 rounded-lg p-4 border border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-pink-500/10 rounded-lg border border-pink-500/20">
-                <Heart className="w-5 h-5 text-pink-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-slate-100">{totalLikes}</p>
-                <p className="text-xs text-slate-400">Likes total</p>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            icon={Users}
+            value={guests.length}
+            label="Total invités"
+            iconColor="teal"
+          />
+          <StatCard
+            icon={Camera}
+            value={totalPhotos}
+            label="Photos totales"
+            iconColor="indigo"
+          />
+          <StatCard
+            icon={Heart}
+            value={totalLikes}
+            label="Likes total"
+            iconColor="pink"
+          />
         </div>
-      </div>
+      </Card>
 
       {/* Liste des invités */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-teal-500 border-t-transparent"></div>
+          <LoadingSpinner size="md" />
         </div>
       ) : guests.length === 0 ? (
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-12 border border-slate-800 text-center">
+        <Card variant="default" className="text-center py-12">
           <Users className="w-12 h-12 mx-auto mb-4 text-slate-600" />
           <h3 className="text-lg font-semibold text-slate-100 mb-2">Aucun invité</h3>
           <p className="text-slate-400 text-sm">Aucun invité n'a encore créé de profil.</p>
-        </div>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {guests.map(guest => {
@@ -106,9 +89,10 @@ export const GuestsTab: React.FC<GuestsTabProps> = ({
             const joinDate = new Date(guest.createdAt);
             
             return (
-              <div
+              <Card
                 key={guest.id}
-                className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition-all"
+                variant="default"
+                className="hover:border-slate-700 transition-all"
               >
                 {/* Header avec avatar et nom */}
                 <div className="flex items-start gap-4 mb-4">
@@ -132,13 +116,14 @@ export const GuestsTab: React.FC<GuestsTabProps> = ({
                       Inscrit le {joinDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => onDelete(guest)}
-                    className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-slate-400 hover:text-red-400 flex-shrink-0"
+                    icon={Trash2}
+                    className="hover:text-red-400 hover:bg-red-500/10"
                     title="Supprimer l'invité"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  />
                 </div>
 
                 {/* Statistiques */}
@@ -159,12 +144,12 @@ export const GuestsTab: React.FC<GuestsTabProps> = ({
 
                 {/* Badge si actif */}
                 {stats.photosCount > 0 && (
-                  <div className="flex items-center gap-2 text-xs text-teal-400 bg-teal-500/10 rounded-lg px-3 py-2 border border-teal-500/20">
+                  <Badge variant="success" className="flex items-center gap-2 w-full justify-center">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>Actif sur le mur</span>
-                  </div>
+                  </Badge>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
