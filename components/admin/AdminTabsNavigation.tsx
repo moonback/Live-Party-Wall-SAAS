@@ -165,7 +165,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   };
 
   const SidebarContent = () => (
-    <div className="h-full flex flex-col bg-gradient-to-b from-slate-900/98 via-slate-900/95 to-slate-900/98">
+    <div className="h-full w-full flex flex-col bg-gradient-to-b from-slate-900/98 via-slate-900/95 to-slate-900/98 overflow-hidden">
       {/* Header Sidebar Amélioré */}
       <div className="relative p-4 border-b border-slate-800/50 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
         <div className="flex items-center justify-between mb-1">
@@ -270,7 +270,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
       </AnimatePresence>
 
       {/* Sidebar Desktop améliorée - Responsive */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-56 xl:w-64 bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-30 shadow-2xl">
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 h-screen w-56 xl:w-64 bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-40 shadow-2xl overflow-hidden">
         <SidebarContent />
       </aside>
 
