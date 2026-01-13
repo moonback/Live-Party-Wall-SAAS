@@ -9,6 +9,7 @@ import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { revokeLicenseByKey, getActiveLicense } from '../../services/licenseService';
+import { getLicenseSuffix } from '../../utils/licenseUtils';
 import { License } from '../../types';
 
 const LicenseTab: React.FC = () => {
@@ -299,12 +300,22 @@ const LicenseTab: React.FC = () => {
                         </motion.button>
                       </div>
                     </div>
-                    <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
-                      {showLicenseNumber 
-                        ? activeLicense.license_key 
-                        : `${activeLicense.license_key.substring(0, 16)}...`
-                      }
-                    </code>
+                    <div className="space-y-2">
+                      <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
+                        {showLicenseNumber 
+                          ? activeLicense.license_key 
+                          : `${activeLicense.license_key.substring(0, activeLicense.license_key.length - 4)}`
+                        }
+                      </code>
+                      {!showLicenseNumber && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Code:</span>
+                          <code className="text-xs md:text-sm font-mono font-bold text-indigo-300 bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/30">
+                            {getLicenseSuffix(activeLicense.license_key)}
+                          </code>
+                        </div>
+                      )}
+                    </div>
                   </motion.div>
                 )}
 
@@ -348,12 +359,22 @@ const LicenseTab: React.FC = () => {
                         </motion.button>
                       </div>
                     </div>
-                    <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
-                      {showLicenseKey 
-                        ? localStorage.getItem('partywall_license_key') 
-                        : `${localStorage.getItem('partywall_license_key')?.substring(0, 16)}...`
-                      }
-                    </code>
+                    <div className="space-y-2">
+                      <code className="block text-xs md:text-sm font-mono text-slate-200 bg-slate-950/60 px-3 py-2.5 rounded-lg border border-slate-700/50 break-all shadow-inner">
+                        {showLicenseKey 
+                          ? localStorage.getItem('partywall_license_key') 
+                          : `${localStorage.getItem('partywall_license_key')?.substring(0, (localStorage.getItem('partywall_license_key')?.length || 0) - 4)}`
+                        }
+                      </code>
+                      {!showLicenseKey && localStorage.getItem('partywall_license_key') && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-500 uppercase tracking-wider">Code:</span>
+                          <code className="text-xs md:text-sm font-mono font-bold text-indigo-300 bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/30">
+                            {getLicenseSuffix(localStorage.getItem('partywall_license_key'))}
+                          </code>
+                        </div>
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </div>
