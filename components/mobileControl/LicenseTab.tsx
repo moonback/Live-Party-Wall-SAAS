@@ -11,7 +11,7 @@ import { useToast } from '../../context/ToastContext';
 import { revokeLicenseByKey, getActiveLicense } from '../../services/licenseService';
 import { getLicenseSuffix, isProLicense, isPartLicense } from '../../utils/licenseUtils';
 import { License } from '../../types';
-import { Crown, User } from 'lucide-react';
+import { Crown, User, Sparkles, Tag, Video, UserSearch, Film, ArrowRight } from 'lucide-react';
 
 const LicenseTab: React.FC = () => {
   const { licenseValidity, loading, refreshLicense } = useLicense();
@@ -662,6 +662,163 @@ const LicenseTab: React.FC = () => {
             )}
           </AnimatePresence>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Section Passer à Pro pour les licences PART */}
+      <AnimatePresence>
+        {activeLicense?.license_key && isPartLicense(activeLicense.license_key) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+            className="relative overflow-hidden bg-gradient-to-br from-amber-900/20 via-yellow-900/20 to-amber-900/20 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-amber-500/30 shadow-xl"
+          >
+            {/* Effet de brillance animé */}
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 opacity-50" />
+            
+            {/* Header */}
+            <div className="relative flex items-center gap-3 mb-4">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="relative p-2.5 rounded-xl bg-gradient-to-br from-amber-500/30 to-yellow-500/30 border border-amber-400/40 shadow-lg shadow-amber-500/20"
+              >
+                <Crown className="w-5 h-5 md:w-6 md:h-6 text-amber-300" />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute inset-0 rounded-xl bg-amber-400/20 blur-md"
+                />
+              </motion.div>
+              <div className="flex-1">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-0.5">Passer à Pro</h3>
+                <p className="text-xs text-amber-200/80">Débloquez toutes les fonctionnalités premium</p>
+              </div>
+            </div>
+
+            {/* Liste des fonctionnalités */}
+            <div className="relative space-y-2.5 mb-4">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 }}
+                className="p-3 rounded-lg bg-slate-800/40 border border-amber-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white font-semibold text-sm">Génération de légende IA</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Légendes automatiques pour vos photos</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="p-3 rounded-lg bg-slate-800/40 border border-amber-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                    <Tag className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white font-semibold text-sm">Génération de tags IA</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Tags automatiques pour organiser vos photos</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.45 }}
+                className="p-3 rounded-lg bg-slate-800/40 border border-amber-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                    <Video className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white font-semibold text-sm">Capture vidéo</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Enregistrez des vidéos depuis le mur</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="p-3 rounded-lg bg-slate-800/40 border border-amber-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                    <UserSearch className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white font-semibold text-sm">Retrouve-moi (Reconnaissance Faciale)</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Trouvez toutes vos photos automatiquement</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.55 }}
+                className="p-3 rounded-lg bg-slate-800/40 border border-amber-500/20 backdrop-blur-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                    <Film className="w-4 h-4 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-white font-semibold text-sm">Aftermovies dans la galerie</span>
+                    <p className="text-xs text-slate-400 mt-0.5">Générez des vidéos timelapse automatiques</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Avantages supplémentaires */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mb-4 p-3 rounded-lg bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20"
+            >
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-amber-300 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-white font-semibold text-sm mb-1">Avantages supplémentaires</p>
+                  <ul className="text-xs text-amber-200/80 space-y-1 list-disc list-inside">
+                    <li>Jusqu'à 50 événements (au lieu de 1)</li>
+                    <li>Support prioritaire</li>
+                    <li>Mises à jour en avant-première</li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Bouton d'action */}
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-400 text-white rounded-lg font-bold transition-all duration-300 shadow-lg shadow-amber-500/30 border border-amber-400/40 text-sm md:text-base"
+            >
+              <Crown className="w-4 h-4 md:w-5 md:h-5" />
+              <span>Passer à Pro</span>
+              <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 
