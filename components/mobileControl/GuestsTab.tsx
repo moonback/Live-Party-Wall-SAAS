@@ -160,39 +160,48 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-3 md:space-y-4">
       {/* En-tête avec actions */}
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2 text-white">
-          <div className="p-1.5 rounded-lg bg-white/10">
-            <Users className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 md:h-6 bg-gradient-to-b from-cyan-400 to-blue-400 rounded-full" />
+            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+              <Users className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
+            </div>
+            <div>
+              <h2 className="text-base md:text-lg font-semibold text-white">Invités connectés</h2>
+              <p className="text-[10px] md:text-xs text-white/50">{guests.length} invité{guests.length > 1 ? 's' : ''}</p>
+            </div>
           </div>
-          Invités connectés
-        </h2>
-        <button
-          onClick={onRefresh}
-          disabled={isLoading}
-          className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all disabled:opacity-50 touch-manipulation border border-white/20 shadow-sm"
-          aria-label="Actualiser"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
+          <button
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="group relative p-2 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 active:scale-95 transition-all duration-300 disabled:opacity-50 touch-manipulation border border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-cyan-500/10"
+            aria-label="Actualiser"
+          >
+            <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 text-white/70 group-hover:text-white transition-colors ${isLoading ? 'animate-spin' : ''}`} />
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+          </button>
+        </div>
       </div>
 
       {/* Liste des invités */}
       {isLoading ? (
-        <div className="text-center py-8">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
-          <div className="text-white/60">Chargement des invités...</div>
+        <div className="text-center py-12 md:py-16 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+          <RefreshCw className="w-10 h-10 md:w-12 md:h-12 animate-spin mx-auto mb-3 text-cyan-400" />
+          <div className="text-sm md:text-base text-white/60">Chargement des invités...</div>
         </div>
       ) : guests.length === 0 ? (
-        <div className="text-center py-8 text-white/50 bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-          <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p className="text-lg mb-2">Aucun invité connecté</p>
-          <p className="text-sm">Les invités apparaîtront ici lorsqu'ils créeront un profil</p>
+        <div className="text-center py-12 md:py-16 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+          <div className="p-3 rounded-full bg-cyan-500/10 border border-cyan-500/20 w-fit mx-auto mb-4">
+            <Users className="w-10 h-10 md:w-12 md:h-12 text-cyan-400/50" />
+          </div>
+          <p className="text-base md:text-lg font-semibold text-white mb-2">Aucun invité connecté</p>
+          <p className="text-xs md:text-sm text-white/50">Les invités apparaîtront ici lorsqu'ils créeront un profil</p>
         </div>
       ) : (
-        <div className="space-y-3 md:space-y-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+        <div className="space-y-2.5 md:space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
           {guests.map((guest) => {
             const joinDate = new Date(guest.createdAt);
             const formattedDate = joinDate.toLocaleDateString('fr-FR', { 
@@ -209,8 +218,8 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
             const swipeOffset = swipeState ? swipeState.currentX - swipeState.startX : 0;
             const isSwipingLeft = swipeOffset < 0;
             const swipeDistance = Math.abs(swipeOffset);
-            const swipePercentage = Math.min(swipeDistance / 150, 1); // Max 150px pour 100%
-            const isDeleteThreshold = swipeDistance >= 80; // Seuil de confirmation de suppression
+            const swipePercentage = Math.min(swipeDistance / 150, 1);
+            const isDeleteThreshold = swipeDistance >= 80;
             
             return (
               <div
@@ -220,81 +229,84 @@ const GuestsTab: React.FC<GuestsTabProps> = ({
               >
                 {/* Zone de suppression (visible lors du swipe) */}
                 <div 
-                  className={`absolute inset-y-0 right-0 flex items-center justify-end pr-4 transition-all duration-200 ${
+                  className={`absolute inset-y-0 right-0 flex items-center justify-end pr-3 md:pr-4 transition-all duration-200 ${
                     isDeleteThreshold 
-                      ? 'bg-red-500/40' 
-                      : 'bg-red-500/20'
+                      ? 'bg-red-500/50' 
+                      : 'bg-red-500/30'
                   }`}
                   style={{
                     width: `${swipeDistance}px`,
                     opacity: isSwipingLeft ? Math.max(swipePercentage, 0.3) : 0,
                   }}
                 >
-                  <Trash2 className={`w-6 h-6 transition-transform duration-200 ${
+                  <Trash2 className={`w-5 h-5 md:w-6 md:h-6 transition-transform duration-200 ${
                     isDeleteThreshold 
-                      ? 'text-red-300 scale-110' 
-                      : 'text-red-400'
+                      ? 'text-red-200 scale-110' 
+                      : 'text-red-300'
                   }`} />
                 </div>
                 
                 {/* Carte de l'invité */}
                 <div
-                  className="bg-white/10 rounded-xl p-4 md:p-5 backdrop-blur-sm border border-white/20 md:hover:bg-white/15 md:hover:border-white/30 transition-all shadow-sm relative"
+                  className="group bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 hover:border-white/20 transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-0.5 relative"
                   style={{
                     transform: isSwipingLeft ? `translateX(${swipeOffset}px)` : 'translateX(0)',
                     transition: swipeState?.isSwiping ? 'none' : 'transform 0.3s ease-out',
                   }}
                 >
-                  <div className="flex items-center gap-3 md:gap-4">
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    <img
-                      src={guest.avatarUrl}
-                      alt={guest.name}
-                      className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-cyan-500/30"
-                    />
-                  </div>
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0 relative">
+                      <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-black/20 shadow-sm animate-pulse" />
+                      <img
+                        src={guest.avatarUrl}
+                        alt={guest.name}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-cyan-500/30 shadow-md transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
 
-                  {/* Informations */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-white truncate mb-1">{guest.name}</h3>
-                        <p className="text-xs text-white/60">
-                          Inscrit le {formattedDate} à {formattedTime}
-                        </p>
+                    {/* Informations */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm md:text-base font-semibold text-white truncate mb-0.5">{guest.name}</h3>
+                          <p className="text-[10px] md:text-xs text-white/50 flex items-center gap-1">
+                            <span>Inscrit le {formattedDate}</span>
+                            <span className="text-white/30">•</span>
+                            <span>{formattedTime}</span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setShowDeleteConfirm(guest.id)}
+                          disabled={isDeleting === guest.id}
+                          className="p-1.5 md:p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 active:scale-95 transition-all duration-300 disabled:opacity-50 flex-shrink-0 touch-manipulation border border-red-500/20 hover:border-red-500/40 shadow-sm"
+                          title="Supprimer l'invité"
+                          aria-label="Supprimer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-400" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setShowDeleteConfirm(guest.id)}
-                        disabled={isDeleting === guest.id}
-                        className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 transition-all disabled:opacity-50 flex-shrink-0 touch-manipulation border border-red-500/30 shadow-sm ml-2"
-                        title="Supprimer l'invité"
-                        aria-label="Supprimer"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
                     </div>
                   </div>
-                </div>
 
                   {/* Confirmation de suppression */}
                   {showDeleteConfirm === guest.id && (
-                    <div className="mt-3 p-3 bg-red-500/20 rounded-lg border border-red-500/30">
-                      <div className="text-sm mb-2">Supprimer {guest.name} ?</div>
+                    <div className="mt-3 p-3 bg-red-500/10 rounded-xl border border-red-500/30 backdrop-blur-sm">
+                      <div className="text-xs md:text-sm font-medium text-white mb-2.5">Supprimer {guest.name} ?</div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleDelete(guest.id, guest.name)}
                           disabled={isDeleting === guest.id}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-500 hover:bg-red-600 active:bg-red-700 active:scale-95 transition-all text-sm disabled:opacity-50 touch-manipulation shadow-sm"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-br from-red-500/30 to-red-600/30 hover:from-red-500/40 hover:to-red-600/40 active:from-red-500/50 active:to-red-600/50 active:scale-95 transition-all duration-300 text-xs md:text-sm disabled:opacity-50 touch-manipulation border border-red-500/30 shadow-md"
                         >
-                          <Check className="w-4 h-4" />
+                          <Check className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           {isDeleting === guest.id ? 'Suppression...' : 'Confirmer'}
                         </button>
                         <button
                           onClick={() => setShowDeleteConfirm(null)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm touch-manipulation border border-white/20 shadow-sm"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/15 active:scale-95 transition-all duration-300 text-xs md:text-sm touch-manipulation border border-white/10 shadow-sm"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
                           Annuler
                         </button>
                       </div>
