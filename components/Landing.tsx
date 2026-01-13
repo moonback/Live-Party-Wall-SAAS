@@ -402,7 +402,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
               onMouseLeave={() => setHoveredCard(null)}
               onFocus={() => setHoveredCard(option.id)}
               onBlur={() => setHoveredCard(null)}
-              className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[180px] min-h-[100px] lg:min-h-[200px] rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-500 shadow-lg hover:shadow-2xl ${
+              className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[180px] min-h-[70px] lg:min-h-[200px] rounded-lg lg:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-500 shadow-lg hover:shadow-2xl ${
                 mounted ? '' : 'pointer-events-none'
               }`}
               aria-label={option.title}
@@ -470,35 +470,35 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
               />
 
               {/* Contenu */}
-              <div className="relative h-full flex flex-col items-center justify-center gap-3 lg:gap-4 p-4 lg:p-5">
+              <div className="relative h-full flex flex-col items-center justify-center gap-1.5 lg:gap-4 p-2.5 lg:p-5">
                 {/* Badge Primary */}
                 {option.isPrimary && (
                   <motion.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={mounted ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -180 }}
                     transition={{ delay: option.delay + 0.2, type: "spring", stiffness: 200 }}
-                    className="absolute top-2 right-2 z-10"
+                    className="absolute top-1.5 right-1.5 lg:top-2 lg:right-2 z-10"
                   >
                     <motion.div
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/90 to-orange-500/90 backdrop-blur-sm border border-yellow-400/50 shadow-lg"
+                      className="flex items-center gap-0.5 lg:gap-1 px-1 lg:px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/90 to-orange-500/90 backdrop-blur-sm border border-yellow-400/50 shadow-lg"
                       animate={isHovered ? { scale: [1, 1.1, 1] } : { scale: 1 }}
                       transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
                     >
-                      <Zap className="w-2.5 h-2.5 text-yellow-100" />
-                      <span className="text-[9px] font-bold text-yellow-100">POPULAIRE</span>
+                      <Zap className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-yellow-100" />
+                      <span className="text-[8px] lg:text-[9px] font-bold text-yellow-100">POPULAIRE</span>
                     </motion.div>
                   </motion.div>
                 )}
 
                 {/* Icône */}
                 <motion.div
-                  className={`relative w-14 h-14 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-2xl`}
+                  className={`relative w-10 h-10 lg:w-16 lg:h-16 rounded-lg lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-2xl`}
                   animate={isHovered ? { scale: 1.15, rotate: [0, 5, -5, 0] } : { scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <Icon className="w-7 h-7 lg:w-9 lg:h-9 text-white drop-shadow-lg relative z-10" />
+                  <Icon className="w-5 h-5 lg:w-9 lg:h-9 text-white drop-shadow-lg relative z-10" />
                   <motion.div
-                    className={`absolute inset-0 bg-gradient-to-br ${option.gradient} rounded-xl lg:rounded-2xl blur-md`}
+                    className={`absolute inset-0 bg-gradient-to-br ${option.gradient} rounded-lg lg:rounded-2xl blur-md`}
                     animate={isHovered ? { 
                       opacity: [0.5, 0.8, 0.5],
                       scale: [1, 1.2, 1]
@@ -511,15 +511,15 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                   />
                   {/* Glow autour de l'icône */}
                   <motion.div
-                    className={`absolute -inset-1 bg-gradient-to-br ${option.gradient} rounded-xl lg:rounded-2xl blur-sm`}
+                    className={`absolute -inset-1 bg-gradient-to-br ${option.gradient} rounded-lg lg:rounded-2xl blur-sm`}
                     animate={isHovered ? { opacity: [0.3, 0.6, 0.3] } : { opacity: 0 }}
                     transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
                   />
                 </motion.div>
 
                 {/* Texte */}
-                <div className="flex flex-col items-center gap-1.5 text-center">
-                  <h3 className="text-base lg:text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:via-violet-300 group-hover:to-sky-300 transition-all duration-500">
+                <div className="flex flex-col items-center gap-0.5 lg:gap-1.5 text-center">
+                  <h3 className="text-xs lg:text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:via-violet-300 group-hover:to-sky-300 transition-all duration-500">
                     {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Retrouver' : option.title}
                   </h3>
                   <p className="text-[10px] lg:text-xs text-white/60 group-hover:text-white/80 transition-colors duration-500 hidden lg:block">
@@ -529,14 +529,14 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
 
                 {/* Indicateur de flèche */}
                 <motion.div
-                  className="absolute bottom-3 lg:bottom-4"
+                  className="absolute bottom-1.5 lg:bottom-4"
                   animate={isHovered ? { 
                     x: [0, 4, 0],
                     opacity: [0.4, 1, 0.4]
                   } : { x: 0, opacity: 0.4 }}
                   transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0, ease: "easeInOut" }}
                 >
-                  <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5 text-white/40 group-hover:text-white/90 transition-colors duration-500" />
+                  <ArrowRight className="w-3 h-3 lg:w-5 lg:h-5 text-white/40 group-hover:text-white/90 transition-colors duration-500" />
                 </motion.div>
               </div>
             </motion.button>
