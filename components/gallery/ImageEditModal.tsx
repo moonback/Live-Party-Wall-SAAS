@@ -44,7 +44,8 @@ export const ImageEditModal: React.FC<ImageEditModalProps> = ({
     setGeneratedImage(null);
 
     try {
-      const base64Image = await generateImageFromPrompt(prompt.trim());
+      // Envoyer l'image originale pour modification
+      const base64Image = await generateImageFromPrompt(prompt.trim(), 'gemini-2.5-flash-image-preview', photo.url);
       setGeneratedImage(base64Image);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la génération de l\'image';
@@ -156,7 +157,7 @@ export const ImageEditModal: React.FC<ImageEditModalProps> = ({
             autoFocus
           />
           <p className="text-slate-500 text-xs mt-2">
-            💡 Soyez créatif ! Décrivez comment vous voulez transformer votre photo.
+            💡 Soyez créatif ! Décrivez comment vous voulez transformer votre photo. L'image originale sera utilisée comme référence pour la modification.
           </p>
         </div>
 

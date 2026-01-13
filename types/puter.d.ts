@@ -17,6 +17,22 @@ interface PuterAI {
       quality?: 'low' | 'medium' | 'high' | 'hd' | 'standard';
     }
   ): Promise<HTMLImageElement>;
+  
+  /**
+   * Modifie une image existante à partir d'un prompt (si supporté)
+   * @param imageUrl - URL de l'image source à modifier
+   * @param prompt - Description des modifications à apporter
+   * @param options - Options de génération (modèle, qualité, etc.)
+   * @returns Promise résolue avec un HTMLImageElement
+   */
+  img2img?(
+    imageUrl: string,
+    prompt: string,
+    options?: {
+      model?: string;
+      quality?: 'low' | 'medium' | 'high' | 'hd' | 'standard';
+    }
+  ): Promise<HTMLImageElement>;
 }
 
 interface Puter {
