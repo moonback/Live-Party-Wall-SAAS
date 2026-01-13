@@ -55,7 +55,7 @@ constants.ts    # Constantes globales
 ```
 
 ### Patterns Architecturaux
-- **Service Layer** : Toute la logique métier dans `/services`, les composants restent "stupides"
+- **Service Layer Pattern** : Toute la logique métier dans `/services`, les composants restent "stupides"
 - **Context API** : Pour l'état global partagé (Event, Photos, Settings, Auth, Toast)
 - **Lazy Loading** : Tous les composants principaux sont lazy-loaded avec React.lazy()
 - **Type Safety** : TypeScript strict, types définis dans `types.ts`

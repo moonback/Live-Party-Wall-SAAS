@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, X, Check, User, Upload, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Camera, X, Check, User, Upload, ArrowRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
 import { validateAuthorName, validateImageFile, MAX_AUTHOR_NAME_LENGTH } from '../utils/validation';
@@ -246,7 +247,7 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
   };
 
   return (
-    <div className="h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="h-screen flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       {/* Background Image - Responsive */}
       <img
         src={
@@ -267,141 +268,338 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
 
       <div className="relative z-[2] w-full max-w-md">
         {/* Progress Bar */}
-        <div className="mb-6 flex justify-between items-center px-2">
-          <div className="flex gap-2 w-full max-w-[120px]">
-            <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 1 ? 'bg-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'bg-white/10'}`} />
-            <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 2 ? 'bg-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'bg-white/10'}`} />
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 sm:mb-6 flex justify-between items-center px-2"
+        >
+          <div className="flex gap-1.5 w-full max-w-[100px] sm:max-w-[120px]">
+            <motion.div
+              className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 1 ? 'bg-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'bg-white/10'}`}
+              animate={step >= 1 ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 1.5, repeat: step >= 1 ? Infinity : 0 }}
+            />
+            <motion.div
+              className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${step >= 2 ? 'bg-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'bg-white/10'}`}
+              animate={step >= 2 ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 1.5, repeat: step >= 2 ? Infinity : 0 }}
+            />
           </div>
-          <span className="text-xs font-bold text-pink-400 uppercase tracking-widest">Étape {step} sur 2</span>
-        </div>
+          <span className="text-[10px] sm:text-xs font-bold text-pink-400 uppercase tracking-widest">Étape {step} sur 2</span>
+        </motion.div>
 
-        <div className="backdrop-blur-2xl bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all duration-500">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl transition-all duration-500 relative overflow-hidden"
+        >
+          {/* Gradient background animé */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100"
+            animate={{
+              backgroundPosition: ['0% 0%', '100% 100%'],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'linear',
+            }}
+          />
+          
+          {/* Shine effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+            initial={{ x: '-100%' }}
+            animate={{ x: '100%' }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              repeatDelay: 2,
+              ease: 'linear',
+            }}
+          />
           
           {/* STEP 1: USERNAME */}
-          {step === 1 && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-3xl mx-auto mb-4 flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <User className="w-10 h-10 text-white" />
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="relative z-10"
+              >
+                <div className="text-center mb-6 sm:mb-8">
+                  <motion.div
+                    className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl sm:rounded-3xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg shadow-pink-500/30"
+                    animate={{ rotate: [0, 5] }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      repeatType: 'reverse',
+                      ease: 'easeInOut' 
+                    }}
+                  >
+                    <User className="w-8 h-8 sm:w-10 sm:h-10 text-white relative z-10" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl sm:rounded-3xl blur-md opacity-50"
+                      animate={{ opacity: [0.5, 0.8, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  </motion.div>
+                  <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
+                    Quel est ton prénom ou pseudo&nbsp;?
+                  </h1>
+                  <p className="text-sm sm:text-base text-slate-400">
+                    Indique le nom qui s'affichera à côté de ta photo sur le mur, pour que tes amis et invités puissent te reconnaître facilement&nbsp;!
+                  </p>
                 </div>
-                <h1 className="text-3xl font-black text-white mb-2">
-                  Quel est ton prénom ou pseudo&nbsp;?
-                </h1>
-                <p className="text-slate-400">
-                  Indique le nom qui s'affichera à côté de ta photo sur le mur, pour que tes amis et invités puissent te reconnaître facilement&nbsp;!
-                </p>
-              </div>
 
-              <div className="space-y-6">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && userName.trim() && handleNextStep()}
-                    placeholder="Ton pseudo ou prénom"
-                    maxLength={MAX_AUTHOR_NAME_LENGTH}
-                    className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-xl text-white placeholder-white/20 focus:outline-none focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/10 transition-all"
-                    autoFocus
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-white/20">
-                    {userName.length}/{MAX_AUTHOR_NAME_LENGTH}
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="relative group">
+                    <motion.input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && userName.trim() && handleNextStep()}
+                      placeholder="Ton pseudo ou prénom"
+                      maxLength={MAX_AUTHOR_NAME_LENGTH}
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white/5 border-2 border-white/10 rounded-xl sm:rounded-2xl text-lg sm:text-xl text-white placeholder-white/20 focus:outline-none focus:border-pink-500/50 focus:ring-4 focus:ring-pink-500/10 transition-all relative z-10"
+                      autoFocus
+                      whileFocus={{ scale: 1.01 }}
+                    />
+                    <motion.div
+                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-[10px] sm:text-xs font-bold text-white/20"
+                      animate={{ opacity: userName.length > 0 ? 1 : 0.5 }}
+                    >
+                      {userName.length}/{MAX_AUTHOR_NAME_LENGTH}
+                    </motion.div>
+                    {userName.length > 0 && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2"
+                      >
+                        <Sparkles className="w-4 h-4 text-pink-400" />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 sm:gap-3">
+                    {onBack && (
+                      <motion.button
+                        onClick={onBack}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all border border-white/10 hover:border-white/20"
+                      >
+                        Annuler
+                      </motion.button>
+                    )}
+                    <motion.button
+                      onClick={handleNextStep}
+                      disabled={!userName.trim()}
+                      whileHover={userName.trim() ? { scale: 1.02 } : {}}
+                      whileTap={userName.trim() ? { scale: 0.98 } : {}}
+                      className="flex-1 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl sm:rounded-2xl text-white font-black text-base sm:text-lg shadow-xl shadow-pink-500/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 relative overflow-hidden group"
+                      style={{
+                        boxShadow: userName.trim()
+                          ? '0 10px 40px rgba(236, 72, 153, 0.3), 0 0 20px rgba(236, 72, 153, 0.2)'
+                          : 'none',
+                      }}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        animate={userName.trim() ? {
+                          backgroundPosition: ['0% 0%', '100% 100%'],
+                        } : {}}
+                        transition={{ duration: 2, repeat: userName.trim() ? Infinity : 0 }}
+                      />
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                        initial={{ x: '-100%' }}
+                        animate={userName.trim() ? { x: '100%' } : { x: '-100%' }}
+                        transition={{ duration: 1, repeat: userName.trim() ? Infinity : 0, ease: 'linear' }}
+                      />
+                      <span className="relative z-10">Suivant</span>
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
+                    </motion.button>
                   </div>
                 </div>
-
-                <div className="flex gap-3">
-                  {onBack && (
-                    <button onClick={onBack} className="px-6 py-4 rounded-2xl bg-white/5 text-white font-bold hover:bg-white/10 transition-colors">
-                      Annuler
-                    </button>
-                  )}
-                  <button
-                    onClick={handleNextStep}
-                    disabled={!userName.trim()}
-                    className="flex-1 px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-black text-lg shadow-xl shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 disabled:hover:scale-100 flex items-center justify-center gap-2"
-                  >
-                    Suivant <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* STEP 2: AVATAR */}
-          {step === 2 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-              <button onClick={handlePrevStep} className="mb-6 flex items-center gap-1 text-slate-400 hover:text-white transition-colors font-bold text-sm">
-                <ChevronLeft className="w-4 h-4" /> Retour
-              </button>
-
-              <div className="text-center mb-6">
-                <h1 className="text-3xl font-black text-white mb-2">
-                  Prends ta photo de profil&nbsp;! <span role="img" aria-label="Appareil photo">📸</span>
-                </h1>
-                <p className="text-slate-400">
-                  Cette photo apparaîtra à côté de ton nom sur le mur.
-                </p>
-              </div>
-
-              <div className="mb-8">
-                {!avatarPhoto ? (
-                  <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-900 border-2 border-white/10 shadow-inner group">
-                    {flash && <div className="absolute inset-0 bg-white z-50 animate-flash" />}
-                    
-                    {!cameraError && stream ? (
-                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                          <Camera className="w-8 h-8 text-white/20" />
-                        </div>
-                        <p className="text-sm text-slate-500 mb-4">{cameraError ? 'Accès caméra refusé' : 'Initialisation...'}</p>
-                        <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-bold transition-all">
-                          Uploader une photo
-                        </button>
-                      </div>
-                    )}
-
-                    {!cameraError && stream && (
-                      <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6">
-                        <button onClick={switchCamera} className="p-3 bg-black/40 backdrop-blur-md rounded-2xl text-white hover:bg-black/60 transition-all">
-                          <Camera className="w-6 h-6" />
-                        </button>
-                        <button onClick={captureAvatar} className="w-16 h-16 bg-white rounded-full border-4 border-white/30 shadow-2xl hover:scale-110 active:scale-90 transition-all" />
-                        <button onClick={() => fileInputRef.current?.click()} className="p-3 bg-black/40 backdrop-blur-md rounded-2xl text-white hover:bg-black/60 transition-all">
-                          <Upload className="w-6 h-6" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="relative aspect-square rounded-3xl overflow-hidden border-4 border-pink-500 shadow-2xl shadow-pink-500/20 group">
-                    <img src={avatarPhoto} alt="Avatar" className="w-full h-full object-cover scale-x-[-1]" />
-                    <button onClick={retakeAvatar} className="absolute top-4 right-4 p-2 bg-black/60 backdrop-blur-md rounded-xl text-white hover:bg-red-500 transition-all">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-
-              <button
-                onClick={handleSubmit}
-                disabled={!avatarPhoto || isRegistering}
-                className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-black text-lg shadow-xl shadow-pink-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3"
+          <AnimatePresence mode="wait">
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="relative z-10"
               >
-                {isRegistering ? (
-                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <><Check className="w-6 h-6" /> C'est parti !</>
-                )}
-              </button>
-            </div>
-          )}
+                <motion.button
+                  onClick={handlePrevStep}
+                  whileHover={{ scale: 1.05, x: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mb-4 sm:mb-6 flex items-center gap-1 text-slate-400 hover:text-white transition-colors font-bold text-xs sm:text-sm group"
+                >
+                  <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform" /> Retour
+                </motion.button>
+
+                <div className="text-center mb-4 sm:mb-6">
+                  <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
+                    Prends ta photo de profil&nbsp;! <span role="img" aria-label="Appareil photo">📸</span>
+                  </h1>
+                  <p className="text-sm sm:text-base text-slate-400">
+                    Cette photo apparaîtra à côté de ton nom sur le mur.
+                  </p>
+                </div>
+
+                <div className="mb-6 sm:mb-8">
+                  {!avatarPhoto ? (
+                    <div className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border-2 border-white/10 shadow-inner group">
+                      {flash && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: [0, 1, 0] }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute inset-0 bg-white z-50"
+                        />
+                      )}
+                      
+                      {!cameraError && stream ? (
+                        <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+                          <motion.div
+                            className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-full flex items-center justify-center mb-3 sm:mb-4"
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-white/20" />
+                          </motion.div>
+                          <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">{cameraError ? 'Accès caméra refusé' : 'Initialisation...'}</p>
+                          <motion.button
+                            onClick={() => fileInputRef.current?.click()}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-3 sm:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white text-[10px] sm:text-xs font-bold transition-all border border-white/10"
+                          >
+                            Uploader une photo
+                          </motion.button>
+                        </div>
+                      )}
+
+                      {!cameraError && stream && (
+                        <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 flex justify-center items-center gap-4 sm:gap-6">
+                          <motion.button
+                            onClick={switchCamera}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="p-2.5 sm:p-3 bg-black/40 backdrop-blur-md rounded-xl sm:rounded-2xl text-white hover:bg-black/60 transition-all border border-white/10"
+                          >
+                            <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
+                          </motion.button>
+                          <motion.button
+                            onClick={captureAvatar}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full border-4 border-white/30 shadow-2xl shadow-white/20 relative overflow-hidden group"
+                          >
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 opacity-0 group-hover:opacity-20"
+                              animate={{ rotate: [0, 360] }}
+                              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                            />
+                          </motion.button>
+                          <motion.button
+                            onClick={() => fileInputRef.current?.click()}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="p-2.5 sm:p-3 bg-black/40 backdrop-blur-md rounded-xl sm:rounded-2xl text-white hover:bg-black/60 transition-all border border-white/10"
+                          >
+                            <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="relative aspect-square rounded-2xl sm:rounded-3xl overflow-hidden border-4 border-pink-500 shadow-2xl shadow-pink-500/20 group"
+                    >
+                      <img src={avatarPhoto} alt="Avatar" className="w-full h-full object-cover scale-x-[-1]" />
+                      <motion.button
+                        onClick={retakeAvatar}
+                        whileHover={{ scale: 1.1, rotate: 90 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 bg-black/60 backdrop-blur-md rounded-xl text-white hover:bg-red-500 transition-all border border-white/10"
+                      >
+                        <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </motion.button>
+                      <motion.div
+                        className="absolute inset-0 border-4 border-pink-500 rounded-2xl sm:rounded-3xl"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </motion.div>
+                  )}
+                </div>
+
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+
+                <motion.button
+                  onClick={handleSubmit}
+                  disabled={!avatarPhoto || isRegistering}
+                  whileHover={avatarPhoto && !isRegistering ? { scale: 1.02 } : {}}
+                  whileTap={avatarPhoto && !isRegistering ? { scale: 0.98 } : {}}
+                  className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl sm:rounded-2xl text-white font-black text-base sm:text-lg shadow-xl shadow-pink-500/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 relative overflow-hidden group"
+                  style={{
+                    boxShadow: avatarPhoto && !isRegistering
+                      ? '0 10px 40px rgba(236, 72, 153, 0.3), 0 0 20px rgba(236, 72, 153, 0.2)'
+                      : 'none',
+                  }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    animate={avatarPhoto && !isRegistering ? {
+                      backgroundPosition: ['0% 0%', '100% 100%'],
+                    } : {}}
+                    transition={{ duration: 2, repeat: avatarPhoto && !isRegistering ? Infinity : 0 }}
+                  />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    initial={{ x: '-100%' }}
+                    animate={avatarPhoto && !isRegistering ? { x: '100%' } : { x: '-100%' }}
+                    transition={{ duration: 1, repeat: avatarPhoto && !isRegistering ? Infinity : 0, ease: 'linear' }}
+                  />
+                  {isRegistering ? (
+                    <motion.div
+                      className="w-5 h-5 sm:w-6 sm:h-6 border-3 border-white/30 border-t-white rounded-full relative z-10"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    />
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5 sm:w-6 sm:h-6 relative z-10" />
+                      <span className="relative z-10">C'est parti !</span>
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <canvas ref={canvasRef} className="hidden" />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Globe, X } from 'lucide-react';
+import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Globe, X, Crown, User } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
-import { isElectron } from '../../utils/electronPaths';
+import { isElectron, getStaticAssetPath } from '../../utils/electronPaths';
 import { useEvent } from '../../context/EventContext';
 import { getBaseUrl } from '../../utils/urlUtils';
 import { logger } from '../../utils/logger';
 import { SidebarHamburgerButton } from './AdminTabsNavigation';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -33,6 +34,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   isMobileMenuOpen = false, onMobileMenuToggle
 }) => {
   const { currentEvent } = useEvent();
+  const { isProLicense, isPartLicense } = useLicenseFeatures();
   const [showEventLink, setShowEventLink] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -54,9 +56,23 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
     return `${getBaseUrl()}?event=${currentEvent.slug}`;
   };
 
-  const handleOpenEventLink = () => {
+  const handleOpenEventLink = async () => {
     const url = getEventUrl();
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    if (!url) return;
+    
+    // Dans Electron, utiliser l'API pour ouvrir avec la même session
+    if (isElectron() && window.electronAPI) {
+      try {
+        await window.electronAPI.openWindow(url);
+      } catch (error) {
+        logger.error('Erreur lors de l\'ouverture de la fenêtre', error, { component: 'AdminDashboardHeader', action: 'openEventLink' });
+        // Fallback vers window.open si l'API échoue
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    } else {
+      // En web, utiliser window.open normalement
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleConfirm = () => {
@@ -116,7 +132,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
         <div className="relative px-4 sm:px-5 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 flex-wrap">
             {/* Branding Compact avec bouton hamburger */}
-            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 w-full sm:w-auto">
               {/* Bouton hamburger mobile */}
               {onMobileMenuToggle && (
                 <SidebarHamburgerButton 
@@ -127,12 +143,17 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
                 <div className="relative p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">
-                  <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
+                  <img
+                    src={isElectron() ? getStaticAssetPath('icon.png') : '/icon.png'}
+                    alt="Logo Partywall"
+                    className="w-5 h-5 sm:w-8 sm:h-8 object-contain"
+                    draggable={false}
+                  />
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
-                  <span>Live</span>
+                  
                   <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mx-1">Party</span>
                   <span>Wall</span>
                 </h1>
@@ -152,8 +173,35 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                       </div>
                     </>
                   )}
+                  {/* Badge de licence */}
+                  {(isProLicense || isPartLicense) && (
+                    <>
+                      <span className="text-slate-600 hidden sm:inline">•</span>
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] sm:text-xs font-semibold ${
+                        isProLicense 
+                          ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-amber-500/40 text-amber-300' 
+                          : 'bg-slate-700/30 border-slate-600/40 text-slate-400'
+                      }`}>
+                        {isProLicense ? (
+                          <>
+                            <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            <span className="hidden sm:inline">PRO</span>
+                            <span className="sm:hidden">PRO</span>
+                          </>
+                        ) : (
+                          <>
+                            <User className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            <span className="hidden sm:inline">PART</span>
+                            <span className="sm:hidden">PART</span>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
+              {/* Profil visible sur mobile uniquement */}
+              <div className="ml-auto sm:hidden"><AdminProfile onLogout={onLogout} /></div>
             </div>
 
             {/* Tous les boutons sur une seule ligne */}
@@ -209,8 +257,8 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 </>
               )}
 
-              {/* Profil */}
-              <div className="ml-auto sm:ml-0"><AdminProfile onLogout={onLogout} /></div>
+              {/* Profil visible sur desktop uniquement */}
+              <div className="hidden sm:block"><AdminProfile onLogout={onLogout} /></div>
             </div>
           </div>
 

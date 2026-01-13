@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
-import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
+import { Photo, SortOption, MediaFilter, Aftermovie, GalleryViewMode } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, clearPhotoCaption, deletePhoto } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
@@ -14,8 +14,9 @@ import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
 import { combineCleanups } from '../utils/subscriptionHelper';
 import { logger } from '../utils/logger';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { GalleryHeader } from './gallery/GalleryHeader';
-import { GalleryFilters } from './gallery/GalleryFilters';
+import { GallerySidebar } from './gallery/GallerySidebar';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
 import { AftermovieCard } from './gallery/AftermovieCard';
@@ -70,7 +71,6 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [lightboxPhoto, setLightboxPhoto] = useState<Photo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
   const [aftermovies, setAftermovies] = useState<Aftermovie[]>([]);
   const [downloadingAftermovieIds, setDownloadingAftermovieIds] = useState<Set<string>>(new Set());
@@ -78,6 +78,28 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   // Selection mode states
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  const isMobile = useIsMobile();
+  
+  // Sidebar state - fermée par défaut
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<GalleryViewMode>(() => {
+    const saved = localStorage.getItem('gallery_view_mode');
+    return (saved as GalleryViewMode) || 'grid';
+  });
+  
+  // Désactiver masonry sur mobile - basculer vers grid si nécessaire
+  useEffect(() => {
+    if (isMobile && viewMode === 'masonry') {
+      setViewMode('grid');
+    }
+  }, [isMobile, viewMode]);
+  
+  useEffect(() => {
+    localStorage.setItem('gallery_view_mode', viewMode);
+  }, [viewMode]);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -105,13 +127,18 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     const loadData = async () => {
       try {
         setLoading(true);
-        const [allPhotos, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
+        const [allPhotosResult, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
           getPhotos(currentEvent.id),
           getUserLikes(userId),
           getUserReactions(userId),
           getAllGuests(currentEvent.id),
           getAftermovies(currentEvent.id)
         ]);
+        
+        // getPhotos peut retourner Photo[] ou PaginatedPhotosResult
+        const allPhotos = Array.isArray(allPhotosResult) 
+          ? allPhotosResult 
+          : allPhotosResult.photos;
         
         setPhotos(allPhotos);
         setLikedPhotoIds(new Set(userLikes));
@@ -128,7 +155,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         setGuestAvatars(avatarsMap);
         
         const { getPhotosReactions } = await import('../services/photoService');
-        const photoIds = allPhotos.map(p => p.id);
+        const photoIds = allPhotos.map((p: Photo) => p.id);
         const reactionsMap = await getPhotosReactions(photoIds);
         setPhotosReactions(reactionsMap);
       } catch (error) {
@@ -451,7 +478,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       addToast("Média téléchargé !", 'success');
     } catch (error) {
-      logger.error("Erreur de téléchargement", error, { component: 'GuestGallery', action: 'downloadPhoto', photoId });
+      logger.error("Erreur de téléchargement", error, { component: 'GuestGallery', action: 'downloadPhoto', photoId: photo.id });
       addToast("Erreur lors du téléchargement", 'error');
     } finally {
       setTimeout(() => {
@@ -470,7 +497,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       // Mettre à jour la photo dans la liste locale
       setPhotos(prev => prev.map(p => 
-        p.id === photoId ? { ...p, caption: caption.trim() || null } : p
+        p.id === photoId ? { ...p, caption: caption.trim() || '' } : p
       ));
     } catch (error) {
       logger.error("Erreur lors de la mise à jour de la légende", error, { component: 'GuestGallery', action: 'handleUpdateCaption', photoId });
@@ -485,7 +512,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       // Mettre à jour la photo dans la liste locale
       setPhotos(prev => prev.map(p => 
-        p.id === photoId ? { ...p, caption: null } : p
+        p.id === photoId ? { ...p, caption: '' } : p
       ));
     } catch (error) {
       logger.error("Erreur lors de la suppression de la légende", error, { component: 'GuestGallery', action: 'handleClearCaption', photoId });
@@ -663,80 +690,64 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-purple-900/30 rounded-full blur-[180px] animate-pulse-slow"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-pink-900/30 rounded-full blur-[180px]" style={{ animationName: 'pulseSlow', animationDuration: '8s', animationTimingFunction: 'ease-in-out', animationIterationCount: 'infinite', animationDelay: '2s' }}></div>
-      </div>
-      {/* Grain Texture */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-
-      {/* Floating Particles Effect */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 rounded-full bg-white/10 blur-sm animate-float"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + i * 12}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i * 0.5}s`,
-            }}
-          />
-        ))}
+      {/* Background Decor - Optimisé pour performance */}
+      <div className="fixed inset-0 pointer-events-none opacity-10">
+        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-900/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-pink-900/20 rounded-full blur-[120px]"></div>
       </div>
 
       {/* Header */}
       <GalleryHeader
         onBack={onBack}
         onUploadClick={onUploadClick}
-        onFiltersClick={() => setIsFiltersModalOpen(prev => !prev)}
+        onFiltersClick={() => setIsSidebarOpen(prev => !prev)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchInputRef={searchInputRef}
-        isFiltersModalOpen={isFiltersModalOpen}
+        isFiltersModalOpen={false}
         selectionMode={selectionMode}
         onToggleSelectionMode={toggleSelectionMode}
         selectedCount={selectedIds.size}
         onBatchDownload={handleBatchDownload}
         onParticipantsClick={() => setIsParticipantsModalOpen(true)}
+        onSidebarToggle={() => setIsSidebarOpen(prev => !prev)}
+        isSidebarOpen={isSidebarOpen}
       />
 
-      {/* Filters */}
-      <div className="sticky top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-1">
-          <GalleryFilters
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            mediaFilter={mediaFilter}
-            onMediaFilterChange={setMediaFilter}
-            onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
-            showBattles={showBattles}
-            onToggleBattles={() => setShowBattles(!showBattles)}
-            battlesCount={battles.length}
-            battleModeEnabled={settings.battle_mode_enabled !== false}
-            findMeEnabled={settings.find_me_enabled}
-            onFindMeClick={onFindMeClick}
-            isModalOpen={isFiltersModalOpen}
-            onModalOpenChange={setIsFiltersModalOpen}
-            photos={photos}
-            selectedAuthors={selectedAuthors}
-            onSelectedAuthorsChange={setSelectedAuthors}
-            videoEnabled={settings.video_capture_enabled !== false}
-            showAftermovies={showAftermovies}
-            onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
-            aftermoviesCount={aftermovies.length}
-            aftermoviesEnabled={settings.aftermovies_enabled !== false}
-          />
-              </div>
-            </div>
+      {/* Layout avec Sidebar et Content */}
+      <div className="flex flex-1 overflow-hidden relative" style={{ height: 'calc(100vh - 81px)' }}>
+        {/* Sidebar */}
+        <GallerySidebar
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          mediaFilter={mediaFilter}
+          onMediaFilterChange={setMediaFilter}
+          photos={photos}
+          selectedAuthors={selectedAuthors}
+          onSelectedAuthorsChange={setSelectedAuthors}
+          videoEnabled={settings.video_capture_enabled !== false}
+          showBattles={showBattles}
+          onToggleBattles={() => setShowBattles(!showBattles)}
+          battlesCount={battles.length}
+          battleModeEnabled={settings.battle_mode_enabled !== false}
+          findMeEnabled={settings.find_me_enabled}
+          onFindMeClick={onFindMeClick}
+          showAftermovies={showAftermovies}
+          onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
+          aftermoviesCount={aftermovies.length}
+          aftermoviesEnabled={settings.aftermovies_enabled !== false}
+          onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(prev => !prev)}
+        />
 
-      {/* Content */}
-      <div 
-        ref={parentRef} 
-        className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
-      >
+        {/* Content */}
+        <div 
+          ref={parentRef} 
+          className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
+        >
         <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-6">
           {/* Section Aftermovies ultra-compacte */}
           {settings.aftermovies_enabled !== false && aftermovies.length > 0 && showAftermovies && (
@@ -799,11 +810,13 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onSelect={handleSelect}
-            scrollContainerRef={parentRef}
+            scrollContainerRef={parentRef as React.RefObject<HTMLDivElement>}
             onUpdateCaption={handleUpdateCaption}
             onClearCaption={handleClearCaption}
             onDeletePhoto={handleDeletePhoto}
+            viewMode={viewMode}
           />
+        </div>
         </div>
       </div>
 

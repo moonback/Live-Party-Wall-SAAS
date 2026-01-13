@@ -1,7 +1,7 @@
 import React from 'react';
-import { Filter, User, Zap, Trophy, LayoutGrid, Calendar, Video, X } from 'lucide-react';
+import { Filter, User, Zap, Trophy, LayoutGrid, Calendar, Video, X, Grid3x3, List, LayoutGrid as MasonryIcon, Film } from 'lucide-react';
 import { GalleryFiltersModal } from './GalleryFiltersModal';
-import type { SortOption, MediaFilter, Photo } from '../../types';
+import type { SortOption, MediaFilter, Photo, GalleryViewMode } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
@@ -27,6 +27,8 @@ interface GalleryFiltersProps {
   onToggleAftermovies?: () => void;
   aftermoviesCount?: number;
   aftermoviesEnabled?: boolean;
+  viewMode?: GalleryViewMode;
+  onViewModeChange?: (mode: GalleryViewMode) => void;
 }
 
 export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
@@ -50,7 +52,9 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
   showAftermovies = true,
   onToggleAftermovies,
   aftermoviesCount = 0,
-  aftermoviesEnabled = false
+  aftermoviesEnabled = false,
+  viewMode = 'grid',
+  onViewModeChange
 }) => {
   const [internalIsModalOpen, setInternalIsModalOpen] = React.useState(false);
   const isModalOpen = externalIsModalOpen !== undefined ? externalIsModalOpen : internalIsModalOpen;
@@ -180,6 +184,48 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
               </motion.span>
             )}
           </motion.button>
+        )}
+
+        {/* View Mode Selector */}
+        {onViewModeChange && (
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-1 flex-shrink-0">
+            {([
+              { mode: 'grid' as GalleryViewMode, icon: Grid3x3, label: 'Grille' },
+              { mode: 'list' as GalleryViewMode, icon: List, label: 'Liste' },
+              // Masonry uniquement sur desktop
+              ...(isMobile ? [] : [{ mode: 'masonry' as GalleryViewMode, icon: MasonryIcon, label: 'Masonry' }]),
+              { mode: 'carousel' as GalleryViewMode, icon: Film, label: 'Carrousel' }
+            ]).map(({ mode, icon: Icon, label }) => (
+              <motion.button
+                key={mode}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onViewModeChange(mode)}
+                className={`flex items-center gap-1.5 px-2.5 py-2 min-h-[44px] rounded-lg sm:px-3 sm:py-2.5 sm:rounded-xl text-[10px] sm:text-[9px] md:text-[10px] font-bold transition-all touch-manipulation relative overflow-hidden ${
+                  viewMode === mode
+                    ? 'bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 text-pink-400 border border-pink-500/30 shadow-lg'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+                title={label}
+              >
+                {viewMode === mode && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20"
+                    animate={{
+                      x: ['-100%', '100%'],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'linear'
+                    }}
+                  />
+                )}
+                <Icon className={`w-3.5 h-3.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 relative z-10 ${isMobile ? '' : 'hidden sm:block'}`} />
+                <span className="relative z-10 hidden lg:inline">{label}</span>
+              </motion.button>
+            ))}
+          </div>
         )}
 
         {/* Find Me */}

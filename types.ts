@@ -54,6 +54,9 @@ export interface Aftermovie {
 
 export type ViewMode = 'landing' | 'guest' | 'wall' | 'admin' | 'gallery' | 'projection' | 'collage' | 'help' | 'onboarding' | 'stats' | 'stats-display' | 'mobile-control' | 'findme' | 'battle-results' | 'guest-profile' | 'privacy' | 'data-management';
 
+// Mode d'affichage de la galerie
+export type GalleryViewMode = 'grid' | 'list' | 'masonry' | 'carousel';
+
 export interface ToastMessage {
   id: string;
   text: string;

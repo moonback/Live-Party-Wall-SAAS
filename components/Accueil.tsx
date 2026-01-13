@@ -1,5 +1,4 @@
-import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
 import { getStaticAssetPath } from '../utils/electronPaths';
 
 interface AccueilProps {
@@ -10,7 +9,34 @@ interface AccueilProps {
  * Page d'accueil simplifiée (sans événement sélectionné)
  */
 const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
-  const { isAuthenticated } = useAuth();
+  const [progress, setProgress] = useState(0);
+
+  // Redirection automatique vers le tableau de bord après 5 secondes avec barre de progression
+  useEffect(() => {
+    const duration = 5000; // 5 secondes
+    const interval = 50; // Mise à jour toutes les 50ms
+    const increment = (100 / duration) * interval;
+
+    const progressTimer = setInterval(() => {
+      setProgress((prev) => {
+        const newProgress = prev + increment;
+        if (newProgress >= 100) {
+          clearInterval(progressTimer);
+          return 100;
+        }
+        return newProgress;
+      });
+    }, interval);
+
+    const redirectTimer = setTimeout(() => {
+      onAdminClick();
+    }, duration);
+
+    return () => {
+      clearInterval(progressTimer);
+      clearTimeout(redirectTimer);
+    };
+  }, [onAdminClick]);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-transparent text-white relative overflow-hidden">
@@ -35,19 +61,11 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
             <div className="relative flex items-center justify-center">
-              <svg 
-                className="relative w-20 h-20 text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2]" 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                <circle cx="12" cy="13" r="3"/>
-              </svg>
+              <img
+                src={getStaticAssetPath('logo-accueil.png')}
+                alt="Partywall Logo"
+                className="relative w-20 h-20 drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2] object-contain"
+              />
             </div>
           </div>
           
@@ -62,13 +80,35 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
           </p>
         </div>
 
-        {/* CTA Button */}
-        <button
-          onClick={onAdminClick}
-          className="px-8 py-4 bg-white text-black font-semibold rounded-full text-lg flex items-center gap-2 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all"
-        >
-          {isAuthenticated ? 'Accéder au Dashboard' : 'Commencer'}
-        </button>
+        {/* Barre de chargement */}
+        <div className="w-full max-w-md mt-8">
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+              style={{ 
+                width: `${progress}%`,
+              }}
+            >
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                style={{
+                  animation: 'shimmer 2s infinite',
+                  transform: 'translateX(-100%)',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <style>{`
+          @keyframes shimmer {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+        `}</style>
 
         {/* Footer */}
         <footer className="mt-auto pt-8 text-center">

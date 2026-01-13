@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
-import { getUserEvents, createEvent, deleteEvent } from '../services/eventService';
+import { getUserEvents, createEvent, deleteEvent, getUserEventsCount } from '../services/eventService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
+import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
+import { getMaxEvents, getEventLimitInfo } from '../utils/licenseUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isElectron } from '../utils/electronPaths';
 import { 
   Plus, Calendar, Search, Loader2, Clock, 
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
   Check, Filter, SortAsc, SortDesc,
-  ArrowRight, LayoutDashboard, Settings as SettingsIcon,
+  ArrowRight, LayoutDashboard, Settings as SettingsIcon, Lock, Sparkles
 } from 'lucide-react';
 
 interface EventSelectorProps {
@@ -23,8 +25,10 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   const { user } = useAuth();
   const { loadEventBySlug, currentEvent } = useEvent();
   const { addToast } = useToast();
+  const { licenseKey } = useLicenseFeatures();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [eventsCount, setEventsCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -57,6 +61,10 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
         setLoading(true);
         const userEvents = await getUserEvents(user.id);
         setEvents(userEvents);
+        
+        // Compter les événements créés par l'utilisateur (owner)
+        const count = await getUserEventsCount(user.id);
+        setEventsCount(count);
       } catch (error) {
         console.error('Error loading events:', error);
         addToast('Erreur lors du chargement des événements', 'error');
@@ -133,6 +141,13 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setDeletingEventId(event.id);
       await deleteEvent(event.id);
       setEvents(prev => prev.filter(e => e.id !== event.id));
+      
+      // Mettre à jour le compteur d'événements
+      if (user) {
+        const newCount = await getUserEventsCount(user.id);
+        setEventsCount(newCount);
+      }
+      
       addToast('Événement supprimé avec succès', 'success');
       setConfirmDeleteId(null);
     } catch (error: any) {
@@ -172,6 +187,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setNewEventSlug('');
       setNewEventName('');
       setNewEventDescription('');
+      
+      // Mettre à jour le compteur d'événements
+      const newCount = await getUserEventsCount(user.id);
+      setEventsCount(newCount);
+      
       addToast('Événement créé avec succès', 'success');
       
       // Sélectionner automatiquement le nouvel événement
@@ -200,6 +220,12 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setNewEventSlug(generateSlugFromName(newEventName));
     }
   }, [newEventName]);
+
+  // Calculer la limite et vérifier si elle est atteinte
+  const maxEvents = getMaxEvents(licenseKey);
+  const limitInfo = getEventLimitInfo(licenseKey);
+  const isLimitReached = eventsCount >= maxEvents;
+  const isPartLicense = limitInfo.type === 'PART';
 
   if (!user) {
     return (
@@ -268,19 +294,34 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
               <h1 className="text-2xl lg:text-3xl font-bold text-slate-100 bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
                 Mes événements
               </h1>
-              <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                <span className="w-1 h-1 rounded-full bg-slate-500"></span>
-                Gérez vos Party Walls
-              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-slate-500"></span>
+                  Gérez vos Party Walls
+                </p>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  isLimitReached 
+                    ? 'bg-amber-500/20 border border-amber-500/30 text-amber-400' 
+                    : 'bg-indigo-500/20 border border-indigo-500/30 text-indigo-400'
+                }`}>
+                  {eventsCount} / {maxEvents} {maxEvents === 1 ? 'événement' : 'événements'}
+                </span>
+              </div>
             </div>
           </div>
           <motion.button
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-semibold text-sm text-white transition-all duration-200 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35"
+            whileHover={!isLimitReached ? { scale: 1.02, y: -1 } : {}}
+            whileTap={!isLimitReached ? { scale: 0.98 } : {}}
+            onClick={() => !isLimitReached && setShowCreateForm(!showCreateForm)}
+            disabled={isLimitReached}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
+              isLimitReached
+                ? 'bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed opacity-60'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35'
+            }`}
+            title={isLimitReached ? (isPartLicense ? 'Limite atteinte. Passez à Pro pour créer jusqu\'à 50 événements.' : 'Limite d\'événements atteinte.') : ''}
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nouvel événement</span>
@@ -321,7 +362,51 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                   </motion.button>
                 </div>
 
-                <form onSubmit={handleCreateEvent} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Message limite atteinte */}
+                {isLimitReached && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-5 p-4 rounded-lg border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10 backdrop-blur-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 flex-shrink-0">
+                        <Lock className="w-5 h-5 text-amber-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-amber-300 mb-1 flex items-center gap-2">
+                          Limite d'événements atteinte
+                          {isPartLicense && (
+                            <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded-full">PART</span>
+                          )}
+                        </h3>
+                        <p className="text-xs text-amber-200/80 mb-3">
+                          {isPartLicense 
+                            ? `Vous avez atteint la limite de ${maxEvents} événement avec votre licence PART.`
+                            : `Vous avez atteint la limite de ${maxEvents} événements.`
+                          }
+                        </p>
+                        {isPartLicense && (
+                          <div className="flex items-center gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg font-semibold text-sm text-white transition-all duration-200 shadow-md shadow-indigo-500/25"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                              Passer à Pro
+                            </motion.button>
+                            <p className="text-xs text-amber-200/60">
+                              Créez jusqu'à 50 événements avec la licence PROS
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <form onSubmit={handleCreateEvent} className={`grid grid-cols-1 md:grid-cols-2 gap-5 ${isLimitReached ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div className="space-y-4">
                     <motion.div 
                       initial={{ opacity: 0, x: -10 }}
@@ -405,14 +490,18 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
-                      whileHover={{ scale: 1.01, y: -1 }}
-                      whileTap={{ scale: 0.99 }}
+                      whileHover={!isLimitReached ? { scale: 1.01, y: -1 } : {}}
+                      whileTap={!isLimitReached ? { scale: 0.99 } : {}}
                       type="submit"
-                      disabled={creating}
-                      className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 disabled:shadow-none"
+                      disabled={creating || isLimitReached}
+                      className={`w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                        isLimitReached
+                          ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 disabled:shadow-none'
+                      }`}
                     >
                       {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                      {creating ? 'Création...' : 'Créer l\'événement'}
+                      {creating ? 'Création...' : isLimitReached ? 'Limite atteinte' : 'Créer l\'événement'}
                     </motion.button>
                   </div>
                 </form>

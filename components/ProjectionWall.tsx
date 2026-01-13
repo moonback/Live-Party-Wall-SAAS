@@ -17,6 +17,7 @@ import { AR_DEFAULT_LIKES_THRESHOLD, AR_DEFAULT_TIME_WINDOW } from '../constants
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { logger } from '../utils/logger';
+import { getStaticAssetPath } from '../utils/electronPaths';
 import { QRCodeCard } from './projection/QRCodeCard';
 import { PhotoInfoOverlay } from './projection/PhotoInfoOverlay';
 import { ProjectionControls } from './projection/ProjectionControls';
@@ -810,6 +811,25 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
         reactions={currentPhotoReactions}
         isTransitioning={isTransitioning}
       />
+
+      {/* Logo en bas à gauche */}
+      {showQrCodes && (
+        <div
+          className="absolute bottom-10 md:bottom-12 lg:bottom-14 left-4 md:left-6 lg:left-8 z-20 pointer-events-none transition-opacity duration-500"
+          style={{
+            opacity: isTransitioning ? 0.7 : 1,
+          }}
+        >
+          <div className="bg-black/40 backdrop-blur-md rounded-lg md:rounded-xl p-2 md:p-3 border border-white/20 shadow-xl">
+            <img
+              src={settings.logo_url || getStaticAssetPath('logo-accueil.png')}
+              alt="Logo"
+              className="h-10 md:h-12 lg:h-16 w-auto max-w-[140px] md:max-w-[180px] lg:max-w-[220px] object-contain opacity-95"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Indicateur de progression */}
       <div

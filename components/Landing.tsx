@@ -1,18 +1,80 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ViewMode } from '../types';
-import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap } from 'lucide-react';
+import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap, Sparkles } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useEvent } from '../context/EventContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LandingProps {
   onSelectMode: (mode: ViewMode) => void;
   isAdminAuthenticated?: boolean;
 }
 
-// Composant ActionButton intégré
+// Composant CompactButton pour les boutons spéciaux
+interface CompactButtonProps {
+  onClick: () => void;
+  icon: LucideIcon;
+  title: string;
+  ariaLabel: string;
+  gradient: string;
+  glowColor: string;
+  textColor?: string;
+}
+
+const CompactButton: React.FC<CompactButtonProps> = ({
+  onClick,
+  icon: Icon,
+  title,
+  ariaLabel,
+  gradient,
+  glowColor,
+  textColor = 'text-white',
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.1, y: -3 }}
+      whileTap={{ scale: 0.9 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className={`relative p-2 rounded-xl backdrop-blur-xl bg-gradient-to-br ${gradient} border border-white/20 hover:border-white/40 ${textColor} transition-all duration-300 group overflow-hidden shadow-lg hover:shadow-2xl`}
+      style={{
+        boxShadow: isHovered
+          ? `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}, 0 0 40px ${glowColor.replace('0.4', '0.2')}`
+          : `0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 0 ${glowColor}`,
+      }}
+      title={title}
+      aria-label={ariaLabel}
+    >
+      <motion.div
+        className={`absolute inset-0 bg-gradient-to-br ${gradient} rounded-xl`}
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+        initial={{ x: '-100%' }}
+        animate={isHovered ? { x: '100%' } : { x: '-100%' }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+      />
+      <Icon className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 z-10" />
+    </motion.button>
+  );
+};
+
+// Composant ActionButton modernisé avec plus d'effets
 interface ActionButtonProps {
   onClick: () => void;
   icon: LucideIcon;
@@ -28,37 +90,92 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   icon: Icon,
   title,
   ariaLabel,
-  gradient = 'from-white/8 via-white/5 to-white/8',
-  glowColor = 'rgba(99, 102, 241, 0.15)',
+  gradient = 'from-pink-500/20 via-purple-500/20 to-cyan-500/20',
+  glowColor = 'rgba(236, 72, 153, 0.3)',
   className = '',
 }) => {
-  const defaultStyle: React.CSSProperties = {
-    boxShadow: `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
-  };
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className={`relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br ${gradient} hover:from-white/15 hover:via-white/10 hover:to-white/15 active:from-white/20 active:via-white/15 active:to-white/20 border border-white/20 hover:border-white/40 active:border-white/50 text-white/80 hover:text-white active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden ${className}`}
-      style={defaultStyle}
+      whileHover={{ scale: 1.1, y: -3 }}
+      whileTap={{ scale: 0.9 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className={`relative p-2 rounded-xl backdrop-blur-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white/80 hover:text-white transition-all duration-300 group overflow-hidden shadow-lg hover:shadow-2xl ${className}`}
+      style={{
+        boxShadow: isHovered
+          ? `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}, 0 0 40px ${glowColor.replace('0.3', '0.2')}`
+          : `0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 0 ${glowColor}`,
+      }}
       title={title}
       aria-label={ariaLabel}
-      onFocus={(e: React.FocusEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.boxShadow = `0 8px 32px rgba(0, 0, 0, 0.4), 0 0 30px ${glowColor.replace('0.15', '0.3')}, inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 3px ${glowColor.replace('0.15', '0.5')}`;
-      }}
-      onBlur={(e: React.FocusEvent<HTMLButtonElement>) => {
-        e.currentTarget.style.boxShadow = defaultStyle.boxShadow as string;
-      }}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/20 group-hover:via-purple-500/20 group-hover:to-cyan-500/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-sm" />
-      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-      <div className="absolute inset-0 bg-pink-500/20 rounded-xl sm:rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <Icon className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
-    </button>
+      {/* Gradient background animé */}
+      <motion.div
+        className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+        animate={{
+          backgroundPosition: ['0% 0%', '100% 100%'],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          repeatType: 'reverse',
+          ease: 'linear',
+        }}
+      />
+      
+      {/* Shine effect */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+        initial={{ x: '-100%' }}
+        animate={isHovered ? { x: '100%' } : { x: '-100%' }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+      />
+      
+      {/* Pulse effect */}
+      <motion.div
+        className={`absolute inset-0 bg-gradient-to-br ${gradient} rounded-xl`}
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      
+      {/* Glow ring */}
+      <motion.div
+        className="absolute -inset-0.5 rounded-xl border-2 border-white/0 group-hover:border-white/20 transition-all duration-500"
+        style={{
+          boxShadow: isHovered
+            ? `0 0 20px ${glowColor}`
+            : `0 0 0 0 ${glowColor}`,
+        }}
+        animate={{
+          boxShadow: [
+            `0 0 0 0 ${glowColor}`,
+            `0 0 20px ${glowColor}`,
+            `0 0 0 0 ${glowColor}`,
+          ],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      
+      <Icon className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 z-10" />
+    </motion.button>
   );
 };
 
-// Composant TopRightButtons intégré
+// Composant TopRightButtons modernisé
 interface TopRightButtonsProps {
   onSelectMode: (mode: ViewMode) => void;
   isAdminAuthenticated: boolean;
@@ -75,14 +192,20 @@ const TopRightButtons: React.FC<TopRightButtonsProps> = ({
   battleModeEnabled,
 }) => {
   return (
-    <div className="hidden sm:flex fixed top-1/2 right-2 sm:right-4 -translate-y-1/2 z-50 flex-col items-center gap-3 sm:gap-4 py-4 px-2 rounded-full backdrop-blur-sm bg-black/10 border border-white/5 transition-all duration-300 hover:bg-black/20">
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+      className="hidden sm:flex fixed top-1/2 right-3 -translate-y-1/2 z-50 flex-col items-center gap-1.5 py-2.5 px-1.5 rounded-xl backdrop-blur-2xl bg-black/30 border border-white/10 shadow-2xl"
+    >
       {hasUserProfile && (
         <ActionButton
           onClick={() => onSelectMode('guest-profile')}
           icon={User}
           title="Mon profil"
           ariaLabel="Mon profil"
-          glowColor="rgba(236, 72, 153, 0.15)"
+          gradient="from-pink-500/20 via-rose-500/20 to-purple-500/20"
+          glowColor="rgba(236, 72, 153, 0.4)"
         />
       )}
       <ActionButton
@@ -90,27 +213,28 @@ const TopRightButtons: React.FC<TopRightButtonsProps> = ({
         icon={HelpCircle}
         title="Aide"
         ariaLabel="Aide"
-        gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
-        glowColor="rgba(99, 102, 241, 0.15)"
+        gradient="from-indigo-500/20 via-blue-500/20 to-cyan-500/20"
+        glowColor="rgba(99, 102, 241, 0.4)"
       />
       {isAdminAuthenticated && (
-        <ActionButton
-          onClick={() => onSelectMode('projection')}
-          icon={Camera}
-          title="Projection Murale"
-          ariaLabel="Projection Murale"
-          glowColor="rgba(236, 72, 153, 0.15)"
-        />
-      )}
-      {isAdminAuthenticated && (
-        <ActionButton
-          onClick={() => onSelectMode('wall')}
-          icon={Images}
-          title="Mur Live"
-          ariaLabel="Mur Live"
-          gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
-          glowColor="rgba(99, 102, 241, 0.15)"
-        />
+        <>
+          <ActionButton
+            onClick={() => onSelectMode('projection')}
+            icon={Camera}
+            title="Projection Murale"
+            ariaLabel="Projection Murale"
+            gradient="from-pink-500/20 via-rose-500/20 to-purple-500/20"
+            glowColor="rgba(236, 72, 153, 0.4)"
+          />
+          <ActionButton
+            onClick={() => onSelectMode('wall')}
+            icon={Images}
+            title="Mur Live"
+            ariaLabel="Mur Live"
+            gradient="from-indigo-500/20 via-blue-500/20 to-cyan-500/20"
+            glowColor="rgba(99, 102, 241, 0.4)"
+          />
+        </>
       )}
       {statsEnabled && (
         <ActionButton
@@ -118,56 +242,44 @@ const TopRightButtons: React.FC<TopRightButtonsProps> = ({
           icon={BarChart3}
           title="Statistiques"
           ariaLabel="Statistiques"
-          gradient="from-cyan-500/0 via-blue-500/0 to-indigo-500/0"
-          glowColor="rgba(34, 211, 238, 0.15)"
+          gradient="from-cyan-500/20 via-blue-500/20 to-indigo-500/20"
+          glowColor="rgba(34, 211, 238, 0.4)"
         />
       )}
       {isAdminAuthenticated && (
-        <button
+        <CompactButton
           onClick={() => onSelectMode('mobile-control')}
-          className="relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-          }}
+          icon={Smartphone}
           title="Contrôle Mobile"
-          aria-label="Contrôle Mobile"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="relative">
-            <div className="absolute inset-0 bg-cyan-400/30 rounded-full blur-md group-hover:bg-cyan-400/50 transition-all duration-300 animate-pulse" />
-            <Smartphone className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-6 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
-          </div>
-        </button>
+          ariaLabel="Contrôle Mobile"
+          gradient="from-cyan-500/20 via-blue-500/20 to-purple-500/20"
+          glowColor="rgba(34, 211, 238, 0.4)"
+        />
       )}
       {battleModeEnabled && (
-        <button
+        <CompactButton
           onClick={() => onSelectMode('battle-results')}
-          className="relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-          }}
+          icon={Trophy}
           title="Résultats des Battles"
-          aria-label="Résultats des Battles"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-orange-500/0 to-yellow-500/0 group-hover:from-yellow-500/25 group-hover:via-orange-500/25 group-hover:to-yellow-500/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-sm rounded-xl sm:rounded-2xl" />
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-          <Trophy className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95 group-active:rotate-0 transition-all duration-300 drop-shadow-lg" />
-        </button>
+          ariaLabel="Résultats des Battles"
+          gradient="from-yellow-500/20 via-orange-500/20 to-yellow-500/20"
+          glowColor="rgba(234, 179, 8, 0.4)"
+          textColor="text-yellow-400 hover:text-yellow-300"
+        />
       )}
       <ActionButton
         onClick={() => onSelectMode('admin')}
         icon={Lock}
         title="Administration"
         ariaLabel="Administration"
-        gradient="from-purple-500/0 via-violet-500/0 to-fuchsia-500/0"
-        glowColor="rgba(139, 92, 246, 0.15)"
+        gradient="from-purple-500/20 via-violet-500/20 to-fuchsia-500/20"
+        glowColor="rgba(139, 92, 246, 0.4)"
       />
-    </div>
+    </motion.div>
   );
 };
 
-// Composant MobileButtons intégré
+// Composant MobileButtons modernisé
 interface MobileButtonsProps {
   onSelectMode: (mode: ViewMode) => void;
   isAdminAuthenticated: boolean;
@@ -180,7 +292,6 @@ const MobileButtons: React.FC<MobileButtonsProps> = ({
   onSelectMode,
   isAdminAuthenticated,
   hasUserProfile,
-  statsEnabled,
   battleModeEnabled,
 }) => {
   return (
@@ -191,8 +302,9 @@ const MobileButtons: React.FC<MobileButtonsProps> = ({
           icon={User}
           title="Mon profil"
           ariaLabel="Mon profil"
-          glowColor="rgba(236, 72, 153, 0.15)"
-          className="p-2.5 rounded-xl"
+          gradient="from-pink-500/20 via-rose-500/20 to-purple-500/20"
+          glowColor="rgba(236, 72, 153, 0.4)"
+          className="p-2 rounded-xl"
         />
       )}
       <ActionButton
@@ -200,51 +312,45 @@ const MobileButtons: React.FC<MobileButtonsProps> = ({
         icon={HelpCircle}
         title="Aide"
         ariaLabel="Aide"
-        gradient="from-indigo-500/0 via-blue-500/0 to-cyan-500/0"
-        glowColor="rgba(99, 102, 241, 0.15)"
-        className="p-2.5 rounded-xl"
+        gradient="from-indigo-500/20 via-blue-500/20 to-cyan-500/20"
+        glowColor="rgba(99, 102, 241, 0.4)"
+        className="p-2 rounded-xl"
       />
       {isAdminAuthenticated && (
-        <button
+        <CompactButton
           onClick={() => onSelectMode('mobile-control')}
-          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:via-blue-500/30 hover:to-purple-500/30 active:from-cyan-500/40 active:via-blue-500/40 active:to-purple-500/40 border-2 border-cyan-400/30 hover:border-cyan-400/50 text-white active:scale-95 transition-all duration-300 group shadow-lg hover:shadow-2xl overflow-hidden"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 211, 238, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-          }}
+          icon={Smartphone}
           title="Contrôle Mobile"
-          aria-label="Contrôle Mobile"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-          <Smartphone className="relative w-4 h-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 drop-shadow-lg" />
-        </button>
+          ariaLabel="Contrôle Mobile"
+          gradient="from-cyan-500/20 via-blue-500/20 to-purple-500/20"
+          glowColor="rgba(34, 211, 238, 0.4)"
+        />
       )}
       {battleModeEnabled && (
-        <button
+        <CompactButton
           onClick={() => onSelectMode('battle-results')}
-          className="relative p-2.5 rounded-xl backdrop-blur-xl bg-gradient-to-br from-yellow-500/20 via-orange-500/20 to-yellow-500/20 hover:from-yellow-500/30 hover:via-orange-500/30 hover:to-yellow-500/30 active:from-yellow-500/40 active:via-orange-500/40 active:to-yellow-500/40 border-2 border-yellow-500/30 hover:border-yellow-500/50 text-yellow-400 hover:text-yellow-300 active:scale-95 transition-all duration-300 group shadow-xl hover:shadow-2xl overflow-hidden"
-          style={{
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-          }}
+          icon={Trophy}
           title="Résultats des Battles"
-          aria-label="Résultats des Battles"
-        >
-          <Trophy className="relative w-4 h-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 drop-shadow-lg" />
-        </button>
+          ariaLabel="Résultats des Battles"
+          gradient="from-yellow-500/20 via-orange-500/20 to-yellow-500/20"
+          glowColor="rgba(234, 179, 8, 0.4)"
+          textColor="text-yellow-400 hover:text-yellow-300"
+        />
       )}
       <ActionButton
         onClick={() => onSelectMode('admin')}
         icon={Lock}
         title="Administration"
         ariaLabel="Administration"
-        gradient="from-purple-500/0 via-violet-500/0 to-fuchsia-500/0"
-        glowColor="rgba(139, 92, 246, 0.15)"
-        className="p-2.5 rounded-xl"
+        gradient="from-purple-500/20 via-violet-500/20 to-fuchsia-500/20"
+        glowColor="rgba(139, 92, 246, 0.4)"
+        className="p-2 rounded-xl"
       />
     </div>
   );
 };
 
-// Composant NavigationCards intégré
+// Composant NavigationCards complètement redessiné
 interface NavigationOption {
   id: string;
   title: string;
@@ -252,7 +358,7 @@ interface NavigationOption {
   icon: LucideIcon;
   gradient: string;
   glowColor: string;
-  delay: string;
+  delay: number;
   isPrimary: boolean;
 }
 
@@ -268,143 +374,194 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
   onSelectMode,
 }) => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [activeCard, setActiveCard] = useState<string | null>(null);
 
   return (
-    <div className="w-full flex flex-col lg:flex-row items-center gap-2 lg:gap-3 lg:justify-center">
-      {options.map((option) => {
-        const Icon = option.icon;
-        const isActive = hoveredCard === option.id || activeCard === option.id;
+    <div className="w-full flex flex-col lg:flex-row items-center gap-4 lg:gap-6 lg:justify-center">
+      <AnimatePresence>
+        {options.map((option) => {
+          const Icon = option.icon;
+          const isHovered = hoveredCard === option.id;
 
-        return (
-          <button
-            key={option.id}
-            onClick={() => onSelectMode(option.id as ViewMode)}
-            onMouseEnter={() => setHoveredCard(option.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-            onTouchStart={() => setActiveCard(option.id)}
-            onTouchEnd={() => setActiveCard(null)}
-            onFocus={() => setHoveredCard(option.id)}
-            onBlur={() => setHoveredCard(null)}
-            className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[140px] h-auto min-h-[80px] sm:min-h-[90px] lg:h-auto lg:aspect-square lg:min-h-[140px] rounded-xl sm:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-all duration-500 px-3 sm:px-4 lg:px-0 py-3 sm:py-4 lg:py-0 select-none ${
-              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-            }`}
-            style={{
-              animationDelay: option.delay,
-              transform: isActive ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
-              transition: 'all 0.28s cubic-bezier(.45,.05,.55,.95)'
-            }}
-            aria-label={option.title}
-            tabIndex={0}
-            type="button"
-          >
-            <div
-              className={`absolute inset-0 bg-gradient-to-br ${option.gradient} transition-opacity duration-700 pointer-events-none ${
-                isActive ? 'opacity-40 blur-[2px]' : 'opacity-0'
-              }`}
-            />
-            <div
-              className="relative h-full bg-white/10 border border-white/10 rounded-xl sm:rounded-2xl flex items-center justify-between lg:justify-center px-3 sm:px-4 lg:px-4 gap-3 sm:gap-4 lg:gap-0 shadow-xl transition-shadow duration-500"
-              style={{
-                boxShadow: isActive
-                  ? `0 4px 32px 0 ${option.glowColor}, 0 2px 12px rgba(0,0,0,0.14)`
-                  : '0 2px 8px rgba(0,0,0,0.10)',
+          return (
+            <motion.button
+              key={option.id}
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={mounted ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.9 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ 
+                duration: 0.5, 
+                delay: option.delay,
+                type: "spring",
+                stiffness: 100,
+                damping: 15
               }}
+              whileHover={{ y: -6, scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onSelectMode(option.id as ViewMode)}
+              onMouseEnter={() => setHoveredCard(option.id)}
+              onMouseLeave={() => setHoveredCard(null)}
+              onFocus={() => setHoveredCard(option.id)}
+              onBlur={() => setHoveredCard(null)}
+              className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[180px] min-h-[80px] lg:min-h-[200px] rounded-xl lg:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-500 shadow-lg hover:shadow-2xl ${
+                mounted ? '' : 'pointer-events-none'
+              }`}
+              aria-label={option.title}
+              type="button"
             >
-              <div className="flex-shrink-0 relative">
-                <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-md transition-all duration-300 group-hover:scale-110 group-active:scale-105 ${
-                    isActive ? 'scale-110 ring-2 ring-white/30' : ''
-                  }`}
-                  style={{
-                    boxShadow: isActive ? `0 4px 20px ${option.glowColor}` : undefined,
+              {/* Background sans voile */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 border border-white/20 group-hover:border-white/40 transition-all duration-500" />
+              
+              {/* Gradient overlay au hover avec pulse */}
+              <motion.div
+                className={`absolute inset-0 bg-gradient-to-br ${option.gradient} opacity-0 group-hover:opacity-25 transition-opacity duration-500`}
+                animate={isHovered ? { 
+                  opacity: [0.15, 0.3, 0.15],
+                  scale: [1, 1.05, 1]
+                } : { opacity: 0, scale: 1 }}
+                transition={{ 
+                  duration: 2,
+                  repeat: isHovered ? Infinity : 0,
+                  ease: 'easeInOut'
+                }}
+              />
+              
+              {/* Effet de brillance animé */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                initial={{ x: '-100%' }}
+                animate={isHovered ? { x: '100%' } : { x: '-100%' }}
+                transition={{ duration: 0.8, repeat: isHovered ? Infinity : 0, ease: 'linear' }}
+              />
+              
+              {/* Glow effect avec animation */}
+              <motion.div
+                className={`absolute -inset-0.5 bg-gradient-to-br ${option.gradient} rounded-2xl blur-xl`}
+                animate={isHovered ? { 
+                  opacity: [0.2, 0.5, 0.2],
+                  scale: [1, 1.1, 1]
+                } : { opacity: 0, scale: 1 }}
+                transition={{ 
+                  duration: 2,
+                  repeat: isHovered ? Infinity : 0,
+                  ease: 'easeInOut'
+                }}
+                style={{
+                  boxShadow: isHovered 
+                    ? `0 0 30px ${option.glowColor}, 0 0 60px ${option.glowColor.replace('0.4', '0.2')}`
+                    : 'none'
+                }}
+              />
+              
+              {/* Pulse ring effect */}
+              {isHovered && (
+                <motion.div
+                  className={`absolute -inset-1 border-2 rounded-2xl`}
+                  animate={{
+                    borderColor: [option.glowColor.replace('0.4', '0'), option.glowColor, option.glowColor.replace('0.4', '0')],
+                    scale: [1, 1.05, 1]
                   }}
-                >
-                  <Icon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-8 lg:h-8 text-white drop-shadow" />
-                </div>
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                  style={{
+                    borderColor: option.glowColor.replace('0.4', '0')
+                  }}
+                />
+              )}
+
+              {/* Contenu */}
+              <div className="relative h-full flex flex-col items-center justify-center gap-2 lg:gap-4 p-3 lg:p-5">
+                {/* Badge Primary */}
                 {option.isPrimary && (
-                  <div className="absolute -top-1.5 -right-1.5 lg:-top-2 lg:-right-2 z-20">
-                    <span className="inline-flex items-center bg-yellow-600/90 px-1.5 py-0.5 rounded shadow text-yellow-100 text-[10px] lg:text-xs font-black animate-pulse">
-                      <Zap className="w-3 h-3 lg:w-4 lg:h-4 mr-0.5 text-yellow-300 drop-shadow" />
-                      <span className="hidden sm:inline">HOT</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 text-left lg:hidden ml-3 sm:ml-4">
-                <div className="flex items-center gap-2 min-w-0 mb-1">
-                  <h3
-                    className={`text-base sm:text-lg font-bold transition-all duration-300 ${
-                      isActive
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
-                        : 'text-white'
-                    }`}
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={mounted ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -180 }}
+                    transition={{ delay: option.delay + 0.2, type: "spring", stiffness: 200 }}
+                    className="absolute top-1.5 right-1.5 lg:top-2 lg:right-2 z-10"
                   >
-                    {option.title}
+                    <motion.div
+                      className="flex items-center gap-0.5 px-1 py-0.5 lg:px-1.5 lg:py-0.5 rounded-full bg-gradient-to-r from-yellow-500/90 to-orange-500/90 border border-yellow-400/50 shadow-lg"
+                      animate={isHovered ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                      transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
+                    >
+                      <Zap className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-yellow-100" />
+                      <span className="text-[8px] lg:text-[9px] font-bold text-yellow-100">POPULAIRE</span>
+                    </motion.div>
+                  </motion.div>
+                )}
+
+                {/* Icône */}
+                <motion.div
+                  className={`relative w-12 h-12 lg:w-16 lg:h-16 rounded-lg lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-2xl`}
+                  animate={isHovered ? { scale: 1.15, rotate: 5 } : { scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Icon className="w-6 h-6 lg:w-9 lg:h-9 text-white drop-shadow-lg relative z-10" />
+                  <motion.div
+                    className={`absolute inset-0 bg-gradient-to-br ${option.gradient} rounded-lg lg:rounded-2xl blur-md`}
+                    animate={isHovered ? { 
+                      opacity: [0.5, 0.8, 0.5],
+                      scale: [1, 1.2, 1]
+                    } : { opacity: 0.5, scale: 1 }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: isHovered ? Infinity : 0,
+                      ease: 'easeInOut'
+                    }}
+                  />
+                  {/* Glow autour de l'icône */}
+                  <motion.div
+                    className={`absolute -inset-1 bg-gradient-to-br ${option.gradient} rounded-lg lg:rounded-2xl blur-sm`}
+                    animate={isHovered ? { opacity: [0.3, 0.6, 0.3] } : { opacity: 0 }}
+                    transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
+                  />
+                </motion.div>
+
+                {/* Texte */}
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <h3 className="text-sm lg:text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:via-violet-300 group-hover:to-sky-300 transition-all duration-500">
+                    {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Retrouver' : option.title}
                   </h3>
-                  {option.isPrimary && (
-                    <span role="img" aria-label="Recommandé" className="text-sm text-yellow-200 font-black">★</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                      isActive
-                        ? `bg-gradient-to-r ${option.gradient} scale-150 shadow-lg`
-                        : 'bg-slate-400'
-                    }`}
-                  />
-                  <span className={`text-xs sm:text-sm transition-colors duration-300 ${
-                    isActive ? 'text-white/90 font-medium' : 'text-slate-300'
-                  }`}>
+                  <p className="text-[10px] lg:text-xs text-white/60 group-hover:text-white/80 transition-colors duration-500 hidden lg:block">
                     {option.description}
-                  </span>
+                  </p>
                 </div>
-              </div>
-              <div className="hidden lg:flex flex-col items-center justify-center gap-3 w-full">
-                <h3
-                  className={`text-sm font-semibold transition-all duration-300 ${
-                    isActive
-                      ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-violet-300 to-sky-300 drop-shadow-sm'
-                      : 'text-white/90'
-                  }`}
+
+                {/* Indicateur de flèche */}
+                <motion.div
+                  className="absolute bottom-2 lg:bottom-4"
+                  animate={isHovered ? { 
+                    x: [0, 4, 0],
+                    opacity: [0.4, 1, 0.4]
+                  } : { x: 0, opacity: 0.4 }}
+                  transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0, ease: "easeInOut" }}
                 >
-                  {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Où suis-je' : option.title}
-                </h3>
+                  <ArrowRight className="w-3.5 h-3.5 lg:w-5 lg:h-5 text-white/40 group-hover:text-white/90 transition-colors duration-500" />
+                </motion.div>
               </div>
-              <div className="flex-shrink-0 ml-2 lg:hidden">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center bg-white/10 transition-all duration-300 ${
-                    isActive ? 'bg-gradient-to-br from-white/60 to-white/20 scale-110 ring-2 ring-white/40 shadow-lg' : ''
-                  }`}
-                  style={{
-                    boxShadow: isActive ? `0 0 10px ${option.glowColor}` : undefined,
-                  }}
-                >
-                  <ArrowRight
-                    className={`w-4 h-4 text-white transition-transform duration-300 ${
-                      isActive ? 'translate-x-1 scale-125 drop-shadow-sm' : ''
-                    }`}
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
-            </div>
-          </button>
-        );
-      })}
+            </motion.button>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 };
 
-// Composant LandingFooter intégré
+// Composant LandingFooter modernisé
 const LandingFooter: React.FC = () => {
   return (
-    <footer className="py-4 px-4 text-center">
-      <p className="text-xs text-white/50">
+    <motion.footer
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1, duration: 0.6 }}
+      className="py-4 px-4 text-center"
+    >
+      <p className="text-xs text-white/40 font-light">
         © 2026 Partywall - Tous droits réservés
       </p>
-    </footer>
+    </motion.footer>
   );
 };
 
@@ -510,25 +667,25 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
   }, []);
 
   const navigationOptions = useMemo(() => {
-    const options = [
+    const options: NavigationOption[] = [
       {
         id: 'guest',
         title: 'Capturez vos meilleurs moments',
-        description: 'Partagez vos photos prises sur le fait instantanément',
+        description: 'Partagez vos photos instantanément',
         icon: Camera,
         gradient: 'from-pink-500 via-rose-500 to-purple-500',
         glowColor: 'rgba(236, 72, 153, 0.4)',
-        delay: '200ms',
+        delay: 0.1,
         isPrimary: true,
       },
       {
         id: 'gallery',
         title: 'Mur Social',
-        description: 'Découvrez toutes les photos du mur social',
+        description: 'Découvrez toutes les photos',
         icon: Images,
         gradient: 'from-indigo-500 via-blue-500 to-cyan-500',
         glowColor: 'rgba(99, 102, 241, 0.4)',
-        delay: '300ms',
+        delay: 0.2,
         isPrimary: false,
       }
     ];
@@ -537,11 +694,11 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       options.push({
         id: 'findme',
         title: 'Retrouve-moi',
-        description: 'Trouvez vos photos avec la recherche IA',
+        description: 'Trouvez vos photos avec l\'IA',
         icon: User,
         gradient: 'from-fuchsia-500 via-purple-500 to-indigo-500',
         glowColor: 'rgba(217, 70, 239, 0.4)',
-        delay: '400ms',
+        delay: 0.3,
         isPrimary: false,
       });
     }
@@ -558,25 +715,37 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       }}
       aria-label="Landing page Party Wall"
     >
-      {/* Background Image */}
-      <img
-        src={
-          isMobile
-            ? (uiConfig.backgroundMobileUrl || getStaticAssetPath('background-mobile.png'))
-            : (uiConfig.backgroundDesktopUrl || getStaticAssetPath('background-desktop.png'))
-        }
-        alt="Background"
-        className="fixed inset-0 w-full h-full object-cover z-0"
-        style={{
-          minWidth: '100%',
-          minHeight: '100%',
-        }}
-      />
+      {/* Background Image avec overlay moderne */}
+      <div className="fixed inset-0 z-0">
+        <img
+          src={
+            isMobile
+              ? (uiConfig.backgroundMobileUrl || getStaticAssetPath('background-mobile.png'))
+              : (uiConfig.backgroundDesktopUrl || getStaticAssetPath('background-desktop.png'))
+          }
+          alt="Background"
+          className="w-full h-full object-cover"
+          style={{
+            minWidth: '100%',
+            minHeight: '100%',
+          }}
+        />
+        {/* Overlay gradient moderne */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+        {/* Grille subtile */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+          }}
+        />
+      </div>
 
-      {/* Overlay sombre */}
-      <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
-
-      {/* Top Right Buttons - Bouton de contrôle à droite */}
+      {/* Top Right Buttons */}
       <TopRightButtons
         onSelectMode={onSelectMode}
         isAdminAuthenticated={isAdminAuthenticated}
@@ -586,84 +755,107 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       />
 
       {/* Main Content */}
-      <main className={`relative z-[2] w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-4 sm:gap-6 md:gap-6 lg:gap-4 px-3 sm:px-4 md:px-6 h-full ${
+      <main className={`relative z-[2] w-full max-w-6xl mx-auto flex flex-col items-center justify-center gap-6 lg:gap-8 px-4 sm:px-6 md:px-8 h-full ${
         currentEvent 
-          ? 'py-4 sm:py-6 md:py-6 lg:py-4' 
-          : 'pt-16 sm:pt-20 md:pt-20 lg:pt-16 py-4 sm:py-6 md:py-6 lg:py-4'
+          ? 'py-6 sm:py-8 md:py-8 lg:py-6' 
+          : 'pt-20 sm:pt-24 md:pt-24 lg:pt-20 py-6 sm:py-8 md:py-8 lg:py-6'
       }`}>
         
-        {/* Logo et titre centrés si événement sélectionné */}
+        {/* Header avec logo et titre */}
         {currentEvent && (
-          <div className="flex-shrink-0 w-full flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-4 lg:gap-3 mb-3 sm:mb-4 md:mb-4 lg:mb-2 px-2">
-            <div className="relative mb-4 sm:mb-5 md:mb-5 lg:mb-3 animate-[fadeInScale_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex-shrink-0 w-full flex flex-col items-center justify-center gap-4 lg:gap-5 mb-4 lg:mb-6 px-4"
+          >
+            {/* Logo container */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
+              className="relative mb-2"
+            >
               <div className="relative flex items-center justify-center">
-                <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
-                <div className="relative flex items-center justify-center">
-                  <svg 
-                    className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2]" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="1.5" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-cyan-500/30 rounded-full blur-2xl scale-150" />
+                {/* Icon container - IMAGE icon.png */}
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
+                  <img
+                    src={getStaticAssetPath('icon.png')}
+                    alt="Partywall Icon"
+                    className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain drop-shadow-lg"
+                  />
+                  {/* Sparkle effect */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute -top-2 -right-2"
                   >
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                    <circle cx="12" cy="13" r="3"/>
-                  </svg>
-                  <svg 
-                    className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#fbcfe8] drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] z-[3] animate-[sparklePulse_2s_ease-in-out_infinite]" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                    <path d="M5 3v4"/>
-                    <path d="M19 17v4"/>
-                    <path d="M3 5h4"/>
-                    <path d="M17 19h4"/>
-                  </svg>
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 drop-shadow-lg" />
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
             
+            {/* Logo ou Titre */}
             {uiConfig.logoUrl ? (
-              <div className="relative mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="relative"
+              >
                 <img
                   src={uiConfig.logoUrl}
                   alt={displayTitle}
-                  className="max-w-[80vw] sm:max-w-[70vw] md:max-w-[60vw] lg:max-w-[50vw] max-h-24 sm:max-h-32 md:max-h-40 lg:max-h-48 object-contain mx-auto"
+                  className="max-w-[85vw] sm:max-w-[75vw] md:max-w-[65vw] lg:max-w-[55vw] max-h-28 sm:max-h-36 md:max-h-44 lg:max-h-52 object-contain mx-auto"
                   style={{
-                    filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.5))',
+                    filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.6))',
                   }}
                 />
-              </div>
+              </motion.div>
             ) : (
-              <h1 className="relative font-['Pacifico',cursive] text-[clamp(2rem,6vw,3.5rem)] sm:text-[clamp(2.5rem,7vw,4rem)] md:text-[clamp(3rem,7vw,3.8rem)] lg:text-[clamp(3.2rem,6vw,4rem)] leading-[1.1] sm:leading-[1.2] lg:leading-[1.15] text-center mb-2 sm:mb-2 md:mb-2 lg:mb-1 px-2 drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.4s_both]">
-                <span 
-                  className="bg-gradient-to-b from-white via-white/95 via-[#fef2f2] to-[#fbcfe8] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.2)] break-words"
-                >
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center mb-2"
+              >
+                <span className="bg-gradient-to-br from-white via-white/95 to-pink-200 bg-clip-text text-transparent drop-shadow-2xl">
                   {displayTitle}
                 </span>
-                <span className="text-[#f472b6] ml-0.5 sm:ml-1 inline-block animate-[sparklePulse_2s_ease-in-out_infinite]">.</span>
-              </h1>
+                <motion.span
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="text-pink-400 ml-2"
+                >
+                  .
+                </motion.span>
+              </motion.h1>
             )}
             
+            {/* Subtitle */}
             {displaySubtitle && (
-              <p className="font-['Outfit',sans-serif] text-[clamp(0.75rem,3vw,0.95rem)] sm:text-[clamp(0.875rem,2.5vw,1rem)] md:text-[clamp(0.95rem,2vw,1rem)] lg:text-[clamp(0.95rem,1.5vw,1.05rem)] font-normal text-white/75 text-center text-shadow-[0_2px_10px_rgba(0,0,0,0.4)] max-w-2xl mx-auto leading-relaxed lg:leading-snug px-3 sm:px-4 mb-0 lg:mb-0 animate-[fadeInUp_0.8s_cubic-bezier(0.34,1.56,0.64,1)_0.6s_both]">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="text-sm sm:text-base lg:text-lg font-light text-white/70 text-center max-w-2xl mx-auto leading-relaxed"
+              >
                 {displaySubtitle}
-              </p>
+              </motion.p>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* Mobile Buttons Row */}
-        <div className="flex-shrink-0 w-full flex justify-center px-2 sm:px-0 lg:mb-1">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="flex-shrink-0 w-full flex justify-center px-2 sm:px-0"
+        >
           <MobileButtons
             onSelectMode={onSelectMode}
             isAdminAuthenticated={isAdminAuthenticated}
@@ -671,10 +863,10 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
             statsEnabled={uiConfig.statsEnabled}
             battleModeEnabled={uiConfig.battleModeEnabled}
           />
-        </div>
+        </motion.div>
 
         {/* Navigation Cards */}
-        <div className="w-full max-w-3xl mx-auto flex-1 flex items-center justify-center py-2 sm:py-4 md:py-3 lg:py-2 px-2 sm:px-4 min-h-0">
+        <div className="w-full max-w-5xl mx-auto flex-1 flex items-center justify-center py-4 lg:py-6 px-4 min-h-0">
           <NavigationCards
             options={navigationOptions}
             mounted={mounted}
@@ -683,22 +875,32 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 mt-auto pb-2 sm:pb-3 md:pb-2 lg:pb-1 px-2 sm:px-4">
+        <div className="flex-shrink-0 mt-auto pb-4 lg:pb-6 px-4">
           <LandingFooter />
         </div>
       </main>
 
-      {/* Floating Particles Effect */}
+      {/* Floating Particles Effect modernisé */}
       <div className="fixed inset-0 pointer-events-none z-[1]">
-        {[...Array(isMobile ? 3 : 6)].map((_, i) => (
-          <div
+        {[...Array(isMobile ? 4 : 8)].map((_, i) => (
+          <motion.div
             key={i}
-            className={`absolute ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full bg-white/10 blur-sm animate-float`}
+            className={`absolute ${isMobile ? 'w-2 h-2' : 'w-3 h-3'} rounded-full bg-white/10 backdrop-blur-sm`}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, Math.sin(i) * 20, 0],
+              opacity: [0.3, 0.6, 0.3],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 4 + i * 0.5,
+              repeat: Infinity,
+              delay: i * 0.3,
+              ease: "easeInOut",
+            }}
             style={{
-              left: `${15 + i * (isMobile ? 30 : 15)}%`,
-              top: `${20 + i * (isMobile ? 25 : 12)}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i * 0.5}s`,
+              left: `${10 + i * (isMobile ? 25 : 12)}%`,
+              top: `${15 + i * (isMobile ? 20 : 10)}%`,
             }}
           />
         ))}

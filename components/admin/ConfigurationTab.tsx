@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Settings, Type, Tag, Sparkles, Frame, Upload, X, Save, RefreshCw, 
   Image as ImageIcon, Gauge, Move, Shield, Video, Grid3x3, BarChart2, 
-  User, Trophy, Info, CheckCircle2, Power, Play, Clock
+  User, Trophy, Info, CheckCircle2, Power, Play, Clock, Lock
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { usePhotos } from '../../context/PhotosContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 import { uploadDecorativeFramePng } from '../../services/frameService';
 import { getLocalFrames, getLocalFrameUrl, getLocalFrameThumbnailUrl, frameCategories, LocalFrame } from '../../services/localFramesService';
 import { generateEventContextSuggestion } from '../../services/eventContextService';
@@ -24,6 +25,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const { photos: allPhotos } = usePhotos();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { isFeatureEnabled } = useLicenseFeatures();
   
   const [localConfig, setLocalConfig] = useState<EventSettings>(config);
   const [savingConfig, setSavingConfig] = useState(false);
@@ -980,83 +982,123 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
               </div>
               <div className="space-y-2.5">
                 {/* Génération de légende */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="caption_generation_enabled"
-                      checked={localConfig.caption_generation_enabled ?? true}
-                      onChange={handleConfigChange}
-                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
-                        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                        Génération de légende
-                        {localConfig.caption_generation_enabled ? (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">Génère automatiquement une légende contextuelle pour chaque photo avec IA Gemini.</p>
-                      {localConfig.caption_generation_enabled && (
-                        <div className="mt-2.5 pt-2.5 border-t border-slate-700">
-                          <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                            Langue des légendes
-                          </label>
-                          <select
-                            name="caption_language"
-                            value={localConfig.caption_language || 'fr'}
-                            onChange={handleConfigChange}
-                            className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                          >
-                            <option value="fr">Français</option>
-                            <option value="en">English</option>
-                            <option value="es">Español</option>
-                            <option value="de">Deutsch</option>
-                            <option value="it">Italiano</option>
-                            <option value="pt">Português</option>
-                            <option value="nl">Nederlands</option>
-                            <option value="pl">Polski</option>
-                            <option value="ru">Русский</option>
-                            <option value="ja">日本語</option>
-                            <option value="zh">中文</option>
-                            <option value="ko">한국어</option>
-                            <option value="ar">العربية</option>
-                          </select>
-                          <p className="text-xs text-slate-500 mt-1">
-                            Les légendes seront traduites dans cette langue
-                          </p>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('caption_generation_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 border rounded-lg p-3 transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`flex items-start gap-2.5 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          name="caption_generation_enabled"
+                          checked={localConfig.caption_generation_enabled ?? true}
+                          onChange={handleConfigChange}
+                          disabled={isDisabled}
+                          className={`h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                            <Sparkles className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                            Génération de légende
+                            {isDisabled && (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            )}
+                            {!isDisabled && localConfig.caption_generation_enabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                            ) : !isDisabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded">Pro</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">Génère automatiquement une légende contextuelle pour chaque photo avec IA Gemini.</p>
+                          {isDisabled && (
+                            <p className="text-xs text-amber-400 mt-1.5 font-medium">Fonctionnalité Pro - Passer à Pro</p>
+                          )}
+                          {localConfig.caption_generation_enabled && !isDisabled && (
+                            <div className="mt-2.5 pt-2.5 border-t border-slate-700">
+                              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                                Langue des légendes
+                              </label>
+                              <select
+                                name="caption_language"
+                                value={localConfig.caption_language || 'fr'}
+                                onChange={handleConfigChange}
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                              >
+                                <option value="fr">Français</option>
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="de">Deutsch</option>
+                                <option value="it">Italiano</option>
+                                <option value="pt">Português</option>
+                                <option value="nl">Nederlands</option>
+                                <option value="pl">Polski</option>
+                                <option value="ru">Русский</option>
+                                <option value="ja">日本語</option>
+                                <option value="zh">中文</option>
+                                <option value="ko">한국어</option>
+                                <option value="ar">العربية</option>
+                              </select>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Les légendes seront traduites dans cette langue
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </label>
                     </div>
-                  </label>
-                </div>
+                  );
+                })()}
                 {/* Génération de tags */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="tags_generation_enabled"
-                      checked={localConfig.tags_generation_enabled ?? true}
-                      onChange={handleConfigChange}
-                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
-                        <Tag className="w-3.5 h-3.5 text-indigo-400" />
-                        Génération de tags IA
-                        {localConfig.tags_generation_enabled ? (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">Génère automatiquement des tags descriptifs pour chaque photo avec IA Gemini.</p>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('tags_generation_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 border rounded-lg p-3 transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`flex items-start gap-2.5 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          name="tags_generation_enabled"
+                          checked={localConfig.tags_generation_enabled ?? true}
+                          onChange={handleConfigChange}
+                          disabled={isDisabled}
+                          className={`h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                            <Tag className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                            Génération de tags IA
+                            {isDisabled && (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            )}
+                            {!isDisabled && localConfig.tags_generation_enabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                            ) : !isDisabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded">Pro</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">Génère automatiquement des tags descriptifs pour chaque photo avec IA Gemini.</p>
+                          {isDisabled && (
+                            <p className="text-xs text-amber-400 mt-1.5 font-medium">Fonctionnalité Pro - Passer à Pro</p>
+                          )}
+                        </div>
+                      </label>
                     </div>
-                  </label>
-                </div>
+                  );
+                })()}
                 {/* Modération */}
                 <div className="bg-slate-900/50 border border-teal-500/20 rounded-lg p-3">
                   <div className="flex items-start gap-2.5">
@@ -1078,29 +1120,49 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   </div>
                 </div>
                 {/* Video capture */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="video_capture_enabled"
-                      checked={localConfig.video_capture_enabled ?? true}
-                      onChange={handleConfigChange}
-                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
-                        <Video className="w-3.5 h-3.5 text-indigo-400" />
-                        Capture vidéo
-                        {localConfig.video_capture_enabled ? (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">Permet l'enregistrement de courtes vidéos jusqu'à 30 secondes.</p>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('video_capture_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 border rounded-lg p-3 transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`flex items-start gap-2.5 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          name="video_capture_enabled"
+                          checked={localConfig.video_capture_enabled ?? true}
+                          onChange={handleConfigChange}
+                          disabled={isDisabled}
+                          className={`h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                            <Video className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                            Capture vidéo
+                            {isDisabled && (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            )}
+                            {!isDisabled && localConfig.video_capture_enabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                            ) : !isDisabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded">Pro</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">Permet l'enregistrement de courtes vidéos jusqu'à 30 secondes.</p>
+                          {isDisabled && (
+                            <p className="text-xs text-amber-400 mt-1.5 font-medium">Fonctionnalité Pro - Passer à Pro</p>
+                          )}
+                        </div>
+                      </label>
                     </div>
-                  </label>
-                </div>
+                  );
+                })()}
                 {/* Collage mode */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-2.5 cursor-pointer">
@@ -1150,29 +1212,49 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   </label>
                 </div>
                 {/* Retrouve-moi */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="find_me_enabled"
-                      checked={localConfig.find_me_enabled ?? true}
-                      onChange={handleConfigChange}
-                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
-                        <User                         className="w-3.5 h-3.5 text-indigo-400" />
-                                               Retrouve-moi (Reconnaissance Faciale)
-                        {localConfig.find_me_enabled ? (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">Aide à retrouver ses photos via un selfie (face-api.js).</p>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('find_me_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 border rounded-lg p-3 transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`flex items-start gap-2.5 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          name="find_me_enabled"
+                          checked={localConfig.find_me_enabled ?? true}
+                          onChange={handleConfigChange}
+                          disabled={isDisabled}
+                          className={`h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                            <User className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                            Retrouve-moi (Reconnaissance Faciale)
+                            {isDisabled && (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            )}
+                            {!isDisabled && localConfig.find_me_enabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                            ) : !isDisabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded">Pro</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">Aide à retrouver ses photos via un selfie (face-api.js).</p>
+                          {isDisabled && (
+                            <p className="text-xs text-amber-400 mt-1.5 font-medium">Fonctionnalité Pro - Passer à Pro</p>
+                          )}
+                        </div>
+                      </label>
                     </div>
-                  </label>
-                </div>
+                  );
+                })()}
                 {/* Scène AR */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-2.5 cursor-pointer">
@@ -1222,29 +1304,49 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   </label>
                 </div>
                 {/* Aftermovies */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="aftermovies_enabled"
-                      checked={localConfig.aftermovies_enabled ?? false}
-                      onChange={handleConfigChange}
-                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
-                        <Video                         className="w-3.5 h-3.5 text-indigo-400" />
-                                               Aftermovies dans la galerie
-                        {localConfig.aftermovies_enabled ? (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">Affiche les aftermovies générés dans la galerie pour que les clients puissent les télécharger.</p>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('aftermovies_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 border rounded-lg p-3 transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`flex items-start gap-2.5 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                        <input
+                          type="checkbox"
+                          name="aftermovies_enabled"
+                          checked={localConfig.aftermovies_enabled ?? false}
+                          onChange={handleConfigChange}
+                          disabled={isDisabled}
+                          className={`h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                            <Video className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                            Aftermovies dans la galerie
+                            {isDisabled && (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            )}
+                            {!isDisabled && localConfig.aftermovies_enabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                            ) : !isDisabled ? (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 ml-1.5 bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs rounded">Pro</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">Affiche les aftermovies générés dans la galerie pour que les clients puissent les télécharger.</p>
+                          {isDisabled && (
+                            <p className="text-xs text-amber-400 mt-1.5 font-medium">Fonctionnalité Pro - Passer à Pro</p>
+                          )}
+                        </div>
+                      </label>
                     </div>
-                  </label>
-                </div>
+                  );
+                })()}
                 {/* Carrousel automatique */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-2.5 cursor-pointer">

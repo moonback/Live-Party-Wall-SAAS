@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowLeft, Camera, Image, Search, X, Filter, CheckSquare, Square, Trash2, Download, Users } from 'lucide-react';
+import { ArrowLeft, Camera, Search, X, Filter, CheckSquare, Square, Download, Users } from 'lucide-react';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSettings } from '../../context/SettingsContext';
+import { getStaticAssetPath } from '../../utils/electronPaths';
 
 interface GalleryHeaderProps {
   onBack: () => void;
@@ -16,6 +18,8 @@ interface GalleryHeaderProps {
   selectedCount?: number;
   onBatchDownload?: () => void;
   onParticipantsClick?: () => void;
+  onSidebarToggle?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -30,13 +34,17 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   onToggleSelectionMode,
   selectedCount = 0,
   onBatchDownload,
-  onParticipantsClick
+  onParticipantsClick,
+  onSidebarToggle,
+  isSidebarOpen = false
 }) => {
   const isMobile = useIsMobile();
   const internalSearchRef = useRef<HTMLInputElement>(null);
   const searchRef = searchInputRef || internalSearchRef;
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { settings } = useSettings();
+  const logoUrl = settings.logo_url || getStaticAssetPath('logo-accueil.png');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,7 +84,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left: Back + Logo */}
+          {/* Left: Back + Sidebar Toggle + Logo */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <motion.button 
               whileHover={{ scale: 1.05, x: -2 }}
@@ -89,6 +97,23 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               <ArrowLeft className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white group-hover:text-pink-400 relative z-10 transition-all duration-300" />
             </motion.button>
             
+            {/* Sidebar Toggle (Mobile only) */}
+            {isMobile && onSidebarToggle && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onSidebarToggle}
+                className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-white/5 hover:bg-white/10 border transition-all touch-manipulation flex items-center justify-center ${
+                  isSidebarOpen
+                    ? 'border-pink-500/50 text-pink-400'
+                    : 'border-white/10 text-white'
+                }`}
+                aria-label="Ouvrir les filtres"
+              >
+                <Filter className="w-5 h-5" />
+              </motion.button>
+            )}
+            
             <motion.div 
               className="flex items-center gap-2 sm:gap-3"
               initial={{ opacity: 0, x: -20 }}
@@ -96,12 +121,16 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               transition={{ delay: 0.1 }}
             >
               <motion.div 
-                className="hidden sm:flex p-2 sm:p-2.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-xl sm:rounded-2xl border border-pink-500/30 shadow-lg relative overflow-hidden"
-                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="hidden sm:flex p-1.5 sm:p-2 bg-white/10 rounded-xl sm:rounded-2xl border border-white/20 shadow-lg relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 hover:from-pink-500/30 hover:via-purple-500/30 hover:to-indigo-500/30 transition-all duration-500" />
-                <Image className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400 relative z-10" />
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="h-6 w-auto sm:h-7 sm:w-auto max-w-[60px] sm:max-w-[80px] object-contain relative z-10"
+                  loading="lazy"
+                />
               </motion.div>
               <div>
                 <motion.h1 

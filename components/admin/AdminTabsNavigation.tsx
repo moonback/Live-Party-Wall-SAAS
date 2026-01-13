@@ -3,9 +3,10 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu, Key, X, LayoutDashboard
+  Zap, Users, Menu, Key, X, Shield
 } from 'lucide-react';
 import { AdminTab } from './types';
+import { isElectron, getStaticAssetPath } from '../../utils/electronPaths';
 
 interface AdminTabsNavigationProps {
   activeTab: AdminTab;
@@ -84,6 +85,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   const generalTabs: TabConfig[] = [
     { id: 'events', label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
     { id: 'license', label: 'Licence', icon: Key, alwaysVisible: true },
+    { id: 'password', label: 'Mot de passe', icon: Shield, alwaysVisible: true },
   ];
 
   const eventTabs: TabConfig[] = [
@@ -173,8 +175,13 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <div className="absolute inset-0 bg-indigo-500/20 blur-lg rounded-lg"></div>
-              <div className="relative p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30">
-                <LayoutDashboard className="w-4 h-4 text-indigo-300" />
+              <div className="relative p-1.5 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30">
+                <img
+                  src={isElectron() ? getStaticAssetPath('icon.png') : '/icon.png'}
+                  alt="Partywall Logo"
+                  className="w-4 h-4 object-contain"
+                  draggable={false}
+                />
               </div>
             </div>
             <h2 className="text-xs font-bold text-slate-200 uppercase tracking-widest">Navigation</h2>

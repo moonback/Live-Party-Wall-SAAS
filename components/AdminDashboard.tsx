@@ -19,6 +19,7 @@ import { GuestsTab } from './admin/GuestsTab';
 import { ConfigurationTab } from './admin/ConfigurationTab';
 import { AftermovieTab } from './admin/AftermovieTab';
 import { BattlesTab } from './admin/BattlesTab';
+import { PasswordChangeTab } from './admin/PasswordChangeTab';
 import LicenseTab from './mobileControl/LicenseTab';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
@@ -58,9 +59,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     setPhotos(allPhotos.slice().reverse());
   }, [allPhotos]);
 
-  // Forcer l'onglet actif à être "events" ou "license" si aucun événement n'est sélectionné
+  // Forcer l'onglet actif à être "events", "license" ou "password" si aucun événement n'est sélectionné
   useEffect(() => {
-    if (!currentEvent && activeTab !== 'events' && activeTab !== 'license') {
+    if (!currentEvent && activeTab !== 'events' && activeTab !== 'license' && activeTab !== 'password') {
       setActiveTab('events');
     }
   }, [currentEvent, activeTab]);
@@ -476,6 +477,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         {activeTab === 'license' && (
           <div className="max-w-6xl mx-auto">
             <LicenseTab />
+          </div>
+        )}
+
+        {activeTab === 'password' && (
+          <div className="max-w-4xl mx-auto">
+            <PasswordChangeTab />
           </div>
         )}
       </div>

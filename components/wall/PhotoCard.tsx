@@ -1,52 +1,61 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
-import { Photo, ReactionCounts } from '../../types';
+import { Photo, ReactionCounts, Badge } from '../../types';
 import { REACTIONS } from '../../constants';
-import { hasPhotographerBadge, getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
 import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
-import { useSettings } from '../../context/SettingsContext';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface PhotoCardProps {
   photo: Photo;
   index: number;
   onClick?: () => void;
-  allPhotos: Photo[];
+  photoBadge?: Badge | null;
+  authorHasPhotographerBadge?: boolean;
   reactions?: ReactionCounts;
+  logoUrl?: string | null;
+  logoWatermarkEnabled?: boolean;
 }
 
-export const PhotoCard = React.memo(({ 
+const PhotoCardComponent = ({ 
   photo, 
   index, 
   onClick, 
-  allPhotos, 
-  reactions 
+  photoBadge,
+  authorHasPhotographerBadge = false,
+  reactions,
+  logoUrl,
+  logoWatermarkEnabled = false
 }: PhotoCardProps) => {
-  const { settings } = useSettings();
-  const photoBadge = useMemo(() => getPhotoBadge(photo, allPhotos), [photo.id, photo.likes_count, allPhotos.length]);
-  const authorHasPhotographerBadge = useMemo(() => hasPhotographerBadge(photo.author, allPhotos), [photo.author, allPhotos.length]);
+  const isMobile = useIsMobile();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const hasAnimatedRef = useRef(false);
+  
+  // Désactiver les animations initiales après le premier render
+  useEffect(() => {
+    if (!hasAnimatedRef.current) {
+      hasAnimatedRef.current = true;
+    }
+  }, []);
 
   const imageOrientation: ImageOrientation = photo.type === 'photo' 
     ? (photo.orientation || 'unknown')
     : 'unknown';
-    
-  const isMobile = useIsMobile();
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <motion.div 
-      layoutId={`photo-${photo.id}`}
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: (index % 10) * 0.05 }}
+      layoutId={hasAnimatedRef.current ? undefined : `photo-${photo.id}`}
+      initial={hasAnimatedRef.current ? false : { opacity: 0, scale: 0.8, y: 20 }}
+      animate={hasAnimatedRef.current ? false : { opacity: 1, scale: 1, y: 0 }}
+      transition={hasAnimatedRef.current ? undefined : { duration: 0.5, delay: (index % 10) * 0.05 }}
       className={`group relative break-inside-avoid bg-slate-900/80 backdrop-blur-sm rounded-none overflow-hidden shadow-none transition-all duration-500 hover:z-[25] border-2 border-white
         ${onClick ? 'cursor-zoom-in' : 'cursor-default'}
         ${index === 0 ? 'z-[15]' : 'z-[10]'}
       `}
-      whileHover={onClick ? { scale: 1.05 } : undefined}
+      whileHover={onClick && !hasAnimatedRef.current ? { scale: 1.05 } : undefined}
       onClick={onClick}
+      style={{ willChange: hasAnimatedRef.current ? 'auto' : 'transform, opacity' }}
     >
       {/* Glow effect au hover */}
       <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-none blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>
@@ -132,11 +141,11 @@ export const PhotoCard = React.memo(({
         )}
 
         {/* Logo Watermark */}
-        {settings.logo_url && settings.logo_watermark_enabled && (
+        {logoUrl && logoWatermarkEnabled && (
           <div className="absolute bottom-2 md:bottom-3 lg:bottom-4 left-2 md:left-3 lg:left-4 z-20 pointer-events-none">
             <div className="bg-black/30 backdrop-blur-sm rounded-lg md:rounded-xl p-1 md:p-1.5 border border-white/10 shadow-lg">
               <img
-                src={settings.logo_url}
+                src={logoUrl}
                 alt="Logo événement"
                 className={`${isMobile ? 'h-6 w-auto max-w-[80px]' : 'h-8 md:h-10 lg:h-12 w-auto max-w-[120px] lg:max-w-[150px]'} object-contain opacity-80`}
                 loading="lazy"
@@ -170,7 +179,7 @@ export const PhotoCard = React.memo(({
       )}
 
       {/* Badge Star */}
-      {photoBadge && (
+      {photoBadge && photoBadge.type === 'star' && (
         <div className="absolute top-2 md:top-3 left-2 md:left-3 z-20">
           <div className="relative w-auto">
             {/* Glow effect animé */}
@@ -213,9 +222,52 @@ export const PhotoCard = React.memo(({
       </div>
     </motion.div>
   );
-});
+};
 
 // Comparaison personnalisée pour React.memo
 // On re-rend seulement si les props essentielles changent
+const areEqual = (prevProps: PhotoCardProps, nextProps: PhotoCardProps): boolean => {
+  // Comparer les propriétés essentielles de la photo
+  if (prevProps.photo.id !== nextProps.photo.id) return false;
+  if (prevProps.photo.likes_count !== nextProps.photo.likes_count) return false;
+  if (prevProps.photo.url !== nextProps.photo.url) return false;
+  if (prevProps.photo.caption !== nextProps.photo.caption) return false;
+  if (prevProps.photo.author !== nextProps.photo.author) return false;
+  if (prevProps.photo.type !== nextProps.photo.type) return false;
+  if (prevProps.photo.orientation !== nextProps.photo.orientation) return false;
+  
+  // Comparer les réactions
+  const prevReactions = prevProps.reactions;
+  const nextReactions = nextProps.reactions;
+  if (prevReactions !== nextReactions) {
+    if (!prevReactions || !nextReactions) return false;
+    const prevKeys = Object.keys(prevReactions);
+    const nextKeys = Object.keys(nextReactions);
+    if (prevKeys.length !== nextKeys.length) return false;
+    for (const key of prevKeys) {
+      if (prevReactions[key as keyof typeof prevReactions] !== nextReactions[key as keyof typeof nextReactions]) {
+        return false;
+      }
+    }
+  }
+  
+  // Comparer les badges
+  if (prevProps.photoBadge?.type !== nextProps.photoBadge?.type) return false;
+  if (prevProps.authorHasPhotographerBadge !== nextProps.authorHasPhotographerBadge) return false;
+  
+  // Comparer les settings de logo
+  if (prevProps.logoUrl !== nextProps.logoUrl) return false;
+  if (prevProps.logoWatermarkEnabled !== nextProps.logoWatermarkEnabled) return false;
+  
+  // Comparer onClick (référence de fonction)
+  if (prevProps.onClick !== nextProps.onClick) return false;
+  
+  // Comparer index (pour l'animation)
+  if (prevProps.index !== nextProps.index) return false;
+  
+  return true;
+};
+
+export const PhotoCard = React.memo(PhotoCardComponent, areEqual);
 export default PhotoCard;
 

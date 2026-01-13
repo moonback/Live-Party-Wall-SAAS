@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
 import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X } from 'lucide-react';
@@ -76,14 +76,47 @@ export const GuestPhotoCard = React.memo(({
   const isOwner = currentUserName === photo.author;
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressing = useRef<boolean>(false);
-  const photoBadge = getPhotoBadge(photo, allPhotos);
+  const photoBadge = useMemo(() => getPhotoBadge(photo, allPhotos), [photo, allPhotos]);
   
-  const authorAvatar = guestAvatars?.get(photo.author) || getUserAvatar(photo.author);
+  const authorAvatar = useMemo(() => 
+    guestAvatars?.get(photo.author) || getUserAvatar(photo.author),
+    [guestAvatars, photo.author]
+  );
   
-  const imageOrientation: ImageOrientation = photo.type === 'photo' 
-    ? (photo.orientation || 'unknown')
-    : 'unknown';
+  const imageOrientation: ImageOrientation = useMemo(() => 
+    photo.type === 'photo' ? (photo.orientation || 'unknown') : 'unknown',
+    [photo.type, photo.orientation]
+  );
   const isMobile = useIsMobile();
+  
+  // Lazy loading avec IntersectionObserver
+  const [isInView, setIsInView] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!imageContainerRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: '200px', // Charger 200px avant d'entrer dans le viewport
+        threshold: 0.01
+      }
+    );
+    
+    observer.observe(imageContainerRef.current);
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
   
   const lastClickTime = useRef<number>(0);
   const lastTapTime = useRef<number>(0);
@@ -339,20 +372,16 @@ export const GuestPhotoCard = React.memo(({
   };
   
   return (
-    <motion.div 
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+    <div 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
-      className={`group relative bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl md:rounded-[2rem]'} overflow-hidden border transition-all duration-500 ${
+      className={`group relative bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl md:rounded-[2rem]'} overflow-hidden border transition-colors duration-300 ${
         isSelected 
           ? 'border-indigo-500 ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/20' 
           : 'border-white/5 hover:border-white/20 shadow-xl'
       } ${selectionMode ? 'cursor-pointer' : ''}`}
+      style={{ willChange: 'transform' }}
       {...(isMobile && (onSwipeLeft || onSwipeRight) ? cardSwipe.handlers : {})}
     >
       {/* Selection Overlay */}
@@ -455,6 +484,7 @@ export const GuestPhotoCard = React.memo(({
 
       {/* Media Container */}
       <div 
+        ref={imageContainerRef}
         className="relative overflow-hidden bg-black/40"
         onDoubleClick={handleDoubleClick}
         onTouchEnd={handleTouchEnd}
@@ -479,23 +509,32 @@ export const GuestPhotoCard = React.memo(({
             </div>
           ) : (
             <video
-              src={photo.url}
+              src={isInView ? photo.url : undefined}
               className="w-full h-auto object-contain max-h-[60vh] md:max-h-[500px]"
               controls={!selectionMode}
               playsInline
-              preload="metadata"
+              preload={isInView ? "metadata" : "none"}
               controlsList="nodownload"
               onError={() => setVideoError(true)}
             />
           )
         ) : (
-          <img 
-            src={photo.url} 
-            alt={photo.caption} 
-            className={`w-full h-auto transition-transform duration-700 ${isHovered && !selectionMode ? 'scale-105' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
-            loading="lazy"
-            style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
-          />
+          <>
+            {!isInView && (
+              <div className="w-full aspect-[4/5] bg-slate-800/30 animate-pulse flex items-center justify-center">
+                <div className="w-12 h-12 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+            {isInView && (
+              <img 
+                src={photo.url}
+                alt={photo.caption} 
+                className={`w-full h-auto transition-transform duration-300 ${isHovered && !selectionMode ? 'scale-[1.02]' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
+                loading="lazy"
+                style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
+              />
+            )}
+          </>
         )}
 
         {/* Media Badges */}
@@ -797,7 +836,7 @@ export const GuestPhotoCard = React.memo(({
           </>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 });
 

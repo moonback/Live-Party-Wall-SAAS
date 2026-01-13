@@ -1,5 +1,7 @@
 import React from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useSettings } from '../../context/SettingsContext';
+import { getStaticAssetPath } from '../../utils/electronPaths';
 
 interface FloatingQrCodeProps {
   show: boolean;
@@ -8,6 +10,10 @@ interface FloatingQrCodeProps {
 }
 
 export const FloatingQrCode = React.memo(({ show, uploadUrl, isKiosqueMode }: FloatingQrCodeProps) => {
+  const { settings } = useSettings();
+  
+  // Utiliser le logo de l'événement s'il existe, sinon le logo par défaut
+  const logoUrl = settings.logo_url || getStaticAssetPath('logo-accueil.png');
   return (
     <div className={`fixed z-[40] transition-all duration-500 ${
       show ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20 pointer-events-none'
@@ -35,8 +41,12 @@ export const FloatingQrCode = React.memo(({ show, uploadUrl, isKiosqueMode }: Fl
                 marginSize={0}
              />
              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-               <div className="bg-white/95 backdrop-blur-sm rounded-full p-2 md:p-3 lg:p-4 shadow-lg border-2 border-gray-200/30">
-                 <span className="text-2xl md:text-3xl lg:text-4xl drop-shadow-md">📸</span>
+               <div className="bg-white/95 backdrop-blur-sm rounded-full p-1.5 md:p-2 lg:p-2.5 shadow-lg border-2 border-gray-200/30 flex items-center justify-center">
+                 <img
+                   src={logoUrl}
+                   alt="Logo"
+                   className={`${isKiosqueMode ? 'w-8 h-8 md:w-10 md:h-10' : 'w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14'} object-contain drop-shadow-md`}
+                 />
                </div>
              </div>
           </div>
