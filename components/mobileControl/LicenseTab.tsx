@@ -9,8 +9,9 @@ import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { revokeLicenseByKey, getActiveLicense } from '../../services/licenseService';
-import { getLicenseSuffix } from '../../utils/licenseUtils';
+import { getLicenseSuffix, isProLicense, isPartLicense } from '../../utils/licenseUtils';
 import { License } from '../../types';
+import { Crown, User } from 'lucide-react';
 
 const LicenseTab: React.FC = () => {
   const { licenseValidity, loading, refreshLicense } = useLicense();
@@ -194,24 +195,53 @@ const LicenseTab: React.FC = () => {
                     }`} />
                     <span className="text-white/90 font-semibold text-sm md:text-base">Statut</span>
                   </div>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`relative px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg ${
-                      isValid 
-                        ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/40 shadow-green-500/20' 
-                        : 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/40 shadow-red-500/20'
-                    }`}
-                  >
-                    {licenseValidity.status || 'N/A'}
-                    {isValid && (
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="absolute inset-0 rounded-lg bg-green-400/20 blur-sm"
-                      />
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`relative px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg ${
+                        isValid 
+                          ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/40 shadow-green-500/20' 
+                          : 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/40 shadow-red-500/20'
+                      }`}
+                    >
+                      {licenseValidity.status || 'N/A'}
+                      {isValid && (
+                        <motion.div
+                          animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                          className="absolute inset-0 rounded-lg bg-green-400/20 blur-sm"
+                        />
+                      )}
+                    </motion.div>
+                    {/* Badge type de licence */}
+                    {activeLicense?.license_key && (
+                      <>
+                        {isProLicense(activeLicense.license_key) && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 text-amber-300 shadow-lg shadow-amber-500/20"
+                          >
+                            <Crown className="w-3 h-3" />
+                            <span className="text-xs font-bold uppercase tracking-wider">PRO</span>
+                          </motion.div>
+                        )}
+                        {isPartLicense(activeLicense.license_key) && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700/30 border border-slate-600/40 text-slate-400 shadow-lg"
+                          >
+                            <User className="w-3 h-3" />
+                            <span className="text-xs font-bold uppercase tracking-wider">PART</span>
+                          </motion.div>
+                        )}
+                      </>
                     )}
-                  </motion.div>
+                  </div>
                 </motion.div>
                 
                 {/* ID de la licence avec design amélioré */}
@@ -307,14 +337,14 @@ const LicenseTab: React.FC = () => {
                           : `${activeLicense.license_key.substring(0, activeLicense.license_key.length - 4)}`
                         }
                       </code>
-                      {!showLicenseNumber && (
+                      {/* {!showLicenseNumber && (
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-slate-500 uppercase tracking-wider">Code:</span>
                           <code className="text-xs md:text-sm font-mono font-bold text-indigo-300 bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/30">
                             {getLicenseSuffix(activeLicense.license_key)}
                           </code>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </motion.div>
                 )}
