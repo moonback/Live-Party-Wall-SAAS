@@ -586,6 +586,10 @@ Le système distingue deux types de licences selon les **4 derniers caractères*
   - 🚫 Capture vidéo
   - 🚫 Retrouve-moi (Reconnaissance Faciale)
   - 🚫 Aftermovies dans la galerie
+- **Restrictions dans l'onglet Aftermovie** :
+  - 🚫 Mode de génération "Qualité" (1080p • 30 FPS • 20 Mbps) - grisé avec message "Passer à Pro"
+  - 🚫 Mode de génération "Story" (9:16 • 30 FPS • 10 Mbps) - grisé avec message "Passer à Pro"
+  - 🚫 Amélioration IA (sélection intelligente, transitions intelligentes, durées intelligentes) - masquée avec message "Fonctionnalité Pro"
 - **Interface** : 
   - Les fonctionnalités premium sont masquées dans le contrôle mobile et grisées dans l'admin avec message "Passer à Pro"
   - Si limite d'événements atteinte : bouton de création désactivé avec message "Passer à Pro pour créer jusqu'à 50 événements"
@@ -620,6 +624,31 @@ Si la licence est expirée ou invalide :
 - 🚪 Bouton de déconnexion
 
 ### 🎬 Aftermovies - Génération de vidéos souvenirs
+
+#### Restrictions selon la licence
+
+##### 📦 Licence PART
+- **Modes de génération limités** :
+  - ✅ Mode "Rapide" (720p • 24 FPS • 4 Mbps) - Disponible
+  - ✅ Mode "Standard" (1080p • 30 FPS • 12 Mbps) - Disponible
+  - 🚫 Mode "Qualité" (1080p • 30 FPS • 20 Mbps) - **Bloqué** (grisé avec message "Passer à Pro")
+  - 🚫 Mode "Story" (9:16 • 30 FPS • 10 Mbps) - **Bloqué** (grisé avec message "Passer à Pro")
+- **Amélioration IA** :
+  - 🚫 Section complète masquée avec message "Fonctionnalité Pro"
+  - 🚫 Sélection intelligente - Non disponible
+  - 🚫 Transitions intelligentes - Non disponible
+  - 🚫 Durées intelligentes - Non disponible
+
+##### ⭐ Licence PROS
+- **Tous les modes de génération disponibles** :
+  - ✅ Mode "Rapide" (720p • 24 FPS • 4 Mbps)
+  - ✅ Mode "Standard" (1080p • 30 FPS • 12 Mbps)
+  - ✅ Mode "Qualité" (1080p • 30 FPS • 20 Mbps)
+  - ✅ Mode "Story" (9:16 • 30 FPS • 10 Mbps)
+- **Amélioration IA complète** :
+  - ✅ Sélection intelligente des photos
+  - ✅ Transitions intelligentes selon le contenu
+  - ✅ Durées intelligentes selon l'importance des moments
 
 #### Génération
 - 🎞️ **Timelapse automatique** - Création de vidéos à partir des photos sélectionnées
