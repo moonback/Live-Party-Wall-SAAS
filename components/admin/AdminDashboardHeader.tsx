@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Globe, X } from 'lucide-react';
+import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalLink, Globe, X, Crown, User } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
@@ -9,6 +9,7 @@ import { useEvent } from '../../context/EventContext';
 import { getBaseUrl } from '../../utils/urlUtils';
 import { logger } from '../../utils/logger';
 import { SidebarHamburgerButton } from './AdminTabsNavigation';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -33,6 +34,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   isMobileMenuOpen = false, onMobileMenuToggle
 }) => {
   const { currentEvent } = useEvent();
+  const { isProLicense, isPartLicense } = useLicenseFeatures();
   const [showEventLink, setShowEventLink] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -168,6 +170,31 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                         <span className="text-[10px] sm:text-xs font-semibold text-indigo-200 truncate max-w-[100px] sm:max-w-[160px]" title={currentEventName}>
                           {currentEventName}
                         </span>
+                      </div>
+                    </>
+                  )}
+                  {/* Badge de licence */}
+                  {(isProLicense || isPartLicense) && (
+                    <>
+                      <span className="text-slate-600 hidden sm:inline">•</span>
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] sm:text-xs font-semibold ${
+                        isProLicense 
+                          ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-amber-500/40 text-amber-300' 
+                          : 'bg-slate-700/30 border-slate-600/40 text-slate-400'
+                      }`}>
+                        {isProLicense ? (
+                          <>
+                            <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            <span className="hidden sm:inline">PRO</span>
+                            <span className="sm:hidden">PRO</span>
+                          </>
+                        ) : (
+                          <>
+                            <User className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            <span className="hidden sm:inline">PART</span>
+                            <span className="sm:hidden">PART</span>
+                          </>
+                        )}
                       </div>
                     </>
                   )}
