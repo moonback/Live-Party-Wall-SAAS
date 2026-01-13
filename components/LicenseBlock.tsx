@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Clock, Shield, LogOut, RefreshCw, ExternalLink } from 'lucide-react';
 import { useLicense } from '../context/LicenseContext';
 import { useAuth } from '../context/AuthContext';
-import { isElectron } from '../utils/electronPaths';
+import { isElectron, getStaticAssetPath } from '../utils/electronPaths';
 
 /**
  * Fonction utilitaire pour nettoyer le storage (extraite pour éviter la duplication)
@@ -179,7 +179,7 @@ const LicenseBlock: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-indigo-500/30 rounded-full blur-2xl scale-150"></div>
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 border-2 border-pink-500/30 flex items-center justify-center shadow-2xl backdrop-blur-sm p-3">
                 <img
-                  src="/icon.png"
+                  src={isElectron() ? getStaticAssetPath('icon.png') : '/icon.png'}
                   alt="Partywall Logo"
                   className="w-full h-full object-contain drop-shadow-lg"
                   draggable={false}

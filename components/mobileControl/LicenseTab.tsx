@@ -374,6 +374,7 @@ const LicenseTab: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-400 text-white rounded-lg font-bold transition-all duration-300 shadow-lg shadow-amber-500/30 border border-amber-400/40 text-sm md:text-base"
+              onClick={() => window.open('https://partywall.fr', '_blank', 'noopener')}
             >
               <Crown className="w-4 h-4 md:w-5 md:h-5" />
               <span>Passer à Pro</span>

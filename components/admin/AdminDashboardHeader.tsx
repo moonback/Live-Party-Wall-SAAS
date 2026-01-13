@@ -4,7 +4,7 @@ import { Home, Trash2, Download, Image as ImageIcon, RefreshCw, Power, ExternalL
 import { QRCodeCanvas } from 'qrcode.react';
 import AdminProfile from '../AdminProfile';
 import { Photo } from '../../types';
-import { isElectron } from '../../utils/electronPaths';
+import { isElectron, getStaticAssetPath } from '../../utils/electronPaths';
 import { useEvent } from '../../context/EventContext';
 import { getBaseUrl } from '../../utils/urlUtils';
 import { logger } from '../../utils/logger';
@@ -144,7 +144,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
                 <div className="relative p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">
                   <img
-                    src="/icon.png"
+                    src={isElectron() ? getStaticAssetPath('icon.png') : '/icon.png'}
                     alt="Logo Partywall"
                     className="w-5 h-5 sm:w-8 sm:h-8 object-contain"
                     draggable={false}
