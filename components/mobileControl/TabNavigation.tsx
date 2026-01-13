@@ -40,10 +40,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, b
 
   return (
     <nav
-      className="sticky top-[73px] z-40 bg-black/60 backdrop-blur-xl border-b border-white/20 shadow-lg md:static md:z-40 md:bg-black/50 md:backdrop-blur-lg md:border-white/10"
+      className="sticky top-[65px] md:top-[73px] z-40 bg-black/50 backdrop-blur-xl border-b border-white/10 shadow-lg md:static md:z-40"
       aria-label="Navigation principale"
     >
-      <div className="flex justify-between md:justify-start md:gap-1 md:overflow-x-auto md:scrollbar-hide snap-x snap-mandatory select-none">
+      <div className="flex justify-between md:justify-start md:gap-0.5 md:overflow-x-auto md:scrollbar-hide snap-x snap-mandatory select-none px-1">
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const selected = activeTab === tab.id;
@@ -52,43 +52,58 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, b
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               aria-current={selected ? 'page' : undefined}
-              className={`flex-1 md:flex-none md:min-w-[120px] flex flex-col items-center justify-center py-3.5 px-2 md:py-3 md:px-4 relative font-medium transition-all duration-300 active:scale-[0.96] group focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 md:hover:bg-white/5 ${
+              className={`group relative flex-1 md:flex-none md:min-w-[70px] flex flex-col items-center justify-center py-2 px-1 md:py-2.5 md:px-2.5 font-medium transition-all duration-300 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg md:mx-0.5 ${
                 selected
-                  ? 'text-pink-400 bg-gradient-to-b from-pink-500/20 via-pink-500/15 to-transparent md:bg-gradient-to-b md:from-pink-500/20 md:to-transparent shadow-inner'
-                  : 'text-white/70 hover:text-white/90 active:bg-white/5'
+                  ? 'text-pink-400'
+                  : 'text-white/60 hover:text-white/90'
               }`}
               tabIndex={0}
               type="button"
             >
+              {/* Background pour l'état sélectionné */}
+              {selected && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/15 via-rose-500/10 to-pink-500/15 rounded-lg border border-pink-500/20" />
+                  <div className="absolute inset-0 bg-pink-500/5 rounded-lg animate-pulse" />
+                </>
+              )}
+              
+              {/* Icône avec animation */}
               <span
-                className={`relative flex items-center justify-center rounded-full transition-all duration-300 p-2 md:mb-1 md:p-2 ${
+                className={`relative flex items-center justify-center rounded-xl transition-all duration-300 p-1.5 md:p-2 mb-1 ${
                   selected 
-                    ? 'scale-110 md:scale-125 bg-gradient-to-br from-pink-500/30 via-pink-500/20 to-purple-500/15 md:bg-gradient-to-br md:from-pink-500/30 md:via-pink-500/20 md:to-purple-500/15 shadow-lg shadow-pink-500/30 ring-2 ring-pink-500/30' 
-                    : 'group-hover:bg-white/10 group-hover:scale-105 group-active:scale-95'
+                    ? 'scale-110 bg-gradient-to-br from-pink-500/25 to-rose-500/25 shadow-lg shadow-pink-500/20 ring-1 ring-pink-500/30'
+                    : 'group-hover:bg-pink-500/10 group-hover:scale-105 group-active:scale-95'
                 }`}
               >
                 <Icon 
-                  className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
+                  className={`w-4 h-4 md:w-5 md:h-5 transition-all duration-300 relative z-10 ${
                     selected 
-                      ? 'text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]' 
-                      : 'text-white/80 group-hover:text-white group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]'
+                      ? 'text-pink-400 drop-shadow-lg'
+                      : 'text-white/70 group-hover:text-white'
                   }`} 
                 />
-                {selected && (
-                  <span className="absolute inset-0 rounded-full bg-pink-500/30 animate-pulse blur-md"></span>
+                
+                {/* Effet de brillance au hover */}
+                {!selected && (
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-pink-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 )}
               </span>
+              
+              {/* Label */}
               <span
-                className={`text-[10px] md:text-sm leading-tight mt-1 md:mt-[2px] font-medium transition-all duration-300 ${
+                className={`text-[10px] md:text-[11px] leading-tight font-medium transition-all duration-300 relative z-10 ${
                   selected
-                    ? 'text-pink-400 drop-shadow-[0_0_4px_rgba(236,72,153,0.4)] font-semibold'
-                    : 'text-white/70 group-hover:text-white/90'
+                    ? 'text-pink-400 font-semibold drop-shadow-sm'
+                    : 'text-white/60 group-hover:text-white/90'
                 }`}
               >
                 {tab.label}
               </span>
+              
+              {/* Indicateur de sélection en bas */}
               {selected && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-10 md:w-12 rounded-t-md bg-gradient-to-r from-pink-400 via-pink-500 to-purple-500 shadow-[0_-1px_12px_0_rgba(236,72,153,0.5)] opacity-95"></span>
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-8 md:w-10 rounded-full bg-gradient-to-r from-transparent via-pink-400 to-transparent shadow-lg shadow-pink-400/50" />
               )}
             </button>
           );

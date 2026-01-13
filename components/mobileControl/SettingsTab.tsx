@@ -138,98 +138,135 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-4">
+    <div className="space-y-3 md:space-y-4 pb-4">
       {/* Configuration de l'événement */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-white">Configuration de l'événement</h2>
-        <div className="space-y-4">
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <div className="w-1 h-5 md:h-6 bg-gradient-to-b from-pink-400 to-purple-400 rounded-full" />
+          <h2 className="text-base md:text-lg font-semibold text-white">Configuration de l'événement</h2>
+        </div>
+        <div className="space-y-3 md:space-y-3.5">
           {/* Titre */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Titre</label>
-            <input
-              type="text"
-              value={settings.event_title || ''}
-              onChange={(e) => updateSettings({ event_title: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
-              placeholder="Titre de l'événement"
-            />
+          <div className="group">
+            <label className="block text-xs md:text-sm font-medium mb-1.5 text-white/80">
+              Titre de l'événement
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={settings.event_title || ''}
+                onChange={(e) => updateSettings({ event_title: e.target.value })}
+                className="w-full px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-pink-500/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:bg-white/10 transition-all duration-300 text-sm md:text-base"
+                placeholder="Ex: Mariage de Sophie & Marc"
+              />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            </div>
+            <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+              Affiché sur la page d'accueil et le mur
+            </p>
           </div>
 
           {/* Sous-titre */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Sous-titre</label>
-            <input
-              type="text"
-              value={settings.event_subtitle || ''}
-              onChange={async (e) => {
-                await updateSettings({ event_subtitle: e.target.value });
-              }}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
-              placeholder="Sous-titre"
-            />
+          <div className="group">
+            <label className="block text-xs md:text-sm font-medium mb-1.5 text-white/80">
+              Sous-titre
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={settings.event_subtitle || ''}
+                onChange={async (e) => {
+                  await updateSettings({ event_subtitle: e.target.value });
+                }}
+                className="w-full px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-pink-500/50 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:bg-white/10 transition-all duration-300 text-sm md:text-base"
+                placeholder="Ex: 15 Juin 2026"
+              />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            </div>
+            <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+              Complément d'information sous le titre
+            </p>
           </div>
 
           {/* Vitesse de défilement */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Vitesse de défilement: {settings.scroll_speed || 'normal'}
-            </label>
+          <div className="group">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs md:text-sm font-medium text-white/80">
+                Vitesse de défilement
+              </label>
+              <span className="text-xs md:text-sm font-semibold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
+                {settings.scroll_speed === 'slow' ? 'Lente' : settings.scroll_speed === 'fast' ? 'Rapide' : 'Normale'}
+              </span>
+            </div>
             <select
               value={settings.scroll_speed || 'normal'}
               onChange={async (e) => {
                 await updateSettings({ scroll_speed: e.target.value as 'slow' | 'normal' | 'fast' });
               }}
-              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500/50 transition-all"
+              className="w-full px-3.5 py-2.5 md:px-4 md:py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 focus:border-pink-500/50 text-white focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:bg-white/10 transition-all duration-300 text-sm md:text-base cursor-pointer"
             >
-              <option value="slow">Lente</option>
-              <option value="normal">Normale</option>
-              <option value="fast">Rapide</option>
+              <option value="slow" className="bg-gray-900">Lente</option>
+              <option value="normal" className="bg-gray-900">Normale</option>
+              <option value="fast" className="bg-gray-900">Rapide</option>
             </select>
+            <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+              Contrôle la vitesse d'affichage des photos sur le mur
+            </p>
           </div>
         </div>
       </div>
 
       {/* Images de fond */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
-          <div className="p-1.5 rounded-lg bg-white/10">
-            <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <div className="w-1 h-5 md:h-6 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full" />
+          <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
           </div>
-          Images de fond
-        </h2>
-        <div className="space-y-4">
+          <h2 className="text-base md:text-lg font-semibold text-white">Images de fond</h2>
+        </div>
+        <div className="space-y-3 md:space-y-4">
           {/* Desktop Background */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-              <Monitor className="w-4 h-4" />
+            <label className="block text-xs md:text-sm font-medium mb-2 flex items-center gap-2 text-white/80">
+              <div className="p-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <Monitor className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-400" />
+              </div>
               Fond Desktop
             </label>
             {settings.background_desktop_url ? (
-              <div className="relative">
-                <img
-                  src={settings.background_desktop_url}
-                  alt="Fond desktop"
-                  className="w-full h-32 object-cover rounded-lg border border-white/20"
-                />
+              <div className="relative group">
+                <div className="overflow-hidden rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300">
+                  <img
+                    src={settings.background_desktop_url}
+                    alt="Fond desktop"
+                    className="w-full h-32 md:h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
                 <button
                   onClick={() => clearBackground('desktop')}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                  className="absolute top-2 right-2 p-1.5 md:p-2 bg-red-500/90 hover:bg-red-500 rounded-lg text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-red-400/30"
                   title="Supprimer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
-                <p className="text-sm text-white/60 mb-3">Aucune image de fond desktop</p>
-                <button
-                  onClick={() => desktopInputRef.current?.click()}
-                  disabled={uploadingDesktop}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
-                >
-                  <Upload className="w-4 h-4" />
-                  {uploadingDesktop ? 'Upload en cours...' : 'Uploader une image'}
-                </button>
+              <div className="border-2 border-dashed border-white/10 hover:border-white/20 rounded-xl p-4 md:p-6 text-center bg-white/5 transition-all duration-300 group">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                    <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-white/40" />
+                  </div>
+                  <p className="text-xs md:text-sm text-white/60 mb-2">Aucune image de fond desktop</p>
+                  <button
+                    onClick={() => desktopInputRef.current?.click()}
+                    disabled={uploadingDesktop}
+                    className="flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 active:from-blue-500/40 active:to-cyan-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-blue-500/30 shadow-md hover:shadow-lg"
+                  >
+                    <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    {uploadingDesktop ? 'Upload...' : 'Uploader'}
+                  </button>
+                </div>
               </div>
             )}
             {!settings.background_desktop_url && (
@@ -245,10 +282,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <button
                 onClick={() => desktopInputRef.current?.click()}
                 disabled={uploadingDesktop}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 active:from-blue-500/40 active:to-cyan-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-blue-500/30 shadow-md hover:shadow-lg"
               >
-                <Upload className="w-4 h-4" />
-                {uploadingDesktop ? 'Remplacement en cours...' : 'Remplacer'}
+                <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                {uploadingDesktop ? 'Remplacement...' : 'Remplacer'}
               </button>
             )}
             {settings.background_desktop_url && (
@@ -264,36 +301,45 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
 
           {/* Mobile Background */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-              <Smartphone className="w-4 h-4" />
+            <label className="block text-xs md:text-sm font-medium mb-2 flex items-center gap-2 text-white/80">
+              <div className="p-1 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <Smartphone className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-400" />
+              </div>
               Fond Mobile
             </label>
             {settings.background_mobile_url ? (
-              <div className="relative">
-                <img
-                  src={settings.background_mobile_url}
-                  alt="Fond mobile"
-                  className="w-full h-32 object-cover rounded-lg border border-white/20"
-                />
+              <div className="relative group">
+                <div className="overflow-hidden rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300">
+                  <img
+                    src={settings.background_mobile_url}
+                    alt="Fond mobile"
+                    className="w-full h-32 md:h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
                 <button
                   onClick={() => clearBackground('mobile')}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                  className="absolute top-2 right-2 p-1.5 md:p-2 bg-red-500/90 hover:bg-red-500 rounded-lg text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-red-400/30"
                   title="Supprimer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
-                <p className="text-sm text-white/60 mb-3">Aucune image de fond mobile</p>
-                <button
-                  onClick={() => mobileInputRef.current?.click()}
-                  disabled={uploadingMobile}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
-                >
-                  <Upload className="w-4 h-4" />
-                  {uploadingMobile ? 'Upload en cours...' : 'Uploader une image'}
-                </button>
+              <div className="border-2 border-dashed border-white/10 hover:border-white/20 rounded-xl p-4 md:p-6 text-center bg-white/5 transition-all duration-300 group">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                    <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-white/40" />
+                  </div>
+                  <p className="text-xs md:text-sm text-white/60 mb-2">Aucune image de fond mobile</p>
+                  <button
+                    onClick={() => mobileInputRef.current?.click()}
+                    disabled={uploadingMobile}
+                    className="flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 active:from-purple-500/40 active:to-pink-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-md hover:shadow-lg"
+                  >
+                    <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    {uploadingMobile ? 'Upload...' : 'Uploader'}
+                  </button>
+                </div>
               </div>
             )}
             {!settings.background_mobile_url && (
@@ -309,10 +355,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               <button
                 onClick={() => mobileInputRef.current?.click()}
                 disabled={uploadingMobile}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
+                className="w-full flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 active:from-purple-500/40 active:to-pink-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-md hover:shadow-lg"
               >
-                <Upload className="w-4 h-4" />
-                {uploadingMobile ? 'Remplacement en cours...' : 'Remplacer'}
+                <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                {uploadingMobile ? 'Remplacement...' : 'Remplacer'}
               </button>
             )}
             {settings.background_mobile_url && (
@@ -329,42 +375,48 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
       </div>
 
       {/* Logo */}
-      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-white/10 shadow-sm">
-        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
-          <div className="p-1.5 rounded-lg bg-white/10">
-            <ImageIcon className="w-5 h-5 md:w-6 md:h-6" />
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <div className="w-1 h-5 md:h-6 bg-gradient-to-b from-indigo-400 to-purple-400 rounded-full" />
+          <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+            <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-400" />
           </div>
-          Logo de l'événement
-        </h2>
-        <div className="space-y-4">
+          <h2 className="text-base md:text-lg font-semibold text-white">Logo de l'événement</h2>
+        </div>
+        <div className="space-y-3 md:space-y-4">
           {settings.logo_url ? (
-            <div className="relative">
-              <div className="bg-white/5 rounded-lg p-4 flex items-center justify-center border border-white/20">
+            <div className="relative group">
+              <div className="bg-white/5 rounded-xl p-4 md:p-6 flex items-center justify-center border border-white/10 hover:border-white/20 transition-all duration-300">
                 <img
                   src={settings.logo_url}
                   alt="Logo de l'événement"
-                  className="max-w-full max-h-32 object-contain"
+                  className="max-w-full max-h-32 md:max-h-40 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
               <button
                 onClick={clearLogo}
-                className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-500 rounded-lg text-white transition-colors"
+                className="absolute top-2 right-2 p-1.5 md:p-2 bg-red-500/90 hover:bg-red-500 rounded-lg text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-red-400/30"
                 title="Supprimer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
               </button>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
-              <p className="text-sm text-white/60 mb-3">Aucun logo</p>
-              <button
-                onClick={() => logoInputRef.current?.click()}
-                disabled={uploadingLogo}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
-              >
-                <Upload className="w-4 h-4" />
-                {uploadingLogo ? 'Upload en cours...' : 'Uploader un logo'}
-              </button>
+            <div className="border-2 border-dashed border-white/10 hover:border-white/20 rounded-xl p-4 md:p-6 text-center bg-white/5 transition-all duration-300 group">
+              <div className="flex flex-col items-center gap-2">
+                <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                  <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-white/40" />
+                </div>
+                <p className="text-xs md:text-sm text-white/60 mb-2">Aucun logo</p>
+                <button
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 hover:from-indigo-500/30 hover:to-purple-500/30 active:from-indigo-500/40 active:to-purple-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-500/30 shadow-md hover:shadow-lg"
+                >
+                  <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  {uploadingLogo ? 'Upload...' : 'Uploader un logo'}
+                </button>
+              </div>
             </div>
           )}
           {!settings.logo_url && (
@@ -380,10 +432,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
             <button
               onClick={() => logoInputRef.current?.click()}
               disabled={uploadingLogo}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-white/20 shadow-sm"
+              className="w-full flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 hover:from-indigo-500/30 hover:to-purple-500/30 active:from-indigo-500/40 active:to-purple-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-500/30 shadow-md hover:shadow-lg"
             >
-              <Upload className="w-4 h-4" />
-              {uploadingLogo ? 'Remplacement en cours...' : 'Remplacer'}
+              <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              {uploadingLogo ? 'Remplacement...' : 'Remplacer'}
             </button>
           )}
           {settings.logo_url && (
@@ -395,7 +447,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               className="hidden"
             />
           )}
-          <p className="text-xs text-white/60">
+          <p className="text-[10px] md:text-xs text-white/50 bg-white/5 px-2.5 py-1.5 rounded-lg border border-white/10">
             Le logo remplacera le titre sur la page d'accueil (JPEG, PNG, WebP ou SVG - max 5MB)
           </p>
           
