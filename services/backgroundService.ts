@@ -109,6 +109,75 @@ export async function uploadLogoImage(
 }
 
 /**
+ * Interface pour les images de fond dans l'historique
+ */
+export interface BackgroundImageHistory {
+  path: string;
+  publicUrl: string;
+  type: 'desktop' | 'mobile';
+  createdAt: Date;
+  name: string;
+}
+
+/**
+ * Liste toutes les images de fond d'un événement (historique)
+ * @param eventId - ID de l'événement
+ * @returns Promise résolue avec la liste des images de fond triées par date (plus récentes en premier)
+ */
+export async function listBackgroundImages(eventId: string): Promise<BackgroundImageHistory[]> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase n'est pas configuré.");
+  }
+
+  const { data, error } = await supabase.storage
+    .from('party-backgrounds')
+    .list(eventId, {
+      sortBy: { column: 'created_at', order: 'desc' },
+      limit: 1000
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  // Filtrer uniquement les images de fond (pas les logos)
+  const backgroundFiles = data.filter(file => 
+    file.name.startsWith('background-') && 
+    (file.name.includes('-desktop-') || file.name.includes('-mobile-'))
+  );
+
+  // Mapper les fichiers en BackgroundImageHistory
+  const backgrounds: BackgroundImageHistory[] = backgroundFiles.map(file => {
+    const path = `${eventId}/${file.name}`;
+    const { data: { publicUrl } } = supabase.storage
+      .from('party-backgrounds')
+      .getPublicUrl(path);
+
+    // Extraire le type depuis le nom du fichier
+    const type: 'desktop' | 'mobile' = file.name.includes('-desktop-') ? 'desktop' : 'mobile';
+    
+    // Extraire le timestamp depuis le nom du fichier (format: background-{type}-{timestamp}-...)
+    const timestampMatch = file.name.match(/background-(?:desktop|mobile)-(\d+)-/);
+    const timestamp = timestampMatch ? parseInt(timestampMatch[1], 10) : file.created_at ? new Date(file.created_at).getTime() : Date.now();
+
+    return {
+      path,
+      publicUrl,
+      type,
+      createdAt: new Date(timestamp),
+      name: file.name
+    };
+  });
+
+  // Trier par date (plus récentes en premier)
+  return backgrounds.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+/**
  * Supprime une image de fond du bucket Supabase
  * @param eventId - ID de l'événement
  * @param path - Chemin du fichier à supprimer

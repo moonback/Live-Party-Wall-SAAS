@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Settings, Type, Tag, Sparkles, Frame, Upload, X, Save, RefreshCw, 
   Image as ImageIcon, Gauge, Move, Shield, Video, Grid3x3, BarChart2, 
-  User, Trophy, Info, CheckCircle2, Power, Play
+  User, Trophy, Info, CheckCircle2, Power, Play, Clock
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { usePhotos } from '../../context/PhotosContext';
@@ -12,7 +12,7 @@ import { uploadDecorativeFramePng } from '../../services/frameService';
 import { getLocalFrames, getLocalFrameUrl, getLocalFrameThumbnailUrl, frameCategories, LocalFrame } from '../../services/localFramesService';
 import { generateEventContextSuggestion } from '../../services/eventContextService';
 import { EventSettings } from '../../services/settingsService';
-import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
+import { uploadBackgroundImage, uploadLogoImage, listBackgroundImages, deleteBackgroundImage, BackgroundImageHistory } from '../../services/backgroundService';
 import { Monitor, Smartphone } from 'lucide-react';
 
 interface ConfigurationTabProps {
@@ -36,6 +36,9 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [backgroundHistory, setBackgroundHistory] = useState<BackgroundImageHistory[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +60,26 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
     };
     loadFrames();
   }, []);
+
+  // Load background history when event changes or when showing history
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!currentEvent || !showHistory) return;
+      
+      setLoadingHistory(true);
+      try {
+        const history = await listBackgroundImages(currentEvent.id);
+        setBackgroundHistory(history);
+      } catch (error) {
+        console.error('Error loading background history:', error);
+        addToast('Erreur lors du chargement de l\'historique', 'error');
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    loadHistory();
+  }, [currentEvent, showHistory, addToast]);
 
   const handleConfigChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const target = e.target;
@@ -176,6 +199,12 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
         [fieldName]: publicUrl
       }));
       addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} uploadée. N'oubliez pas de sauvegarder.`, 'success');
+      
+      // Rafraîchir l'historique si visible
+      if (showHistory) {
+        const history = await listBackgroundImages(currentEvent.id);
+        setBackgroundHistory(history);
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
@@ -192,6 +221,37 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
       if (type === 'mobile' && mobileInputRef.current) {
         mobileInputRef.current.value = '';
       }
+    }
+  };
+
+  const handleRestoreBackground = async (background: BackgroundImageHistory) => {
+    if (!currentEvent) return;
+    
+    const fieldName = background.type === 'desktop' ? 'background_desktop_url' : 'background_mobile_url';
+    setLocalConfig(prev => ({
+      ...prev,
+      [fieldName]: background.publicUrl
+    }));
+    addToast(`Image de fond ${background.type === 'desktop' ? 'desktop' : 'mobile'} restaurée. N'oubliez pas de sauvegarder.`, 'success');
+  };
+
+  const handleDeleteBackground = async (background: BackgroundImageHistory) => {
+    if (!currentEvent) return;
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer cette image de fond ?`)) {
+      return;
+    }
+
+    try {
+      await deleteBackgroundImage(currentEvent.id, background.path);
+      addToast('Image de fond supprimée', 'success');
+      
+      // Rafraîchir l'historique
+      const history = await listBackgroundImages(currentEvent.id);
+      setBackgroundHistory(history);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      addToast(`Erreur lors de la suppression: ${errorMsg}`, 'error');
     }
   };
 
@@ -662,6 +722,89 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <Info className="w-3 h-3 text-slate-500" />
                     Images de fond personnalisées pour la page d'accueil (desktop et mobile)
                   </p>
+
+                  {/* Bouton pour afficher l'historique */}
+                  <button
+                    type="button"
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-indigo-500/50 hover:bg-slate-800 transition-colors text-xs text-slate-300"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                    {showHistory ? 'Masquer l\'historique' : 'Voir l\'historique des images de fond'}
+                  </button>
+
+                  {/* Historique des images de fond */}
+                  {showHistory && (
+                    <div className="mt-4 pt-4 border-t border-slate-800">
+                      <h4 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-indigo-400" />
+                        Historique des images de fond
+                      </h4>
+                      {loadingHistory ? (
+                        <div className="flex items-center justify-center py-8">
+                          <RefreshCw className="w-5 h-5 text-indigo-400 animate-spin" />
+                          <span className="ml-2 text-sm text-slate-400">Chargement...</span>
+                        </div>
+                      ) : backgroundHistory.length === 0 ? (
+                        <p className="text-xs text-slate-500 text-center py-4">Aucune image de fond dans l'historique</p>
+                      ) : (
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {backgroundHistory.map((bg) => (
+                            <div
+                              key={bg.path}
+                              className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 hover:border-slate-600 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+                                  <img
+                                    src={bg.publicUrl}
+                                    alt={`Fond ${bg.type}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                      bg.type === 'desktop'
+                                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                        : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                    }`}>
+                                      {bg.type === 'desktop' ? 'Desktop' : 'Mobile'}
+                                    </span>
+                                    <span className="text-xs text-slate-400">
+                                      {bg.createdAt.toLocaleDateString('fr-FR', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRestoreBackground(bg)}
+                                      className="px-2 py-1 bg-indigo-500/20 border border-indigo-500/30 rounded text-xs text-indigo-300 hover:bg-indigo-500/30 transition-colors"
+                                    >
+                                      Restaurer
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteBackground(bg)}
+                                      className="px-2 py-1 bg-red-500/20 border border-red-500/30 rounded text-xs text-red-300 hover:bg-red-500/30 transition-colors"
+                                    >
+                                      Supprimer
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Logo */}
