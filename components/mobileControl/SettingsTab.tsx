@@ -417,6 +417,68 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
           Génération IA d'images de fond
         </h2>
         <div className="space-y-4">
+          {/* Suggestions de prompts */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-white/80">
+              Suggestions de prompts
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { 
+                  prompt: 'A beautiful party scene with colorful balloons, confetti, and sparkling lights in the background, festive atmosphere',
+                  label: '🎉 Fête festive',
+                  emoji: '🎉'
+                },
+                { 
+                  prompt: 'Elegant wedding reception with soft romantic lighting, flowers, and golden decorations, sophisticated atmosphere',
+                  label: '💒 Mariage élégant',
+                  emoji: '💒'
+                },
+                { 
+                  prompt: 'Birthday party with colorful decorations, cake, balloons, and party hats, joyful celebration',
+                  label: '🎂 Anniversaire',
+                  emoji: '🎂'
+                },
+                { 
+                  prompt: 'Corporate event with modern minimalist design, professional lighting, and elegant geometric patterns',
+                  label: '💼 Événement corporate',
+                  emoji: '💼'
+                },
+                { 
+                  prompt: 'Summer beach party with tropical vibes, palm trees, sunset colors, and ocean waves in the background',
+                  label: '🏖️ Fête plage',
+                  emoji: '🏖️'
+                },
+                { 
+                  prompt: 'Nightclub atmosphere with neon lights, vibrant colors, disco ball reflections, and energetic party mood',
+                  label: '🎵 Soirée club',
+                  emoji: '🎵'
+                },
+                { 
+                  prompt: 'Garden party with natural greenery, flowers, soft sunlight, and outdoor celebration atmosphere',
+                  label: '🌺 Jardin',
+                  emoji: '🌺'
+                },
+                { 
+                  prompt: 'Elegant gala event with luxurious decorations, chandeliers, red carpet, and sophisticated ambiance',
+                  label: '✨ Gala élégant',
+                  emoji: '✨'
+                },
+              ].map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => setAiPrompt(suggestion.prompt)}
+                  className="flex items-center gap-2 p-2.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 border border-purple-500/20 hover:border-purple-500/40 transition-all text-left touch-manipulation group"
+                >
+                  <span className="text-lg flex-shrink-0">{suggestion.emoji}</span>
+                  <span className="text-xs sm:text-sm text-white/90 group-hover:text-white truncate flex-1">
+                    {suggestion.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Prompt */}
           <div>
             <label className="block text-sm font-medium mb-2 text-white/80">
@@ -431,7 +493,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
             />
             <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-white/60">
-                Décrivez l'image que vous souhaitez générer avec l'IA
+                Décrivez l'image que vous souhaitez générer avec l'IA ou sélectionnez une suggestion ci-dessus
               </p>
               <p className="text-xs text-white/60">
                 {aiPrompt.length}/500
