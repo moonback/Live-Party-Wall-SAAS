@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, Calendar, Clock, CheckCircle, XCircle, 
@@ -8,7 +8,8 @@ import {
 import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { revokeLicenseByKey } from '../../services/licenseService';
+import { revokeLicenseByKey, getActiveLicense } from '../../services/licenseService';
+import { License } from '../../types';
 
 const LicenseTab: React.FC = () => {
   const { licenseValidity, loading, refreshLicense } = useLicense();
@@ -18,6 +19,28 @@ const LicenseTab: React.FC = () => {
   const [revoking, setRevoking] = useState(false);
   const [showFullLicenseId, setShowFullLicenseId] = useState(false);
   const [showLicenseKey, setShowLicenseKey] = useState(false);
+  const [activeLicense, setActiveLicense] = useState<License | null>(null);
+  const [loadingLicense, setLoadingLicense] = useState(false);
+  const [showLicenseNumber, setShowLicenseNumber] = useState(false);
+
+  // Charger la licence active depuis la base de données
+  useEffect(() => {
+    const loadActiveLicense = async () => {
+      if (!user) return;
+      
+      try {
+        setLoadingLicense(true);
+        const license = await getActiveLicense(user.id);
+        setActiveLicense(license);
+      } catch (error) {
+        console.error('Error loading active license:', error);
+      } finally {
+        setLoadingLicense(false);
+      }
+    };
+
+    loadActiveLicense();
+  }, [user, licenseValidity?.license_id]);
 
   // Calculer les jours restants
   const getDaysRemaining = (expiresAt: string | null): number | null => {
@@ -236,13 +259,55 @@ const LicenseTab: React.FC = () => {
                   </div>
                 )}
 
-                {/* Clé de licence stockée */}
-                {localStorage.getItem('partywall_license_key') && (
+                {/* Numéro de licence depuis la base de données */}
+                {activeLicense?.license_key && (
                   <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-white/80 font-medium text-xs md:text-sm flex items-center gap-1.5">
                         <Key className="w-3.5 h-3.5" />
-                        Clé de licence
+                        Numéro de licence
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setShowLicenseNumber(!showLicenseNumber)}
+                          className="p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title={showLicenseNumber ? "Masquer" : "Afficher"}
+                        >
+                          {showLicenseNumber ? (
+                            <EyeOff className="w-3.5 h-3.5 text-white/70" />
+                          ) : (
+                            <Eye className="w-3.5 h-3.5 text-white/70" />
+                          )}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleCopyKey(activeLicense.license_key)}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors border border-white/10"
+                          title="Copier le numéro"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-white/70" />
+                        </motion.button>
+                      </div>
+                    </div>
+                    <code className="block text-xs font-mono text-white/90 bg-black/40 px-2.5 py-1.5 rounded border border-white/10 break-all">
+                      {showLicenseNumber 
+                        ? activeLicense.license_key 
+                        : `${activeLicense.license_key.substring(0, 16)}...`
+                      }
+                    </code>
+                  </div>
+                )}
+
+                {/* Clé de licence stockée (fallback) */}
+                {!activeLicense?.license_key && localStorage.getItem('partywall_license_key') && (
+                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-white/80 font-medium text-xs md:text-sm flex items-center gap-1.5">
+                        <Key className="w-3.5 h-3.5" />
+                        Clé de licence (local)
                       </span>
                       <div className="flex items-center gap-1.5">
                         <motion.button
