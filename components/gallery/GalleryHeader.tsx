@@ -16,6 +16,8 @@ interface GalleryHeaderProps {
   selectedCount?: number;
   onBatchDownload?: () => void;
   onParticipantsClick?: () => void;
+  onSidebarToggle?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -30,7 +32,9 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   onToggleSelectionMode,
   selectedCount = 0,
   onBatchDownload,
-  onParticipantsClick
+  onParticipantsClick,
+  onSidebarToggle,
+  isSidebarOpen = false
 }) => {
   const isMobile = useIsMobile();
   const internalSearchRef = useRef<HTMLInputElement>(null);
@@ -76,7 +80,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Left: Back + Logo */}
+          {/* Left: Back + Sidebar Toggle + Logo */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <motion.button 
               whileHover={{ scale: 1.05, x: -2 }}
@@ -88,6 +92,23 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 to-purple-500/0 group-hover:from-pink-500/20 group-hover:to-purple-500/20 transition-all duration-300" />
               <ArrowLeft className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-white group-hover:text-pink-400 relative z-10 transition-all duration-300" />
             </motion.button>
+            
+            {/* Sidebar Toggle (Mobile only) */}
+            {isMobile && onSidebarToggle && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onSidebarToggle}
+                className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-white/5 hover:bg-white/10 border transition-all touch-manipulation flex items-center justify-center ${
+                  isSidebarOpen
+                    ? 'border-pink-500/50 text-pink-400'
+                    : 'border-white/10 text-white'
+                }`}
+                aria-label="Ouvrir les filtres"
+              >
+                <Filter className="w-5 h-5" />
+              </motion.button>
+            )}
             
             <motion.div 
               className="flex items-center gap-2 sm:gap-3"

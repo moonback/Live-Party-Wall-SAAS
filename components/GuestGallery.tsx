@@ -16,7 +16,7 @@ import { combineCleanups } from '../utils/subscriptionHelper';
 import { logger } from '../utils/logger';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { GalleryHeader } from './gallery/GalleryHeader';
-import { GalleryFilters } from './gallery/GalleryFilters';
+import { GallerySidebar } from './gallery/GallerySidebar';
 import { GalleryContent } from './gallery/GalleryContent';
 import { GalleryFAB } from './gallery/GalleryFAB';
 import { AftermovieCard } from './gallery/AftermovieCard';
@@ -71,7 +71,6 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [lightboxPhoto, setLightboxPhoto] = useState<Photo | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
   const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
   const [aftermovies, setAftermovies] = useState<Aftermovie[]>([]);
   const [downloadingAftermovieIds, setDownloadingAftermovieIds] = useState<Set<string>>(new Set());
@@ -81,6 +80,9 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   const isMobile = useIsMobile();
+  
+  // Sidebar state - ouverte par défaut sur desktop, fermée sur mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
   
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<GalleryViewMode>(() => {
@@ -698,54 +700,54 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       <GalleryHeader
         onBack={onBack}
         onUploadClick={onUploadClick}
-        onFiltersClick={() => setIsFiltersModalOpen(prev => !prev)}
+        onFiltersClick={() => setIsSidebarOpen(prev => !prev)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         searchInputRef={searchInputRef}
-        isFiltersModalOpen={isFiltersModalOpen}
+        isFiltersModalOpen={false}
         selectionMode={selectionMode}
         onToggleSelectionMode={toggleSelectionMode}
         selectedCount={selectedIds.size}
         onBatchDownload={handleBatchDownload}
         onParticipantsClick={() => setIsParticipantsModalOpen(true)}
+        onSidebarToggle={() => setIsSidebarOpen(prev => !prev)}
+        isSidebarOpen={isSidebarOpen}
       />
 
-      {/* Filters */}
-      <div className="sticky top-[81px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-1">
-          <GalleryFilters
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            mediaFilter={mediaFilter}
-            onMediaFilterChange={setMediaFilter}
-            onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
-            showBattles={showBattles}
-            onToggleBattles={() => setShowBattles(!showBattles)}
-            battlesCount={battles.length}
-            battleModeEnabled={settings.battle_mode_enabled !== false}
-            findMeEnabled={settings.find_me_enabled}
-            onFindMeClick={onFindMeClick}
-            isModalOpen={isFiltersModalOpen}
-            onModalOpenChange={setIsFiltersModalOpen}
-            photos={photos}
-            selectedAuthors={selectedAuthors}
-            onSelectedAuthorsChange={setSelectedAuthors}
-            videoEnabled={settings.video_capture_enabled !== false}
-            showAftermovies={showAftermovies}
-            onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
-            aftermoviesCount={aftermovies.length}
-            aftermoviesEnabled={settings.aftermovies_enabled !== false}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-              </div>
-            </div>
+      {/* Layout avec Sidebar et Content */}
+      <div className="flex flex-1 overflow-hidden relative" style={{ height: 'calc(100vh - 81px)' }}>
+        {/* Sidebar */}
+        <GallerySidebar
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          mediaFilter={mediaFilter}
+          onMediaFilterChange={setMediaFilter}
+          photos={photos}
+          selectedAuthors={selectedAuthors}
+          onSelectedAuthorsChange={setSelectedAuthors}
+          videoEnabled={settings.video_capture_enabled !== false}
+          showBattles={showBattles}
+          onToggleBattles={() => setShowBattles(!showBattles)}
+          battlesCount={battles.length}
+          battleModeEnabled={settings.battle_mode_enabled !== false}
+          findMeEnabled={settings.find_me_enabled}
+          onFindMeClick={onFindMeClick}
+          showAftermovies={showAftermovies}
+          onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
+          aftermoviesCount={aftermovies.length}
+          aftermoviesEnabled={settings.aftermovies_enabled !== false}
+          onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(prev => !prev)}
+        />
 
-      {/* Content */}
-      <div 
-        ref={parentRef} 
-        className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
-      >
+        {/* Content */}
+        <div 
+          ref={parentRef} 
+          className="flex-1 overflow-y-auto pb-20 sm:pb-24 md:pb-28 scroll-smooth relative z-10"
+        >
         <div className="max-w-7xl mx-auto px-3 sm:px-2 md:px-3 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-6">
           {/* Section Aftermovies ultra-compacte */}
           {settings.aftermovies_enabled !== false && aftermovies.length > 0 && showAftermovies && (
@@ -814,6 +816,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onDeletePhoto={handleDeletePhoto}
             viewMode={viewMode}
           />
+        </div>
         </div>
       </div>
 
