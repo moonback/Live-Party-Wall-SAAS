@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play, Languages } from 'lucide-react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play, Languages, Wand2, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { logger } from '../../utils/logger';
 import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
+import { generateAndUploadBackground, generateBackgroundPreview } from '../../services/aiBackgroundService';
+import { PUTER_IMAGE_MODELS, MODEL_QUALITY_OPTIONS } from '../../services/puterImageService';
 
 interface SettingsTabProps {
   onBack: () => void;
@@ -22,6 +24,15 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  
+  // États pour la génération IA
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiModel, setAiModel] = useState('gpt-image-1');
+  const [aiQuality, setAiQuality] = useState<'low' | 'medium' | 'high' | 'hd' | 'standard'>('low');
+  const [generatingDesktop, setGeneratingDesktop] = useState(false);
+  const [generatingMobile, setGeneratingMobile] = useState(false);
+  const [previewImage, setPreviewImage] = useState<HTMLImageElement | null>(null);
+  const [previewType, setPreviewType] = useState<'desktop' | 'mobile' | null>(null);
 
   const featureConfigs = [
     { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false },
@@ -135,6 +146,75 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     await updateSettings({ logo_url: null });
     addToast('Logo supprimé', 'success');
     logger.info('Logo cleared', { component: 'SettingsTab', action: 'clearLogo' });
+  };
+
+  // Handlers pour la génération IA
+  const handleGeneratePreview = async () => {
+    if (!aiPrompt.trim()) {
+      addToast('Veuillez saisir un prompt', 'error');
+      return;
+    }
+
+    try {
+      const imageElement = await generateBackgroundPreview(aiPrompt, {
+        model: aiModel,
+        quality: aiQuality
+      });
+      setPreviewImage(imageElement);
+      setPreviewType(null); // Pas encore de type spécifique pour l'aperçu
+      addToast('Aperçu généré avec succès', 'success');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('Error generating preview', error, { component: 'SettingsTab', action: 'generatePreview' });
+      addToast(`Erreur: ${errorMsg}`, 'error');
+    }
+  };
+
+  const handleGenerateAndUpload = async (type: 'desktop' | 'mobile') => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    if (!aiPrompt.trim()) {
+      addToast('Veuillez saisir un prompt', 'error');
+      return;
+    }
+
+    const setGenerating = type === 'desktop' ? setGeneratingDesktop : setGeneratingMobile;
+    setGenerating(true);
+
+    try {
+      const result = await generateAndUploadBackground(
+        currentEvent.id,
+        aiPrompt,
+        type,
+        {
+          model: aiModel,
+          quality: aiQuality
+        }
+      );
+      
+      setPreviewImage(result.imageElement);
+      setPreviewType(type);
+      addToast(`Image de fond ${type === 'desktop' ? 'desktop' : 'mobile'} générée et uploadée avec succès`, 'success');
+      logger.info('AI background generated and uploaded', { 
+        component: 'SettingsTab', 
+        action: 'generateAndUpload', 
+        type, 
+        eventId: currentEvent.id 
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('Error generating and uploading AI background', error, { 
+        component: 'SettingsTab', 
+        action: 'generateAndUpload', 
+        type 
+      });
+      addToast(`Erreur: ${errorMsg}`, 'error');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -325,6 +405,165 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
               />
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Génération IA */}
+      <div className="bg-white/10 rounded-xl p-4 md:p-6 backdrop-blur-sm border border-purple-500/20 shadow-sm">
+        <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center gap-2 text-white">
+          <div className="p-1.5 rounded-lg bg-purple-500/20">
+            <Wand2 className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+          </div>
+          Génération IA d'images de fond
+        </h2>
+        <div className="space-y-4">
+          {/* Prompt */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-white/80">
+              Description de l'image à générer
+            </label>
+            <textarea
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 min-h-[100px] resize-y transition-all"
+              placeholder="Ex: A beautiful party scene with balloons, confetti, and colorful lights in the background"
+              maxLength={500}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-white/60">
+                Décrivez l'image que vous souhaitez générer avec l'IA
+              </p>
+              <p className="text-xs text-white/60">
+                {aiPrompt.length}/500
+              </p>
+            </div>
+          </div>
+
+          {/* Modèle */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-white/80">
+              Modèle d'IA
+            </label>
+            <select
+              value={aiModel}
+              onChange={(e) => {
+                setAiModel(e.target.value);
+                // Réinitialiser la qualité si le modèle ne la supporte pas
+                const qualityOptions = MODEL_QUALITY_OPTIONS[e.target.value] || [];
+                if (qualityOptions.length > 0 && !qualityOptions.includes(aiQuality)) {
+                  setAiQuality(qualityOptions[0] as typeof aiQuality);
+                }
+              }}
+              className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition-all"
+            >
+              {PUTER_IMAGE_MODELS.map((model) => (
+                <option key={model.value} value={model.value}>
+                  {model.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Qualité */}
+          {MODEL_QUALITY_OPTIONS[aiModel] && MODEL_QUALITY_OPTIONS[aiModel].length > 0 && (
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                Qualité
+              </label>
+              <select
+                value={aiQuality}
+                onChange={(e) => setAiQuality(e.target.value as typeof aiQuality)}
+                className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500/50 transition-all"
+              >
+                {MODEL_QUALITY_OPTIONS[aiModel].map((quality) => (
+                  <option key={quality} value={quality}>
+                    {quality === 'low' ? 'Basse (Rapide)' : 
+                     quality === 'medium' ? 'Moyenne' : 
+                     quality === 'high' ? 'Haute' : 
+                     quality === 'hd' ? 'HD' : 'Standard'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Boutons d'action */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleGeneratePreview}
+              disabled={!aiPrompt.trim() || generatingDesktop || generatingMobile}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-sm"
+            >
+              <Wand2 className="w-4 h-4" />
+              Aperçu
+            </button>
+            <button
+              onClick={() => handleGenerateAndUpload('desktop')}
+              disabled={!aiPrompt.trim() || generatingDesktop || generatingMobile}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-sm"
+            >
+              {generatingDesktop ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Génération...
+                </>
+              ) : (
+                <>
+                  <Monitor className="w-4 h-4" />
+                  Générer Desktop
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => handleGenerateAndUpload('mobile')}
+              disabled={!aiPrompt.trim() || generatingDesktop || generatingMobile}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:bg-purple-500/40 active:scale-95 transition-all text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-sm"
+            >
+              {generatingMobile ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Génération...
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-4 h-4" />
+                  Générer Mobile
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Aperçu */}
+          {previewImage && (
+            <div className="relative mt-4">
+              <div className="bg-white/5 rounded-lg p-4 border border-white/20">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-white/80">
+                    {previewType ? `Image ${previewType} générée` : 'Aperçu de l\'image'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setPreviewImage(null);
+                      setPreviewType(null);
+                    }}
+                    className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                    title="Fermer l'aperçu"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <img
+                  src={previewImage.src}
+                  alt="Aperçu généré"
+                  className="w-full h-48 object-cover rounded-lg border border-white/20"
+                />
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs text-white/60">
+            Les images sont générées avec l'IA et uploadées automatiquement. La génération peut prendre 5-15 secondes.
+          </p>
         </div>
       </div>
 
