@@ -454,7 +454,9 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
   const handleConfirmationComplete = () => {
     setShowConfirmation(false);
-    handleRetake();
+    // Retourner à l'accueil après l'envoi de la photo
+    stopCamera();
+    onBack();
   };
 
   const triggerInput = () => {
