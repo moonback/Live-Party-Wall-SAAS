@@ -105,13 +105,18 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     const loadData = async () => {
       try {
         setLoading(true);
-        const [allPhotos, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
+        const [allPhotosResult, userLikes, userReactionsData, allGuests, allAftermovies] = await Promise.all([
           getPhotos(currentEvent.id),
           getUserLikes(userId),
           getUserReactions(userId),
           getAllGuests(currentEvent.id),
           getAftermovies(currentEvent.id)
         ]);
+        
+        // getPhotos peut retourner Photo[] ou PaginatedPhotosResult
+        const allPhotos = Array.isArray(allPhotosResult) 
+          ? allPhotosResult 
+          : allPhotosResult.photos;
         
         setPhotos(allPhotos);
         setLikedPhotoIds(new Set(userLikes));
@@ -128,7 +133,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         setGuestAvatars(avatarsMap);
         
         const { getPhotosReactions } = await import('../services/photoService');
-        const photoIds = allPhotos.map(p => p.id);
+        const photoIds = allPhotos.map((p: Photo) => p.id);
         const reactionsMap = await getPhotosReactions(photoIds);
         setPhotosReactions(reactionsMap);
       } catch (error) {
@@ -451,7 +456,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       addToast("Média téléchargé !", 'success');
     } catch (error) {
-      logger.error("Erreur de téléchargement", error, { component: 'GuestGallery', action: 'downloadPhoto', photoId });
+      logger.error("Erreur de téléchargement", error, { component: 'GuestGallery', action: 'downloadPhoto', photoId: photo.id });
       addToast("Erreur lors du téléchargement", 'error');
     } finally {
       setTimeout(() => {
@@ -470,7 +475,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       // Mettre à jour la photo dans la liste locale
       setPhotos(prev => prev.map(p => 
-        p.id === photoId ? { ...p, caption: caption.trim() || null } : p
+        p.id === photoId ? { ...p, caption: caption.trim() || '' } : p
       ));
     } catch (error) {
       logger.error("Erreur lors de la mise à jour de la légende", error, { component: 'GuestGallery', action: 'handleUpdateCaption', photoId });
@@ -485,7 +490,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       
       // Mettre à jour la photo dans la liste locale
       setPhotos(prev => prev.map(p => 
-        p.id === photoId ? { ...p, caption: null } : p
+        p.id === photoId ? { ...p, caption: '' } : p
       ));
     } catch (error) {
       logger.error("Erreur lors de la suppression de la légende", error, { component: 'GuestGallery', action: 'handleClearCaption', photoId });
@@ -799,7 +804,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onSelect={handleSelect}
-            scrollContainerRef={parentRef}
+            scrollContainerRef={parentRef as React.RefObject<HTMLDivElement>}
             onUpdateCaption={handleUpdateCaption}
             onClearCaption={handleClearCaption}
             onDeletePhoto={handleDeletePhoto}
