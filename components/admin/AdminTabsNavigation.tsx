@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
@@ -252,9 +253,10 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
     </div>
   );
 
-  return (
+  // Rendre la sidebar dans un portal pour éviter les problèmes de positionnement fixed
+  // Le parent a overflow-hidden qui crée un nouveau contexte de positionnement
+  const sidebarContent = (
     <>
-
       {/* Overlay mobile amélioré */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -312,4 +314,12 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
       `}</style>
     </>
   );
+
+  // Utiliser un portal pour rendre la sidebar directement dans le body
+  // Cela évite les problèmes de positionnement fixed causés par overflow-hidden du parent
+  if (typeof window !== 'undefined') {
+    return createPortal(sidebarContent, document.body);
+  }
+
+  return sidebarContent;
 };
