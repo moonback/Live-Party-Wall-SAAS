@@ -462,8 +462,8 @@ const AppContent: React.FC = () => {
             <TransitionWrapper type="scale" duration={600}>
               <UserOnboarding 
                 onComplete={(userName, avatarUrl) => {
-                  // Rediriger vers guest après l'onboarding
-                  setViewMode('guest');
+                  // Rediriger vers landing après l'onboarding
+                  setViewMode('landing');
                 }}
                 onBack={() => setViewMode('landing')}
               />
