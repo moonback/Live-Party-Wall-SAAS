@@ -561,16 +561,46 @@ Partywall intègre **Google Gemini 3 Flash** et **Gemini 2.5 Flash** pour :
 
 ### 🔑 Système de licences
 
-Partywall inclut un système de licences complet pour gérer l'accès à l'application :
+Partywall inclut un système de licences complet pour gérer l'accès à l'application et contrôler les fonctionnalités premium :
 
-#### Fonctionnalités
+#### Fonctionnalités générales
 - ✅ **Validation automatique** - Vérification de la validité de la licence au démarrage et toutes les 5 minutes
 - ✅ **Blocage automatique** - L'application est bloquée si la licence est expirée ou invalide
 - ✅ **Gestion centralisée** - Interface d'administration pour créer, modifier et supprimer les licences
 - ✅ **Multi-utilisateurs** - Chaque utilisateur peut avoir sa propre licence
 - ✅ **Statuts flexibles** - Licences actives, expirées, suspendues ou annulées
 - ✅ **Suivi détaillé** - Historique des vérifications, dates d'activation et d'expiration
+- 🔐 **Affichage sécurisé** - Les 4 derniers caractères de la licence sont affichés en format code pour identification
 
+#### Types de licences
+
+Le système distingue deux types de licences selon les **4 derniers caractères** de la clé de licence :
+
+##### 📦 Licence PART (Particulier)
+- **Suffixe** : Les 4 derniers caractères se terminent par `PART`
+- **Fonctionnalités** : Accès aux fonctionnalités de base
+- **Fonctionnalités premium désactivées** :
+  - 🚫 Génération de légendes IA
+  - 🚫 Génération de tags IA
+  - 🚫 Capture vidéo
+  - 🚫 Retrouve-moi (Reconnaissance Faciale)
+  - 🚫 Aftermovies dans la galerie
+- **Interface** : Les fonctionnalités premium sont masquées dans le contrôle mobile et grisées dans l'admin avec message "Passer à Pro"
+
+##### ⭐ Licence PROS (Professionnel)
+- **Suffixe** : Les 4 derniers caractères se terminent par `PROS`
+- **Fonctionnalités** : Accès complet à toutes les fonctionnalités
+- **Toutes les fonctionnalités activées** :
+  - ✅ Génération de légendes IA
+  - ✅ Génération de tags IA
+  - ✅ Capture vidéo
+  - ✅ Retrouve-moi (Reconnaissance Faciale)
+  - ✅ Aftermovies dans la galerie
+
+#### Affichage de la licence
+- 📋 **Code de licence visible** - Les 4 derniers caractères sont affichés en format code (monospace) dans l'onglet Licence
+- 🔍 **Identification rapide** - Permet d'identifier rapidement le type de licence (PART ou PROS)
+- 🔐 **Sécurité** - Le reste de la clé est masqué par défaut avec possibilité de révélation
 
 #### Blocage de l'application
 Si la licence est expirée ou invalide :

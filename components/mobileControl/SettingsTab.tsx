@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 import { logger } from '../../utils/logger';
 import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
 
@@ -16,6 +17,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const { settings, updateSettings } = useSettings();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { isFeatureEnabled } = useLicenseFeatures();
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -23,20 +25,28 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  const featureConfigs = [
-    { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false },
-    { key: 'video_capture_enabled', label: 'Capture Vidéo', icon: Video, disabled: false },
-    { key: 'content_moderation_enabled', label: 'Modération IA', icon: Shield, disabled: true },
-    { key: 'stats_enabled', label: 'Statistiques', icon: BarChart2, disabled: false },
-    { key: 'find_me_enabled', label: 'Retrouve-moi', icon: User, disabled: false },
-    { key: 'ar_scene_enabled', label: 'Scène AR', icon: Sparkles, disabled: false },
-    { key: 'battle_mode_enabled', label: 'Mode Battle', icon: Trophy, disabled: false },
-    { key: 'aftermovies_enabled', label: 'Aftermovies dans la galerie', icon: Video, disabled: false },
-    { key: 'caption_generation_enabled', label: 'Génération de légendes', icon: Type, disabled: false },
-    { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false },
-    { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false },
-    { key: 'auto_carousel_enabled', label: 'Carrousel automatique', icon: Play, disabled: false },
+  const allFeatureConfigs = [
+    { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false, isPremium: false },
+    { key: 'video_capture_enabled', label: 'Capture Vidéo', icon: Video, disabled: false, isPremium: true },
+    { key: 'content_moderation_enabled', label: 'Modération IA', icon: Shield, disabled: true, isPremium: false },
+    { key: 'stats_enabled', label: 'Statistiques', icon: BarChart2, disabled: false, isPremium: false },
+    { key: 'find_me_enabled', label: 'Retrouve-moi', icon: User, disabled: false, isPremium: true },
+    { key: 'ar_scene_enabled', label: 'Scène AR', icon: Sparkles, disabled: false, isPremium: false },
+    { key: 'battle_mode_enabled', label: 'Mode Battle', icon: Trophy, disabled: false, isPremium: false },
+    { key: 'aftermovies_enabled', label: 'Aftermovies dans la galerie', icon: Video, disabled: false, isPremium: true },
+    { key: 'caption_generation_enabled', label: 'Génération de légendes', icon: Type, disabled: false, isPremium: true },
+    { key: 'tags_generation_enabled', label: 'Génération de tags IA', icon: Tag, disabled: false, isPremium: true },
+    { key: 'decorative_frame_enabled', label: 'Cadres décoratifs', icon: Frame, disabled: false, isPremium: false },
+    { key: 'auto_carousel_enabled', label: 'Carrousel automatique', icon: Play, disabled: false, isPremium: false },
   ];
+
+  // Filtrer les fonctionnalités premium si la licence est PART
+  const featureConfigs = allFeatureConfigs.filter(config => {
+    if (config.isPremium) {
+      return isFeatureEnabled(config.key);
+    }
+    return true;
+  });
 
   const handleBackgroundUpload = async (file: File, type: 'desktop' | 'mobile') => {
     if (!currentEvent) {

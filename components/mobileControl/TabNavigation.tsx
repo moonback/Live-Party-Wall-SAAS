@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart2, Shield, Settings, Sword, Users, LayoutDashboard, Video } from 'lucide-react';
+import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 
 export type ControlTab = 'overview' | 'moderation' | 'analytics' | 'settings' | 'battles' | 'guests' | 'aftermovies' | 'license';
 
@@ -28,17 +29,19 @@ const TABS: TabConfig[] = [
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, battleModeEnabled = true, aftermoviesEnabled = true }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  void aftermoviesEnabled; // Gardé pour compatibilité mais non utilisé (onglet toujours visible)
+  void aftermoviesEnabled; // Gardé pour compatibilité mais non utilisé
+  const { isFeatureEnabled } = useLicenseFeatures();
+  
   // Filtrer les onglets selon les fonctionnalités activées
   const visibleTabs = TABS.filter((tab) => {
     // Masquer battles si battleModeEnabled est explicitement false
     if (tab.id === 'battles' && battleModeEnabled === false) {
       return false;
     }
-    // L'onglet aftermovies est toujours visible dans le contrôle mobile
-    // pour permettre la gestion des aftermovies même si l'affichage public est désactivé
-    // (aftermoviesEnabled contrôle uniquement l'affichage dans la galerie publique, pas l'accès admin)
-    // Note: aftermoviesEnabled est gardé dans les props pour compatibilité mais n'est plus utilisé ici
+    // Masquer aftermovies si la licence est PART (fonctionnalité premium)
+    if (tab.id === 'aftermovies' && !isFeatureEnabled('aftermovies_enabled')) {
+      return false;
+    }
     return true;
   });
 
