@@ -14,6 +14,7 @@ import { filterAndSortPhotos } from '../utils/photoFilters';
 import { getAllGuests } from '../services/guestService';
 import { combineCleanups } from '../utils/subscriptionHelper';
 import { logger } from '../utils/logger';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { GalleryHeader } from './gallery/GalleryHeader';
 import { GalleryFilters } from './gallery/GalleryFilters';
 import { GalleryContent } from './gallery/GalleryContent';
@@ -79,11 +80,20 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
+  const isMobile = useIsMobile();
+  
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<GalleryViewMode>(() => {
     const saved = localStorage.getItem('gallery_view_mode');
     return (saved as GalleryViewMode) || 'grid';
   });
+  
+  // Désactiver masonry sur mobile - basculer vers grid si nécessaire
+  useEffect(() => {
+    if (isMobile && viewMode === 'masonry') {
+      setViewMode('grid');
+    }
+  }, [isMobile, viewMode]);
   
   useEffect(() => {
     localStorage.setItem('gallery_view_mode', viewMode);

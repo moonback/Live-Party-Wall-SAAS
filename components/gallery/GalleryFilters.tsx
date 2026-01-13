@@ -192,7 +192,8 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
             {([
               { mode: 'grid' as GalleryViewMode, icon: Grid3x3, label: 'Grille' },
               { mode: 'list' as GalleryViewMode, icon: List, label: 'Liste' },
-              { mode: 'masonry' as GalleryViewMode, icon: MasonryIcon, label: 'Masonry' },
+              // Masonry uniquement sur desktop
+              ...(isMobile ? [] : [{ mode: 'masonry' as GalleryViewMode, icon: MasonryIcon, label: 'Masonry' }]),
               { mode: 'carousel' as GalleryViewMode, icon: Film, label: 'Carrousel' }
             ]).map(({ mode, icon: Icon, label }) => (
               <motion.button
