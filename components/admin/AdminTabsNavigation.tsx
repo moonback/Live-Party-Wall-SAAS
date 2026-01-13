@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu, Key, X, LayoutDashboard
+  Zap, Users, Menu, Key, X, LayoutDashboard, Shield
 } from 'lucide-react';
 import { AdminTab } from './types';
 
@@ -84,6 +84,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   const generalTabs: TabConfig[] = [
     { id: 'events', label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
     { id: 'license', label: 'Licence', icon: Key, alwaysVisible: true },
+    { id: 'password', label: 'Mot de passe', icon: Shield, alwaysVisible: true },
   ];
 
   const eventTabs: TabConfig[] = [
