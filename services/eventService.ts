@@ -1,6 +1,8 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Event, EventRow, EventOrganizer, EventOrganizerRow, EventUpdate } from '../types';
 import { logger } from '../utils/logger';
+import { getActiveLicense } from './licenseService';
+import { getMaxEvents, getEventLimitInfo } from '../utils/licenseUtils';
 
 /**
  * Crée un nouvel événement
@@ -47,6 +49,34 @@ export const createEvent = async (
   const slugRegex = /^[a-z0-9-_]+$/;
   if (!slugRegex.test(slug)) {
     throw new Error("Le slug doit contenir uniquement des lettres minuscules, chiffres, tirets et underscores.");
+  }
+
+  // Vérifier la limite d'événements selon la licence
+  try {
+    const activeLicense = await getActiveLicense(authenticatedUserId);
+    const licenseKey = activeLicense?.license_key || null;
+    const maxEvents = getMaxEvents(licenseKey);
+    const currentEventsCount = await getUserEventsCount(authenticatedUserId);
+
+    if (currentEventsCount >= maxEvents) {
+      const limitInfo = getEventLimitInfo(licenseKey);
+      if (limitInfo.type === 'PART') {
+        throw new Error("Limite d'événements atteinte. Vous avez atteint la limite de 1 événement avec votre licence PART. Passez à Pro pour créer jusqu'à 50 événements.");
+      } else {
+        throw new Error(`Limite d'événements atteinte. Vous avez atteint la limite de ${maxEvents} événements.`);
+      }
+    }
+  } catch (error) {
+    // Si c'est déjà une erreur de limite, la propager
+    if (error instanceof Error && error.message.includes("Limite d'événements atteinte")) {
+      throw error;
+    }
+    // Sinon, logger l'erreur mais continuer (ne pas bloquer la création si la vérification échoue)
+    logger.error("Error checking event limit", error, { 
+      component: 'eventService', 
+      action: 'createEvent',
+      userId: authenticatedUserId 
+    });
   }
 
   try {
@@ -232,6 +262,46 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
   } catch (error) {
     logger.error("Error in getUserEvents", error, { component: 'eventService', action: 'getUserEvents', userId });
     return [];
+  }
+};
+
+/**
+ * Compte le nombre d'événements créés par un utilisateur (en tant que owner)
+ * @param userId - ID de l'utilisateur (optionnel, utilise auth.uid() si non fourni)
+ * @returns Promise résolue avec le nombre d'événements
+ */
+export const getUserEventsCount = async (userId?: string): Promise<number> => {
+  if (!isSupabaseConfigured()) return 0;
+
+  try {
+    let finalUserId = userId;
+    if (!finalUserId) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        logger.error("User not authenticated", sessionError, { component: 'eventService', action: 'getUserEventsCount' });
+        return 0;
+      }
+      finalUserId = session.user.id;
+    }
+
+    const { count, error } = await supabase
+      .from('events')
+      .select('*', { count: 'exact', head: true })
+      .eq('owner_id', finalUserId);
+
+    if (error) {
+      logger.error("Error counting user events", error, { 
+        component: 'eventService', 
+        action: 'getUserEventsCount',
+        userId: finalUserId 
+      });
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    logger.error("Error in getUserEventsCount", error, { component: 'eventService', action: 'getUserEventsCount', userId });
+    return 0;
   }
 };
 

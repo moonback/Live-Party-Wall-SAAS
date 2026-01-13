@@ -14,6 +14,12 @@ export const PREMIUM_FEATURES = [
   'aftermovies_enabled'
 ] as const;
 
+/**
+ * Limites du nombre d'événements selon le type de licence
+ */
+export const MAX_EVENTS_PART = 1;
+export const MAX_EVENTS_PROS = 50;
+
 export type PremiumFeature = typeof PREMIUM_FEATURES[number];
 
 /**
@@ -87,5 +93,39 @@ export const isFeatureEnabled = (
   // Pour toute autre licence (non PART/PROS), considérer comme disponible par défaut
   // Cela permet la rétrocompatibilité avec les licences existantes
   return true;
+};
+
+/**
+ * Retourne le nombre maximum d'événements autorisés selon le type de licence
+ * @param licenseKey - Clé de licence complète
+ * @returns Nombre maximum d'événements autorisés
+ */
+export const getMaxEvents = (licenseKey: string | null | undefined): number => {
+  if (isProLicense(licenseKey)) {
+    return MAX_EVENTS_PROS;
+  }
+  
+  // Si PART ou pas de licence, limite à 1 événement
+  return MAX_EVENTS_PART;
+};
+
+/**
+ * Retourne les informations sur la limite d'événements
+ * @param licenseKey - Clé de licence complète
+ * @returns Objet avec la limite max et le type de licence
+ */
+export const getEventLimitInfo = (
+  licenseKey: string | null | undefined
+): { max: number; type: 'PART' | 'PROS' | 'UNLIMITED' } => {
+  if (isProLicense(licenseKey)) {
+    return { max: MAX_EVENTS_PROS, type: 'PROS' };
+  }
+  
+  if (isPartLicense(licenseKey)) {
+    return { max: MAX_EVENTS_PART, type: 'PART' };
+  }
+  
+  // Pour les licences non reconnues, considérer comme PART par défaut
+  return { max: MAX_EVENTS_PART, type: 'PART' };
 };
 
