@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
-import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
+import { Photo, SortOption, MediaFilter, Aftermovie, GalleryViewMode } from '../types';
 import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, clearPhotoCaption, deletePhoto } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
@@ -78,6 +78,16 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   // Selection mode states
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<GalleryViewMode>(() => {
+    const saved = localStorage.getItem('gallery_view_mode');
+    return (saved as GalleryViewMode) || 'grid';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('gallery_view_mode', viewMode);
+  }, [viewMode]);
   
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
@@ -715,6 +725,8 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onToggleAftermovies={() => setShowAftermovies(!showAftermovies)}
             aftermoviesCount={aftermovies.length}
             aftermoviesEnabled={settings.aftermovies_enabled !== false}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
               </div>
             </div>
@@ -790,6 +802,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onUpdateCaption={handleUpdateCaption}
             onClearCaption={handleClearCaption}
             onDeletePhoto={handleDeletePhoto}
+            viewMode={viewMode}
           />
         </div>
       </div>

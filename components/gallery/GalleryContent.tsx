@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Photo, PhotoBattle } from '../../types';
+import { Photo, PhotoBattle, GalleryViewMode } from '../../types';
 import { GuestPhotoCard } from './GuestPhotoCard';
 import { PhotoBattle as PhotoBattleComponent } from '../PhotoBattle';
 import { PhotoCardSkeletons } from '../PhotoCardSkeleton';
@@ -35,6 +35,7 @@ interface GalleryContentProps {
   onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
   onClearCaption?: (photoId: string) => Promise<void>;
   onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
+  viewMode?: GalleryViewMode;
 }
 
 type ColumnItem = 
@@ -274,7 +275,8 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   scrollContainerRef,
   onUpdateCaption,
   onClearCaption,
-  onDeletePhoto
+  onDeletePhoto,
+  viewMode = 'grid'
 }) => {
   const isMobile = useIsMobile();
   const defaultScrollRef = useRef<HTMLDivElement>(null);
@@ -305,6 +307,15 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   const battlesForGrid = useMemo(() => {
     return [...battles].sort((a, b) => b.createdAt - a.createdAt);
   }, [battles]);
+
+  // Calculer masonryColumns au niveau supérieur pour respecter les règles des Hooks
+  const masonryColumns = useMemo(() => {
+    const cols = Array.from({ length: Math.min(numColumns, 4) }, () => [] as Photo[]);
+    photos.forEach((photo, index) => {
+      cols[index % cols.length].push(photo);
+    });
+    return cols;
+  }, [photos, numColumns]);
 
   // Préparer les données pour chaque colonne avec virtualisation
   const columnsData = useMemo(() => {
@@ -360,17 +371,12 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
     );
   }
 
-  return (
+  // Render selon le mode de vue
+  const renderGridView = () => (
     <div className="space-y-4 sm:space-y-6 md:space-y-8">
-      {/* Grid de photos avec Masonry Style et Virtualisation */}
-      <div 
-        className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6 md:flex-row"
-      >
+      <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6 md:flex-row">
         {columnsData.map((colData, colIdx) => (
-          <div 
-            key={colIdx} 
-            className="flex-1 min-w-0"
-          >
+          <div key={colIdx} className="flex-1 min-w-0">
             <VirtualColumn
               data={colData}
               scrollContainerRef={scrollRef}
@@ -401,5 +407,158 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
       </div>
     </div>
   );
+
+  const renderListView = () => (
+    <div className="space-y-2 sm:space-y-3">
+      {battlesForGrid.map((battle) => (
+        <div key={battle.id} className="mb-4">
+          <PhotoBattleComponent
+            battle={battle}
+            userId={userId}
+            compact={true}
+            onBattleFinished={onBattleFinished}
+            onPhotoClick={onPhotoClick ? (photo) => {
+              const photoIndex = photos.findIndex(p => p.id === photo.id);
+              onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
+            } : undefined}
+          />
+        </div>
+      ))}
+      {photos.map((photo, index) => (
+        <div key={photo.id} className="mb-3 sm:mb-4">
+          <div className="flex gap-3 sm:gap-4 bg-slate-900/40 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all">
+            <div className="flex-shrink-0 w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40">
+              {photo.type === 'video' ? (
+                <video
+                  src={photo.url}
+                  className="w-full h-full object-cover"
+                  preload="metadata"
+                />
+              ) : (
+                <img
+                  src={photo.url}
+                  alt={photo.caption}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+            </div>
+            <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="font-bold text-white text-sm sm:text-base truncate">{photo.author}</p>
+                  <span className="text-slate-500 text-xs">
+                    {new Date(photo.timestamp).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
+                {photo.caption && (
+                  <p className="text-slate-300 text-xs sm:text-sm line-clamp-2 mb-2">{photo.caption}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <button
+                  onClick={() => onLike(photo.id)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    likedPhotoIds.has(photo.id) ? 'text-red-500' : 'text-slate-400 hover:text-red-500'
+                  }`}
+                  disabled={selectionMode}
+                >
+                  <svg className="w-5 h-5" fill={likedPhotoIds.has(photo.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </button>
+                <span className="text-slate-400 text-xs sm:text-sm">{photo.likes_count} likes</span>
+                <button
+                  onClick={() => onDownload(photo)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-blue-400 transition-colors"
+                  disabled={downloadingIds.has(photo.id) || selectionMode}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderMasonryView = () => (
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
+      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-4 md:gap-6">
+        {photos.map((photo, index) => (
+          <div key={photo.id} className="break-inside-avoid mb-3 sm:mb-4 md:mb-6">
+            <GuestPhotoCard
+              photo={photo}
+              isLiked={likedPhotoIds.has(photo.id)}
+              onLike={onLike}
+              onDownload={onDownload}
+              allPhotos={photos}
+              index={index}
+              isDownloading={downloadingIds.has(photo.id)}
+              userReaction={userReactions.get(photo.id) || null}
+              onReaction={onReaction}
+              reactions={photosReactions.get(photo.id) || {}}
+              guestAvatars={guestAvatars}
+              selectionMode={selectionMode}
+              isSelected={selectedIds.has(photo.id)}
+              onSelect={onSelect}
+              onUpdateCaption={onUpdateCaption}
+              onClearCaption={onClearCaption}
+              onDeletePhoto={onDeletePhoto}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCarouselView = () => (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 sm:gap-4 pb-4">
+        {photos.map((photo, index) => (
+          <div
+            key={photo.id}
+            className="flex-shrink-0 w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] snap-center"
+          >
+            <GuestPhotoCard
+              photo={photo}
+              isLiked={likedPhotoIds.has(photo.id)}
+              onLike={onLike}
+              onDownload={onDownload}
+              allPhotos={photos}
+              index={index}
+              isDownloading={downloadingIds.has(photo.id)}
+              userReaction={userReactions.get(photo.id) || null}
+              onReaction={onReaction}
+              reactions={photosReactions.get(photo.id) || {}}
+              guestAvatars={guestAvatars}
+              selectionMode={selectionMode}
+              isSelected={selectedIds.has(photo.id)}
+              onSelect={onSelect}
+              onUpdateCaption={onUpdateCaption}
+              onClearCaption={onClearCaption}
+              onDeletePhoto={onDeletePhoto}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Sélectionner le rendu selon le mode
+  switch (viewMode) {
+    case 'list':
+      return renderListView();
+    case 'masonry':
+      return renderMasonryView();
+    case 'carousel':
+      return renderCarouselView();
+    case 'grid':
+    default:
+      return renderGridView();
+  }
 };
 
