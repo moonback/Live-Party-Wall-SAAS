@@ -363,7 +363,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         onLoadEvents={loadEvents}
       />
 
-      <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:pl-72">
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:pl-[224px] xl:pl-72">
         <AdminDashboardHeader
           onBack={onBack}
           onLogout={handleLogout}
@@ -375,6 +375,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           isExportingWithMetadata={isExportingWithMetadata}
           exportProgress={exportProgress}
           currentEventName={currentEvent?.name}
+          isMobileMenuOpen={isMobileMenuOpen}
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
         {/* Contenu de l'onglet Événements */}

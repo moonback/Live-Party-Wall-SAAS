@@ -8,6 +8,7 @@ import { isElectron } from '../../utils/electronPaths';
 import { useEvent } from '../../context/EventContext';
 import { getBaseUrl } from '../../utils/urlUtils';
 import { logger } from '../../utils/logger';
+import { SidebarHamburgerButton } from './AdminTabsNavigation';
 
 interface AdminDashboardHeaderProps {
   onBack: () => void;
@@ -20,13 +21,16 @@ interface AdminDashboardHeaderProps {
   isExportingWithMetadata: boolean;
   exportProgress: { processed: number; total: number; message?: string } | null;
   currentEventName?: string;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuToggle?: () => void;
 }
 
 type ConfirmAction = 'delete' | 'export' | 'exportPng' | null;
 
 export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   onBack, onLogout, onDeleteAll, onExport, onExportWithMetadata,
-  photos, isExporting, isExportingWithMetadata, exportProgress, currentEventName
+  photos, isExporting, isExportingWithMetadata, exportProgress, currentEventName,
+  isMobileMenuOpen = false, onMobileMenuToggle
 }) => {
   const { currentEvent } = useEvent();
   const [showEventLink, setShowEventLink] = useState(false);
@@ -111,8 +115,15 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
 
         <div className="relative px-4 sm:px-5 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 flex-wrap">
-            {/* Branding Compact */}
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+            {/* Branding Compact avec bouton hamburger */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0">
+              {/* Bouton hamburger mobile */}
+              {onMobileMenuToggle && (
+                <SidebarHamburgerButton 
+                  isMobileMenuOpen={isMobileMenuOpen}
+                  onMobileMenuToggle={onMobileMenuToggle}
+                />
+              )}
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
                 <div className="relative p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">

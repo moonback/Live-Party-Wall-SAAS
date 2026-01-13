@@ -21,6 +21,41 @@ interface AdminTabsNavigationProps {
   onLoadEvents?: () => void;
 }
 
+// Composant bouton hamburger exportable
+export const SidebarHamburgerButton: React.FC<{
+  isMobileMenuOpen: boolean;
+  onMobileMenuToggle: () => void;
+}> = ({ isMobileMenuOpen, onMobileMenuToggle }) => {
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
+
+  return (
+    <motion.button
+      whileHover={!prefersReducedMotion ? { scale: 1.05 } : {}}
+      whileTap={!prefersReducedMotion ? { scale: 0.95 } : {}}
+      onClick={onMobileMenuToggle}
+      className="lg:hidden flex items-center justify-center gap-1.5 px-2.5 py-2 bg-slate-800/50 hover:bg-slate-800/80 rounded-lg transition-all border border-slate-700/50 min-h-[40px] min-w-[40px] relative"
+      aria-label="Ouvrir le menu"
+      aria-expanded={isMobileMenuOpen}
+    >
+      <motion.div
+        animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Menu className="w-4 h-4 text-indigo-300" />
+      </motion.div>
+      {isMobileMenuOpen && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-slate-900"
+        />
+      )}
+    </motion.button>
+  );
+};
+
 export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   activeTab,
   onTabChange,
@@ -35,21 +70,31 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
   onLoadGuests,
   onLoadEvents
 }) => {
-  const generalTabs = [
-    { id: 'events' as AdminTab, label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
-    { id: 'license' as AdminTab, label: 'Licence', icon: Key, alwaysVisible: true },
+  type TabConfig = {
+    id: AdminTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    count?: number;
+    alwaysVisible?: boolean;
+    requiresEvent?: boolean;
+    requiresBattleMode?: boolean;
+  };
+
+  const generalTabs: TabConfig[] = [
+    { id: 'events', label: 'Événements', icon: Calendar, count: eventsCount, alwaysVisible: true },
+    { id: 'license', label: 'Licence', icon: Key, alwaysVisible: true },
   ];
 
-  const eventTabs = [
-    { id: 'moderation' as AdminTab, label: 'Modération', icon: ImageIcon, count: photosCount, requiresEvent: true },
-    { id: 'analytics' as AdminTab, label: 'Analytics', icon: BarChart2, requiresEvent: true },
-    { id: 'configuration' as AdminTab, label: 'Configuration', icon: Settings, requiresEvent: true },
-    { id: 'aftermovie' as AdminTab, label: 'Aftermovie', icon: Video, requiresEvent: true },
-    { id: 'battles' as AdminTab, label: 'Battles', icon: Zap, count: battlesCount, requiresEvent: true, requiresBattleMode: true },
-    { id: 'guests' as AdminTab, label: 'Inviter', icon: Users, count: guestsCount, requiresEvent: true },
+  const eventTabs: TabConfig[] = [
+    { id: 'moderation', label: 'Modération', icon: ImageIcon, count: photosCount, requiresEvent: true },
+    { id: 'analytics', label: 'Analytics', icon: BarChart2, requiresEvent: true },
+    { id: 'configuration', label: 'Configuration', icon: Settings, requiresEvent: true },
+    { id: 'aftermovie', label: 'Aftermovie', icon: Video, requiresEvent: true },
+    { id: 'battles', label: 'Battles', icon: Zap, count: battlesCount, requiresEvent: true, requiresBattleMode: true },
+    { id: 'guests', label: 'Inviter', icon: Users, count: guestsCount, requiresEvent: true },
   ];
 
-  const getVisibleTabs = (tabs: typeof generalTabs) => {
+  const getVisibleTabs = (tabs: TabConfig[]) => {
     return tabs.filter(tab => {
       if (tab.alwaysVisible) return true;
       if (!currentEvent && tab.requiresEvent) return false;
@@ -66,7 +111,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
     : false;
 
   const NavItem: React.FC<{
-    tab: typeof generalTabs[0];
+    tab: TabConfig;
     isActive: boolean;
     onClick: () => void;
   }> = ({ tab, isActive, onClick }) => {
@@ -209,32 +254,6 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
 
   return (
     <>
-      {/* Bouton menu hamburger amélioré pour mobile */}
-      <motion.button
-        whileHover={!prefersReducedMotion ? { scale: 1.05 } : {}}
-        whileTap={!prefersReducedMotion ? { scale: 0.95 } : {}}
-        onClick={onMobileMenuToggle}
-        className="lg:hidden fixed top-24 left-4 z-40 flex items-center gap-2 px-3 py-2.5 bg-slate-900/95 backdrop-blur-md hover:bg-slate-800/95 rounded-lg transition-all border border-slate-800/50 shadow-2xl"
-        aria-label="Ouvrir le menu"
-        aria-expanded={isMobileMenuOpen}
-      >
-        <motion.div
-          animate={{ rotate: isMobileMenuOpen ? 90 : 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Menu className="w-5 h-5 text-indigo-300" />
-        </motion.div>
-        <span className="text-sm font-semibold text-slate-200">
-          {generalTabs.concat(eventTabs).find(t => t.id === activeTab)?.label || 'Menu'}
-        </span>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 w-3 h-3 bg-indigo-500 rounded-full border-2 border-slate-900"
-          />
-        )}
-      </motion.button>
 
       {/* Overlay mobile amélioré */}
       <AnimatePresence>
@@ -250,12 +269,12 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Sidebar Desktop améliorée */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-30 shadow-2xl">
+      {/* Sidebar Desktop améliorée - Responsive */}
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-56 xl:w-64 bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-30 shadow-2xl">
         <SidebarContent />
       </aside>
 
-      {/* Sidebar Mobile améliorée (drawer) */}
+      {/* Sidebar Mobile améliorée (drawer) - Adaptée à l'écran */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.aside
@@ -268,7 +287,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
               stiffness: 200,
               duration: prefersReducedMotion ? 0 : 0.4 
             }}
-            className="lg:hidden fixed left-0 top-0 h-screen w-72 bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-50 shadow-2xl"
+            className="lg:hidden fixed left-0 top-0 h-full max-h-screen w-[85vw] max-w-[320px] bg-slate-900/98 backdrop-blur-xl border-r border-slate-800/50 z-50 shadow-2xl"
           >
             <SidebarContent />
           </motion.aside>
