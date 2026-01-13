@@ -38,14 +38,13 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
     if (activeTab === 'battles' && settings.battle_mode_enabled === false) {
       setActiveTab('overview');
     }
-    if (activeTab === 'aftermovies' && settings.aftermovies_enabled === false) {
-      setActiveTab('overview');
-    }
+    // L'onglet aftermovies est toujours accessible dans le contrôle mobile
+    // même si aftermovies_enabled est false (cela contrôle uniquement l'affichage public)
     // Rediriger si l'onglet license est actif (retiré du contrôle mobile)
     if (activeTab === 'license') {
       setActiveTab('overview');
     }
-  }, [activeTab, settings.battle_mode_enabled, settings.aftermovies_enabled]);
+  }, [activeTab, settings.battle_mode_enabled]);
   const [isExporting, setIsExporting] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
@@ -344,7 +343,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         activeTab={activeTab} 
         onTabChange={setActiveTab}
         battleModeEnabled={settings.battle_mode_enabled !== false}
-        aftermoviesEnabled={settings.aftermovies_enabled !== false}
+        aftermoviesEnabled={settings.aftermovies_enabled !== true}
       />
 
       {/* Content */}
