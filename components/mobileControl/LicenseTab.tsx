@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Key, Calendar, Clock, CheckCircle, XCircle, 
-  AlertTriangle, Shield, Copy, Sparkles, TrendingUp,
+  Key, Calendar, Clock, XCircle, 
+  AlertTriangle, Shield, Copy, TrendingUp,
   Ban, Loader2, Eye, EyeOff, Info
 } from 'lucide-react';
 import { useLicense } from '../../context/LicenseContext';
@@ -20,7 +20,6 @@ const LicenseTab: React.FC = () => {
   const [showFullLicenseId, setShowFullLicenseId] = useState(false);
   const [showLicenseKey, setShowLicenseKey] = useState(false);
   const [activeLicense, setActiveLicense] = useState<License | null>(null);
-  const [loadingLicense, setLoadingLicense] = useState(false);
   const [showLicenseNumber, setShowLicenseNumber] = useState(false);
 
   // Charger la licence active depuis la base de données
@@ -29,13 +28,10 @@ const LicenseTab: React.FC = () => {
       if (!user) return;
       
       try {
-        setLoadingLicense(true);
         const license = await getActiveLicense(user.id);
         setActiveLicense(license);
       } catch (error) {
         console.error('Error loading active license:', error);
-      } finally {
-        setLoadingLicense(false);
       }
     };
 
@@ -135,61 +131,7 @@ const LicenseTab: React.FC = () => {
   return (
     <div className="space-y-3 md:space-y-4">
       {/* Header avec statut */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`relative overflow-hidden bg-white/10 backdrop-blur-sm rounded-lg p-3 md:p-4 border ${
-          isValid
-            ? 'border-green-500/30 shadow-sm shadow-green-500/10'
-            : 'border-red-500/30 shadow-sm shadow-red-500/10'
-        }`}
-      >
-        <div className="relative flex items-center gap-3">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className={`p-2.5 rounded-lg ${
-              isValid 
-                ? 'bg-green-500/20 border border-green-400/30' 
-                : 'bg-red-500/20 border border-red-400/30'
-            }`}
-          >
-            {isValid ? (
-              <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-400" />
-            ) : (
-              <XCircle className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
-            )}
-          </motion.div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-lg md:text-xl font-bold text-white">Licence</h2>
-              {isValid && (
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                >
-                  <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" />
-                </motion.div>
-              )}
-            </div>
-            <p className={`text-xs font-semibold flex items-center gap-1.5 ${
-              isValid ? 'text-green-400' : 'text-red-400'
-            }`}>
-              {isValid ? (
-                <>
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                  Licence active
-                </>
-              ) : (
-                <>
-                  <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></span>
-                  Licence expirée ou invalide
-                </>
-              )}
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      
 
       {/* Informations de la licence */}
       <AnimatePresence>
@@ -424,97 +366,189 @@ const LicenseTab: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.1, duration: 0.3 }}
-              className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-5 border border-white/10 shadow-sm"
+              className="relative overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-xl p-5 md:p-6 border border-slate-700/50 shadow-xl"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="p-1.5 rounded-lg bg-pink-500/20">
-                  <Calendar className="w-4 h-4 md:w-5 md:h-5 text-pink-400" />
+              {/* Effet de brillance animé selon le statut */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${
+                isExpired
+                  ? 'from-red-500/5 via-rose-500/5 to-red-500/5'
+                  : isExpiringSoon
+                  ? 'from-amber-500/5 via-yellow-500/5 to-amber-500/5'
+                  : 'from-blue-500/5 via-cyan-500/5 to-blue-500/5'
+              } opacity-50`} />
+              
+              {/* Header amélioré */}
+              <div className="relative flex items-center gap-3 mb-4">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className={`relative p-2.5 rounded-xl ${
+                    isExpired
+                      ? 'bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-400/30 shadow-lg shadow-red-500/10'
+                      : isExpiringSoon
+                      ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/20 border border-amber-400/30 shadow-lg shadow-amber-500/10'
+                      : 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30 shadow-lg shadow-blue-500/10'
+                  }`}
+                >
+                  <Calendar className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isExpired ? 'text-red-400' : isExpiringSoon ? 'text-amber-400' : 'text-blue-400'
+                  }`} />
+                  {!isExpired && (
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className={`absolute inset-0 rounded-xl ${
+                        isExpiringSoon ? 'bg-amber-400/20' : 'bg-blue-400/20'
+                      } blur-md`}
+                    />
+                  )}
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-0.5">Date d'expiration</h3>
+                  <p className="text-xs text-slate-400">Informations sur la validité de votre licence</p>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold text-white">Date d'expiration</h3>
               </div>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-white/70 text-xs font-medium">Date d'expiration</span>
-                    <Info className="w-3.5 h-3.5 text-white/50" />
+
+              <div className="relative space-y-3">
+                {/* Date d'expiration avec design amélioré */}
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="relative p-4 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm shadow-inner"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-2 h-2 rounded-full ${
+                        isExpired ? 'bg-red-400 animate-pulse' : isExpiringSoon ? 'bg-amber-400 animate-pulse' : 'bg-blue-400'
+                      }`} />
+                      <span className="text-white/90 font-semibold text-sm md:text-base">Date d'expiration</span>
+                    </div>
+                    <div className="p-1.5 rounded-lg bg-slate-700/30 border border-slate-600/30">
+                      <Info className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <span className="block text-white font-bold text-base md:text-lg">
+                  <div className="space-y-2">
+                    <motion.span
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="block text-white font-bold text-lg md:text-xl"
+                    >
                       {formatDate(licenseValidity.expires_at)}
-                    </span>
+                    </motion.span>
                     {daysRemaining !== null && !isExpired && (
-                      <span className="block text-white/60 text-xs">
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.25 }}
+                        className={`block text-sm font-medium ${
+                          isExpiringSoon ? 'text-amber-300' : 'text-blue-300'
+                        }`}
+                      >
                         {daysRemaining > 0 
                           ? `Dans ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
                           : 'Aujourd\'hui'
                         }
-                      </span>
+                      </motion.span>
                     )}
                   </div>
-                </div>
+                </motion.div>
                 
+                {/* Jours restants avec barre de progression améliorée */}
                 {daysRemaining !== null && (
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-white/80 font-semibold flex items-center gap-1.5 text-sm md:text-base">
-                          <TrendingUp className="w-4 h-4" />
-                          Jours restants
-                        </span>
-                        <motion.span
-                          initial={{ scale: 0.9 }}
-                          animate={{ scale: 1 }}
-                          className={`px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold ${
-                            isExpired
-                              ? 'bg-red-500/20 text-red-400 border border-red-400/30'
-                              : isExpiringSoon
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-400/30'
-                              : 'bg-green-500/20 text-green-400 border border-green-400/30'
-                          }`}
-                        >
-                          {isExpired 
-                            ? 'Expirée' 
-                            : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
-                          }
-                        </motion.span>
-                      </div>
-                    
-                      {/* Barre de progression visuelle */}
-                      {!isExpired && daysRemaining !== null && (
-                        <div className="space-y-1.5">
-                          <div className="h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/10">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ 
-                                width: `${Math.min(100, Math.max(0, (daysRemaining / 365) * 100))}%` 
-                              }}
-                              transition={{ duration: 1, ease: 'easeOut' }}
-                              className={`h-full rounded-full ${
-                                isExpiringSoon
-                                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500'
-                                  : 'bg-gradient-to-r from-green-500 to-emerald-500'
-                              }`}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-white/60">
-                            <span>
-                              {daysRemaining > 365 
-                                ? `Plus de ${Math.floor(daysRemaining / 365)} an${Math.floor(daysRemaining / 365) > 1 ? 's' : ''} restants`
-                                : daysRemaining > 30
-                                ? `Environ ${Math.floor(daysRemaining / 30)} mois restants`
-                                : daysRemaining > 7
-                                ? `${Math.floor(daysRemaining / 7)} semaine${Math.floor(daysRemaining / 7) > 1 ? 's' : ''} restantes`
-                                : ''
-                              }
-                            </span>
-                            <span className="font-semibold text-xs">
-                              {Math.round((daysRemaining / 365) * 100)}% restant
-                            </span>
-                          </div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="relative p-4 rounded-xl bg-gradient-to-r from-slate-800/50 to-slate-900/50 border border-slate-700/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-1.5 rounded-lg ${
+                          isExpired
+                            ? 'bg-red-500/20 border border-red-400/30'
+                            : isExpiringSoon
+                            ? 'bg-amber-500/20 border border-amber-400/30'
+                            : 'bg-green-500/20 border border-green-400/30'
+                        }`}>
+                          <TrendingUp className={`w-4 h-4 ${
+                            isExpired ? 'text-red-400' : isExpiringSoon ? 'text-amber-400' : 'text-green-400'
+                          }`} />
                         </div>
-                      )}
+                        <span className="text-white/90 font-semibold text-sm md:text-base">Jours restants</span>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`relative px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-bold uppercase tracking-wider shadow-lg ${
+                          isExpired
+                            ? 'bg-gradient-to-r from-red-500/30 to-rose-500/30 text-red-300 border border-red-400/40 shadow-red-500/20'
+                            : isExpiringSoon
+                            ? 'bg-gradient-to-r from-amber-500/30 to-yellow-500/30 text-amber-300 border border-amber-400/40 shadow-amber-500/20'
+                            : 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-400/40 shadow-green-500/20'
+                        }`}
+                      >
+                        {isExpired 
+                          ? 'Expirée' 
+                          : `${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`
+                        }
+                        {!isExpired && (
+                          <motion.div
+                            animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className={`absolute inset-0 rounded-lg blur-sm ${
+                              isExpiringSoon ? 'bg-amber-400/20' : 'bg-green-400/20'
+                            }`}
+                          />
+                        )}
+                      </motion.div>
                     </div>
-                  </div>
+                    
+                    {/* Barre de progression visuelle améliorée */}
+                    {!isExpired && daysRemaining !== null && (
+                      <div className="space-y-2.5">
+                        <div className="relative h-3 bg-slate-950/60 rounded-full overflow-hidden border border-slate-700/50 shadow-inner">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ 
+                              width: `${Math.min(100, Math.max(0, (daysRemaining / 365) * 100))}%` 
+                            }}
+                            transition={{ duration: 1.2, ease: 'easeOut' }}
+                            className={`h-full rounded-full ${
+                              isExpiringSoon
+                                ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500'
+                                : 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-500'
+                            } shadow-lg`}
+                          >
+                            {!isExpiringSoon && (
+                              <motion.div
+                                animate={{ x: ['-100%', '100%'] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                              />
+                            )}
+                          </motion.div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-400 font-medium">
+                            {daysRemaining > 365 
+                              ? `Plus de ${Math.floor(daysRemaining / 365)} an${Math.floor(daysRemaining / 365) > 1 ? 's' : ''} restants`
+                              : daysRemaining > 30
+                              ? `Environ ${Math.floor(daysRemaining / 30)} mois restants`
+                              : daysRemaining > 7
+                              ? `${Math.floor(daysRemaining / 7)} semaine${Math.floor(daysRemaining / 7) > 1 ? 's' : ''} restantes`
+                              : ''
+                            }
+                          </span>
+                          <span className={`font-bold ${
+                            isExpiringSoon ? 'text-amber-300' : 'text-green-300'
+                          }`}>
+                            {Math.round((daysRemaining / 365) * 100)}% restant
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
                 )}
               </div>
             </motion.div>
