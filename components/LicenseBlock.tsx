@@ -1,38 +1,108 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, Clock, Shield, LogOut } from 'lucide-react';
+import { AlertTriangle, Clock, Shield, LogOut, RefreshCw, ExternalLink } from 'lucide-react';
 import { useLicense } from '../context/LicenseContext';
 import { useAuth } from '../context/AuthContext';
 import { isElectron } from '../utils/electronPaths';
 
 /**
+ * Fonction utilitaire pour nettoyer le storage (extraite pour éviter la duplication)
+ */
+const cleanStorage = (storage: Storage): void => {
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach(key => storage.removeItem(key));
+};
+
+/**
  * Composant qui bloque l'application si la licence est expirée ou invalide
- * Design amélioré pour plus de clarté et d'impact visuel.
+ * Design optimisé et amélioré pour une meilleure expérience utilisateur.
  */
 const LicenseBlock: React.FC = () => {
   const { licenseValidity, loading } = useLicense();
   const { isAuthenticated, signOut } = useAuth();
 
-  // Loader design amélioré
+  // Mémoriser les valeurs calculées pour éviter les recalculs
+  const status = useMemo(() => licenseValidity?.status ?? 'expired', [licenseValidity?.status]);
+  const daysRemaining = useMemo(() => licenseValidity?.days_remaining ?? 0, [licenseValidity?.days_remaining]);
+  const expiresAt = useMemo(() => 
+    licenseValidity?.expires_at ? new Date(licenseValidity.expires_at) : null,
+    [licenseValidity?.expires_at]
+  );
+  const isLicenseRequired = useMemo(() => 
+    licenseValidity?.status === null || !licenseValidity,
+    [licenseValidity]
+  );
+
+  // Formater la date d'expiration (mémorisé)
+  const formattedDate = useMemo(() => {
+    if (!expiresAt) return 'Non disponible';
+    return expiresAt.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }, [expiresAt]);
+
+  // Handlers mémorisés
+  const handleRetry = useCallback(() => {
+    window.location.reload();
+  }, []);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      cleanStorage(localStorage);
+      cleanStorage(sessionStorage);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (isElectron()) {
+        window.location.reload();
+      } else {
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      try {
+        cleanStorage(localStorage);
+        cleanStorage(sessionStorage);
+      } catch (e) {
+        // Ignorer les erreurs de nettoyage
+      }
+      window.location.reload();
+    }
+  }, [signOut]);
+
+  const handleContactSupport = useCallback(() => {
+    window.location.href = 'mailto:support@partywall.fr';
+  }, []);
+
+  // Loader optimisé
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mx-auto mb-6"
-          >
-            <span className="relative flex h-16 w-16">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-16 w-16 border-4 border-indigo-500 border-t-transparent border-b-transparent animate-spin"></span>
-            </span>
-          </motion.div>
-          <p className="text-indigo-300 text-lg font-medium animate-pulse">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
+        >
+          <div className="relative mx-auto mb-6 w-20 h-20">
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-500/20"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-500 animate-spin"></div>
+            <div className="absolute inset-2 rounded-full bg-indigo-500/10 animate-pulse"></div>
+          </div>
+          <p className="text-indigo-300 text-lg font-medium">
             Vérification de la licence...
           </p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -42,246 +112,259 @@ const LicenseBlock: React.FC = () => {
     return null;
   }
 
-  // Calculer les jours restants ou le statut
-  const daysRemaining = licenseValidity?.days_remaining ?? 0;
-  const expiresAt = licenseValidity?.expires_at
-    ? new Date(licenseValidity.expires_at)
-    : null;
-  const status = licenseValidity?.status ?? 'expired';
 
-  // Formater la date d'expiration
-  const formatDate = (date: Date | null): string => {
-    if (!date) return 'Non disponible';
-    return date.toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // Variants d'animation pour optimiser les performances
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.96 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
+    }
   };
 
+  const iconVariants = {
+    hidden: { scale: 0.5, rotate: -15, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      rotate: 0, 
+      opacity: 1,
+      transition: { 
+        type: 'spring' as const, 
+        stiffness: 200, 
+        damping: 15,
+        delay: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { duration: 0.3, ease: 'easeOut' as const }
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, type: 'spring', bounce: 0.13 }}
-        className="max-w-xl w-full shadow-2xl rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900/90 via-slate-950/90 to-slate-900/80 border border-red-600/30"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="max-w-2xl w-full"
       >
-        <div className="px-0 pt-0 bg-gradient-to-tr from-red-500/10 via-fuchsia-700/10 to-purple-900/10 pb-6 rounded-b-3xl shadow-inner">
-          {/* Icône d'alerte améliorée */}
-          <motion.div
-            initial={{ scale: 0.7, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.06, type: 'spring', stiffness: 250, damping: 16 }}
-            className="w-24 h-24 mx-auto -mt-8 rounded-full bg-gradient-to-br from-red-500/30 to-rose-500/20 border-4 border-red-600/30 flex items-center justify-center shadow-xl ring-2 ring-red-500/20"
-          >
-            <AlertTriangle className="w-12 h-12 text-rose-400 animate-bounce-slow" />
-          </motion.div>
-          {/* Titre */}
-          <h1 className="mt-6 text-4xl sm:text-5xl font-extrabold text-center mb-3 bg-gradient-to-r from-red-400 via-rose-400 to-orange-400 bg-clip-text text-transparent drop-shadow-md tracking-tight">
-            {licenseValidity?.status === null || !licenseValidity ? 'Licence requise' : 'Licence expirée'}
-          </h1>
-          {/* Message principal stylisé */}
-          <p className="text-lg text-slate-300 text-center mb-8 leading-relaxed px-3 font-medium">
-            {licenseValidity?.status === null || !licenseValidity ? (
-              <>
-                Aucune licence attribuée automatiquement lors de l'inscription.<br />
-                <span className="text-rose-200 font-semibold">
-                </span>{" "}
-                <span className="block mt-3 text-yellow-200 font-semibold">
-                  Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6&nbsp;heures maximum.<br />
-                  Merci de vérifier votre email et de patienter.
-                </span>
-              <a
-                href="https://partywall.fr/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 text-white font-semibold text-lg shadow-lg hover:scale-105 hover:brightness-110 transition-all duration-150"
-              >
-                Commander une licence sur partywall.fr
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-              </>
-            ) : (
-              <>
-                Votre licence d'utilisation a expiré ou n'est plus valide.<br />
-                <span className="text-rose-200 font-semibold">
-                  Veuillez renouveler votre licence
-                </span>{" "}
-                pour continuer à utiliser l'application.<br />
-                <span className="block mt-3 text-yellow-200 font-semibold">
-                  Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6&nbsp;heures maximum.<br />
-                  Merci de vérifier votre email et de patienter.
-                </span>
-              </>
-            )}
-          </p>
-        </div>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-slate-900/95 border border-red-500/20 shadow-2xl backdrop-blur-sm">
+          {/* Effet de brillance animé en arrière-plan */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+          
+          {/* Header avec icône et titre */}
+          <div className="relative px-6 pt-8 pb-6">
+            <motion.div
+              variants={iconVariants}
+              initial="hidden"
+              animate="visible"
+              className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-rose-500/10 border-2 border-red-500/30 flex items-center justify-center shadow-lg backdrop-blur-sm"
+            >
+              <AlertTriangle className="w-10 h-10 text-red-400" />
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="text-3xl sm:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-red-400 via-rose-400 to-orange-400 bg-clip-text text-transparent"
+            >
+              {isLicenseRequired ? 'Licence requise' : 'Licence expirée'}
+            </motion.h1>
 
-        <div className="space-y-5 px-7 mt-1 mb-10">
+            {/* Message principal */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="text-center space-y-3"
+            >
+              <p className="text-slate-300 text-base leading-relaxed">
+                {isLicenseRequired ? (
+                  <>
+                    Aucune licence n'a été attribuée automatiquement lors de l'inscription.
+                  </>
+                ) : (
+                  <>
+                    Votre licence d'utilisation a expiré ou n'est plus valide.
+                    <span className="block mt-2 text-rose-300 font-semibold">
+                      Veuillez renouveler votre licence pour continuer.
+                    </span>
+                  </>
+                )}
+              </p>
+              
+              <div className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <p className="text-sm text-amber-200 font-medium">
+                  💡 Si vous venez d'acheter une licence, l'activation peut prendre jusqu'à 6 heures maximum.
+                  <br />
+                  Merci de vérifier votre email et de patienter.
+                </p>
+              </div>
+
+              {isLicenseRequired && (
+                <motion.a
+                  href="https://partywall.fr/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center justify-center gap-2 mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  Commander une licence
+                  <ExternalLink className="w-4 h-4" />
+                </motion.a>
+              )}
+            </motion.div>
+          </div>
+
           {/* Informations de la licence */}
-          {status === 'expired' && (
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-              className="flex items-center gap-5 px-5 py-3 rounded-xl bg-gradient-to-r from-red-700/30 via-red-900/10 to-red-800/40 border border-red-400/30 shadow"
-            >
-              <Clock className="w-7 h-7 text-red-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm text-red-400 font-bold mb-1 uppercase tracking-wide">Date d'expiration</div>
-                <div className="text-slate-200 font-semibold text-lg">{formatDate(expiresAt)}</div>
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'suspended' && (
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-              className="flex items-center gap-5 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-900/30 via-amber-600/10 to-yellow-900/40 border border-amber-500/30 shadow"
-            >
-              <Shield className="w-7 h-7 text-amber-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-amber-400 mb-1 uppercase tracking-wider">Statut</div>
-                <div className="text-slate-100 font-semibold">Votre licence a été suspendue</div>
-              </div>
-            </motion.div>
-          )}
-
-          {status === 'cancelled' && (
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-              className="flex items-center gap-5 px-5 py-3 rounded-xl bg-gradient-to-r from-slate-800/60 to-slate-900/80 border border-slate-700/50 shadow"
-            >
-              <Shield className="w-7 h-7 text-slate-400 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-slate-400 mb-1 uppercase tracking-wider">Statut</div>
-                <div className="text-slate-200 font-semibold">Votre licence a été annulée</div>
-              </div>
-            </motion.div>
-          )}
-
-          {daysRemaining > 0 && daysRemaining <= 7 && (
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="flex items-center gap-5 px-5 py-3 rounded-xl bg-gradient-to-r from-yellow-500/10 via-amber-700/10 to-yellow-900/10 border border-amber-500/30 shadow"
-            >
-              <Clock className="w-7 h-7 text-amber-400 flex-shrink-0 animate-pulse" />
-              <div>
-                <div className="text-sm font-bold text-amber-400 mb-1 uppercase tracking-wider">Avertissement</div>
-                <div className="text-slate-100 font-medium">
-                  Votre licence expire dans <span className="font-bold">{daysRemaining} jour{daysRemaining > 1 ? 's' : ''}</span>
+          <div className="px-6 pb-6 space-y-3">
+            {status === 'expired' && (
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-red-500/10 to-red-600/5 border border-red-500/20 backdrop-blur-sm"
+                style={{ transitionDelay: '0.4s' }}
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-red-400" />
                 </div>
-              </div>
-            </motion.div>
-          )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-red-400 font-semibold mb-1 uppercase tracking-wider">
+                    Date d'expiration
+                  </div>
+                  <div className="text-slate-200 font-medium text-sm sm:text-base">
+                    {formattedDate}
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-        </div>
-         {/* Actions améliorées */}
-         <div className="flex flex-col gap-3 px-7 pb-7">
-           <div className="flex flex-col sm:flex-row sm:justify-center gap-3">
-             <motion.button
-               whileHover={{ scale: 1.02, y: -1 }}
-               whileTap={{ scale: 0.96 }}
-               onClick={() => {
-                 // Rafraîchir la page pour réessayer
-                 window.location.reload();
-               }}
-               className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-tr from-slate-800 via-slate-900 to-slate-800 hover:from-slate-700 hover:to-slate-700 text-slate-300 rounded-lg font-semibold transition-all duration-200 border-2 border-slate-700/60 text-base"
-             >
-               <span>Réessayer</span>
-             </motion.button>
-           </div>
+            {status === 'suspended' && (
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 backdrop-blur-sm"
+                style={{ transitionDelay: '0.4s' }}
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-amber-400 font-semibold mb-1 uppercase tracking-wider">
+                    Statut
+                  </div>
+                  <div className="text-slate-200 font-medium">
+                    Votre licence a été suspendue
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-           {isAuthenticated && (
-             <motion.button
-               whileHover={{ scale: 1.02, y: -1 }}
-               whileTap={{ scale: 0.96 }}
-               onClick={async () => {
-                 try {
-                   // Déconnexion
-                   await signOut();
-                   
-                   // Nettoyer le localStorage et sessionStorage pour s'assurer que la session est bien supprimée
-                   // Supprimer les clés Supabase qui pourraient être en cache
-                   const cleanStorage = (storage: Storage) => {
-                     const keysToRemove: string[] = [];
-                     for (let i = 0; i < storage.length; i++) {
-                       const key = storage.key(i);
-                       if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
-                         keysToRemove.push(key);
-                       }
-                     }
-                     keysToRemove.forEach(key => storage.removeItem(key));
-                   };
-                   
-                   cleanStorage(localStorage);
-                   cleanStorage(sessionStorage);
-                   
-                   // Attendre un peu pour s'assurer que tout est bien nettoyé
-                   await new Promise(resolve => setTimeout(resolve, 500));
-                   
-                   // Sur Electron, recharger la page pour réinitialiser l'application
-                   // Cela permet de revenir à l'écran de login (mode=admin par défaut dans Electron)
-                   if (isElectron()) {
-                     window.location.reload();
-                   } else {
-                     // En web, rediriger vers la page d'accueil
-                     window.location.href = '/';
-                   }
-                 } catch (error) {
-                   console.error('Erreur lors de la déconnexion:', error);
-                   // En cas d'erreur, nettoyer quand même et forcer le rechargement
-                   try {
-                     const cleanStorage = (storage: Storage) => {
-                       const keysToRemove: string[] = [];
-                       for (let i = 0; i < storage.length; i++) {
-                         const key = storage.key(i);
-                         if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
-                           keysToRemove.push(key);
-                         }
-                       }
-                       keysToRemove.forEach(key => storage.removeItem(key));
-                     };
-                     cleanStorage(localStorage);
-                     cleanStorage(sessionStorage);
-                   } catch (e) {
-                     // Ignorer les erreurs de nettoyage
-                   }
-                   window.location.reload();
-                 }
-               }}
-               className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-red-800/80 via-red-900/80 to-rose-900/80 hover:from-red-700 hover:to-rose-700 text-white rounded-lg font-semibold transition-all duration-200 border-2 border-red-600/30 shadow-lg shadow-red-900/20 hover:shadow-xl hover:shadow-red-800/30 text-base"
-             >
-               <LogOut className="w-5 h-5" />
-               <span>Se déconnecter</span>
-             </motion.button>
-           )}
-         </div>
-        <div className="px-7 pb-5">
-          {/* Footer amélioré */}
-          <p className="text-xs text-slate-500 text-center mt-3 italic">
-            Si vous pensez qu'il s'agit d'une erreur, veuillez&nbsp;
-            <span className="underline underline-offset-2 cursor-pointer text-indigo-400 hover:text-indigo-300"
-              onClick={() => {
-                window.location.href = "mailto:support@partywall.fr";
-              }}
+            {status === 'cancelled' && (
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-slate-800/40 to-slate-900/40 border border-slate-700/30 backdrop-blur-sm"
+                style={{ transitionDelay: '0.4s' }}
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-700/40 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-slate-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-slate-400 font-semibold mb-1 uppercase tracking-wider">
+                    Statut
+                  </div>
+                  <div className="text-slate-300 font-medium">
+                    Votre licence a été annulée
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {daysRemaining > 0 && daysRemaining <= 7 && (
+              <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-600/5 border border-amber-500/20 backdrop-blur-sm"
+                style={{ transitionDelay: '0.5s' }}
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-amber-400 font-semibold mb-1 uppercase tracking-wider">
+                    Avertissement
+                  </div>
+                  <div className="text-slate-200 font-medium">
+                    Votre licence expire dans{' '}
+                    <span className="font-bold text-amber-300">
+                      {daysRemaining} jour{daysRemaining > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+          {/* Actions */}
+          <div className="px-6 pb-6 space-y-3">
+            <motion.button
+              variants={itemVariants}
+              initial="hidden"
+              animate="visible"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleRetry}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-slate-800/80 to-slate-900/80 hover:from-slate-700 hover:to-slate-800 text-slate-200 rounded-xl font-semibold transition-all duration-200 border border-slate-700/50 shadow-lg hover:shadow-xl backdrop-blur-sm"
+              style={{ transitionDelay: '0.6s' }}
             >
-              contacter le support technique
-            </span>
-            .
-          </p>
+              <RefreshCw className="w-4 h-4" />
+              <span>Réessayer</span>
+            </motion.button>
+
+            {isAuthenticated && (
+              <motion.button
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSignOut}
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-red-600/80 to-rose-600/80 hover:from-red-500 hover:to-rose-500 text-white rounded-xl font-semibold transition-all duration-200 border border-red-500/30 shadow-lg hover:shadow-xl hover:shadow-red-500/20 backdrop-blur-sm"
+                style={{ transitionDelay: '0.7s' }}
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Se déconnecter</span>
+              </motion.button>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 pb-6 pt-2 border-t border-slate-800/50">
+            <p className="text-xs text-slate-500 text-center">
+              Si vous pensez qu'il s'agit d'une erreur,{' '}
+              <button
+                onClick={handleContactSupport}
+                className="underline underline-offset-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                contactez le support technique
+              </button>
+              .
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
