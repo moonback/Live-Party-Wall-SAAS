@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X } from 'lucide-react';
+import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X, Sparkles } from 'lucide-react';
 import { getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
@@ -12,6 +12,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ImageEditModal } from './ImageEditModal';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -33,6 +34,7 @@ interface GuestPhotoCardProps {
   onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
   onClearCaption?: (photoId: string) => Promise<void>;
   onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
+  onEditImage?: (photo: Photo, base64Image: string, prompt: string) => Promise<void>;
 }
 
 export const GuestPhotoCard = React.memo(({ 
@@ -54,7 +56,8 @@ export const GuestPhotoCard = React.memo(({
   onSelect,
   onUpdateCaption,
   onClearCaption,
-  onDeletePhoto
+  onDeletePhoto,
+  onEditImage
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const { addToast } = useToast();
@@ -66,6 +69,7 @@ export const GuestPhotoCard = React.memo(({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showEditCaptionModal, setShowEditCaptionModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditImageModal, setShowEditImageModal] = useState(false);
   const [editingCaption, setEditingCaption] = useState('');
   const [isUpdatingCaption, setIsUpdatingCaption] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -337,6 +341,18 @@ export const GuestPhotoCard = React.memo(({
       setIsDeleting(false);
     }
   };
+
+  const handleEditImage = async (base64Image: string, prompt: string) => {
+    if (!onEditImage) return;
+    
+    try {
+      await onEditImage(photo, base64Image, prompt);
+      addToast('Image modifiée publiée avec succès !', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la publication de l\'image modifiée', 'error');
+      throw error;
+    }
+  };
   
   return (
     <motion.div 
@@ -421,6 +437,19 @@ export const GuestPhotoCard = React.memo(({
                   <Edit2 className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} flex-shrink-0`} />
                   <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Modifier la légende</span>
                 </button>
+                {onEditImage && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditImageModal(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2 sm:gap-2.5 px-3 py-2.5 min-h-[44px] rounded-lg sm:rounded-xl hover:bg-pink-500/10 text-slate-300 hover:text-pink-400 transition-all touch-manipulation text-left"
+                  >
+                    <Sparkles className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'} flex-shrink-0`} />
+                    <span className={`${isMobile ? 'text-sm' : 'text-xs sm:text-sm'} font-medium`}>Modifier avec IA</span>
+                  </button>
+                )}
                 {photo.caption && (
                   <button
                     onClick={(e) => {
@@ -797,6 +826,16 @@ export const GuestPhotoCard = React.memo(({
           </>
         )}
       </AnimatePresence>
+
+      {/* Modal de modification d'image avec IA */}
+      {onEditImage && (
+        <ImageEditModal
+          photo={photo}
+          isOpen={showEditImageModal}
+          onClose={() => setShowEditImageModal(false)}
+          onGenerate={handleEditImage}
+        />
+      )}
     </motion.div>
   );
 });

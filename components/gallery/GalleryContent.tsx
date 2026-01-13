@@ -35,6 +35,7 @@ interface GalleryContentProps {
   onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
   onClearCaption?: (photoId: string) => Promise<void>;
   onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
+  onEditImage?: (photo: Photo, base64Image: string, prompt: string) => Promise<void>;
 }
 
 type ColumnItem = 
@@ -65,6 +66,7 @@ interface VirtualColumnProps {
   onUpdateCaption?: (photoId: string, caption: string) => Promise<void>;
   onClearCaption?: (photoId: string) => Promise<void>;
   onDeletePhoto?: (photoId: string, photoUrl: string) => Promise<void>;
+  onEditImage?: (photo: Photo, base64Image: string, prompt: string) => Promise<void>;
 }
 
 const VirtualColumn = React.memo(({ 
@@ -90,7 +92,8 @@ const VirtualColumn = React.memo(({
   isMobile,
   onUpdateCaption,
   onClearCaption,
-  onDeletePhoto
+  onDeletePhoto,
+  onEditImage
 }: VirtualColumnProps) => {
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   
@@ -249,6 +252,7 @@ const VirtualColumn = React.memo(({
                   onUpdateCaption={onUpdateCaption}
                   onClearCaption={onClearCaption}
                   onDeletePhoto={onDeletePhoto}
+                  onEditImage={onEditImage}
                 />
               </motion.div>
             )}
@@ -287,7 +291,8 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
   scrollContainerRef,
   onUpdateCaption,
   onClearCaption,
-  onDeletePhoto
+  onDeletePhoto,
+  onEditImage
 }) => {
   const isMobile = useIsMobile();
   const defaultScrollRef = useRef<HTMLDivElement>(null);
@@ -398,6 +403,7 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onUpdateCaption={onUpdateCaption}
               onClearCaption={onClearCaption}
               onDeletePhoto={onDeletePhoto}
+              onEditImage={onEditImage}
             />
           </motion.div>
         ))}

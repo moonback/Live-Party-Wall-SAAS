@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo, useCallback, lazy, Suspens
 import { motion } from 'framer-motion';
 import { Video } from 'lucide-react';
 import { Photo, SortOption, MediaFilter, Aftermovie } from '../types';
-import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, clearPhotoCaption, deletePhoto } from '../services/photoService';
+import { getPhotos, subscribeToNewPhotos, subscribeToLikesUpdates, subscribeToPhotoDeletions, toggleLike, getUserLikes, toggleReaction, getUserReactions, subscribeToReactionsUpdates, updatePhotoCaption, clearPhotoCaption, deletePhoto, addPhotoToWall } from '../services/photoService';
 import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
@@ -529,6 +529,41 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
     }
   }, [addToast]);
 
+  const handleEditImage = useCallback(async (originalPhoto: Photo, base64Image: string, prompt: string) => {
+    if (!currentEvent?.id) {
+      addToast('Événement non trouvé', 'error');
+      return;
+    }
+
+    try {
+      // Uploader la nouvelle photo avec le même auteur que l'originale
+      const newPhoto = await addPhotoToWall(
+        currentEvent.id,
+        base64Image,
+        `Modifié avec IA: ${prompt}`,
+        originalPhoto.author
+      );
+
+      // La photo sera automatiquement ajoutée via Realtime subscription
+      // Mais on peut l'ajouter immédiatement pour un feedback plus rapide
+      setPhotos(prev => [newPhoto, ...prev]);
+      
+      logger.info('Image modifiée publiée avec succès', { 
+        component: 'GuestGallery', 
+        action: 'handleEditImage',
+        originalPhotoId: originalPhoto.id,
+        newPhotoId: newPhoto.id
+      });
+    } catch (error) {
+      logger.error('Erreur lors de la publication de l\'image modifiée', error, { 
+        component: 'GuestGallery', 
+        action: 'handleEditImage',
+        originalPhotoId: originalPhoto.id
+      });
+      throw error;
+    }
+  }, [currentEvent?.id, addToast]);
+
   const handleBatchDownload = async () => {
     if (selectedIds.size === 0) return;
     
@@ -803,6 +838,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
             onUpdateCaption={handleUpdateCaption}
             onClearCaption={handleClearCaption}
             onDeletePhoto={handleDeletePhoto}
+            onEditImage={handleEditImage}
           />
         </div>
       </div>
