@@ -453,21 +453,23 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
               />
               
               {/* Pulse ring effect */}
-              <motion.div
-                className={`absolute -inset-1 border-2 border-transparent rounded-2xl`}
-                animate={isHovered ? {
-                  borderColor: [option.glowColor.replace('0.4', '0'), option.glowColor, option.glowColor.replace('0.4', '0')],
-                  scale: [1, 1.05, 1]
-                } : {
-                  borderColor: 'transparent',
-                  scale: 1
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: isHovered ? Infinity : 0,
-                  ease: 'easeInOut'
-                }}
-              />
+              {isHovered && (
+                <motion.div
+                  className={`absolute -inset-1 border-2 rounded-2xl`}
+                  animate={{
+                    borderColor: [option.glowColor.replace('0.4', '0'), option.glowColor, option.glowColor.replace('0.4', '0')],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                  style={{
+                    borderColor: option.glowColor.replace('0.4', '0')
+                  }}
+                />
+              )}
 
               {/* Contenu */}
               <div className="relative h-full flex flex-col items-center justify-center gap-2 lg:gap-4 p-3 lg:p-5">
@@ -493,7 +495,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                 {/* Icône */}
                 <motion.div
                   className={`relative w-12 h-12 lg:w-16 lg:h-16 rounded-lg lg:rounded-2xl flex items-center justify-center bg-gradient-to-br ${option.gradient} shadow-2xl`}
-                  animate={isHovered ? { scale: 1.15, rotate: [0, 5, -5, 0] } : { scale: 1, rotate: 0 }}
+                  animate={isHovered ? { scale: 1.15, rotate: 5 } : { scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
                   <Icon className="w-6 h-6 lg:w-9 lg:h-9 text-white drop-shadow-lg relative z-10" />
