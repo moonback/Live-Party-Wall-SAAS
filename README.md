@@ -197,19 +197,34 @@ Compte Supabase
 Clé API Google Gemini
 ```
 
-### ⚡ Installation
+### ⚡ Installation étape par étape
+
+#### 1. Cloner le projet
 
 ```bash
-# 1. Cloner le projet
 git clone https://github.com/moonback/Partywall-SAAS.git
 cd Partywall-SAAS
-
-# 2. Installer les dépendances
-npm install
-
-# 3. Configurer les variables d'environnement
-# Créer un fichier .env à la racine (voir section Variables d'environnement)
 ```
+
+#### 2. Installer les dépendances
+
+```bash
+npm install
+```
+
+Cette commande installe toutes les dépendances nécessaires (React, TypeScript, Supabase, etc.).
+
+#### 3. Télécharger les modèles de reconnaissance faciale (optionnel)
+
+Si vous utilisez la fonctionnalité "Retrouve-moi" :
+
+```bash
+npm run download:face-models
+```
+
+#### 4. Configurer les variables d'environnement
+
+Créez un fichier `.env` à la racine du projet (voir section [Variables d'environnement](#-variables-denvironnement)).
 
 ### 🔑 Variables d'environnement
 
@@ -230,52 +245,120 @@ GEMINI_API_KEY=votre_cle_api_gemini
 
 ### 🗄️ Configuration de la base de données
 
-1. **Créer un projet Supabase** :
-   - Allez sur [supabase.com](https://supabase.com)
-   - Créez un nouveau projet
-   - Notez l'URL et la clé anonyme (à mettre dans `.env`)
+#### 1. Créer un projet Supabase
 
-2. **Exécuter le script de setup** :
-   - Ouvrez votre [Dashboard Supabase](https://app.supabase.com)
-   - Allez dans **SQL Editor**
-   - Copiez et exécutez le contenu de `supabase/supabase_complete_setup.sql`
-   - Ce script crée toutes les tables, politiques RLS, indexes et buckets Storage
-   - **Important** : Exécutez également `supabase/supabase_licenses_setup.sql` pour activer le système de licences
+1. Allez sur [supabase.com](https://supabase.com) et créez un compte (gratuit)
+2. Créez un nouveau projet :
+   - Choisissez un nom pour votre projet
+   - Sélectionnez une région (recommandé : proche de vos utilisateurs)
+   - Choisissez un mot de passe pour la base de données (gardez-le en sécurité)
+3. Une fois le projet créé, allez dans **Settings > API**
+4. Copiez les valeurs suivantes :
+   - **Project URL** → `VITE_SUPABASE_URL`
+   - **anon public key** → `VITE_SUPABASE_ANON_KEY`
 
-3. **Activer Realtime** :
-   - Allez dans **Database > Replication**
-   - Activez la réplication pour les tables suivantes :
-     - `photos`
-     - `likes`
-     - `reactions`
-     - `event_settings`
-     - `guests`
-     - `photo_battles`
-     - `aftermovies`
-     - `event_organizers`
-     - `licenses` (pour le système de licences)
+#### 2. Exécuter les scripts SQL
 
-4. **Créer un compte administrateur** :
-   - Allez dans **Authentication > Users**
-   - Créez un nouvel utilisateur avec email/password
-   - Ce compte sera le propriétaire de vos événements
+1. Ouvrez votre [Dashboard Supabase](https://app.supabase.com)
+2. Allez dans **SQL Editor** (menu de gauche)
+3. Exécutez les scripts dans l'ordre suivant :
 
-### 🎬 Lancement
+   **a) Script principal de setup** :
+   - Cliquez sur **New Query**
+   - Ouvrez le fichier `supabase/supabase_complete_setup.sql`
+   - Copiez tout le contenu et collez-le dans l'éditeur SQL
+   - Cliquez sur **Run** (ou `Ctrl+Enter`)
+   - Ce script crée :
+     - Toutes les tables nécessaires
+     - Les politiques RLS (Row Level Security)
+     - Les indexes pour les performances
+     - Les buckets Storage
+
+   **b) Script de licences** :
+   - Créez une nouvelle query
+   - Ouvrez le fichier `supabase/supabase_licenses_setup.sql`
+   - Copiez et exécutez le contenu
+   - Ce script active le système de licences
+
+#### 3. Activer Realtime
+
+1. Allez dans **Database > Replication** (menu de gauche)
+2. Activez la réplication pour les tables suivantes en cliquant sur le toggle :
+   - ✅ `photos`
+   - ✅ `likes`
+   - ✅ `reactions`
+   - ✅ `event_settings`
+   - ✅ `guests`
+   - ✅ `photo_battles`
+   - ✅ `aftermovies`
+   - ✅ `event_organizers`
+   - ✅ `licenses`
+
+#### 4. Créer un compte administrateur
+
+1. Allez dans **Authentication > Users** (menu de gauche)
+2. Cliquez sur **Add user** > **Create new user**
+3. Remplissez :
+   - **Email** : votre email
+   - **Password** : un mot de passe sécurisé
+4. Cliquez sur **Create user**
+5. Ce compte sera le propriétaire de vos événements et pourra créer des événements
+
+### 🎬 Lancement du projet
+
+#### Mode développement (Web)
 
 ```bash
-# Mode développement web
 npm run dev
-# → http://localhost:3000
+```
 
-# Mode développement Electron (desktop)
+L'application sera accessible sur **http://localhost:3000**
+
+> 💡 **Astuce** : Le serveur de développement supporte le Hot Module Replacement (HMR) : vos modifications sont reflétées instantanément dans le navigateur.
+
+#### Mode développement (Electron - Desktop)
+
+```bash
 npm run electron:dev
+```
 
-# Build production web
+Lance l'application en mode desktop avec Electron. Utile pour tester les fonctionnalités spécifiques à Electron.
+
+#### Build production (Web)
+
+```bash
 npm run build
+```
 
-# Build + Package Electron
+Génère les fichiers optimisés dans le dossier `dist/`. Ces fichiers peuvent être déployés sur :
+- **Vercel** : `vercel deploy`
+- **Netlify** : glisser-déposer le dossier `dist/`
+- **CDN** : uploader le contenu de `dist/` sur votre CDN
+
+#### Build production (Electron)
+
+```bash
+# Build uniquement
+npm run electron:build
+
+# Build + Package (créer l'installer)
 npm run electron:pack
 ```
+
+Les fichiers de distribution sont générés dans `release/` :
+- **Windows** : `.exe` (installer NSIS)
+- **macOS** : `.dmg`
+- **Linux** : `.AppImage` et `.deb`
+
+#### Preview production
+
+Pour tester le build de production localement :
+
+```bash
+npm run preview
+```
+
+Lance un serveur local pour tester les fichiers de production.
 
 ---
 
@@ -713,33 +796,84 @@ Plus de **20 milestones** à débloquer :
 
 ```
 Partywall-SAAS/
-├── components/          # Composants React par fonctionnalité
-│   ├── landing/        # Landing page SaaS
-│   ├── gallery/        # Galerie avec filtres
-│   ├── projection/     # Mode grand écran
-│   ├── wall/          # Mur interactif
-│   ├── stats/         # Analytics
-│   ├── admin/         # Dashboard admin
-│   ├── photobooth/    # Photobooth avec caméra
-│   └── rgpd/          # Composants RGPD
+├── 📁 components/              # Composants React par fonctionnalité
+│   ├── landing/              # Landing page SaaS
+│   ├── gallery/              # Galerie avec filtres et recherche
+│   ├── projection/           # Mode grand écran optimisé
+│   ├── wall/                 # Mur interactif temps réel
+│   ├── stats/                 # Analytics et statistiques
+│   ├── admin/                # Dashboard administrateur
+│   ├── photobooth/           # Photobooth avec caméra et filtres
+│   ├── mobileControl/        # Interface de contrôle mobile
+│   ├── rgpd/                 # Composants RGPD (consentement, politique)
+│   └── gamification/         # Composants de gamification
 │
-├── services/           # Logique métier isolée
-│   ├── photoService.ts
-│   ├── eventService.ts
-│   ├── geminiService.ts
-│   └── ...
+├── 📁 services/              # Logique métier isolée (Service Layer Pattern)
+│   ├── supabaseClient.ts     # Configuration client Supabase
+│   ├── photoService.ts       # CRUD photos, likes, réactions
+│   ├── eventService.ts       # Gestion événements
+│   ├── geminiService.ts      # Intégration Google Gemini (IA)
+│   ├── aftermovieService.ts  # Génération de timelapse
+│   ├── gamificationService.ts # Badges, points, classements
+│   ├── licenseService.ts     # Gestion des licences
+│   ├── faceRecognitionService.ts # Reconnaissance faciale
+│   └── ...                   # Autres services
 │
-├── context/            # État global React Context
-│   ├── AuthContext.tsx
-│   ├── EventContext.tsx
-│   └── ...
+├── 📁 context/               # État global React Context
+│   ├── AuthContext.tsx       # Authentification utilisateur
+│   ├── EventContext.tsx       # Gestion multi-événements (SaaS)
+│   ├── PhotosContext.tsx     # Photos avec Realtime
+│   ├── SettingsContext.tsx   # Paramètres d'événement
+│   ├── LicenseContext.tsx    # Validation des licences
+│   └── ToastContext.tsx      # Notifications toast
 │
-├── hooks/              # Hooks personnalisés
-├── utils/              # Utilitaires
-├── types.ts            # Types TypeScript partagés
-├── supabase/           # Scripts SQL de migration
-└── electron/           # Application desktop (optionnel)
+├── 📁 hooks/                  # Hooks personnalisés React
+│   ├── useIsMobile.ts        # Détection mobile/desktop
+│   ├── useCamera.ts          # Gestion caméra
+│   ├── useImageCompression.ts # Compression d'images
+│   ├── useDebounce.ts        # Debounce pour optimisations
+│   └── wall/                 # Hooks spécifiques au mur
+│
+├── 📁 utils/                  # Utilitaires et helpers
+│   ├── validation.ts         # Validation de données
+│   ├── imageFilters.ts       # Filtres d'images
+│   ├── imageOverlay.ts       # Overlays et cadres
+│   ├── logger.ts             # Logging structuré
+│   └── ...                   # Autres utilitaires
+│
+├── 📁 supabase/               # Scripts SQL de migration et setup
+│   ├── supabase_complete_setup.sql  # Setup principal
+│   ├── supabase_licenses_setup.sql   # Système de licences
+│   └── ...                   # Migrations supplémentaires
+│
+├── 📁 electron/              # Application desktop (optionnel)
+│   ├── main.ts               # Processus principal Electron
+│   └── preload.ts            # Script preload pour sécurité
+│
+├── 📁 public/                 # Assets statiques
+│   ├── cadres/               # Cadres décoratifs
+│   ├── models/                # Modèles IA (face-api)
+│   └── sounds/               # Sons et effets audio
+│
+├── 📁 scripts/                # Scripts utilitaires
+│   ├── generate-icons.js     # Génération d'icônes
+│   └── download-face-api-models.js # Téléchargement modèles
+│
+├── 📄 App.tsx                 # Composant racine de l'application
+├── 📄 types.ts                # Types TypeScript partagés
+├── 📄 constants.ts            # Constantes globales
+├── 📄 vite.config.ts          # Configuration Vite
+├── 📄 tsconfig.json           # Configuration TypeScript
+└── 📄 package.json            # Dépendances et scripts npm
 ```
+
+### 📐 Patterns architecturaux utilisés
+
+- **Service Layer Pattern** : Toute la logique métier est isolée dans `/services`
+- **Context API** : État global partagé via React Context (pas de Redux)
+- **Lazy Loading** : Composants chargés à la demande avec `React.lazy()`
+- **Routing manuel** : Navigation via paramètres URL (`?mode=guest`)
+- **Type Safety** : TypeScript strict avec types partagés dans `types.ts`
 
 Pour plus de détails, consultez [ARCHITECTURE.md](./ARCHITECTURE.md).
 
@@ -759,12 +893,15 @@ Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./CONTRIBUTI
 
 Pour plus de détails, voir [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## 📝 Prérequis
+## 📋 Prérequis
 
-- **Node.js** >= 18.0.0
-- **npm** >= 9.0.0
-- **Compte Supabase** (gratuit disponible)
-- **Clé API Google Gemini** (gratuite disponible)
+Avant de commencer, assurez-vous d'avoir installé les outils suivants :
+
+- **Node.js** >= 18.0.0 ([Télécharger](https://nodejs.org/))
+- **npm** >= 9.0.0 (inclus avec Node.js)
+- **Git** ([Télécharger](https://git-scm.com/))
+- **Compte Supabase** ([Créer un compte gratuit](https://supabase.com))
+- **Clé API Google Gemini** ([Obtenir une clé gratuite](https://makersuite.google.com/app/apikey))
 
 ## 🚀 Déploiement
 
