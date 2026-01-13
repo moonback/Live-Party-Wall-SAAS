@@ -141,12 +141,17 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
                 <div className="relative p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 backdrop-blur-sm">
-                  <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-300" />
+                  <img
+                    src="/icon.png"
+                    alt="Logo Partywall"
+                    className="w-5 h-5 sm:w-8 sm:h-8 object-contain"
+                    draggable={false}
+                  />
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-100">
-                  <span>Live</span>
+                  
                   <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mx-1">Party</span>
                   <span>Wall</span>
                 </h1>
