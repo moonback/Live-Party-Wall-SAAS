@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { Event, EventRow, EventOrganizer, EventOrganizerRow, EventUpdate } from '../types';
+import { Event, EventRow, EventOrganizer, EventOrganizerRow } from '../types';
 import { logger } from '../utils/logger';
 import { getActiveLicense } from './licenseService';
 import { getMaxEvents, getEventLimitInfo } from '../utils/licenseUtils';
@@ -32,11 +32,10 @@ export const createEvent = async (
   // Utiliser auth.uid() directement depuis la session Supabase
   // C'est plus fiable que de se fier à ownerId passé en paramètre
   const authenticatedUserId = session.user.id;
-  const finalOwnerId = ownerId || authenticatedUserId;
 
   // Vérifier que ownerId correspond bien à l'utilisateur authentifié
   if (ownerId && ownerId !== authenticatedUserId) {
-    logger.warn("OwnerId mismatch", null, { 
+    logger.warn("OwnerId mismatch", undefined, { 
       component: 'eventService', 
       action: 'createEvent',
       providedOwnerId: ownerId,
