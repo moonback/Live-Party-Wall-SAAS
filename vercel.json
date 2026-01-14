@@ -35,11 +35,11 @@
       ]
     },
     {
-      "source": "/favicon.svg",
+      "source": "/icon.png",
       "headers": [
         {
           "key": "Content-Type",
-          "value": "image/svg+xml"
+          "value": "image/png"
         },
         {
           "key": "Cache-Control",

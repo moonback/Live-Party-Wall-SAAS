@@ -11,7 +11,7 @@ Sitemap: https://www.live.partywall.fr/sitemap.xml
 Disallow: /models/
 
 # Autoriser les ressources publiques
-Allow: /favicon.svg
+Allow: /icon.png
 Allow: /banner.jpg
 Allow: /manifest.json
 

@@ -12,7 +12,7 @@ const CRITICAL_RESOURCES = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.svg',
+  '/icon.png',
 ];
 
 // Stratégie de cache : Cache First pour les images, Network First pour le reste
