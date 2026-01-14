@@ -292,18 +292,20 @@ Votre mur social interactif
               </button>
             )}
 
-            {/* Filters Button */}
-            <button
-              onClick={onFiltersClick}
-              className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-4 md:py-2.5 md:rounded-2xl border transition-all flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation ${
-                isFiltersModalOpen
-                  ? 'bg-pink-500/20 border-pink-500/50 text-pink-400'
-                  : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
-              }`}
-            >
-              <Filter className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-              <span className="hidden lg:inline font-semibold text-sm">Filtres</span>
-            </button>
+            {/* Filters Button (Desktop only - Mobile uses Sidebar Toggle) */}
+            {!isMobile && (
+              <button
+                onClick={onFiltersClick}
+                className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-4 md:py-2.5 md:rounded-2xl border transition-all flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation ${
+                  isFiltersModalOpen
+                    ? 'bg-pink-500/20 border-pink-500/50 text-pink-400'
+                    : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                <Filter className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                <span className="hidden lg:inline font-semibold text-sm">Filtres</span>
+              </button>
+            )}
 
             {/* Upload Button */}
             <motion.button

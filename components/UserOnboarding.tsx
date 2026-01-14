@@ -31,6 +31,7 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [flash, setFlash] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [backgroundDesktopUrl, setBackgroundDesktopUrl] = useState<string | null>(defaultSettings.background_desktop_url);
   const [backgroundMobileUrl, setBackgroundMobileUrl] = useState<string | null>(defaultSettings.background_mobile_url);
   
@@ -236,7 +237,14 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
-      onComplete(userName, avatarPhoto);
+      
+      // Afficher le message de succès
+      setShowSuccess(true);
+      
+      // Rediriger après 2 secondes
+      setTimeout(() => {
+        onComplete(userName, avatarPhoto);
+      }, 2000);
     } catch (error) {
       console.error(error);
       const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'enregistrement";
@@ -323,7 +331,7 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
           
           {/* STEP 1: USERNAME */}
           <AnimatePresence mode="wait">
-            {step === 1 && (
+            {step === 1 && !showSuccess && (
               <motion.div
                 key="step1"
                 initial={{ opacity: 0, x: -20 }}
@@ -435,7 +443,7 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
 
           {/* STEP 2: AVATAR */}
           <AnimatePresence mode="wait">
-            {step === 2 && (
+            {step === 2 && !showSuccess && (
               <motion.div
                 key="step2"
                 initial={{ opacity: 0, x: 20 }}
@@ -594,6 +602,66 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
                     </>
                   )}
                 </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* STEP 3: SUCCESS MESSAGE */}
+          <AnimatePresence mode="wait">
+            {showSuccess && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4 }}
+                className="relative z-10"
+              >
+                <div className="text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 200, 
+                      damping: 15,
+                      delay: 0.1 
+                    }}
+                    className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-tr from-green-500 to-emerald-600 rounded-full mx-auto mb-4 sm:mb-6 flex items-center justify-center shadow-lg shadow-green-500/30"
+                  >
+                    <Check className="w-10 h-10 sm:w-12 sm:h-12 text-white relative z-10" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-tr from-green-500 to-emerald-600 rounded-full blur-md opacity-50"
+                      animate={{ opacity: [0.5, 0.8, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  </motion.div>
+                  
+                  <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-2xl sm:text-3xl font-black text-white mb-2"
+                  >
+                    Inscription validée ! 🎉
+                  </motion.h1>
+                  
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-sm sm:text-base text-slate-300 mb-6"
+                  >
+                    Redirection en cours...
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2, ease: "linear" }}
+                    className="h-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
+                  />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
