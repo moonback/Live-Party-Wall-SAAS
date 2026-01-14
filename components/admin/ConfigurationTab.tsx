@@ -447,81 +447,113 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                 </div>
 
                 {/* Contexte */}
-                <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
-                  <label className="block text-xs font-medium text-slate-200 mb-1.5 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                    Contexte de la soirée
-                  </label>
-                  <div className="flex flex-col gap-2.5">
-                    <textarea
-                      name="event_context"
-                      value={localConfig.event_context || ''}
-                      onChange={handleConfigChange}
-                      rows={3}
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all resize-none"
-                      placeholder="Ex: Anniversaire 30 ans de Marie, Mariage de Sophie et Thomas, Soirée entreprise..."
-                    />
-                    <div className="flex flex-wrap gap-2 items-center">
-                      <button
-                        type="button"
-                        onClick={handleGenerateContextSuggestion}
-                        disabled={isGeneratingContextSuggestion || allPhotos.length === 0}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed rounded-lg transition-colors text-xs text-white font-medium"
-                      >
-                        {isGeneratingContextSuggestion ? (
-                          <>
-                            <RefreshCw className="w-3 h-3 animate-spin" />
-                            <span>Analyse en cours...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-3 h-3" />
-                            <span>
-                              {localConfig.event_context
-                                ? "Améliorer avec IA"
-                                : "Suggestion IA"}
-                            </span>
-                          </>
+                {(() => {
+                  const featureEnabled = isFeatureEnabled('caption_generation_enabled');
+                  const isDisabled = !featureEnabled;
+                  return (
+                    <div className={`bg-slate-900/50 rounded-lg p-3 border transition-colors ${
+                      isDisabled 
+                        ? 'border-amber-500/30 opacity-50 cursor-not-allowed' 
+                        : 'border-slate-800 hover:border-indigo-500/30'
+                    }`}>
+                      <label className={`block text-xs font-medium mb-1.5 flex items-center gap-1.5 ${isDisabled ? 'text-slate-400 cursor-not-allowed' : 'text-slate-200'}`}>
+                        <Sparkles className={`w-3.5 h-3.5 ${isDisabled ? 'text-amber-400' : 'text-indigo-400'}`} />
+                        Contexte de la soirée
+                        {isDisabled && (
+                          <Lock className="w-3 h-3 text-amber-400" />
                         )}
-                      </button>
-                      {contextSuggestion && (
-                        <>
+                      </label>
+                      <div className="flex flex-col gap-2.5">
+                        <textarea
+                          name="event_context"
+                          value={localConfig.event_context || ''}
+                          onChange={handleConfigChange}
+                          rows={3}
+                          disabled={isDisabled}
+                          className={`w-full bg-slate-900/50 border rounded-lg px-3 py-2 text-sm placeholder:text-slate-500 outline-none transition-all resize-none ${
+                            isDisabled 
+                              ? 'border-slate-700 text-slate-500 cursor-not-allowed opacity-50' 
+                              : 'border-slate-800 text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20'
+                          }`}
+                          placeholder="Ex: Anniversaire 30 ans de Marie, Mariage de Sophie et Thomas, Soirée entreprise..."
+                          title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
+                        />
+                        <div className="flex flex-wrap gap-2 items-center">
                           <button
                             type="button"
-                            onClick={handleAcceptContextSuggestion}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors text-xs text-white font-medium"
+                            onClick={handleGenerateContextSuggestion}
+                            disabled={isDisabled || isGeneratingContextSuggestion || allPhotos.length === 0}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors text-xs text-white font-medium ${
+                              isDisabled 
+                                ? 'bg-slate-800 cursor-not-allowed opacity-50' 
+                                : 'bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed'
+                            }`}
+                            title={isDisabled ? 'Passer à Pro pour activer cette fonctionnalité' : ''}
                           >
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Accepter</span>
+                            {isGeneratingContextSuggestion ? (
+                              <>
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                <span>Analyse en cours...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3" />
+                                <span>
+                                  {localConfig.event_context
+                                    ? "Améliorer avec IA"
+                                    : "Suggestion IA"}
+                                </span>
+                              </>
+                            )}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setContextSuggestion(null)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors text-xs text-slate-300"
-                          >
-                            <X className="w-3 h-3" />
-                            <span>Ignorer</span>
-                          </button>
-                        </>
-                      )}
-                    </div>
-                    {contextSuggestion && (
-                      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2.5">
-                        <div className="flex items-start gap-2">
-                          <Sparkles className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-indigo-300 mb-0.5">Suggestion IA :</p>
-                            <p className="text-xs text-slate-100">{contextSuggestion}</p>
-                          </div>
+                          {contextSuggestion && !isDisabled && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={handleAcceptContextSuggestion}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 rounded-lg transition-colors text-xs text-white font-medium"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>Accepter</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setContextSuggestion(null)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors text-xs text-slate-300"
+                              >
+                                <X className="w-3 h-3" />
+                                <span>Ignorer</span>
+                              </button>
+                            </>
+                          )}
                         </div>
+                        {contextSuggestion && !isDisabled && (
+                          <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2.5">
+                            <div className="flex items-start gap-2">
+                              <Sparkles className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-xs font-medium text-indigo-300 mb-0.5">Suggestion IA :</p>
+                                <p className="text-xs text-slate-100">{contextSuggestion}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1.5 flex items-center gap-1">
-                    <Info className="w-3 h-3 text-slate-500" />
-                    Sert à générer des légendes personnalisées et festives adaptées à votre événement.
-                  </p>
-                </div>
+                      {isDisabled && (
+                        <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                          <p className="text-xs text-amber-300 flex items-center gap-1.5">
+                            <Lock className="w-3 h-3" />
+                            Passer à Pro pour activer cette fonctionnalité
+                          </p>
+                        </div>
+                      )}
+                      <p className={`text-xs mt-1.5 flex items-center gap-1 ${isDisabled ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <Info className="w-3 h-3 text-slate-500" />
+                        Sert à générer des légendes personnalisées et festives adaptées à votre événement.
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {/* Cadre décoratif PNG */}
                 <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
