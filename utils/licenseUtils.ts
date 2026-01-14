@@ -18,7 +18,7 @@ export const PREMIUM_FEATURES = [
  * Limites du nombre d'événements selon le type de licence
  */
 export const MAX_EVENTS_PART = 1;
-export const MAX_EVENTS_PROS = 50;
+export const MAX_EVENTS_PROS = 20;
 
 export type PremiumFeature = typeof PREMIUM_FEATURES[number];
 

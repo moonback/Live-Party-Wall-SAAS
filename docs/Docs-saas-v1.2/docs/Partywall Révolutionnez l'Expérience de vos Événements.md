@@ -73,7 +73,7 @@ Partywall reconnaît que chaque événement a des besoins et une échelle qui lu
 
 Caractéristique	Licence PART (Particulier)	Licence PROS (Professionnel)
 Prix	59€ / 2 jours	149€ / 30 jours
-Limite d'Événements	1 événement	Jusqu'à 50 événements
+Limite d'Événements	1 événement	Jusqu'à 20 événements
 Intelligence Artificielle	Fonctionnalités premium désactivées	Accès complet (modération, légendes, traduction...)
 Fonctionnalité "Retrouve-moi"	🚫 Désactivé	✅ Activé
 Capture Vidéo	🚫 Désactivé	✅ Activé
@@ -82,7 +82,7 @@ Dashboard	Fonctionnalités de base	Dashboard avancé avec statistiques
 Support	Standard	Prioritaire
 Public Cible	Usage ponctuel	Usage professionnel et récurrent
 
-La licence PART est parfaite pour un usage ponctuel, offrant toutes les fonctionnalités essentielles pour créer une animation photo interactive mémorable. La licence PROS, quant à elle, est un investissement stratégique, transformant un coût d'animation ponctuel en une capacité de production de contenu et d'engagement réutilisable sur jusqu'à 50 événements. Son accès illimité aux fonctionnalités d'IA, ses outils de création vidéo avancés et son support prioritaire en font la solution définitive pour les organisateurs professionnels visant un retour sur investissement maximal.
+La licence PART est parfaite pour un usage ponctuel, offrant toutes les fonctionnalités essentielles pour créer une animation photo interactive mémorable. La licence PROS, quant à elle, est un investissement stratégique, transformant un coût d'animation ponctuel en une capacité de production de contenu et d'engagement réutilisable sur jusqu'à 20 événements. Son accès illimité aux fonctionnalités d'IA, ses outils de création vidéo avancés et son support prioritaire en font la solution définitive pour les organisateurs professionnels visant un retour sur investissement maximal.
 
 Conclusion : L'Événement Réinventé
 

@@ -592,12 +592,12 @@ Le système distingue deux types de licences selon les **4 derniers caractères*
   - 🚫 Amélioration IA (sélection intelligente, transitions intelligentes, durées intelligentes) - masquée avec message "Fonctionnalité Pro"
 - **Interface** : 
   - Les fonctionnalités premium sont masquées dans le contrôle mobile et grisées dans l'admin avec message "Passer à Pro"
-  - Si limite d'événements atteinte : bouton de création désactivé avec message "Passer à Pro pour créer jusqu'à 50 événements"
+  - Si limite d'événements atteinte : bouton de création désactivé avec message "Passer à Pro pour créer jusqu'à 20 événements"
 
 ##### ⭐ Licence PROS (Professionnel)
 - **Suffixe** : Les 4 derniers caractères se terminent par `PROS`
 - **Fonctionnalités** : Accès complet à toutes les fonctionnalités
-- **Limite d'événements** : **50 événements maximum**
+- **Limite d'événements** : **20 événements maximum**
 - **Toutes les fonctionnalités activées** :
   - ✅ Génération de légendes IA
   - ✅ Génération de tags IA
@@ -606,7 +606,7 @@ Le système distingue deux types de licences selon les **4 derniers caractères*
   - ✅ Aftermovies dans la galerie
 
 #### Limitation du nombre d'événements
-- 📊 **Compteur visible** - Affichage du nombre d'événements utilisés / limite dans l'interface (ex: "1 / 1" pour PART, "5 / 50" pour PROS)
+- 📊 **Compteur visible** - Affichage du nombre d'événements utilisés / limite dans l'interface (ex: "1 / 1" pour PART, "5 / 20" pour PROS)
 - 🚫 **Blocage automatique** - Impossible de créer un nouvel événement si la limite est atteinte
 - 💡 **Message d'upgrade** - Pour les licences PART ayant atteint la limite, affichage d'un message proéminent "Passer à Pro" avec avantages
 - 🔄 **Mise à jour en temps réel** - Le compteur se met à jour automatiquement après création ou suppression d'événement

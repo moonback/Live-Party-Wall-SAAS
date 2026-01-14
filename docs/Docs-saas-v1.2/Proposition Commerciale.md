@@ -88,7 +88,7 @@ Nous savons que chaque événement est unique. C'est pourquoi Partywall propose 
 Tableau Comparatif des Licences
 
 Fonctionnalité	Licence PART (Particulier)	Licence PROS (Professionnel)
-Limite d'Événements	1 événement maximum	50 événements maximum
+Limite d'Événements	1 événement maximum	20 événements maximum
 Génération de Légendes IA	🚫 Désactivée	✅ Activée
 Reconnaissance Faciale "Retrouve-moi"	🚫 Désactivée	✅ Activée
 Capture Vidéo	🚫 Désactivée	✅ Activée
@@ -98,7 +98,7 @@ Amélioration Aftermovie par IA	🚫 Désactivée	✅ Activée (sélection, tran
 
 La Valeur Ajoutée de la Licence PROS
 
-La licence PROS est la solution tout-en-un pour les professionnels. Elle débloque la pleine puissance de notre intelligence artificielle, offre l'accès à des formats vidéo professionnels comme le mode "Story" pour les réseaux sociaux, et permet de gérer jusqu'à 50 événements. C'est un investissement stratégique dans la professionnalisation de vos services, la satisfaction de vos clients et votre efficacité opérationnelle, transformant votre offre d'animation en un véritable différenciateur sur le marché.
+La licence PROS est la solution tout-en-un pour les professionnels. Elle débloque la pleine puissance de notre intelligence artificielle, offre l'accès à des formats vidéo professionnels comme le mode "Story" pour les réseaux sociaux, et permet de gérer jusqu'à 20 événements. C'est un investissement stratégique dans la professionnalisation de vos services, la satisfaction de vos clients et votre efficacité opérationnelle, transformant votre offre d'animation en un véritable différenciateur sur le marché.
 
 Notre engagement envers l'innovation et la sécurité est au cœur de ces deux offres.
 

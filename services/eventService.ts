@@ -61,7 +61,7 @@ export const createEvent = async (
     if (currentEventsCount >= maxEvents) {
       const limitInfo = getEventLimitInfo(licenseKey);
       if (limitInfo.type === 'PART') {
-        throw new Error("Limite d'événements atteinte. Vous avez atteint la limite de 1 événement avec votre licence PART. Passez à Pro pour créer jusqu'à 50 événements.");
+        throw new Error("Limite d'événements atteinte. Vous avez atteint la limite de 1 événement avec votre licence PART. Passez à Pro pour créer jusqu'à 20 événements.");
       } else {
         throw new Error(`Limite d'événements atteinte. Vous avez atteint la limite de ${maxEvents} événements.`);
       }

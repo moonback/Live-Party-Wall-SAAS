@@ -123,7 +123,7 @@ Le modèle économique de Partywall s'articule autour d'un système de licences 
 
 Caractéristique	Licence PART (Particulier)	Licence PROS (Professionnel)
 Suffixe de la clé	Se termine par PART	Se termine par PROS
-Limite d'événements	1 événement maximum	50 événements maximum
+Limite d'événements	1 événement maximum	20 événements maximum
 Accès aux fonctionnalités IA	🚫 Désactivé	✅ Activé (modération, légendes, traduction, tags)
 Accès à "Retrouve-moi"	🚫 Désactivé	✅ Activé
 Capture vidéo	🚫 Désactivé	✅ Activé

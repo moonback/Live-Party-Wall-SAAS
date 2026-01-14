@@ -358,7 +358,7 @@ const LicenseTab: React.FC = () => {
                 <div>
                   <p className="text-white font-semibold text-sm mb-1">Avantages supplémentaires</p>
                   <ul className="text-xs text-amber-200/80 space-y-1 list-disc list-inside">
-                    <li>Jusqu'à 50 événements (au lieu de 1)</li>
+                    <li>Jusqu'à 20 événements (au lieu de 1)</li>
                     <li>Support prioritaire</li>
                     <li>Mises à jour en avant-première</li>
                   </ul>

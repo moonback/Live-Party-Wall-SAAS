@@ -321,7 +321,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                 ? 'bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed opacity-60'
                 : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35'
             }`}
-            title={isLimitReached ? (isPartLicense ? 'Limite atteinte. Passez à Pro pour créer jusqu\'à 50 événements.' : 'Limite d\'événements atteinte.') : ''}
+            title={isLimitReached ? (isPartLicense ? 'Limite atteinte. Passez à Pro pour créer jusqu\'à 20 événements.' : 'Limite d\'événements atteinte.') : ''}
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nouvel événement</span>
@@ -397,7 +397,7 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                               Passer à Pro
                             </motion.button>
                             <p className="text-xs text-amber-200/60">
-                              Créez jusqu'à 50 événements avec la licence PROS
+                              Créez jusqu'à 20 événements avec la licence PROS
                             </p>
                           </div>
                         )}
