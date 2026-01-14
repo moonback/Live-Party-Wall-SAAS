@@ -461,7 +461,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
         setUploadProgress(100);
         setLoadingStep('Photo envoyée ! 🎉');
-        addToast("Photo envoyée avec succès ! 🎉", 'success');
+        // addToast("Photo envoyée avec succès ! 🎉", 'success');
       }
 
       // Afficher la confirmation visuelle
