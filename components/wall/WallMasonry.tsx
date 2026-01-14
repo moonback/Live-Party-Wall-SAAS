@@ -43,8 +43,8 @@ const VirtualColumn = React.memo(({
     const MIN_PHOTOS_TOTAL = 100;
     const photosPerColumn = Math.ceil(MIN_PHOTOS_TOTAL / numColumns);
     
-    // Estimation moyenne de la hauteur (400px par défaut)
-    const avgHeight = 400;
+    // Estimation moyenne de la hauteur (200px par défaut, réduit de moitié)
+    const avgHeight = 200;
     const visiblePhotosInViewport = Math.ceil(viewportHeight / avgHeight);
     
     const overscanNeeded = Math.max(
@@ -60,12 +60,12 @@ const VirtualColumn = React.memo(({
     getScrollElement: () => scrollContainerRef.current,
     estimateSize: (index) => {
       const item = data[index];
-      if (item?.type === 'battle') return 420; // Hauteur améliorée pour le nouveau design
+      if (item?.type === 'battle') return 210; // Hauteur réduite de moitié
       
-      // Estimation améliorée basée sur l'orientation
+      // Estimation améliorée basée sur l'orientation (réduite de moitié)
       if (item?.type === 'photo') {
         const orientation = item.photo.orientation || 'unknown';
-        const baseHeight = 400;
+        const baseHeight = 200; // Réduit de 400 à 200
         
         switch (orientation) {
           case 'portrait':
@@ -79,14 +79,14 @@ const VirtualColumn = React.memo(({
         }
       }
       
-      return 400;
+      return 200; // Réduit de 400 à 200
     },
     overscan: overscan,
     scrollMargin: 0,
     measureElement: (el) => {
-      if (!el) return 400;
+      if (!el) return 200;
       const height = el.getBoundingClientRect().height;
-      return height > 0 ? height : 400;
+      return height > 0 ? height : 200;
     },
   });
 

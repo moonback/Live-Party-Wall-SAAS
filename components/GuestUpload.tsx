@@ -32,6 +32,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>('');
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [authorName, setAuthorName] = useState(() => {
     return localStorage.getItem('party_user_name') || '';
@@ -385,27 +386,26 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     }
 
     setLoading(true);
-    // Afficher le message d'analyse IA seulement si la génération de légende est activée
-    if (eventSettings.caption_generation_enabled) {
-      setLoadingStep('Analyse IA... 🤖');
-    } else {
-      setLoadingStep('Traitement de la photo... 📸');
-    }
+    setUploadProgress(0);
     
     try {
       let newPhoto: Photo;
 
       if (mediaType === 'video' && recordedBlob) {
         setLoadingStep('Validation de la vidéo... 🎬');
+        setUploadProgress(10);
         
         const durationValidation = validateVideoDuration(videoDuration);
         if (!durationValidation.valid) {
           addToast(durationValidation.error || 'Durée invalide', 'error');
           setLoading(false);
+          setUploadProgress(0);
           return;
         }
 
         setLoadingStep('Envoi au mur... 🚀');
+        setUploadProgress(30);
+        
         newPhoto = await submitVideo({
           videoBlob: recordedBlob,
           authorName,
@@ -415,14 +415,39 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           eventSettings
         });
 
+        setUploadProgress(100);
+        setLoadingStep('Photo envoyée ! 🎉');
         addToast("Vidéo envoyée avec succès ! 🎉", 'success');
       } else {
-        // Ne pas afficher le message de génération de légende si désactivé
+        // Traitement de la photo
+        setLoadingStep('Préparation de la photo... 📸');
+        setUploadProgress(10);
+        
+        // Simuler progression pendant traitement
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setUploadProgress(20);
+        
         if (eventSettings.caption_generation_enabled) {
           setLoadingStep('Analyse IA et génération de légende... 🤖');
+          setUploadProgress(30);
         } else {
           setLoadingStep('Traitement de la photo... 📸');
+          setUploadProgress(40);
         }
+        
+        // Simuler progression pendant analyse
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setUploadProgress(50);
+        
+        setLoadingStep('Optimisation de la qualité... ✨');
+        setUploadProgress(60);
+        
+        // Simuler progression pendant optimisation
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setUploadProgress(70);
+        
+        setLoadingStep('Envoi au mur... 🚀');
+        setUploadProgress(80);
         
         newPhoto = await submitPhoto({
           imageDataUrl: preview,
@@ -434,6 +459,8 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
           activeFrame
         });
 
+        setUploadProgress(100);
+        setLoadingStep('Photo envoyée ! 🎉');
         addToast("Photo envoyée avec succès ! 🎉", 'success');
       }
 
@@ -449,6 +476,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'envoi";
       addToast(errorMessage, 'error');
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -533,6 +561,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             onSubmit={handleSubmit}
             loading={loading}
             loadingStep={loadingStep}
+            uploadProgress={uploadProgress}
             showFilters={showFilters}
             showFrames={showFrames}
             activeFilter={activeFilter}

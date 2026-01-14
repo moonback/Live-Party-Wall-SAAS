@@ -69,15 +69,15 @@ const PhotoCardComponent = ({
       <div className="absolute inset-0 border-2 border-white pointer-events-none"></div>
 
       {/* Media Container */}
-      <div className={`relative overflow-hidden bg-slate-800 rounded-none ${
+      <div className={`relative overflow-hidden bg-slate-800 rounded-none mx-auto ${
         isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
-          ? 'min-h-[250px]' 
+          ? 'min-h-[125px]' 
           : 'aspect-auto'
-      }`}>
+      }`} style={{ width: '50%' }}>
         {photo.type === 'video' ? (
           <video
             src={photo.url}
-            className="w-full h-auto object-contain max-h-[40vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className="w-full h-auto object-contain max-h-[20vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
             preload="metadata"
           />
         ) : (

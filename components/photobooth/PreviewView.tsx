@@ -16,6 +16,7 @@ interface PreviewViewProps {
   onSubmit: () => void;
   loading: boolean;
   loadingStep: string;
+  uploadProgress?: number;
   showFilters: boolean;
   showFrames: boolean;
   activeFilter: FilterType;
@@ -40,6 +41,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   onSubmit,
   loading,
   loadingStep,
+  uploadProgress = 0,
   showFilters,
   showFrames,
   activeFilter,
@@ -110,6 +112,31 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
 
       {/* Media Preview - Amélioré avec animations */}
       <div className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-black to-slate-900">
+        {/* Progress Bar Overlay */}
+        {loading && (
+          <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 animate-fade-in">
+            <div className="w-full max-w-[300px] sm:max-w-[400px] px-4">
+              <div className="w-full bg-white/10 rounded-full h-3 sm:h-4 overflow-hidden backdrop-blur-sm border-2 border-white/20 shadow-2xl">
+                <div 
+                  className="h-full bg-gradient-to-r from-pink-500 via-pink-400 to-pink-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                  style={{ width: `${uploadProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced" />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm sm:text-base font-bold text-white drop-shadow-lg">{loadingStep}</span>
+              </div>
+              <span className="text-xs sm:text-sm text-white/70 font-medium">{uploadProgress}%</span>
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4 landscape:p-1 landscape:sm:p-2">
           {mediaType === 'video' && preview ? (
             <div className="relative w-full h-full max-h-[85vh] landscape:max-h-[90vh] rounded-2xl sm:rounded-3xl landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10">
@@ -282,12 +309,22 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
           {/* Glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-pink-400/0 via-pink-200/20 to-pink-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none" />
           {loading ? (
-            <div className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-              <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 landscape:h-3 landscape:w-3 text-white" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span className="animate-pulse text-[10px] sm:text-xs landscape:text-[9px] font-semibold">{loadingStep}</span>
+            <div className="relative z-10 flex flex-col items-center gap-2 w-full">
+              <div className="w-full max-w-[200px] sm:max-w-[250px] bg-white/10 rounded-full h-2 sm:h-2.5 overflow-hidden backdrop-blur-sm border border-white/20">
+                <div 
+                  className="h-full bg-gradient-to-r from-pink-500 via-pink-400 to-pink-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+                  style={{ width: `${uploadProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 animate-shimmer-enhanced" />
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4 landscape:h-3 landscape:w-3 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="animate-pulse text-[10px] sm:text-xs landscape:text-[9px] font-semibold">{loadingStep}</span>
+              </div>
             </div>
           ) : (
             <span className="relative z-10 flex items-center justify-center gap-1 sm:gap-1.5 landscape:gap-1 font-semibold text-[10px] sm:text-xs landscape:text-[9px] landscape:sm:text-[10px]">
