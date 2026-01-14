@@ -69,11 +69,11 @@ const PhotoCardComponent = ({
       <div className="absolute inset-0 border-2 border-white pointer-events-none"></div>
 
       {/* Media Container */}
-      <div className={`relative overflow-hidden bg-slate-800 rounded-none mx-auto ${
+      <div className={`relative overflow-hidden bg-slate-800 rounded-none w-full ${
         isMobile && photo.type === 'photo' && imageOrientation === 'portrait' 
           ? 'min-h-[125px]' 
           : 'aspect-auto'
-      }`} style={{ width: '50%' }}>
+      }`}>
         {photo.type === 'video' ? (
           <video
             src={photo.url}

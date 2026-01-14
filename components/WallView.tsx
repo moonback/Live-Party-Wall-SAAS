@@ -488,7 +488,7 @@ const WallView: React.FC<WallViewProps> = ({ photos: initialPhotos, onBack }) =>
       {/* Main Content */}
       <div 
         ref={scrollRef}
-        className={`flex-1 overflow-y-auto p-2 md:p-4 pb-24 z-20 relative scrollbar-hide smooth-scroll ${
+        className={`flex-1 overflow-y-auto py-2 md:py-4 pb-24 z-20 relative scrollbar-hide smooth-scroll ${
           showControls && !isKiosqueMode ? 'pt-32 md:pt-40' : 'pt-4 md:pt-6'
         }`}
         onMouseEnter={() => setIsPaused(true)}
