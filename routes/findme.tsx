@@ -1,12 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
 import React from 'react';
 import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
 import { useSettings } from '../context/SettingsContext';
-import { requireUserRegistrationAndFeature } from '../utils/routeGuards';
-import { getSettings } from '../services/settingsService';
+import { requireUserRegistration } from '../utils/routeGuards';
 
 const FindMe = lazy(() => import('../components/FindMe'));
 
