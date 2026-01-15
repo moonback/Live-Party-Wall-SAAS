@@ -1,5 +1,4 @@
 import { GoogleGenAI } from "@google/genai";
-import { buildPersonalizedCaptionPrompt } from '../constants';
 import { 
   detectGeminiErrorType, 
   logGeminiError, 
@@ -7,13 +6,9 @@ import {
 } from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
+import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-/**
- * Légende par défaut en cas d'erreur
- */
-const DEFAULT_CAPTION = "Party time! 🎉";
 
 // Cache en mémoire pour les légendes (évite les appels API pour images identiques)
 // Structure : Map<cacheKey, { caption: string, timestamp: number }>
@@ -72,7 +67,7 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
         component: 'geminiService',
         action: 'generateImageCaption'
       });
-      return DEFAULT_CAPTION;
+      return DEFAULTS.caption;
     }
 
     // Nettoyer le cache périodiquement
@@ -101,10 +96,10 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
 
     // Construire le prompt personnalisé selon le contexte de l'événement
-    const prompt = buildPersonalizedCaptionPrompt(eventContext);
+    const prompt = PROMPTS.caption.buildPersonalized(eventContext);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: MODELS.caption,
       contents: {
         parts: [
           {
@@ -126,7 +121,7 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
         component: 'geminiService',
         action: 'generateImageCaption'
       });
-      return DEFAULT_CAPTION;
+      return DEFAULTS.caption;
     }
     
     const trimmedCaption = caption.trim();
@@ -153,6 +148,6 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
     // Toujours retourner une légende par défaut pour éviter que l'application plante
     // L'utilisateur ne verra pas d'erreur, juste une légende générique
     // Ne pas mettre en cache les erreurs
-    return DEFAULT_CAPTION;
+    return DEFAULTS.caption;
   }
 };
