@@ -2,7 +2,10 @@ import { createRouter, RouterProvider as TanStackRouterProvider } from '@tanstac
 import { routeTree } from './routeTree.gen';
 
 // Créer le router avec toutes les routes
-const router = createRouter({ routeTree });
+const router = createRouter({ 
+  routeTree,
+  defaultPreload: 'intent',
+});
 
 // Déclarer les types pour TypeScript
 declare module '@tanstack/react-router' {
