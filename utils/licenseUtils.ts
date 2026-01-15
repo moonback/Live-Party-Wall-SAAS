@@ -25,7 +25,7 @@ export const MAX_EVENTS_DEMO = 1;
  * Limites du nombre de photos selon le type de licence
  */
 export const MAX_PHOTOS_DEMO = 100;
-export const MAX_PHOTOS_PART = 35;
+export const MAX_PHOTOS_PART = 400;
 
 export type PremiumFeature = typeof PREMIUM_FEATURES[number];
 
