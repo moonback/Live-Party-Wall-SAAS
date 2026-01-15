@@ -35,6 +35,45 @@ export const submitPhoto = async ({
   activeFilter,
   activeFrame
 }: SubmitPhotoParams): Promise<Photo> => {
+  // Vérifier la limite de photos pour les licences DEMO avant de traiter l'image
+  try {
+    const { getEventPhotosCount } = await import('./photoService');
+    const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
+    const { supabase } = await import('./supabaseClient');
+    const { getActiveLicense } = await import('./licenseService');
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    let licenseKey: string | null = null;
+    
+    if (session?.user) {
+      const activeLicense = await getActiveLicense(session.user.id);
+      licenseKey = activeLicense?.license_key || null;
+    } else {
+      const storedLicenseKey = localStorage.getItem('partywall_license_key');
+      if (storedLicenseKey) {
+        licenseKey = storedLicenseKey;
+      }
+    }
+    
+    const maxPhotos = getMaxPhotos(licenseKey);
+    
+    if (maxPhotos !== null && isDemoLicense(licenseKey)) {
+      const photosCount = await getEventPhotosCount(eventId);
+      if (photosCount >= maxPhotos) {
+        throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Limite de photos atteinte')) {
+      throw error;
+    }
+    // Logger l'erreur mais continuer si ce n'est pas une erreur de limite
+    logger.warn("Error checking DEMO license limit in submitPhoto", error, {
+      component: 'photoboothService',
+      action: 'submitPhoto'
+    });
+  }
+
   let imageForAnalysis = imageDataUrl;
   
   // Incruster le cadre décoratif si activé
@@ -144,6 +183,45 @@ export const submitVideo = async ({
   videoDuration,
   eventSettings
 }: SubmitVideoParams): Promise<Photo> => {
+  // Vérifier la limite de photos pour les licences DEMO avant de traiter la vidéo
+  try {
+    const { getEventPhotosCount } = await import('./photoService');
+    const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
+    const { supabase } = await import('./supabaseClient');
+    const { getActiveLicense } = await import('./licenseService');
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    let licenseKey: string | null = null;
+    
+    if (session?.user) {
+      const activeLicense = await getActiveLicense(session.user.id);
+      licenseKey = activeLicense?.license_key || null;
+    } else {
+      const storedLicenseKey = localStorage.getItem('partywall_license_key');
+      if (storedLicenseKey) {
+        licenseKey = storedLicenseKey;
+      }
+    }
+    
+    const maxPhotos = getMaxPhotos(licenseKey);
+    
+    if (maxPhotos !== null && isDemoLicense(licenseKey)) {
+      const photosCount = await getEventPhotosCount(eventId);
+      if (photosCount >= maxPhotos) {
+        throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Limite de photos atteinte')) {
+      throw error;
+    }
+    // Logger l'erreur mais continuer si ce n'est pas une erreur de limite
+    logger.warn("Error checking DEMO license limit in submitVideo", error, {
+      component: 'photoboothService',
+      action: 'submitVideo'
+    });
+  }
+
   let caption = '';
   if (eventSettings.caption_generation_enabled) {
     caption = 'Vidéo de la fête ! 🎉';

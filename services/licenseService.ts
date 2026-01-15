@@ -3,6 +3,7 @@ import { licenseSupabase, isLicenseSupabaseConfigured } from './licenseSupabaseC
 import { License, LicenseRow, LicenseValidity, LicenseUpdate, LicenseStatus } from '../types';
 import { logger } from '../utils/logger';
 import { isElectron } from '../utils/electronPaths';
+import { isDemoLicense } from '../utils/licenseUtils';
 
 /**
  * Vérifie la validité de la licence pour l'utilisateur actuel
@@ -205,6 +206,19 @@ export const createLicense = async (
   // Générer une clé de licence si non fournie
   const finalLicenseKey = licenseKey || generateLicenseKey();
 
+  // Si c'est une licence DEMO, calculer automatiquement l'expiration à 24h (ignorer expiresAt fourni)
+  let finalExpiresAt = expiresAt;
+  if (isDemoLicense(finalLicenseKey)) {
+    const now = new Date();
+    const expiresIn24h = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h calendaires
+    finalExpiresAt = expiresIn24h.toISOString();
+    logger.info("DEMO license detected, setting expiration to 24h from now", null, {
+      component: 'licenseService',
+      action: 'createLicense',
+      expiresAt: finalExpiresAt
+    });
+  }
+
   try {
     const { data, error } = await supabase
       .from('licenses')
@@ -213,7 +227,7 @@ export const createLicense = async (
           user_id: userId,
           license_key: finalLicenseKey,
           status: 'active',
-          expires_at: expiresAt,
+          expires_at: finalExpiresAt,
           activated_at: new Date().toISOString(),
           notes: notes || null
         }
@@ -576,15 +590,28 @@ export const verifyLicenseByKey = async (
       return null;
     }
 
+    // Si c'est une licence DEMO et qu'aucune expiration n'est définie, calculer automatiquement à 24h
+    let finalExpiresAt = data.expires_at;
+    if (isDemoLicense(data.license_key) && !data.expires_at) {
+      const now = new Date();
+      const expiresIn24h = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h calendaires
+      finalExpiresAt = expiresIn24h.toISOString();
+      logger.info("DEMO license detected without expiration, setting expiration to 24h from now", null, {
+        component: 'licenseService',
+        action: 'verifyLicenseByKey',
+        expiresAt: finalExpiresAt
+      });
+    }
+
     // Vérifier que la licence n'est pas expirée (si expires_at est défini)
-    if (data.expires_at) {
-      const expiresAt = new Date(data.expires_at);
+    if (finalExpiresAt) {
+      const expiresAt = new Date(finalExpiresAt);
       const now = new Date();
       if (expiresAt < now) {
         logger.warn("License has expired", null, { 
           component: 'licenseService', 
           action: 'verifyLicenseByKey',
-          expiresAt: data.expires_at,
+          expiresAt: finalExpiresAt,
           licenseKey: licenseKey.substring(0, 10) + '...'
         });
         return null;
@@ -604,7 +631,7 @@ export const verifyLicenseByKey = async (
       plan_type: data.plan_type,
       status: data.status,
       purchase_date: data.purchase_date,
-      expires_at: data.expires_at,
+      expires_at: finalExpiresAt,
       features: data.features || null,
       metadata: data.metadata || null,
       created_at: data.created_at,

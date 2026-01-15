@@ -301,6 +301,52 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 4. **Tester responsive** : Vérifier sur mobile et desktop
 5. **Tester les interactions** : Clics, hovers, transitions
 
+### Créer un Nouveau Hook
+1. **Créer le fichier** dans `/hooks/nomHook.ts`
+2. **Utiliser les conventions** : Préfixe `use` (ex: `useMyFeature`)
+3. **Typer les retours** : Définir le type de retour explicitement
+4. **Gérer les dépendances** : Utiliser `useEffect` avec dépendances correctes
+5. **Documenter avec JSDoc** : Expliquer l'usage et les paramètres
+6. **Exemple** :
+```typescript
+/**
+ * Hook personnalisé pour [description]
+ * @param param1 - Description du paramètre
+ * @returns Objet avec les valeurs retournées
+ */
+export const useMyFeature = (param1: string) => {
+  const [state, setState] = useState<StateType>(initialState);
+  
+  useEffect(() => {
+    // Logique du hook
+  }, [param1]);
+  
+  return { state, action: () => {} };
+};
+```
+
+### Utiliser un Worker
+1. **Créer le worker** dans `/workers/nomWorker.worker.ts`
+2. **Exporter les fonctions** : Fonctions qui seront appelées depuis le main thread
+3. **Utiliser dans le code** : Créer une instance du worker et communiquer via messages
+4. **Exemple** :
+```typescript
+// Dans le worker
+self.onmessage = (e) => {
+  const { imageData, options } = e.data;
+  // Traitement
+  self.postMessage({ result: processedImage });
+};
+
+// Dans le code principal
+const worker = new Worker(new URL('./workers/imageWorker.worker.ts', import.meta.url));
+worker.postMessage({ imageData, options });
+worker.onmessage = (e) => {
+  const { result } = e.data;
+  // Utiliser le résultat
+};
+```
+
 ---
 
 ## 📦 Dépendances à Favoriser
@@ -315,7 +361,7 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 - **Debounce** : Utiliser `useDebounce` hook pour limiter les appels API
 - **Logger** : Utiliser `logger` de `/utils/logger.ts` pour le logging structuré
 
-### Services Disponibles
+### Services Disponibles (29 services)
 - **photoService.ts** : CRUD photos, likes, réactions, upload
 - **eventService.ts** : Gestion événements, organisateurs
 - **guestService.ts** : Gestion invités, blocage
@@ -324,10 +370,54 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 - **battleService.ts** : Battles photos
 - **exportService.ts** : Export ZIP
 - **aftermovieService.ts** : Génération vidéos timelapse
+- **aftermovieShareService.ts** : Partage et upload aftermovies
+- **aftermovieAIService.ts** : Sélection IA pour aftermovies
 - **photoboothService.ts** : Upload photobooth avec traitement complet
 - **faceRecognitionService.ts** : Reconnaissance faciale
+- **faceStorageService.ts** : Stockage descripteurs faciaux
 - **frameService.ts** : Gestion cadres décoratifs
+- **localFramesService.ts** : Cadres locaux
+- **backgroundService.ts** : Gestion fonds d'écran
 - **gamificationService.ts** : Badges, classements
+- **rgpdService.ts** : Gestion RGPD (consentement, export, suppression)
+- **licenseService.ts** : Gestion licences
+- **licenseSupabaseClient.ts** : Client Supabase pour licences
+- **translationService.ts** : Traduction multilingue
+- **aiService.ts** : Service IA général
+- **aiModerationService.ts** : Modération IA spécialisée
+- **autoBattleService.ts** : Battles automatiques
+- **applauseDetectionService.ts** : Détection applaudissements
+- **socialShareService.ts** : Partage social
+- **eventContextService.ts** : Gestion contexte événement
+- **supabaseClient.ts** : Client Supabase principal
+
+### Hooks Personnalisés Disponibles
+- **useCamera.ts** : Gestion caméra (accès, contraintes, capture)
+- **useImageCompression.ts** : Compression d'images optimisée
+- **useDebounce.ts** : Debounce pour optimisations
+- **useIsMobile.ts** : Détection mobile/desktop
+- **useFaceRecognition.ts** : Reconnaissance faciale
+- **useImageOrientation.ts** : Détection orientation images
+- **useImageProcessing.ts** : Traitement d'images
+- **useInView.ts** : Détection visibilité (Intersection Observer)
+- **useLazyImage.ts** : Chargement lazy des images
+- **useOptimizedSubscription.ts** : Abonnements Realtime optimisés
+- **useReducedMotion.ts** : Détection préférence mouvement réduit
+- **useSwipe.ts** : Gestes swipe
+- **useVideoRecording.ts** : Enregistrement vidéo
+- **useLicenseFeatures.ts** : Vérification fonctionnalités licence
+- **useAdaptiveCameraResolution.ts** : Résolution caméra adaptative
+- **useCameraZoom.ts** : Zoom caméra
+- **hooks/wall/** : Hooks spécifiques au mur
+- **hooks/queries/** : Hooks React Query (usePhotosQuery, usePhotosRealtime)
+
+### Workers Disponibles
+- **faceRecognition.worker.ts** : Reconnaissance faciale (face-api.js)
+- **imageCompression.worker.ts** : Compression d'images
+- **imageEnhancement.worker.ts** : Amélioration qualité
+- **imageFilters.worker.ts** : Application de filtres
+- **imageOverlay.worker.ts** : Ajout de cadres décoratifs
+- **aftermovieWorker.worker.ts** : Génération aftermovies
 
 ### Bibliothèques à Éviter
 - ❌ **État global lourd** : Redux/Zustand (pas nécessaire actuellement)
@@ -368,6 +458,59 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 
 ---
 
+## 🔄 Workflows Spécifiques
+
+### Ajouter une Fonctionnalité Multi-Tenant
+1. **Vérifier `event_id`** : Toutes les tables doivent avoir `event_id`
+2. **Filtrer par événement** : Toutes les requêtes doivent filtrer par `event_id`
+3. **RLS par événement** : Les politiques RLS doivent vérifier l'appartenance à l'événement
+4. **EventContext** : Utiliser `useEvent()` pour obtenir l'événement actif
+5. **Exemple** :
+```typescript
+const { currentEvent } = useEvent();
+const photos = await getPhotos(currentEvent.id);
+```
+
+### Intégrer une Fonctionnalité IA
+1. **Utiliser geminiService** : Pour modération, légendes, tags
+2. **Gérer les erreurs** : Toujours avoir un fallback si l'IA échoue
+3. **Respecter les limites** : Ne pas surcharger l'API Gemini
+4. **Exemple** :
+```typescript
+try {
+  const caption = await generateImageCaption(base64Image, eventContext);
+  return caption;
+} catch (error) {
+  logger.error('IA caption failed', error);
+  return 'Moment magique ! ✨'; // Fallback
+}
+```
+
+### Ajouter une Fonctionnalité Realtime
+1. **Activer Realtime** : Dans Supabase Dashboard > Database > Replication
+2. **Utiliser usePhotosRealtime** : Hook pour subscriptions automatiques
+3. **Gérer les subscriptions** : Nettoyer les subscriptions au démontage
+4. **Exemple** :
+```typescript
+useEffect(() => {
+  const subscription = supabase
+    .channel('photos')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'photos',
+      filter: `event_id=eq.${eventId}`
+    }, (payload) => {
+      addPhoto(payload.new as Photo);
+    })
+    .subscribe();
+  
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [eventId]);
+```
+
 ## 📖 Ressources
 
 - **Documentation Supabase** : https://supabase.com/docs
@@ -375,6 +518,18 @@ export const validateImageFile = (file: File): { valid: boolean; error?: string 
 - **Documentation Gemini** : https://ai.google.dev/docs
 - **Documentation Vite** : https://vitejs.dev
 - **Documentation Tailwind** : https://tailwindcss.com/docs
+- **Documentation Electron** : https://www.electronjs.org/docs
+- **Documentation TypeScript** : https://www.typescriptlang.org/docs
+
+## 📚 Documentation du Projet
+
+Consulter les documents suivants pour plus de détails :
+- **[README.md](./README.md)** : Documentation principale
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** : Architecture détaillée
+- **[API_DOCS.md](./API_DOCS.md)** : Documentation complète des services
+- **[DB_SCHEMA.md](./DB_SCHEMA.md)** : Schéma de base de données
+- **[ROADMAP.md](./ROADMAP.md)** : Feuille de route
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** : Guide de contribution
 
 ---
 

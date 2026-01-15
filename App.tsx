@@ -8,6 +8,7 @@ import { usePhotosRealtime } from './hooks/queries/usePhotosRealtime';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LicenseProvider, useLicense } from './context/LicenseContext';
+import { useDemoLimit } from './hooks/useDemoLimit';
 import TransitionWrapper from './components/TransitionWrapper';
 import { getGuestByName } from './services/guestService';
 import { isElectron } from './utils/electronPaths';
@@ -50,6 +51,7 @@ const AppContent: React.FC = () => {
   const { addToast: addToastContext, toasts, removeToast } = useToast();
   const addToastRef = useRef(addToastContext);
   const { isValid: isLicenseValid, loading: licenseLoading } = useLicense();
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   
   // Mettre à jour la référence à chaque changement
   useEffect(() => {
@@ -154,10 +156,18 @@ const AppContent: React.FC = () => {
     return () => clearInterval(interval);
   }, [viewMode, addToast, currentEvent]);
 
-  // Fonction wrapper pour changer le viewMode avec vérification du profil
+  // Fonction wrapper pour changer le viewMode avec vérification du profil et de la limite démo
   const handleViewModeChange = (newMode: ViewMode) => {
     // Les modes qui nécessitent un profil utilisateur
     const modesRequiringProfile: ViewMode[] = ['guest', 'gallery', 'collage', 'findme'];
+    
+    // Vérifier la limite démo pour les modes d'upload
+    const uploadModes: ViewMode[] = ['guest', 'collage'];
+    if (uploadModes.includes(newMode) && isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      setViewMode('landing');
+      return;
+    }
     
     if (modesRequiringProfile.includes(newMode) && !isUserRegistered()) {
       // Rediriger vers onboarding si l'utilisateur n'a pas de profil
@@ -176,7 +186,10 @@ const AppContent: React.FC = () => {
     const isRegistered = isUserRegistered();
     
     if (modeParam === 'guest') {
-      if (!isRegistered) {
+      if (isLimitReached) {
+        setViewMode('landing');
+        addToastRef.current(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      } else if (!isRegistered) {
         setViewMode('onboarding');
       } else {
         setViewMode('guest');
@@ -220,7 +233,10 @@ const AppContent: React.FC = () => {
     } else if (modeParam === 'battle-results') {
       setViewMode('battle-results');
     } else if (modeParam === 'collage' && eventSettings.collage_mode_enabled) {
-      if (!isRegistered) {
+      if (isLimitReached) {
+        setViewMode('landing');
+        addToastRef.current(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      } else if (!isRegistered) {
         setViewMode('onboarding');
       } else {
         setViewMode('collage');
@@ -382,24 +398,62 @@ const AppContent: React.FC = () => {
 
           {viewMode === 'guest' && (
             <TransitionWrapper type="slide-right" duration={600}>
-              <GuestUpload 
-                onPhotoUploaded={(p) => {
-                  // Photo uploadée avec succès, pas de redirection automatique
-                }} 
-                onBack={() => setViewMode('landing')}
-                onCollageMode={() => setViewMode('collage')}
-              />
+              {isLimitReached ? (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                  <div className="text-center">
+                    <p className="text-red-400 text-lg font-bold mb-2">Limite de photos atteinte</p>
+                    <p className="text-white/80 mb-4">La licence DEMO permet un maximum de {maxPhotos} photos par événement.</p>
+                    <p className="text-white/60 text-sm mb-6">{photosCount}/{maxPhotos} photos</p>
+                    <button
+                      onClick={() => setViewMode('landing')}
+                      className="px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-500 hover:to-purple-500 transition-all"
+                    >
+                      Retour à l'accueil
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <GuestUpload 
+                  onPhotoUploaded={(p) => {
+                    // Photo uploadée avec succès, pas de redirection automatique
+                  }} 
+                  onBack={() => setViewMode('landing')}
+                  onCollageMode={() => {
+                    if (isLimitReached) {
+                      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+                    } else {
+                      setViewMode('collage');
+                    }
+                  }}
+                />
+              )}
             </TransitionWrapper>
           )}
 
           {viewMode === 'collage' && eventSettings.collage_mode_enabled && (
             <TransitionWrapper type="slide-right" duration={600}>
-              <CollageMode 
-                onCollageUploaded={(p) => {
-                  setViewMode(eventSettings.gallery_enabled !== false ? 'gallery' : 'landing');
-                }} 
-                onBack={() => setViewMode('guest')}
-              />
+              {isLimitReached ? (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                  <div className="text-center">
+                    <p className="text-red-400 text-lg font-bold mb-2">Limite de photos atteinte</p>
+                    <p className="text-white/80 mb-4">La licence DEMO permet un maximum de {maxPhotos} photos par événement.</p>
+                    <p className="text-white/60 text-sm mb-6">{photosCount}/{maxPhotos} photos</p>
+                    <button
+                      onClick={() => setViewMode('landing')}
+                      className="px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl font-semibold hover:from-pink-500 hover:to-purple-500 transition-all"
+                    >
+                      Retour à l'accueil
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <CollageMode 
+                  onCollageUploaded={(p) => {
+                    setViewMode(eventSettings.gallery_enabled !== false ? 'gallery' : 'landing');
+                  }} 
+                  onBack={() => setViewMode('guest')}
+                />
+              )}
             </TransitionWrapper>
           )}
 

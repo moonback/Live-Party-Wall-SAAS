@@ -21,55 +21,61 @@ Desktop: Electron 39.2
 
 ## 🎯 Architecture générale
 
+```mermaid
+graph TB
+    subgraph Client["Client (Browser/Electron)"]
+        ReactApp["React App<br/>(Components)"]
+        Services["Services<br/>(Business Logic)"]
+        Contexts["Contexts<br/>(Global State)"]
+        ReactApp --> Services
+        Services --> Contexts
+        Contexts --> SupabaseClient["Supabase Client<br/>(@supabase/js)"]
+    end
+    
+    subgraph Supabase["Supabase Backend"]
+        PostgreSQL["PostgreSQL<br/>(Database)"]
+        Storage["Storage<br/>(Files)"]
+        Realtime["Realtime<br/>(WebSockets)"]
+        RLS["Row Level Security<br/>(RLS Policies)"]
+        PostgreSQL --> RLS
+        Storage --> RLS
+        Realtime --> RLS
+    end
+    
+    subgraph Gemini["Google Gemini API"]
+        Moderation["Modération"]
+        Captions["Légendes"]
+        Tags["Tags"]
+        Enhancement["Amélioration"]
+    end
+    
+    SupabaseClient -->|HTTPS/WebSocket| Supabase
+    Services -->|API Calls| Gemini
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLIENT (Browser/Electron)              │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │   React App  │  │   Services   │  │   Contexts   │      │
-│  │  (Components)│  │   (Business  │  │  (Global     │      │
-│  │              │  │    Logic)    │  │   State)      │      │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
-│         │                 │                 │                │
-│         └─────────────────┴─────────────────┘                │
-│                          │                                    │
-│                          ▼                                    │
-│              ┌───────────────────────┐                       │
-│              │   Supabase Client     │                       │
-│              │   (@supabase/js)      │                       │
-│              └───────────┬───────────┘                       │
-└──────────────────────────┼───────────────────────────────────┘
-                           │
-                           │ HTTPS / WebSocket
-                           │
-┌──────────────────────────▼───────────────────────────────────┐
-│                    SUPABASE BACKEND                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │  PostgreSQL  │  │   Storage   │  │   Realtime   │       │
-│  │   (Database) │  │   (Files)   │  │ (WebSockets) │       │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
-│         │                 │                 │                 │
-│         └─────────────────┴─────────────────┘               │
-│                          │                                    │
-│                          ▼                                    │
-│              ┌───────────────────────┐                       │
-│              │   Row Level Security  │                       │
-│              │   (RLS Policies)     │                       │
-│              └───────────────────────┘                       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           │ API Calls
-                           │
-┌──────────────────────────▼───────────────────────────────────┐
-│              GOOGLE GEMINI API (IA)                           │
-│  - Modération de contenu                                       │
-│  - Génération de légendes                                      │
-│  - Tags sémantiques                                            │
-│  - Amélioration qualité                                        │
-└─────────────────────────────────────────────────────────────┘
+
+### Flux de données principal
+
+```mermaid
+sequenceDiagram
+    participant User as Utilisateur
+    participant Component as Composant React
+    participant Service as Service Layer
+    participant Supabase as Supabase
+    participant Gemini as Google Gemini
+    participant Realtime as Realtime
+    
+    User->>Component: Action (upload photo)
+    Component->>Service: addPhotoToWall()
+    Service->>Gemini: moderateContent()
+    Gemini-->>Service: safe: true
+    Service->>Gemini: generateImageCaption()
+    Gemini-->>Service: caption
+    Service->>Supabase: Upload Storage
+    Supabase-->>Service: URL
+    Service->>Supabase: Insert DB
+    Supabase->>Realtime: Broadcast INSERT
+    Realtime->>Component: Nouvelle photo
+    Component->>User: Photo affichée
 ```
 
 ---
@@ -292,49 +298,22 @@ const subscription = supabase
 
 ### Flux de modération et génération de légendes
 
+```mermaid
+flowchart TD
+    Start[Upload Photo] --> Compress[Compression Client-side]
+    Compress --> Moderate[Modération IA<br/>Google Gemini API]
+    Moderate -->|Contenu inapproprié| Reject[Rejet]
+    Moderate -->|Contenu OK| GenerateCaption[Génération Légende IA]
+    GenerateCaption --> GenerateTags[Génération Tags IA]
+    GenerateTags --> Upload[Upload Supabase<br/>Storage + DB]
+    Upload --> Success[Photo affichée]
 ```
-┌─────────────────┐
-│  Upload Photo   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Compression    │
-│  (Client-side)  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Modération IA  │ ◄─── Google Gemini API
-│  (Toujours      │
-│   active)       │
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-  ❌ OK    ✅ OK
-    │         │
-    │         ▼
-    │   ┌─────────────────┐
-    │   │ Génération      │ ◄─── Google Gemini API
-    │   │ Légende IA      │
-    │   └────────┬────────┘
-    │            │
-    │            ▼
-    │   ┌─────────────────┐
-    │   │ Génération      │ ◄─── Google Gemini API
-    │   │ Tags IA         │
-    │   └────────┬────────┘
-    │            │
-    │            ▼
-    │   ┌─────────────────┐
-    │   │ Upload Supabase │
-    │   │ Storage + DB    │
-    │   └─────────────────┘
-    │
-    └───► Rejet (contenu inapproprié)
-```
+
+### Services IA
+
+- **`geminiService.ts`** : Modération, légendes, tags, amélioration qualité
+- **`aiModerationService.ts`** : Détection de contenu inapproprié
+- **`aftermovieAIService.ts`** : Sélection intelligente de photos pour aftermovies
 
 ### Services IA
 
@@ -400,12 +379,55 @@ const subscription = supabase
 
 ## 🎯 Multi-tenant Architecture
 
-L'application est conçue comme un **SaaS multi-événements** :
+L'application est conçue comme un **SaaS multi-événements** avec isolation complète des données par événement.
+
+### Architecture Multi-Tenant
+
+```mermaid
+erDiagram
+    events ||--o{ photos : "has"
+    events ||--o{ guests : "has"
+    events ||--|| event_settings : "has"
+    events ||--o{ event_organizers : "has"
+    events ||--o{ photo_battles : "has"
+    events ||--o{ aftermovies : "has"
+    events ||--o{ blocked_guests : "has"
+    
+    events {
+        uuid id PK
+        text slug UK
+        text name
+        uuid owner_id FK
+        boolean is_active
+    }
+```
+
+### Principes d'isolation
 
 1. **Table `events`** : Chaque événement a un `slug` unique (ex: `mariage-sophie-marc`)
 2. **Isolation des données** : Toutes les tables ont `event_id` avec RLS
 3. **Routing par slug** : L'URL contient le slug (`/?event=mariage-sophie-marc`)
 4. **EventContext** : Gère l'événement actif et charge les données associées
+
+### Flux de chargement d'événement
+
+```mermaid
+sequenceDiagram
+    participant URL as URL avec slug
+    participant EventContext as EventContext
+    participant EventService as eventService
+    participant Supabase as Supabase
+    participant SettingsContext as SettingsContext
+    
+    URL->>EventContext: Détection slug
+    EventContext->>EventService: getEventBySlug(slug)
+    EventService->>Supabase: SELECT * FROM events WHERE slug = ?
+    Supabase-->>EventService: Event
+    EventService-->>EventContext: Event chargé
+    EventContext->>SettingsContext: Charger settings
+    SettingsContext->>Supabase: SELECT * FROM event_settings WHERE event_id = ?
+    Supabase-->>SettingsContext: Settings
+```
 
 **Exemple de requête multi-tenant** :
 ```typescript
@@ -415,6 +437,18 @@ const { data } = await supabase
   .select('*')
   .eq('event_id', eventId)
   .order('created_at', { ascending: false });
+```
+
+### Rôles et Permissions
+
+```mermaid
+graph LR
+    Owner[Owner] -->|Peut tout| All[Créer, Modifier, Supprimer]
+    Organizer[Organizer] -->|Peut| Modify[Modifier, Gérer]
+    Viewer[Viewer] -->|Peut| Read[Lire uniquement]
+    
+    Owner --> Organizer
+    Owner --> Viewer
 ```
 
 ---
@@ -458,22 +492,121 @@ const { data } = await supabase
 
 ## 🖥️ Application Desktop (Electron)
 
-L'application peut être packagée en application desktop avec Electron :
+L'application peut être packagée en application desktop avec Electron pour une utilisation offline et une meilleure intégration système.
 
+### Architecture Electron
+
+```mermaid
+graph TB
+    subgraph Main["Main Process (Node.js)"]
+        MainTS["main.ts<br/>Gestion fenêtres"]
+        IPC["IPC Handler"]
+    end
+    
+    subgraph Renderer["Renderer Process (Browser)"]
+        ReactApp["React App"]
+        Preload["preload.ts<br/>Bridge sécurisé"]
+    end
+    
+    MainTS --> IPC
+    IPC <-->|IPC Messages| Preload
+    Preload --> ReactApp
+```
+
+**Structure** :
 ```
 electron/
 ├── main.ts        # Processus principal (Node.js)
+│                  # - Création fenêtres
+│                  # - Gestion IPC
+│                  # - Intégration système
 ├── preload.ts     # Script de préchargement (bridge)
+│                  # - Exposition API sécurisée
+│                  # - Communication IPC
 └── types.d.ts     # Types TypeScript pour Electron
 ```
 
 **Build Electron** :
 ```bash
-npm run electron:dev    # Développement
-npm run electron:pack   # Build + Package
+npm run electron:dev    # Développement (HMR activé)
+npm run electron:build  # Build uniquement
+npm run electron:pack   # Build + Package (créer installer)
 ```
 
+**Différences Web vs Electron** :
+- **Base path** : `./` pour Electron (chemins relatifs) vs `/` pour web
+- **Variables d'environnement** : Gestion différente via `process.env` vs `import.meta.env`
+- **IPC** : Communication inter-processus pour fonctionnalités système
+- **Auto-updater** : Mise à jour automatique (à implémenter)
+
 ---
+
+## 👷 Workers (Web Workers)
+
+L'application utilise des Web Workers pour le traitement lourd d'images sans bloquer le thread principal.
+
+### Workers disponibles
+
+```mermaid
+graph TB
+    MainThread[Main Thread<br/>React App] --> Worker1[faceRecognition.worker.ts]
+    MainThread --> Worker2[imageCompression.worker.ts]
+    MainThread --> Worker3[imageEnhancement.worker.ts]
+    MainThread --> Worker4[imageFilters.worker.ts]
+    MainThread --> Worker5[imageOverlay.worker.ts]
+    
+    Worker1 -->|Reconnaissance faciale| Result1[Résultats]
+    Worker2 -->|Compression| Result2[Image compressée]
+    Worker3 -->|Amélioration| Result3[Image améliorée]
+    Worker4 -->|Filtres| Result4[Image filtrée]
+    Worker5 -->|Overlays| Result5[Image avec cadre]
+```
+
+**Workers implémentés** :
+- `faceRecognition.worker.ts` : Reconnaissance faciale (face-api.js)
+- `imageCompression.worker.ts` : Compression d'images
+- `imageEnhancement.worker.ts` : Amélioration qualité
+- `imageFilters.worker.ts` : Application de filtres
+- `imageOverlay.worker.ts` : Ajout de cadres décoratifs
+
+**Avantages** :
+- ✅ Pas de blocage de l'UI pendant le traitement
+- ✅ Performance améliorée pour grandes images
+- ✅ Traitement parallèle possible
+
+## 🔑 Système de Licences
+
+Le système de licences permet de gérer l'accès aux fonctionnalités premium de l'application SaaS.
+
+### Architecture du système de licences
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant LicenseContext as LicenseContext
+    participant LicenseService as licenseService
+    participant Supabase as Supabase (licenses table)
+    
+    App->>LicenseContext: Vérification licence
+    LicenseContext->>LicenseService: checkLicenseValidity(userId)
+    LicenseService->>Supabase: SELECT * FROM licenses WHERE user_id = ? AND status = 'active'
+    Supabase-->>LicenseService: License
+    LicenseService->>LicenseService: Vérifier expires_at
+    LicenseService-->>LicenseContext: isValid, expiresAt
+    LicenseContext->>App: Autoriser/Blocker accès
+```
+
+**Fonctionnalités** :
+- Validation automatique au démarrage
+- Vérification périodique (toutes les 24h)
+- Blocage de l'application si licence expirée
+- Affichage du nombre de jours restants
+
+**Table `licenses`** :
+- `user_id` : Propriétaire de la licence
+- `license_key` : Clé unique
+- `status` : `active`, `expired`, `suspended`, `cancelled`
+- `expires_at` : Date d'expiration
 
 ## 📊 Monitoring et Logging
 

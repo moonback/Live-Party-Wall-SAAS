@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ViewMode } from '../types';
-import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap, Sparkles, Pause, AlertTriangle } from 'lucide-react';
+import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap, Sparkles, Pause, AlertTriangle, XCircle } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useEvent } from '../context/EventContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDemoLimit } from '../hooks/useDemoLimit';
+import { MAX_PHOTOS_DEMO } from '../utils/licenseUtils';
 
 interface LandingProps {
   onSelectMode: (mode: ViewMode) => void;
@@ -366,12 +368,14 @@ interface NavigationCardsProps {
   options: NavigationOption[];
   mounted: boolean;
   onSelectMode: (mode: ViewMode) => void;
+  isCaptureDisabled?: boolean;
 }
 
 const NavigationCards: React.FC<NavigationCardsProps> = ({
   options,
   mounted,
   onSelectMode,
+  isCaptureDisabled = false,
 }) => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
@@ -381,8 +385,47 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
         {options.map((option) => {
           const Icon = option.icon;
           const isHovered = hoveredCard === option.id;
+          const isDisabled = isCaptureDisabled && option.id === 'guest';
 
           return (
+            <div key={option.id} className="relative w-full lg:w-auto lg:flex-1 lg:max-w-[180px]">
+              {/* Badge d'alerte limite atteinte - très visible */}
+              {isDisabled && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.8 }}
+                  className="absolute -top-12 lg:-top-14 left-1/2 -translate-x-1/2 z-50 w-full"
+                >
+                  <motion.div
+                    className="flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 rounded-xl bg-gradient-to-r from-red-600/95 via-orange-600/95 to-red-600/95 border-2 border-red-400/80 shadow-2xl backdrop-blur-sm"
+                    animate={{
+                      boxShadow: [
+                        '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3)',
+                        '0 0 30px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.5)',
+                        '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.3)',
+                      ],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  >
+                    <XCircle className="w-4 h-4 lg:w-5 lg:h-5 text-white flex-shrink-0 animate-pulse" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-xs lg:text-sm font-bold text-white leading-tight">
+                        Limite atteinte
+                      </span>
+                      <span className="text-[10px] lg:text-xs text-white/90 font-medium">
+                        {photosCount}/{maxPhotos} photos maximum
+                      </span>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+              
             <motion.button
               key={option.id}
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
@@ -395,21 +438,46 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                 stiffness: 100,
                 damping: 15
               }}
-              whileHover={{ y: -6, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onSelectMode(option.id as ViewMode)}
+              whileHover={isDisabled ? {} : { y: -6, scale: 1.05 }}
+              whileTap={isDisabled ? {} : { scale: 0.95 }}
+              onClick={() => {
+                if (isDisabled) {
+                  return; // Ne rien faire si le bouton est désactivé
+                }
+                onSelectMode(option.id as ViewMode);
+              }}
               onMouseEnter={() => setHoveredCard(option.id)}
               onMouseLeave={() => setHoveredCard(null)}
               onFocus={() => setHoveredCard(option.id)}
               onBlur={() => setHoveredCard(null)}
-              className={`group relative w-full lg:w-auto lg:flex-1 lg:max-w-[180px] min-h-[80px] lg:min-h-[200px] rounded-xl lg:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-500 shadow-lg hover:shadow-2xl ${
+              disabled={isDisabled}
+              className={`group relative w-full min-h-[80px] lg:min-h-[200px] rounded-xl lg:rounded-2xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black transition-all duration-500 shadow-lg hover:shadow-2xl ${
                 mounted ? '' : 'pointer-events-none'
-              }`}
+              } ${isDisabled ? 'opacity-40 cursor-not-allowed grayscale' : ''}`}
               aria-label={option.title}
               type="button"
             >
               {/* Background sans voile */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 border border-white/20 group-hover:border-white/40 transition-all duration-500" />
+              <div className={`absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-white/10 border transition-all duration-500 ${
+                isDisabled 
+                  ? 'border-red-500/50' 
+                  : 'border-white/20 group-hover:border-white/40'
+              }`} />
+              
+              {/* Overlay rouge pour indiquer la désactivation */}
+              {isDisabled && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-red-600/20 via-orange-600/20 to-red-600/20 border-2 border-red-500/40 rounded-xl lg:rounded-2xl"
+                  animate={{
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                />
+              )}
               
               {/* Gradient overlay au hover avec pulse */}
               <motion.div
@@ -473,8 +541,31 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
 
               {/* Contenu */}
               <div className="relative h-full flex flex-col items-center justify-center gap-2 lg:gap-4 p-3 lg:p-5">
-                {/* Badge Primary */}
-                {option.isPrimary && (
+                {/* Badge Primary ou Badge Limite */}
+                {isDisabled ? (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={mounted ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -180 }}
+                    transition={{ delay: option.delay + 0.2, type: "spring", stiffness: 200 }}
+                    className="absolute top-1.5 right-1.5 lg:top-2 lg:right-2 z-10"
+                  >
+                    <motion.div
+                      className="flex items-center gap-0.5 px-1 py-0.5 lg:px-1.5 lg:py-0.5 rounded-full bg-gradient-to-r from-red-600/95 to-orange-600/95 border-2 border-red-400/80 shadow-lg"
+                      animate={{ 
+                        scale: [1, 1.15, 1],
+                        boxShadow: [
+                          '0 0 10px rgba(239, 68, 68, 0.6)',
+                          '0 0 20px rgba(239, 68, 68, 0.9)',
+                          '0 0 10px rgba(239, 68, 68, 0.6)',
+                        ],
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <XCircle className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-white" />
+                      <span className="text-[8px] lg:text-[9px] font-bold text-white">LIMITE</span>
+                    </motion.div>
+                  </motion.div>
+                ) : option.isPrimary && (
                   <motion.div
                     initial={{ scale: 0, rotate: -180 }}
                     animate={mounted ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -180 }}
@@ -521,11 +612,21 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
 
                 {/* Texte */}
                 <div className="flex flex-col items-center gap-1 text-center">
-                  <h3 className="text-sm lg:text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:via-violet-300 group-hover:to-sky-300 transition-all duration-500">
+                  <h3 className={`text-sm lg:text-lg font-bold transition-all duration-500 ${
+                    isDisabled 
+                      ? 'text-red-300/80 line-through' 
+                      : 'text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-300 group-hover:via-violet-300 group-hover:to-sky-300'
+                  }`}>
                     {option.id === 'guest' ? 'Capturer' : option.id === 'gallery' ? 'Explorer' : option.id === 'findme' ? 'Retrouver' : option.title}
                   </h3>
-                  <p className="text-[10px] lg:text-xs text-white/60 group-hover:text-white/80 transition-colors duration-500 hidden lg:block">
-                    {option.description}
+                  <p className={`text-[10px] lg:text-xs transition-colors duration-500 ${
+                    isDisabled 
+                      ? 'text-red-200/90 font-semibold' 
+                      : 'text-white/60 group-hover:text-white/80 hidden lg:block'
+                  }`}>
+                    {isDisabled 
+                      ? `${photosCount}/${maxPhotos} photos - Limite atteinte` 
+                      : option.description}
                   </p>
                 </div>
 
@@ -542,6 +643,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                 </motion.div>
               </div>
             </motion.button>
+            </div>
           );
         })}
       </AnimatePresence>
@@ -568,6 +670,7 @@ const LandingFooter: React.FC = () => {
 const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = false }) => {
   const isMobile = useIsMobile();
   const { currentEvent } = useEvent();
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   const [uiConfig, setUiConfig] = useState({
     title: defaultSettings.event_title,
     subtitle: defaultSettings.event_subtitle,
@@ -597,6 +700,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
   const [mounted, setMounted] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
+
+  // Utiliser le hook useDemoLimit pour vérifier la limite
+  const isCaptureDisabled = isLimitReached;
 
   useEffect(() => {
     setMounted(true);
@@ -945,6 +1051,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
             options={navigationOptions}
             mounted={mounted}
             onSelectMode={onSelectMode}
+            isCaptureDisabled={isCaptureDisabled}
           />
         </div>
 

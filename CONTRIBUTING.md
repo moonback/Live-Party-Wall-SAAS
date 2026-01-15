@@ -117,12 +117,17 @@ Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à 
 
 2. **Créer une branche** :
    ```bash
-   git checkout -b feature/ma-fonctionnalite
+   # Convention de nommage des branches
+   git checkout -b feature/ma-fonctionnalite      # Nouvelle fonctionnalité
+   git checkout -b fix/correction-bug             # Correction de bug
+   git checkout -b docs/amelioration-readme       # Documentation
+   git checkout -b refactor/optimisation-service   # Refactoring
    ```
 
 3. **Développer et commit** :
    ```bash
    git add .
+   # Utiliser des messages de commit conventionnels
    git commit -m "feat: Ajout de la fonctionnalité X"
    ```
 
@@ -131,6 +136,46 @@ Merci de votre intérêt pour contribuer à Partywall ! Ce guide vous aidera à 
    git push origin feature/ma-fonctionnalite
    # Puis ouvrir une PR sur GitHub
    ```
+
+### Conventions de commits
+
+Utilisez le format [Conventional Commits](https://www.conventionalcommits.org/) :
+
+```bash
+# Types de commits
+feat: Ajout d'une nouvelle fonctionnalité
+fix: Correction d'un bug
+docs: Modification de la documentation
+style: Changements de formatage (pas de changement de code)
+refactor: Refactoring du code
+perf: Amélioration de performance
+test: Ajout ou modification de tests
+chore: Tâches de maintenance
+
+# Exemples
+git commit -m "feat: Ajout du mode collage pour photos"
+git commit -m "fix: Correction du bug de chargement des photos"
+git commit -m "docs: Mise à jour de ARCHITECTURE.md"
+git commit -m "refactor: Optimisation de photoService.ts"
+git commit -m "perf: Amélioration du lazy loading des images"
+```
+
+### Gestion des branches
+
+**Branches principales** :
+- `main` : Branche de production (stable)
+- `develop` : Branche de développement (si elle existe)
+
+**Branches de fonctionnalité** :
+- `feature/nom-fonctionnalite` : Nouvelle fonctionnalité
+- `fix/nom-bug` : Correction de bug
+- `docs/nom-doc` : Documentation
+- `refactor/nom-refactor` : Refactoring
+
+**Règles** :
+- Une branche = une fonctionnalité/bug
+- Garder les branches à jour avec `main`
+- Supprimer les branches après merge
 
 ---
 
@@ -226,6 +271,34 @@ npm run test:e2e      # Tests E2E
 npm run test:coverage # Couverture de code
 ```
 
+### Tests manuels recommandés
+
+Avant de soumettre une PR, testez manuellement :
+
+1. **Upload de photos** :
+   - [ ] Upload photo simple
+   - [ ] Upload vidéo
+   - [ ] Upload avec filtres/cadres
+   - [ ] Upload depuis photobooth
+   - [ ] Vérifier modération IA
+
+2. **Affichage** :
+   - [ ] Photos s'affichent en temps réel
+   - [ ] Likes/réactions fonctionnent
+   - [ ] Galerie avec filtres
+   - [ ] Mode projection
+
+3. **Admin** :
+   - [ ] Dashboard fonctionne
+   - [ ] Paramètres sauvegardés
+   - [ ] Battles créées
+   - [ ] Aftermovies générés
+
+4. **Multi-événements** :
+   - [ ] Création d'événement
+   - [ ] Changement d'événement
+   - [ ] Isolation des données
+
 ---
 
 ## 📚 Documentation
@@ -286,10 +359,20 @@ Brève description des changements
 
 ### Review Process
 
-1. **Automated checks** - CI/CD vérifie le code
+1. **Automated checks** - CI/CD vérifie le code (si configuré)
 2. **Code review** - Au moins un maintainer doit approuver
-3. **Tests** - Tous les tests doivent passer
+3. **Tests** - Tous les tests doivent passer (tests manuels minimum)
 4. **Merge** - Squash and merge pour maintenir un historique propre
+
+### Checklist pour les reviewers
+
+- [ ] Code suit les conventions du projet
+- [ ] Types TypeScript corrects (pas d'erreurs)
+- [ ] Gestion d'erreurs appropriée
+- [ ] Pas de secrets dans le code
+- [ ] Documentation mise à jour si nécessaire
+- [ ] Tests manuels effectués
+- [ ] Pas de breaking changes (ou documentés)
 
 ---
 
@@ -327,16 +410,25 @@ Brève description des changements
 ### Questions fréquentes
 
 **Q: Puis-je travailler sur une fonctionnalité de la roadmap ?**
-R: Oui ! Vérifiez d'abord qu'il n'y a pas déjà une issue ou PR en cours.
+R: Oui ! Vérifiez d'abord qu'il n'y a pas déjà une issue ou PR en cours. Consultez [ROADMAP.md](./ROADMAP.md) pour voir les fonctionnalités prévues.
 
 **Q: Comment savoir quoi travailler ?**
-R: Consultez les issues avec le label `good first issue` ou `help wanted`.
+R: Consultez les issues avec le label `good first issue` ou `help wanted`. Les issues prioritaires sont marquées avec `priority: high`.
 
 **Q: Puis-je contribuer même si je suis débutant ?**
-R: Absolument ! Les contributions de tous niveaux sont les bienvenues.
+R: Absolument ! Les contributions de tous niveaux sont les bienvenues. Commencez par des petites améliorations (documentation, corrections de typos, etc.).
 
 **Q: Combien de temps prend une PR ?**
-R: Cela dépend de la complexité. Les PR simples peuvent être mergées rapidement.
+R: Cela dépend de la complexité. Les PR simples peuvent être mergées rapidement. Les PR complexes peuvent prendre plusieurs jours pour review.
+
+**Q: Dois-je créer une issue avant de commencer à travailler ?**
+R: Pour les petites corrections, non. Pour les nouvelles fonctionnalités importantes, oui, pour discuter de l'approche avant de commencer.
+
+**Q: Comment tester mes changements localement ?**
+R: Utilisez `npm run dev` pour le développement web, ou `npm run electron:dev` pour Electron. Assurez-vous d'avoir configuré Supabase et Gemini API.
+
+**Q: Que faire si je rencontre un problème ?**
+R: Consultez la section [Troubleshooting](./README.md#-troubleshooting) du README, ou créez une issue avec les détails du problème.
 
 ---
 

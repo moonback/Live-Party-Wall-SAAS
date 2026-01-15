@@ -7,6 +7,7 @@ import { Photo } from '../types';
 import { CAMERA_VIDEO_CONSTRAINTS, MAX_AUTHOR_NAME_LENGTH, MAX_USER_DESCRIPTION_LENGTH, MIN_COLLAGE_PHOTOS, MAX_COLLAGE_PHOTOS, COLLAGE_GAP } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
+import { useDemoLimit } from '../hooks/useDemoLimit';
 import { validateAuthorName } from '../utils/validation';
 import { Camera, X, Grid3x3, LayoutGrid, Square, RotateCcw, Upload, ArrowLeft, FlipHorizontal, Zap, GripVertical, Download } from 'lucide-react';
 import { getSettings, subscribeToSettings, EventSettings, defaultSettings } from '../services/settingsService';
@@ -21,6 +22,7 @@ interface CollageModeProps {
 const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) => {
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<CollageTemplate>('2x2');
   const [previewCollage, setPreviewCollage] = useState<string | null>(null);
@@ -118,6 +120,11 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   // Démarrer le compte à rebours
   const initiatePhotoCapture = () => {
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
+
     if (capturedImages.length >= MAX_COLLAGE_PHOTOS) {
       addToast(`Maximum ${MAX_COLLAGE_PHOTOS} photos autorisées`, 'error');
       return;
@@ -145,6 +152,11 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   // Capturer une photo
   const capturePhoto = async () => {
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
+
     setFlash(true);
     setCaptureAnimation(capturedImages.length);
     setTimeout(() => setFlash(false), 500);
@@ -332,6 +344,11 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
 
   // Uploader le collage
   const handleUpload = async () => {
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
+
     if (!previewCollage) {
       addToast('Veuillez créer un collage d\'abord', 'error');
       return;
@@ -437,6 +454,27 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       className="min-h-screen w-full bg-slate-950 text-white relative overflow-x-hidden"
       style={{ touchAction: 'manipulation' }}
     >
+      {/* Alerte limite atteinte */}
+      {isLimitReached && (
+        <div className="w-full px-4 pt-4 pb-2 z-50">
+          <div className="bg-gradient-to-r from-red-600/95 via-orange-600/95 to-red-600/95 border-2 border-red-400/80 rounded-xl p-4 shadow-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-bold text-sm sm:text-base mb-1">Limite de photos atteinte</p>
+                <p className="text-white/90 text-xs sm:text-sm">
+                  La licence DEMO permet un maximum de {maxPhotos} photos par événement. ({photosCount}/{maxPhotos} photos)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950" />
@@ -609,7 +647,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
             <div className="p-3 sm:p-4">
               <button
                 onClick={initiatePhotoCapture}
-                disabled={countdown !== null || cameraError || isBurstMode}
+                disabled={countdown !== null || cameraError || isBurstMode || isLimitReached}
                 className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 touch-manipulation min-h-[48px] sm:min-h-[56px] relative overflow-hidden"
                 style={{
                   background: countdown !== null || cameraError || isBurstMode
@@ -862,7 +900,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
           {/* Upload Button - Optimisé mobile */}
           <button
             onClick={handleUpload}
-            disabled={!canCreateCollage || !previewCollage || !authorName.trim() || loading || isBurstMode}
+            disabled={!canCreateCollage || !previewCollage || !authorName.trim() || loading || isBurstMode || isLimitReached}
             className="w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 touch-manipulation min-h-[48px] sm:min-h-[56px]"
             style={{
               background: loading || !canCreateCollage || !previewCollage || !authorName.trim()
