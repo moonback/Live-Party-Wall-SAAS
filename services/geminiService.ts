@@ -1,13 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
-import { 
-  detectGeminiErrorType, 
-  logGeminiError
-} from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
-import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { DEFAULTS } from '../config/geminiConfig';
+import { llmManager } from './llm/llmManager';
 
 // Cache en mémoire pour les légendes (évite les appels API pour images identiques)
 // Structure : Map<cacheKey, { caption: string, timestamp: number }>
@@ -96,42 +90,18 @@ export const generateImageCaption = async (
       return cached.caption;
     }
     
-    logger.debug('Cache miss, calling Gemini API for caption', { 
+    logger.debug('Cache miss, calling LLM API for caption', { 
       hash: imageHash.substring(0, 8),
       authorName: authorName || 'none'
     });
 
-    // Strip the data:image/xyz;base64, prefix if present
-    const cleanBase64 = base64Image.split(',')[1] || base64Image;
-
-    // Construire le prompt personnalisé selon le contexte de l'événement et l'auteur
-    const prompt = PROMPTS.caption.buildPersonalized(eventContext, authorName, companions);
-
-    const response = await ai.models.generateContent({
-      model: MODELS.caption,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg', // Assuming JPEG for simplicity from canvas export
-            },
-          },
-          {
-            text: prompt,
-          },
-        ],
-      },
-    });
-
-    const caption = response.text;
-    if (!caption || caption.trim().length === 0) {
-      logger.warn('Empty caption returned from Gemini', undefined, {
-        component: 'geminiService',
-        action: 'generateImageCaption'
-      });
-      return DEFAULTS.caption;
-    }
+    // Utiliser llmManager qui gère automatiquement le fallback
+    const caption = await llmManager.generateImageCaption(
+      base64Image,
+      eventContext,
+      authorName,
+      companions
+    );
     
     const trimmedCaption = caption.trim();
     
@@ -144,11 +114,8 @@ export const generateImageCaption = async (
     return trimmedCaption;
 
   } catch (error) {
-    // Détecter le type d'erreur
-    const errorType = detectGeminiErrorType(error);
-    
-    // Logger l'erreur avec le contexte
-    logGeminiError(error, errorType, {
+    // Logger l'erreur (llmManager a déjà géré le fallback)
+    logger.error('Error in generateImageCaption after fallback', error, {
       component: 'geminiService',
       action: 'generateImageCaption',
       eventContext: eventContext || 'none'

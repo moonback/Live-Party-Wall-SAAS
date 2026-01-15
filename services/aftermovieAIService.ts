@@ -3,16 +3,9 @@
  * Utilise Gemini pour analyser les photos et rendre les aftermovies plus interactifs
  */
 
-import { GoogleGenAI } from "@google/genai";
 import { logger } from '../utils/logger';
 import { Photo } from '../types';
-import { 
-  detectGeminiErrorType, 
-  logGeminiError 
-} from '../utils/geminiErrorHandler';
-import { MODELS, PROMPTS } from '../config/geminiConfig';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { llmManager } from './llm/llmManager';
 
 export interface PhotoAnalysis {
   photoId: string;
@@ -51,59 +44,11 @@ async function analyzePhoto(
   eventContext?: string | null
 ): Promise<PhotoAnalysis> {
   try {
-    // Convertir l'URL en base64 pour l'analyse
-    const imageResponse = await fetch(photo.url);
-    const imageBlob = await imageResponse.blob();
-    const base64 = await blobToBase64(imageBlob);
-    const cleanBase64 = base64.split(',')[1] || base64;
-
-    const prompt = PROMPTS.aftermovieAnalysis(eventContext);
-
-    const response = await ai.models.generateContent({
-      model: MODELS.analysis,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg',
-            },
-          },
-          {
-            text: prompt,
-          },
-        ],
-      },
-    });
-
-    const responseText = response.text.trim();
-    let jsonText = responseText;
-    
-    // Nettoyer la réponse
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/g, '');
-    }
-
-    const parsed = JSON.parse(jsonText);
-
-    return {
-      photoId: photo.id,
-      score: Math.max(0, Math.min(100, parsed.score || 50)),
-      isKeyMoment: parsed.isKeyMoment || false,
-      suggestedDuration: Math.max(2000, Math.min(6000, parsed.suggestedDuration || 3500)),
-      suggestedTransition: parsed.suggestedTransition || 'fade',
-      emotion: parsed.emotion || 'neutral',
-      contentType: parsed.contentType || 'scene',
-      quality: parsed.quality || 'fair',
-      shouldInclude: parsed.shouldInclude !== false,
-      reason: parsed.reason || 'Analyse IA'
-    };
+    // Utiliser llmManager qui gère automatiquement le fallback
+    return await llmManager.analyzePhotoForAftermovie(photo, eventContext);
 
   } catch (error) {
-    const errorType = detectGeminiErrorType(error);
-    logGeminiError(error, errorType, {
+    logger.error('Error in analyzePhoto after fallback', error, {
       component: 'aftermovieAIService',
       action: 'analyzePhoto',
       photoId: photo.id
@@ -125,17 +70,6 @@ async function analyzePhoto(
   }
 }
 
-/**
- * Convertit un Blob en base64
- */
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
 
 /**
  * Sélection intelligente de photos pour l'aftermovie

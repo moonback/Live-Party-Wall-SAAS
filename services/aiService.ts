@@ -5,18 +5,11 @@
  * Cache les résultats pour éviter les appels API pour images identiques
  */
 
-import { GoogleGenAI } from "@google/genai";
 import { ImageAnalysis } from './aiModerationService';
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
-import { 
-  detectGeminiErrorType, 
-  logGeminiError 
-} from '../utils/geminiErrorHandler';
-import { translateCaptionIfNeeded } from './translationService';
-import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { DEFAULTS } from '../config/geminiConfig';
+import { llmManager } from './llm/llmManager';
 
 // Cache en mémoire pour les analyses (évite les appels API pour images identiques)
 // Structure : Map<hash, { result: CombinedAnalysisResult, timestamp: number }>
@@ -121,149 +114,20 @@ export const analyzeAndCaptionImage = async (
       return cached.result;
     }
     
-    logger.debug('Cache miss, calling Gemini API', { 
+    logger.debug('Cache miss, calling LLM API', { 
       hash: imageHash.substring(0, 8),
       authorName: authorName || 'none'
     });
 
-    // Strip the data:image/xyz;base64, prefix if present
-    const cleanBase64 = base64Image.split(',')[1] || base64Image;
-
-    // Construire le prompt personnalisé pour la légende (avec informations sur l'auteur)
-    const captionPrompt = PROMPTS.caption.buildPersonalized(eventContext, authorName, companions);
-
-    // Prompt combiné : modération + légende + tags + améliorations
-    const combinedPrompt = PROMPTS.combinedAnalysis(captionPrompt);
-
-    const response = await ai.models.generateContent({
-      model: MODELS.analysis,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg',
-            },
-          },
-          {
-            text: combinedPrompt,
-          },
-        ],
-      },
-    });
-
-    const responseText = response.text.trim();
-    
-    if (!responseText || responseText.length === 0) {
-      logger.warn('Empty response from Gemini in analyzeAndCaptionImage', null, {
-        component: 'aiService',
-        action: 'analyzeAndCaptionImage'
-      });
-      // Retourner un fallback
-      return {
-        analysis: {
-          hasFaces: false,
-          faceCount: 0,
-          isAppropriate: true,
-          suggestedFilter: 'none',
-          quality: 'fair',
-          estimatedQuality: 'fair',
-          suggestedImprovements: [],
-        },
-        caption: DEFAULTS.caption,
-        tags: [],
-      };
-    }
-    
-    // Nettoyer la réponse (enlever markdown si présent)
-    let jsonText = responseText;
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/g, '');
-    }
-
-    let parsed: {
-      hasFaces?: boolean;
-      faceCount?: number;
-      isAppropriate?: boolean;
-      moderationReason?: string | null;
-      suggestedFilter?: 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
-      quality?: 'good' | 'fair' | 'poor';
-      estimatedQuality?: 'excellent' | 'good' | 'fair' | 'poor';
-      suggestedImprovements?: string[];
-      caption?: string;
-      tags?: string[];
-    };
-
-    try {
-      parsed = JSON.parse(jsonText);
-    } catch (parseError) {
-      logger.error('Failed to parse Gemini response as JSON', parseError, {
-        component: 'aiService',
-        action: 'analyzeAndCaptionImage',
-        responseText: responseText.substring(0, 200) // Log les 200 premiers caractères
-      });
-      // Retourner un fallback en cas d'erreur de parsing
-      return {
-        analysis: {
-          hasFaces: false,
-          faceCount: 0,
-          isAppropriate: true,
-          suggestedFilter: 'none',
-          quality: 'fair',
-          estimatedQuality: 'fair',
-          suggestedImprovements: [],
-        },
-        caption: DEFAULTS.caption,
-        tags: [],
-      };
-    }
-
-    // Validation et valeurs par défaut pour l'analyse
-    const analysis: ImageAnalysis = {
-      hasFaces: parsed.hasFaces ?? false,
-      faceCount: parsed.faceCount ?? 0,
-      isAppropriate: parsed.isAppropriate ?? true,
-      moderationReason: parsed.moderationReason || undefined,
-      suggestedFilter: parsed.suggestedFilter || 'none',
-      quality: parsed.quality || 'good',
-      estimatedQuality: parsed.estimatedQuality || parsed.quality || 'good',
-      suggestedImprovements: Array.isArray(parsed.suggestedImprovements) ? parsed.suggestedImprovements : [],
-    };
-
-    // Validation et fallback pour la légende
-    let caption = parsed.caption?.trim() || DEFAULTS.caption;
-
-    // Traduire la légende si une langue est spécifiée
-    if (captionLanguage && captionLanguage !== 'fr') {
-      try {
-        caption = await translateCaptionIfNeeded(caption, captionLanguage);
-        logger.debug('Caption translated', { 
-          original: parsed.caption?.trim(), 
-          translated: caption, 
-          language: captionLanguage 
-        });
-      } catch (translationError) {
-        logger.warn('Translation failed, using original caption', translationError, {
-          component: 'aiService',
-          action: 'analyzeAndCaptionImage',
-          language: captionLanguage
-        });
-        // Continuer avec la légende originale en cas d'erreur de traduction
-      }
-    }
-
-    // Validation et fallback pour les tags
-    const tags = Array.isArray(parsed.tags) && parsed.tags.length > 0 
-      ? parsed.tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0).slice(0, 8) // Max 8 tags
-      : [];
-
-    const result: CombinedAnalysisResult = {
-      analysis,
-      caption,
-      tags,
-    };
+    // Utiliser llmManager qui gère automatiquement le fallback
+    // Note: La traduction est gérée dans llmManager si nécessaire
+    const result = await llmManager.analyzeAndCaptionImage(
+      base64Image,
+      eventContext,
+      captionLanguage,
+      authorName,
+      companions
+    );
     
     // Mettre en cache le résultat (la langue est déjà dans cacheKey)
     analysisCache.set(cacheKey, {
@@ -274,11 +138,8 @@ export const analyzeAndCaptionImage = async (
     return result;
 
   } catch (error) {
-    // Détecter le type d'erreur
-    const errorType = detectGeminiErrorType(error);
-    
-    // Logger l'erreur avec le contexte
-    logGeminiError(error, errorType, {
+    // Logger l'erreur (llmManager a déjà géré le fallback)
+    logger.error('Error in analyzeAndCaptionImage after fallback', error, {
       component: 'aiService',
       action: 'analyzeAndCaptionImage',
       eventContext: eventContext || 'none'

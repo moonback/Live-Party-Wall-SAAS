@@ -1,12 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
-import { 
-  detectGeminiErrorType, 
-  logGeminiError 
-} from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
-import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { DEFAULTS } from '../config/geminiConfig';
+import { llmManager } from './llm/llmManager';
 
 export interface ImageAnalysis {
   hasFaces: boolean;
@@ -40,56 +34,8 @@ export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> 
       return DEFAULTS.analysis;
     }
 
-    const cleanBase64 = base64Image.split(',')[1] || base64Image;
-
-    const analysisPrompt = PROMPTS.moderation;
-
-    const response = await ai.models.generateContent({
-      model: MODELS.moderation,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg',
-            },
-          },
-          {
-            text: analysisPrompt,
-          },
-        ],
-      },
-    });
-
-    const responseText = response.text?.trim();
-    
-    if (!responseText || responseText.length === 0) {
-      logger.warn('Empty response from Gemini in analyzeImage', undefined, {
-        component: 'aiModerationService',
-        action: 'analyzeImage'
-      });
-      return DEFAULTS.analysis;
-    }
-    
-    // Nettoyer la réponse (enlever markdown si présent)
-    let jsonText = responseText;
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/```\n?/g, '');
-    }
-
-    let analysis: ImageAnalysis;
-    try {
-      analysis = JSON.parse(jsonText) as ImageAnalysis;
-    } catch (parseError) {
-      logger.error('Failed to parse Gemini response as JSON', parseError, {
-        component: 'aiModerationService',
-        action: 'analyzeImage',
-        responseText: responseText.substring(0, 200) // Log les 200 premiers caractères
-      });
-      return DEFAULTS.analysis;
-    }
+    // Utiliser llmManager qui gère automatiquement le fallback
+    const analysis = await llmManager.analyzeImage(base64Image);
 
     // Validation et valeurs par défaut
     return {
@@ -102,11 +48,8 @@ export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> 
     };
 
   } catch (error) {
-    // Détecter le type d'erreur
-    const errorType = detectGeminiErrorType(error);
-    
-    // Logger l'erreur avec le contexte
-    logGeminiError(error, errorType, {
+    // Logger l'erreur (llmManager a déjà géré le fallback)
+    logger.error('Error in analyzeImage after fallback', error, {
       component: 'aiModerationService',
       action: 'analyzeImage'
     });

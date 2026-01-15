@@ -3,15 +3,8 @@
  * Utilise Gemini pour traduire les légendes dans différentes langues
  */
 
-import { GoogleGenAI } from "@google/genai";
 import { logger } from '../utils/logger';
-import { 
-  detectGeminiErrorType, 
-  logGeminiError 
-} from '../utils/geminiErrorHandler';
-import { MODELS, PROMPTS } from '../config/geminiConfig';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { llmManager } from './llm/llmManager';
 
 /**
  * Langues supportées avec leurs codes ISO 639-1
@@ -56,28 +49,14 @@ export const translateCaption = async (
   }
 
   try {
-    const languageName = SUPPORTED_LANGUAGES[targetLanguage as SupportedLanguage] || targetLanguage;
-    
-    const translationPrompt = PROMPTS.translation(caption, languageName);
-
-    const response = await ai.models.generateContent({
-      model: MODELS.translation,
-      contents: {
-        parts: [
-          {
-            text: translationPrompt,
-          },
-        ],
-      },
-    });
-
-    const translated = response.text.trim();
+    // Utiliser llmManager qui gère automatiquement le fallback
+    const translated = await llmManager.translateText(caption, targetLanguage);
     
     // Nettoyer la réponse (enlever guillemets si présents)
-    let cleanTranslation = translated.replace(/^["']|["']$/g, '');
+    const cleanTranslation = translated.replace(/^["']|["']$/g, '');
     
     if (!cleanTranslation || cleanTranslation.length === 0) {
-      logger.warn('Empty translation returned from Gemini', null, {
+      logger.warn('Empty translation returned from LLM', null, {
         component: 'translationService',
         action: 'translateCaption',
         targetLanguage
@@ -88,9 +67,8 @@ export const translateCaption = async (
     return cleanTranslation;
 
   } catch (error) {
-    // Logger l'erreur mais retourner l'original pour ne pas bloquer l'application
-    const errorType = detectGeminiErrorType(error);
-    logGeminiError(error, errorType, {
+    // Logger l'erreur (llmManager a déjà géré le fallback)
+    logger.error('Error in translateCaption after fallback', error, {
       component: 'translationService',
       action: 'translateCaption',
       targetLanguage
