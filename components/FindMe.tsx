@@ -674,7 +674,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
         ) : usingSavedDescriptor && !capturedImage ? (
           <div className="w-full max-w-4xl space-y-6">
             {/* Indicateur que le descripteur sauvegardé est utilisé */}
-            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-green-500/30 shadow-2xl">
+            {/* <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-green-500/30 shadow-2xl">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-full blur-lg" />
@@ -692,7 +692,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
                   <X className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
                 </button>
               </div>
-            </div>
+            </div> */}
             
             {/* Résultats de recherche */}
             {isSearching ? (
