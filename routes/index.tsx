@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
+import React from 'react';
+import { z } from 'zod';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
 import TransitionWrapper from '../components/TransitionWrapper';
@@ -8,13 +10,26 @@ import TransitionWrapper from '../components/TransitionWrapper';
 const Landing = lazy(() => import('../components/Landing'));
 const Accueil = lazy(() => import('../components/Accueil'));
 
+const indexSearchSchema = z.object({
+  event: z.string().optional(),
+});
+
 export const Route = createFileRoute('/')({
+  validateSearch: indexSearchSchema,
   component: IndexRoute,
 });
 
 function IndexRoute() {
-  const { currentEvent } = useEvent();
+  const { event } = Route.useSearch();
+  const { currentEvent, loadEventBySlug } = useEvent();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
+
+  // Charger l'événement si le paramètre event est présent
+  React.useEffect(() => {
+    if (event && event !== currentEvent?.slug) {
+      loadEventBySlug(event);
+    }
+  }, [event, currentEvent?.slug, loadEventBySlug]);
 
   // Si pas d'événement, afficher Accueil
   if (!currentEvent) {
