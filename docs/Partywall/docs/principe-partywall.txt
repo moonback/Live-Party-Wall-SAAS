@@ -1,0 +1,99 @@
+1. Principe
+
+Partywall
+Mur photo digital collaboratif. Les invités utilisent leur propre smartphone pour envoyer photos/vidéos qui s’affichent en temps réel sur un écran (TV OLED, mur LED, vidéoprojecteur).
+
+Photobooth classique
+Borne physique avec appareil photo intégré. Les invités se déplacent pour se prendre en photo devant la borne.
+
+2. Avantages
+Partywall – Avantages
+
+Participation massive : tous les invités peuvent contribuer en même temps, sans file d’attente.
+
+Zéro matériel lourd : pas de borne, pas de transport, pas de maintenance.
+
+Scalabilité : fonctionne aussi bien pour 20 que 2 000 personnes.
+
+Contenu en temps réel : animation continue sur écran pendant l’événement.
+
+Coût inférieur : pas de location de matériel photo.
+
+Multi-usage : photos, vidéos, messages, votes, QR codes.
+
+Données exploitables : récupération des médias, analytics, RGPD maîtrisé.
+
+Installation rapide : un écran + une connexion internet.
+
+Photobooth – Avantages
+
+Qualité photo contrôlée : éclairage, cadrage et rendu constants.
+
+Expérience guidée : rassurante pour les publics peu technophiles.
+
+Impression immédiate : souvenir physique instantané.
+
+Valeur perçue traditionnelle : format déjà connu et accepté.
+
+3. Inconvénients
+Partywall – Inconvénients
+
+Dépend du smartphone des invités.
+
+Qualité hétérogène des photos (selon les téléphones).
+
+Pas d’impression instantanée par défaut.
+
+Modération nécessaire sur événements publics.
+
+Connexion internet requise.
+
+Photobooth – Inconvénients
+
+File d’attente → faible volume de photos.
+
+Une seule borne = un goulot d’étranglement.
+
+Coût élevé (location, logistique, personnel).
+
+Panne bloquante : si la borne tombe, l’animation s’arrête.
+
+Peu évolutif : difficile à adapter à de grands événements.
+
+4. Cas d’usage idéaux
+
+Partywall est meilleur pour :
+
+Festivals, concerts, salons
+
+Bars, restaurants, clubs
+
+Mariages modernes
+
+Événements corporate, lancements de marque
+
+Animations longues et continues
+
+Photobooth est meilleur pour :
+
+Mariages traditionnels
+
+Événements premium intimistes
+
+Lieux sans connexion fiable
+
+Public peu à l’aise avec le mobile
+
+5. Synthèse rapide
+Critère	Partywall	Photobooth
+Volume de photos	Très élevé	Faible
+Fluidité	Continue	Saccadée
+Matériel	Minimal	Lourd
+Coût	Faible	Élevé
+Impression papier	Non	Oui
+Expérience	Collective	Individuelle
+Conclusion
+
+Partywall = animation collective, scalable, moderne
+
+Photobooth = expérience individuelle, cadrée, traditionnelle
