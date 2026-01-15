@@ -61,8 +61,42 @@ export const createEvent = async (
       const limitInfo = getEventLimitInfo(licenseKey);
       if (limitInfo.type === 'PART') {
         throw new Error("Limite d'événements atteinte. Vous avez atteint la limite de 1 événement avec votre licence PART. Passez à Pro pour créer jusqu'à 20 événements.");
+      } else if (limitInfo.type === 'DEMO') {
+        throw new Error("Limite d'événements atteinte. Vous avez atteint la limite de 1 événement avec votre licence DEMO.");
       } else {
         throw new Error(`Limite d'événements atteinte. Vous avez atteint la limite de ${maxEvents} événements.`);
+      }
+    }
+
+    // Avertissement pour les licences DEMO : vérifier le nombre total de photos
+    const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
+    if (isDemoLicense(licenseKey)) {
+      const maxPhotos = getMaxPhotos(licenseKey);
+      if (maxPhotos !== null) {
+        // Compter le nombre total de photos dans tous les événements de l'utilisateur
+        const { data: userEvents } = await supabase
+          .from('events')
+          .select('id')
+          .eq('owner_id', authenticatedUserId);
+        
+        if (userEvents && userEvents.length > 0) {
+          const eventIds = userEvents.map(e => e.id);
+          const { count: totalPhotosCount } = await supabase
+            .from('photos')
+            .select('*', { count: 'exact', head: true })
+            .in('event_id', eventIds);
+          
+          if (totalPhotosCount !== null && totalPhotosCount >= 40) {
+            logger.warn("DEMO license: approaching photo limit", null, {
+              component: 'eventService',
+              action: 'createEvent',
+              userId: authenticatedUserId,
+              totalPhotos: totalPhotosCount,
+              maxPhotos: maxPhotos,
+              message: `Attention : Vous avez ${totalPhotosCount} photos sur ${maxPhotos} autorisées avec la licence DEMO.`
+            });
+          }
+        }
       }
     }
   } catch (error) {
