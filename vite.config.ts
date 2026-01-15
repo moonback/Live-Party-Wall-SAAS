@@ -44,7 +44,10 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [
-        TanStackRouterVite(),
+        TanStackRouterVite({
+          routesDirectory: './routes',
+          generatedRouteTree: './routeTree.gen.ts',
+        }),
         react(),
         tailwindcss(),
         // Désactiver les preloads CSS en développement pour éviter les warnings HMR
