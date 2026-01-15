@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Video, Zap, Star, Award, Sparkles, ChevronDown, ChevronRight, ChevronUp, Move, ArrowUp, ArrowDown, RotateCcw, Share2, Upload, Copy, Check, Maximize2, X, Search, Grid3x3, List, Trash2, RefreshCw } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PhotoGridSkeleton } from './SkeletonLoaders';
 import { QRCodeCanvas } from 'qrcode.react';
 import { usePhotos } from '../../context/PhotosContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -530,34 +531,63 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
         </div>
 
         {/* Section Aftermovies existants */}
-        {existingAftermovies.length > 0 && (
-          <div className="mb-6 bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                  <Video className="w-4 h-4 text-indigo-400" />
+        <AnimatePresence>
+          {(existingAftermovies.length > 0 || loadingAftermovies) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="mb-4 sm:mb-6 bg-slate-950/50 border border-slate-800 rounded-lg p-3 sm:p-4"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20 flex-shrink-0">
+                    <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xs sm:text-sm font-semibold text-slate-100 truncate">Aftermovies existants</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-400">
+                      {loadingAftermovies ? 'Chargement...' : `${existingAftermovies.length} aftermovie${existingAftermovies.length > 1 ? 's' : ''} disponible${existingAftermovies.length > 1 ? 's' : ''}`}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-100">Aftermovies existants</h3>
-                  <p className="text-xs text-slate-400">
-                    {existingAftermovies.length} aftermovie{existingAftermovies.length > 1 ? 's' : ''} disponible{existingAftermovies.length > 1 ? 's' : ''}
-                  </p>
-                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={loadExistingAftermovies}
+                  disabled={loadingAftermovies}
+                  className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px] flex-shrink-0"
+                  title="Actualiser la liste"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingAftermovies ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Actualiser</span>
+                  <span className="sm:hidden">Rafraîchir</span>
+                </motion.button>
               </div>
-              <button
-                type="button"
-                onClick={loadExistingAftermovies}
-                disabled={loadingAftermovies}
-                className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
-                title="Actualiser la liste"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingAftermovies ? 'animate-spin' : ''}`} />
-                Actualiser
-              </button>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {existingAftermovies.map((aftermovie) => {
+              <AnimatePresence mode="wait">
+                {loadingAftermovies ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <PhotoGridSkeleton count={3} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="aftermovies"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"
+                  >
+                    {existingAftermovies.map((aftermovie, index) => {
                 const isDeleting = deletingAftermovieIds.has(aftermovie.id);
                 const formatFileSize = (bytes?: number): string => {
                   if (!bytes) return '';
@@ -585,13 +615,15 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                   });
                 };
 
-                return (
-                  <motion.div
-                    key={aftermovie.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-900/50 border border-slate-800 rounded-lg p-4 hover:border-slate-700 transition-all"
-                  >
+                    return (
+                      <motion.div
+                        key={aftermovie.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05, duration: 0.2 }}
+                        whileHover={{ y: -2, scale: 1.01 }}
+                        className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4 hover:border-slate-700 transition-all shadow-md hover:shadow-lg"
+                      >
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-semibold text-slate-100 truncate mb-1">
@@ -646,12 +678,15 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
                     >
                       Voir / Télécharger
                     </a>
+                      </motion.div>
+                    );
+                  })}
                   </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Presets simplifiés */}
         <div className="mb-6">

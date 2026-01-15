@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Trophy, Clock, X, Image as ImageIcon, User, CheckCircle2, Sparkles } from 'lucide-react';
 import { usePhotos } from '../../context/PhotosContext';
 import { useEvent } from '../../context/EventContext';
@@ -6,6 +7,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { createBattle, getActiveBattles, finishBattle, subscribeToNewBattles } from '../../services/battleService';
 import { Photo, PhotoBattle } from '../../types';
+import { BattleGridSkeleton } from './SkeletonLoaders';
 
 interface BattlesTabProps {
   // Props si nécessaire
@@ -163,109 +165,140 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
     }
   };
 
-  // Filtrer les photos disponibles (exclure celles déjà sélectionnées)
-  const availablePhotos = allPhotos.filter(p => 
-    p.id !== selectedPhoto1?.id && p.id !== selectedPhoto2?.id
-  );
+  // Note: availablePhotos pourrait être utilisé pour filtrer les photos dans la sélection
+  // Actuellement non utilisé mais conservé pour usage futur
+  // const availablePhotos = allPhotos.filter(p => 
+  //   p.id !== selectedPhoto1?.id && p.id !== selectedPhoto2?.id
+  // );
+
+  const prefersReducedMotion = typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+    : false;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6">
       {/* Section Battles Automatiques */}
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <div className="mb-6">
-          <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
-            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+        className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 border border-slate-800"
+      >
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
+            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20 flex-shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
             </div>
-            Battles Automatiques
+            <span className="truncate">Battles Automatiques</span>
           </h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             Activez les battles automatiques pour créer une battle aléatoire à intervalles réguliers.
           </p>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${autoBattleEnabled ? 'bg-teal-500/20' : 'bg-slate-700/50'}`}>
-              <Zap className={`w-5 h-5 ${autoBattleEnabled ? 'text-teal-400' : 'text-slate-400'}`} />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-800/50 rounded-lg border border-slate-800">
+          <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+            <div className={`p-2 rounded-lg flex-shrink-0 ${autoBattleEnabled ? 'bg-teal-500/20' : 'bg-slate-700/50'}`}>
+              <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${autoBattleEnabled ? 'text-teal-400' : 'text-slate-400'}`} />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-100">Battles Automatiques</h3>
-              <p className="text-sm text-slate-400">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-100 mb-1">Battles Automatiques</h3>
+              <p className="text-xs sm:text-sm text-slate-400">
                 {autoBattleEnabled 
                   ? `Actives - Une battle est créée toutes les ${AUTO_BATTLE_INTERVAL} minutes`
                   : 'Inactives - Les battles doivent être créées manuellement'}
               </p>
               {autoBattleEnabled && (
                 <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Intervalle fixe : {AUTO_BATTLE_INTERVAL} minutes (non modifiable)
+                  <Clock className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">Intervalle fixe : {AUTO_BATTLE_INTERVAL} minutes (non modifiable)</span>
                 </p>
               )}
             </div>
           </div>
-          <button
+          <motion.button
+            whileHover={!prefersReducedMotion ? { scale: 1.02 } : {}}
+            whileTap={!prefersReducedMotion ? { scale: 0.98 } : {}}
             onClick={handleToggleAutoBattles}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors min-h-[44px] flex-shrink-0 ${
               autoBattleEnabled
                 ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30'
                 : 'bg-teal-500/20 hover:bg-teal-500/30 text-teal-400 border border-teal-500/30'
             }`}
           >
             {autoBattleEnabled ? 'Désactiver' : 'Activer'}
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Bouton Nouvelle Battle */}
-      {!showCreateBattleForm && (
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-          <button
-            onClick={() => setShowCreateBattleForm(true)}
-            className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 border border-indigo-500/30 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
+      <AnimatePresence>
+        {!showCreateBattleForm && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+            className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 border border-slate-800"
           >
-            <Zap className="w-5 h-5" />
-            <span>Nouvelle Battle</span>
-          </button>
-        </div>
-      )}
+            <motion.button
+              whileHover={!prefersReducedMotion ? { scale: 1.01 } : {}}
+              whileTap={!prefersReducedMotion ? { scale: 0.99 } : {}}
+              onClick={() => setShowCreateBattleForm(true)}
+              className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-indigo-600 hover:bg-indigo-700 border border-indigo-500/30 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 sm:gap-3 min-h-[44px]"
+            >
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base">Nouvelle Battle</span>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Section Création de Battle */}
-      {showCreateBattleForm && (
-        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
-                <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                  <Zap className="w-5 h-5 text-indigo-400" />
-                </div>
-                Créer une Photo Battle
-              </h2>
-              <p className="text-sm text-slate-400">
-                Sélectionnez deux photos pour créer une battle. Les invités voteront pour leur photo préférée.
-              </p>
+      <AnimatePresence>
+        {showCreateBattleForm && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+            className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 border border-slate-800"
+          >
+            <div className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
+                  <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20 flex-shrink-0">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
+                  </div>
+                  <span className="truncate">Créer une Photo Battle</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  Sélectionnez deux photos pour créer une battle. Les invités voteront pour leur photo préférée.
+                </p>
+              </div>
+              <motion.button
+                whileHover={!prefersReducedMotion ? { scale: 1.1 } : {}}
+                whileTap={!prefersReducedMotion ? { scale: 0.9 } : {}}
+                onClick={() => {
+                  setShowCreateBattleForm(false);
+                  setSelectedPhoto1(null);
+                  setSelectedPhoto2(null);
+                }}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-slate-200 flex-shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center"
+                title="Fermer"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </motion.button>
             </div>
-            <button
-              onClick={() => {
-                setShowCreateBattleForm(false);
-                setSelectedPhoto1(null);
-                setSelectedPhoto2(null);
-              }}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-slate-200"
-              title="Fermer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
 
-          {/* Sélection des photos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Sélection des photos */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
             {/* Photo 1 */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
                 Photo 1 {selectedPhoto1 && <span className="text-teal-400">✓</span>}
               </label>
-              <div className="bg-slate-800/50 rounded-lg p-4 border-2 border-dashed border-slate-800 min-h-[200px] flex items-center justify-center">
+              <div className="bg-slate-800/50 rounded-lg p-3 sm:p-4 border-2 border-dashed border-slate-800 min-h-[180px] sm:min-h-[200px] flex items-center justify-center">
                 {selectedPhoto1 ? (
                   <div className="relative w-full">
                     <img
@@ -291,10 +324,10 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
 
             {/* Photo 2 */}
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
                 Photo 2 {selectedPhoto2 && <span className="text-teal-400">✓</span>}
               </label>
-              <div className="bg-slate-800/50 rounded-lg p-4 border-2 border-dashed border-slate-800 min-h-[200px] flex items-center justify-center">
+              <div className="bg-slate-800/50 rounded-lg p-3 sm:p-4 border-2 border-dashed border-slate-800 min-h-[180px] sm:min-h-[200px] flex items-center justify-center">
                 {selectedPhoto2 ? (
                   <div className="relative w-full">
                     <img
@@ -319,53 +352,55 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
             </div>
           </div>
 
-          {/* Durée de la battle */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Durée de la battle (minutes)
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="number"
-                min="5"
-                max="120"
-                value={battleDuration}
-                onChange={(e) => setBattleDuration(Number(e.target.value))}
-                className="w-32 bg-slate-800/50 border border-slate-800 rounded-lg px-4 py-3 text-white focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
-              />
-              <div className="flex items-center gap-2 text-slate-400 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>La battle se terminera automatiquement après {battleDuration} minutes</span>
+            {/* Durée de la battle */}
+            <div className="mb-4 sm:mb-6">
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
+                Durée de la battle (minutes)
+              </label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                <input
+                  type="number"
+                  min="5"
+                  max="120"
+                  value={battleDuration}
+                  onChange={(e) => setBattleDuration(Number(e.target.value))}
+                  className="w-full sm:w-32 bg-slate-800/50 border border-slate-800 rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-white focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all min-h-[44px]"
+                />
+                <div className="flex items-center gap-2 text-slate-400 text-xs sm:text-sm">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="truncate">La battle se terminera automatiquement après {battleDuration} minutes</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Bouton Créer */}
-          <button
-            onClick={handleCreateBattle}
-            disabled={!selectedPhoto1 || !selectedPhoto2 || isCreatingBattle || selectedPhoto1.id === selectedPhoto2.id}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            {isCreatingBattle ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                <span>Création en cours...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5" />
-                <span>Créer la Battle</span>
-              </>
-            )}
-          </button>
+            {/* Bouton Créer */}
+            <motion.button
+              whileHover={!prefersReducedMotion && (!selectedPhoto1 || !selectedPhoto2 || isCreatingBattle || selectedPhoto1.id === selectedPhoto2.id) ? {} : { scale: 1.01 }}
+              whileTap={!prefersReducedMotion && (!selectedPhoto1 || !selectedPhoto2 || isCreatingBattle || selectedPhoto1.id === selectedPhoto2.id) ? {} : { scale: 0.99 }}
+              onClick={handleCreateBattle}
+              disabled={!selectedPhoto1 || !selectedPhoto2 || isCreatingBattle || selectedPhoto1.id === selectedPhoto2.id}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-800 disabled:cursor-not-allowed text-white font-medium py-3 px-4 sm:px-6 rounded-lg transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              {isCreatingBattle ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent"></div>
+                  <span className="text-sm sm:text-base">Création en cours...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-sm sm:text-base">Créer la Battle</span>
+                </>
+              )}
+            </motion.button>
 
-          {/* Liste des photos pour sélection */}
-          <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800 mt-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-100">
-              <ImageIcon className="w-5 h-5 text-indigo-400" />
-              Sélectionner des photos ({allPhotos.length} disponibles)
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto">
+            {/* Liste des photos pour sélection */}
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 border border-slate-800 mt-4 sm:mt-6">
+              <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-slate-100">
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400 flex-shrink-0" />
+                <span className="truncate">Sélectionner des photos ({allPhotos.length} disponibles)</span>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 max-h-[300px] sm:max-h-[400px] overflow-y-auto custom-scrollbar">
               {allPhotos.map(photo => {
                 const isSelected1 = selectedPhoto1?.id === photo.id;
                 const isSelected2 = selectedPhoto2?.id === photo.id;
@@ -409,44 +444,85 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
                   </div>
                 );
               })}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Battles Actives */}
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-100">
-          <Trophy className="w-5 h-5 text-indigo-400" />
-          Battles Actives 
-          <span className="text-indigo-400 px-2 py-0.5 bg-indigo-400/10 rounded-lg text-xs font-medium ml-2">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+        className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 border border-slate-800"
+      >
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-slate-100">
+          <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400 flex-shrink-0" />
+          <span className="truncate">Battles Actives</span>
+          <span className="text-indigo-400 px-2 py-0.5 bg-indigo-400/10 rounded-lg text-xs font-medium ml-2 flex-shrink-0">
             {battles.length}
           </span>
         </h3>
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
-          </div>
-        ) : battles.length === 0 ? (
-          <div className="flex flex-col items-center py-10">
-            <Trophy className="w-10 h-10 text-slate-500 mb-2" />
-            <p className="text-slate-400 text-lg font-medium">Aucune battle active</p>
-            <p className="text-slate-500 text-sm mt-1">Créez une battle pour lancer un duel photo !</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {battles.map(battle => {
-              const totalVotes = battle.votes1Count + battle.votes2Count;
-              const photo1Percentage = totalVotes > 0 ? (battle.votes1Count / totalVotes) * 100 : 50;
-              const photo2Percentage = totalVotes > 0 ? (battle.votes2Count / totalVotes) * 100 : 50;
-              const timeRemaining = battle.expiresAt ? Math.max(0, battle.expiresAt - Date.now()) : null;
-              const isEndingSoon = timeRemaining !== null && timeRemaining < 15000;
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+            >
+              <BattleGridSkeleton count={2} />
+            </motion.div>
+          ) : battles.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+              className="flex flex-col items-center py-8 sm:py-10"
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+              >
+                <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-slate-500 mb-2" />
+              </motion.div>
+              <p className="text-slate-400 text-base sm:text-lg font-medium mb-1">Aucune battle active</p>
+              <p className="text-slate-500 text-xs sm:text-sm text-center px-4">Créez une battle pour lancer un duel photo !</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="battles"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4"
+            >
+              {battles.map((battle, index) => {
+                const totalVotes = battle.votes1Count + battle.votes2Count;
+                const photo1Percentage = totalVotes > 0 ? (battle.votes1Count / totalVotes) * 100 : 50;
+                const photo2Percentage = totalVotes > 0 ? (battle.votes2Count / totalVotes) * 100 : 50;
+                const timeRemaining = battle.expiresAt ? Math.max(0, battle.expiresAt - Date.now()) : null;
+                const isEndingSoon = timeRemaining !== null && timeRemaining < 15000;
 
-              return (
-                <div
-                  key={battle.id}
-                  className="relative bg-slate-950/50 border border-slate-800 rounded-lg p-4 hover:border-indigo-500/30 transition-colors"
-                >
+                return (
+                  <motion.div
+                    key={battle.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : 0.3,
+                      delay: index * 0.1,
+                      ease: [0.16, 1, 0.3, 1]
+                    }}
+                    whileHover={!prefersReducedMotion ? { y: -2, scale: 1.01 } : {}}
+                    className="relative bg-slate-950/50 border border-slate-800 rounded-lg p-3 sm:p-4 hover:border-indigo-500/30 transition-colors shadow-md hover:shadow-lg"
+                  >
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     {/* Photo 1 */}
                     <div className={`relative bg-slate-900/50 rounded-lg overflow-hidden ${photo1Percentage > photo2Percentage ? 'ring-2 ring-indigo-400/60' : ''}`}>
@@ -526,28 +602,52 @@ export const BattlesTab: React.FC<BattlesTabProps> = () => {
                         </div>
                       )}
                     </div>
-                    <button
+                    <motion.button
+                      whileHover={!prefersReducedMotion ? { scale: 1.05 } : {}}
+                      whileTap={!prefersReducedMotion ? { scale: 0.95 } : {}}
                       onClick={() => handleFinishBattle(battle.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium rounded-lg text-[10px] transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium rounded-lg text-[10px] transition-colors min-h-[36px]"
                     >
                       <Trophy className="w-3 h-3" />
                       <span className="hidden sm:inline">Terminer</span>
                       <span className="sm:hidden">Fin</span>
-                    </button>
+                    </motion.button>
                   </div>
                   {/* Info overlay if battle is ending soon */}
                   {isEndingSoon && (
-                    <div className="absolute top-1.5 right-1.5 bg-yellow-400/90 text-yellow-950 text-[9px] font-medium px-2 py-1 rounded-lg shadow flex items-center gap-1 animate-pulse">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-1.5 right-1.5 bg-yellow-400/90 text-yellow-950 text-[9px] font-medium px-2 py-1 rounded-lg shadow flex items-center gap-1 animate-pulse"
+                    >
                       <Clock className="w-3 h-3" />
                       <span>Fin proche !</span>
-                    </div>
+                    </motion.div>
                   )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Styles pour scrollbar personnalisée */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.2);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(148, 163, 184, 0.4);
+        }
+      `}</style>
     </div>
   );
 };
