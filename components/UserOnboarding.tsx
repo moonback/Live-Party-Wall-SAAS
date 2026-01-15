@@ -111,23 +111,34 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
   useEffect(() => {
     if (!currentEvent?.id) {
       // Réinitialiser aux valeurs par défaut si pas d'événement
-      setBackgroundDesktopUrl(defaultSettings.background_desktop_url);
-      setBackgroundMobileUrl(defaultSettings.background_mobile_url);
+      const defaultDesktop = defaultSettings.background_desktop_url;
+      const defaultMobile = defaultSettings.background_mobile_url;
+      setBackgroundDesktopUrl(prev => prev !== defaultDesktop ? defaultDesktop : prev);
+      setBackgroundMobileUrl(prev => prev !== defaultMobile ? defaultMobile : prev);
       return;
     }
 
+    let isMounted = true;
+
     getSettings(currentEvent.id).then(settings => {
-      setBackgroundDesktopUrl(settings.background_desktop_url ?? defaultSettings.background_desktop_url);
-      setBackgroundMobileUrl(settings.background_mobile_url ?? defaultSettings.background_mobile_url);
+      if (!isMounted) return;
+      const desktopUrl = settings.background_desktop_url ?? defaultSettings.background_desktop_url;
+      const mobileUrl = settings.background_mobile_url ?? defaultSettings.background_mobile_url;
+      setBackgroundDesktopUrl(prev => prev !== desktopUrl ? desktopUrl : prev);
+      setBackgroundMobileUrl(prev => prev !== mobileUrl ? mobileUrl : prev);
     });
 
     // Realtime Subscription pour les changements de fond
     const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
-      setBackgroundDesktopUrl(newSettings.background_desktop_url ?? defaultSettings.background_desktop_url);
-      setBackgroundMobileUrl(newSettings.background_mobile_url ?? defaultSettings.background_mobile_url);
+      if (!isMounted) return;
+      const desktopUrl = newSettings.background_desktop_url ?? defaultSettings.background_desktop_url;
+      const mobileUrl = newSettings.background_mobile_url ?? defaultSettings.background_mobile_url;
+      setBackgroundDesktopUrl(prev => prev !== desktopUrl ? desktopUrl : prev);
+      setBackgroundMobileUrl(prev => prev !== mobileUrl ? mobileUrl : prev);
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [currentEvent?.id]);
@@ -232,7 +243,11 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
       localStorage.setItem('party_user_name', userName);
       localStorage.setItem('party_user_avatar', avatarPhoto);
       localStorage.setItem('party_user_event_id', currentEvent.id);
-      saveUserAvatar(userName, avatarPhoto);
+      // Sauvegarder l'avatar de manière asynchrone (avec compression)
+      saveUserAvatar(userName, avatarPhoto).catch(error => {
+        console.warn('Failed to save user avatar to mapping:', error);
+        // Ne pas bloquer l'application si la sauvegarde échoue
+      });
 
       if (stream) {
         stream.getTracks().forEach(track => track.stop());

@@ -121,10 +121,12 @@ export const submitPhoto = async ({
     userDescription
   );
 
-  // Sauvegarder l'avatar si disponible
+  // Sauvegarder l'avatar si disponible (de manière asynchrone, ne pas bloquer)
   const currentAvatar = getCurrentUserAvatar();
   if (currentAvatar && finalAuthorName === localStorage.getItem('party_user_name')) {
-    saveUserAvatar(finalAuthorName, currentAvatar);
+    saveUserAvatar(finalAuthorName, currentAvatar).catch(error => {
+      logger.warn('Failed to save user avatar', { component: 'photoboothService', action: 'submitPhoto' }, error);
+    });
   }
 
   return photo;
@@ -153,10 +155,12 @@ export const submitVideo = async ({
     userDescription
   );
 
-  // Sauvegarder l'avatar si disponible
+  // Sauvegarder l'avatar si disponible (de manière asynchrone, ne pas bloquer)
   const currentAvatar = getCurrentUserAvatar();
   if (currentAvatar && finalAuthorName === localStorage.getItem('party_user_name')) {
-    saveUserAvatar(finalAuthorName, currentAvatar);
+    saveUserAvatar(finalAuthorName, currentAvatar).catch(error => {
+      logger.warn('Failed to save user avatar', { component: 'photoboothService', action: 'submitVideo' }, error);
+    });
   }
 
   return photo;
