@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
 import { useToast } from '../context/ToastContext';
@@ -45,7 +45,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Local state for moderation (reversed photos for newest first)
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  // Utiliser useMemo pour éviter les re-renders inutiles et la boucle infinie
+  const photos = useMemo(() => {
+    return [...allPhotos].reverse();
+  }, [allPhotos]);
   
   const [isExporting, setIsExporting] = useState(false);
   const [isExportingWithMetadata, setIsExportingWithMetadata] = useState(false);
@@ -55,11 +58,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [guestStats, setGuestStats] = useState<Map<string, { photosCount: number; totalLikes: number; totalReactions: number }>>(new Map());
-
-  // Update photos when allPhotos changes
-  useEffect(() => {
-    setPhotos(allPhotos.slice().reverse());
-  }, [allPhotos]);
 
   // Forcer l'onglet actif à être "events", "license" ou "password" si aucun événement n'est sélectionné
   useEffect(() => {
