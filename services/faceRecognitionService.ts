@@ -1,11 +1,38 @@
 /**
  * Service de reconnaissance faciale utilisant face-api.js
  * Permet de détecter et comparer les visages dans les photos
+ * 
+ * IMPORTANT: face-api.js est chargé de manière dynamique pour éviter
+ * de dégrader le score LCP (Largest Contentful Paint) au chargement initial.
  */
 
-import * as faceapi from 'face-api.js';
 import { logger } from '../utils/logger';
 import { getFaceModelsPath } from '../utils/electronPaths';
+
+// Type pour face-api.js (chargé dynamiquement)
+type FaceApi = typeof import('face-api.js');
+
+// Type pour les détections de visage avec descripteurs
+// Correspond à la structure retournée par face-api.js
+export interface FaceDetectionWithDescriptor {
+  detection: {
+    box: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    score: number;
+  };
+  landmarks: {
+    positions: Array<{ x: number; y: number }>;
+  };
+  descriptor: Float32Array;
+}
+
+// Variable pour stocker la bibliothèque chargée dynamiquement
+let faceapi: FaceApi | null = null;
+let isLoadingFaceApi = false;
 
 // État de chargement des modèles
 let modelsLoaded = false;
@@ -16,8 +43,48 @@ let isLoadingModels = false;
 const SIMILARITY_THRESHOLD = 0.6;
 
 /**
+ * Charge la bibliothèque face-api.js de manière dynamique
+ * Cette fonction est idempotente : elle ne charge la bibliothèque qu'une seule fois
+ * @returns Promise résolue avec la bibliothèque face-api.js chargée
+ */
+const loadFaceApi = async (): Promise<FaceApi> => {
+  // Si déjà chargée, retourner directement
+  if (faceapi) {
+    return faceapi;
+  }
+
+  // Si un chargement est en cours, attendre qu'il se termine
+  if (isLoadingFaceApi) {
+    while (isLoadingFaceApi) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (faceapi) {
+      return faceapi;
+    }
+    throw new Error('Erreur lors du chargement de face-api.js');
+  }
+
+  isLoadingFaceApi = true;
+
+  try {
+    // Import dynamique de face-api.js
+    const faceApiModule = await import('face-api.js');
+    faceapi = faceApiModule as FaceApi;
+    logger.info('Face-api.js library loaded successfully', { component: 'faceRecognitionService' });
+    return faceapi;
+  } catch (error) {
+    logger.error('Error loading face-api.js library', error, { component: 'faceRecognitionService' });
+    isLoadingFaceApi = false;
+    throw new Error('Impossible de charger la bibliothèque face-api.js');
+  } finally {
+    isLoadingFaceApi = false;
+  }
+};
+
+/**
  * Charge les modèles face-api.js depuis le dossier public
  * Les modèles doivent être dans public/models/face-api/
+ * Charge d'abord la bibliothèque face-api.js si nécessaire
  */
 export const loadFaceModels = async (): Promise<boolean> => {
   if (modelsLoaded) {
@@ -35,14 +102,17 @@ export const loadFaceModels = async (): Promise<boolean> => {
   isLoadingModels = true;
 
   try {
+    // Charger d'abord la bibliothèque face-api.js si nécessaire
+    const faceApiLib = await loadFaceApi();
+
     // Utiliser la fonction utilitaire pour obtenir le bon chemin (Electron ou web)
     const MODEL_URL = getFaceModelsPath();
 
     // Charger les modèles nécessaires
     await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+      faceApiLib.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceApiLib.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceApiLib.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
     ]);
 
     modelsLoaded = true;
@@ -83,12 +153,22 @@ export const loadFaceModels = async (): Promise<boolean> => {
  */
 export const detectFaces = async (
   imageElement: HTMLImageElement | HTMLCanvasElement | ImageData
-): Promise<faceapi.WithFaceDescriptor<faceapi.WithFaceLandmarks<{ detection: faceapi.FaceDetection }, faceapi.FaceLandmarks68>>[]> => {
+): Promise<FaceDetectionWithDescriptor[]> => {
+  // Charger les modèles si nécessaire (cela chargera aussi face-api.js)
   if (!modelsLoaded) {
     const loaded = await loadFaceModels();
     if (!loaded) {
       throw new Error('Les modèles de reconnaissance faciale n\'ont pas pu être chargés');
     }
+  }
+
+  // S'assurer que face-api.js est chargé
+  if (!faceapi) {
+    await loadFaceApi();
+  }
+
+  if (!faceapi) {
+    throw new Error('La bibliothèque face-api.js n\'a pas pu être chargée');
   }
 
   try {
@@ -98,7 +178,8 @@ export const detectFaces = async (
       .withFaceLandmarks()
       .withFaceDescriptors();
 
-    return detections;
+    // Retourner les détections (la structure de face-api.js correspond déjà à notre interface)
+    return detections as unknown as FaceDetectionWithDescriptor[];
   } catch (error) {
     logger.error('Error detecting faces', error, { component: 'faceRecognitionService' });
     throw error;
