@@ -293,14 +293,21 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Nombre de colonnes adaptatif selon la largeur de l'écran
+  // Nombre de colonnes adaptatif selon la largeur de l'écran - Breakpoints optimisés
   const numColumns = useMemo(() => {
     if (isMobile) return 1;
-    if (windowWidth < 640) return 1; // sm
-    if (windowWidth < 768) return 2; // md
-    if (windowWidth < 1024) return 3; // lg
-    if (windowWidth < 1280) return 4; // xl
-    return 4; // 2xl+
+    // Mobile: < 640px
+    if (windowWidth < 640) return 1;
+    // Tablette portrait: 640px - 768px
+    if (windowWidth < 768) return 2;
+    // Tablette paysage: 768px - 1024px
+    if (windowWidth < 1024) return 3;
+    // Desktop petit: 1024px - 1280px
+    if (windowWidth < 1280) return 4;
+    // Desktop moyen: 1280px - 1536px
+    if (windowWidth < 1536) return 4;
+    // Desktop large: 1536px+
+    return 5;
   }, [isMobile, windowWidth]);
 
   // Trier les battles par date de création (plus récentes en premier)
@@ -343,8 +350,8 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-4 md:gap-6">
-        <PhotoCardSkeletons count={8} columns={isMobile ? 1 : 4} />
+      <div className="w-full">
+        <PhotoCardSkeletons count={numColumns * 2} columns={numColumns} />
       </div>
     );
   }
@@ -373,10 +380,16 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
 
   // Render selon le mode de vue
   const renderGridView = () => (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8">
-      <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6 md:flex-row">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
+      <div className={`flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-6 ${numColumns > 1 ? 'md:flex-row' : ''}`}>
         {columnsData.map((colData, colIdx) => (
-          <div key={colIdx} className="flex-1 min-w-0">
+          <motion.div 
+            key={colIdx} 
+            className="flex-1 min-w-0"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: colIdx * 0.1 }}
+          >
             <VirtualColumn
               data={colData}
               scrollContainerRef={scrollRef}
@@ -402,16 +415,22 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onClearCaption={onClearCaption}
               onDeletePhoto={onDeletePhoto}
             />
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
   );
 
   const renderListView = () => (
-    <div className="space-y-2 sm:space-y-3">
-      {battlesForGrid.map((battle) => (
-        <div key={battle.id} className="mb-4">
+    <div className="space-y-2 sm:space-y-3 md:space-y-4">
+      {battlesForGrid.map((battle, index) => (
+        <motion.div 
+          key={battle.id} 
+          className="mb-3 sm:mb-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+        >
           <PhotoBattleComponent
             battle={battle}
             userId={userId}
@@ -422,106 +441,85 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onPhotoClick(photo, photoIndex !== -1 ? photoIndex : 0);
             } : undefined}
           />
-        </div>
+        </motion.div>
       ))}
       {photos.map((photo, index) => (
-        <div key={photo.id} className="mb-3 sm:mb-4">
-          <div className="flex gap-3 sm:gap-4 bg-slate-900/40 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all">
-            <div className="flex-shrink-0 w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40">
+        <motion.div 
+          key={photo.id} 
+          className="mb-3 sm:mb-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: (battlesForGrid.length + index) * 0.05, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex gap-3 sm:gap-4 md:gap-6 bg-slate-900/40 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-300">
+            <div className="flex-shrink-0 w-24 sm:w-32 md:w-40 lg:w-48 h-24 sm:h-32 md:h-40 lg:h-48">
               {photo.type === 'video' ? (
                 <video
                   src={photo.url}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-l-xl sm:rounded-l-2xl"
                   preload="metadata"
                 />
               ) : (
                 <img
                   src={photo.url}
                   alt={photo.caption}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-l-xl sm:rounded-l-2xl"
                   loading="lazy"
                 />
               )}
             </div>
-            <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
+            <div className="flex-1 p-3 sm:p-4 md:p-5 flex flex-col justify-between min-w-0">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="font-bold text-white text-sm sm:text-base truncate">{photo.author}</p>
-                  <span className="text-slate-500 text-xs">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <p className="font-bold text-white text-sm sm:text-base md:text-lg truncate">{photo.author}</p>
+                  <span className="text-slate-500 text-xs sm:text-sm">
                     {new Date(photo.timestamp).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
                 {photo.caption && (
-                  <p className="text-slate-300 text-xs sm:text-sm line-clamp-2 mb-2">{photo.caption}</p>
+                  <p className="text-slate-300 text-xs sm:text-sm md:text-base line-clamp-2 mb-2">{photo.caption}</p>
                 )}
               </div>
-              <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
                 <button
                   onClick={() => onLike(photo.id)}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-2 sm:p-2.5 rounded-lg transition-colors ${
                     likedPhotoIds.has(photo.id) ? 'text-red-500' : 'text-slate-400 hover:text-red-500'
                   }`}
                   disabled={selectionMode}
                 >
-                  <svg className="w-5 h-5" fill={likedPhotoIds.has(photo.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill={likedPhotoIds.has(photo.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </button>
-                <span className="text-slate-400 text-xs sm:text-sm">{photo.likes_count} likes</span>
+                <span className="text-slate-400 text-xs sm:text-sm md:text-base">{photo.likes_count} likes</span>
                 <button
                   onClick={() => onDownload(photo)}
-                  className="p-2 rounded-lg text-slate-400 hover:text-blue-400 transition-colors"
+                  className="p-2 sm:p-2.5 rounded-lg text-slate-400 hover:text-blue-400 transition-colors"
                   disabled={downloadingIds.has(photo.id) || selectionMode}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
 
   const renderMasonryView = () => (
-    <div className="space-y-4 sm:space-y-6 md:space-y-8">
-      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-3 sm:gap-4 md:gap-6">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
+      <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 sm:gap-4 md:gap-6">
         {photos.map((photo, index) => (
-          <div key={photo.id} className="break-inside-avoid mb-3 sm:mb-4 md:mb-6">
-            <GuestPhotoCard
-              photo={photo}
-              isLiked={likedPhotoIds.has(photo.id)}
-              onLike={onLike}
-              onDownload={onDownload}
-              allPhotos={photos}
-              index={index}
-              isDownloading={downloadingIds.has(photo.id)}
-              userReaction={userReactions.get(photo.id) || null}
-              onReaction={onReaction}
-              reactions={photosReactions.get(photo.id) || {}}
-              guestAvatars={guestAvatars}
-              selectionMode={selectionMode}
-              isSelected={selectedIds.has(photo.id)}
-              onSelect={onSelect}
-              onUpdateCaption={onUpdateCaption}
-              onClearCaption={onClearCaption}
-              onDeletePhoto={onDeletePhoto}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderCarouselView = () => (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 sm:gap-4 pb-4">
-        {photos.map((photo, index) => (
-          <div
-            key={photo.id}
-            className="flex-shrink-0 w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] snap-center"
+          <motion.div 
+            key={photo.id} 
+            className="break-inside-avoid mb-3 sm:mb-4 md:mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
           >
             <GuestPhotoCard
               photo={photo}
@@ -542,7 +540,43 @@ export const GalleryContent: React.FC<GalleryContentProps> = ({
               onClearCaption={onClearCaption}
               onDeletePhoto={onDeletePhoto}
             />
-          </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCarouselView = () => (
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+      <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 sm:gap-4 md:gap-6 pb-4">
+        {photos.map((photo, index) => (
+          <motion.div
+            key={photo.id}
+            className="flex-shrink-0 w-[85vw] sm:w-[70vw] md:w-[55vw] lg:w-[45vw] xl:w-[35vw] snap-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <GuestPhotoCard
+              photo={photo}
+              isLiked={likedPhotoIds.has(photo.id)}
+              onLike={onLike}
+              onDownload={onDownload}
+              allPhotos={photos}
+              index={index}
+              isDownloading={downloadingIds.has(photo.id)}
+              userReaction={userReactions.get(photo.id) || null}
+              onReaction={onReaction}
+              reactions={photosReactions.get(photo.id) || {}}
+              guestAvatars={guestAvatars}
+              selectionMode={selectionMode}
+              isSelected={selectedIds.has(photo.id)}
+              onSelect={onSelect}
+              onUpdateCaption={onUpdateCaption}
+              onClearCaption={onClearCaption}
+              onDeletePhoto={onDeletePhoto}
+            />
+          </motion.div>
         ))}
       </div>
     </div>
