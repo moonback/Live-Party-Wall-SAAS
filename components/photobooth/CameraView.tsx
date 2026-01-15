@@ -24,6 +24,7 @@ interface CameraViewProps {
   burstMode?: boolean;
   onBurstModeToggle?: () => void;
   isCapturingBurst?: boolean;
+  isLimitReached?: boolean;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
@@ -43,7 +44,8 @@ export const CameraView: React.FC<CameraViewProps> = ({
   onTimerSettingsClick,
   burstMode = false,
   onBurstModeToggle,
-  isCapturingBurst = false
+  isCapturingBurst = false,
+  isLimitReached = false
 }) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const showSwitchCamera = videoDevices.length > 1 || videoDevices.length === 0;
@@ -139,7 +141,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
             cameraError={cameraError}
             countdown={countdown}
             onClick={onCapture}
-            disabled={isCapturingBurst}
+            disabled={isCapturingBurst || isLimitReached}
           />
         }
       />

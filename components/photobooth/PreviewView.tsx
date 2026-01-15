@@ -28,6 +28,7 @@ interface PreviewViewProps {
   onToggleFrames: () => void;
   decorativeFrameUrl?: string | null;
   decorativeFrameEnabled?: boolean;
+  isLimitReached?: boolean;
 }
 
 export const PreviewView: React.FC<PreviewViewProps> = ({
@@ -52,7 +53,8 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   onToggleFilters,
   onToggleFrames,
   decorativeFrameUrl,
-  decorativeFrameEnabled
+  decorativeFrameEnabled,
+  isLimitReached = false
 }) => {
   const [isAuthorNameFocused, setIsAuthorNameFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
@@ -331,9 +333,9 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
         {/* Submit */}
         <button
           onClick={onSubmit}
-          disabled={loading}
+          disabled={loading || isLimitReached}
           className="group relative flex-1 min-w-[70px] sm:min-w-0 py-1.5 sm:py-2 landscape:py-1 landscape:sm:py-1.5 px-2 sm:px-3 landscape:px-1.5 bg-gradient-to-r from-pink-600 via-pink-500 to-pink-600 text-white rounded-lg font-bold shadow-[0_0_10px_rgba(219,39,119,0.4)] hover:shadow-[0_0_12px_rgba(219,39,119,0.6)] hover:from-pink-500 hover:via-pink-400 hover:to-pink-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center border border-pink-400/50 overflow-hidden"
-          aria-label={loading ? loadingStep : "Envoyer au mur"}
+          aria-label={loading ? loadingStep : isLimitReached ? "Limite atteinte" : "Envoyer au mur"}
         >
           {/* Shimmer effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />

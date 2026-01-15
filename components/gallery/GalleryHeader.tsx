@@ -20,6 +20,7 @@ interface GalleryHeaderProps {
   onParticipantsClick?: () => void;
   onSidebarToggle?: () => void;
   isSidebarOpen?: boolean;
+  isUploadDisabled?: boolean;
 }
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
@@ -36,7 +37,8 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
   onBatchDownload,
   onParticipantsClick,
   onSidebarToggle,
-  isSidebarOpen = false
+  isSidebarOpen = false,
+  isUploadDisabled = false
 }) => {
   const isMobile = useIsMobile();
   const internalSearchRef = useRef<HTMLInputElement>(null);
@@ -309,10 +311,13 @@ Votre mur social interactif
 
             {/* Upload Button */}
             <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={isUploadDisabled ? {} : { scale: 1.05, y: -2 }}
+              whileTap={isUploadDisabled ? {} : { scale: 0.95 }}
               onClick={onUploadClick}
-              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-5 md:py-2.5 md:rounded-2xl font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation relative overflow-hidden group"
+              disabled={isUploadDisabled}
+              className={`bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-5 md:py-2.5 md:rounded-2xl font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation relative overflow-hidden group ${
+                isUploadDisabled ? 'opacity-50 cursor-not-allowed grayscale' : ''
+              }`}
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"

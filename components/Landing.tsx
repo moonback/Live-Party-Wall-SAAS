@@ -7,9 +7,8 @@ import { useEvent } from '../context/EventContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
-import { isDemoLicense, MAX_PHOTOS_DEMO } from '../utils/licenseUtils';
-import { getEventPhotosCount } from '../services/photoService';
+import { useDemoLimit } from '../hooks/useDemoLimit';
+import { MAX_PHOTOS_DEMO } from '../utils/licenseUtils';
 
 interface LandingProps {
   onSelectMode: (mode: ViewMode) => void;
@@ -420,7 +419,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                         Limite atteinte
                       </span>
                       <span className="text-[10px] lg:text-xs text-white/90 font-medium">
-                        {MAX_PHOTOS_DEMO} photos maximum
+                        {photosCount}/{maxPhotos} photos maximum
                       </span>
                     </div>
                   </motion.div>
@@ -626,7 +625,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                       : 'text-white/60 group-hover:text-white/80 hidden lg:block'
                   }`}>
                     {isDisabled 
-                      ? `${MAX_PHOTOS_DEMO} photos maximum atteint` 
+                      ? `${photosCount}/${maxPhotos} photos - Limite atteinte` 
                       : option.description}
                   </p>
                 </div>
@@ -671,8 +670,7 @@ const LandingFooter: React.FC = () => {
 const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = false }) => {
   const isMobile = useIsMobile();
   const { currentEvent } = useEvent();
-  const { licenseKey } = useLicenseFeatures();
-  const [photosCount, setPhotosCount] = useState<number>(0);
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   const [uiConfig, setUiConfig] = useState({
     title: defaultSettings.event_title,
     subtitle: defaultSettings.event_subtitle,
@@ -703,9 +701,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
   const [mounted, setMounted] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
 
-  // Vérifier si on est en mode démo et compter les photos
-  const isDemo = isDemoLicense(licenseKey);
-  const isCaptureDisabled = isDemo && photosCount >= MAX_PHOTOS_DEMO;
+  // Utiliser le hook useDemoLimit pour vérifier la limite
+  const isCaptureDisabled = isLimitReached;
 
   useEffect(() => {
     setMounted(true);
@@ -713,30 +710,6 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     const userAvatar = getCurrentUserAvatar();
     setHasUserProfile(!!(userName && userAvatar));
   }, []);
-
-  // Compter les photos de l'événement actuel (pour vérifier la limite en mode démo)
-  useEffect(() => {
-    if (!currentEvent?.id || !isDemo) {
-      setPhotosCount(0);
-      return;
-    }
-
-    const countPhotos = async () => {
-      try {
-        const count = await getEventPhotosCount(currentEvent.id);
-        setPhotosCount(count);
-      } catch (error) {
-        console.error('Error counting photos:', error);
-        setPhotosCount(0);
-      }
-    };
-
-    countPhotos();
-
-    // Rafraîchir le compteur toutes les 5 secondes en mode démo
-    const interval = setInterval(countPhotos, 5000);
-    return () => clearInterval(interval);
-  }, [currentEvent?.id, isDemo]);
 
   useEffect(() => {
     if (!currentEvent?.id) {

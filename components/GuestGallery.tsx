@@ -7,6 +7,7 @@ import type { ReactionType, PhotoBattle } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
+import { useDemoLimit } from '../hooks/useDemoLimit';
 import { getActiveBattles, subscribeToNewBattles, subscribeToBattleUpdates } from '../services/battleService';
 import { getAftermovies, incrementAftermovieDownloadCount } from '../services/aftermovieShareService';
 import { useDebounce } from '../hooks/useDebounce';
@@ -52,6 +53,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
   const { addToast } = useToast();
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [likedPhotoIds, setLikedPhotoIds] = useState<Set<string>>(new Set());
@@ -699,7 +701,13 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       {/* Header */}
       <GalleryHeader
         onBack={onBack}
-        onUploadClick={onUploadClick}
+        onUploadClick={() => {
+          if (isLimitReached) {
+            addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+          } else {
+            onUploadClick();
+          }
+        }}
         onFiltersClick={() => setIsSidebarOpen(prev => !prev)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -710,6 +718,7 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
         selectedCount={selectedIds.size}
         onBatchDownload={handleBatchDownload}
         onParticipantsClick={() => setIsParticipantsModalOpen(true)}
+        isUploadDisabled={isLimitReached}
         onSidebarToggle={() => setIsSidebarOpen(prev => !prev)}
         isSidebarOpen={isSidebarOpen}
       />
@@ -824,7 +833,14 @@ const GuestGallery: React.FC<GuestGalleryProps> = ({ onBack, onUploadClick, onFi
       <GalleryFAB
         showScrollTop={showScrollTop}
         onScrollTop={scrollToTop}
-        onUploadClick={onUploadClick}
+        onUploadClick={() => {
+          if (isLimitReached) {
+            addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+          } else {
+            onUploadClick();
+          }
+        }}
+        isUploadDisabled={isLimitReached}
       />
 
       {/* Lightbox */}

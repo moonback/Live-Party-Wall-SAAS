@@ -8,12 +8,14 @@ interface GalleryFABProps {
   showScrollTop: boolean;
   onScrollTop: () => void;
   onUploadClick: () => void;
+  isUploadDisabled?: boolean;
 }
 
 export const GalleryFAB: React.FC<GalleryFABProps> = ({
   showScrollTop,
   onScrollTop,
-  onUploadClick
+  onUploadClick,
+  isUploadDisabled = false
 }) => {
   const isMobile = useIsMobile();
 

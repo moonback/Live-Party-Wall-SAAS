@@ -4,6 +4,7 @@ import { Photo } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
+import { useDemoLimit } from '../hooks/useDemoLimit';
 import { validateImageFile, validateAuthorName, validateVideoFile, validateVideoDuration } from '../utils/validation';
 import { logger } from '../utils/logger';
 import { drawPngOverlay } from '../utils/imageOverlay';
@@ -29,6 +30,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   const { addToast } = useToast();
   const { settings: eventSettings } = useSettings();
   const { currentEvent } = useEvent();
+  const { isLimitReached, photosCount, maxPhotos } = useDemoLimit();
   
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>('');
@@ -259,6 +261,11 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   };
 
   const initiateCapture = () => {
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
+
     if (mediaType === 'video') {
       if (isRecording) {
         stopRecording();
@@ -318,6 +325,12 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      e.target.value = ''; // Réinitialiser l'input
+      return;
+    }
+
     stopCamera();
     setLoading(true);
     setLoadingStep('Chargement...');
@@ -373,6 +386,11 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
 
   const handleSubmit = async () => {
     if (!preview) return;
+
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
 
     const nameValidation = validateAuthorName(authorName);
     if (!nameValidation.valid) {
@@ -488,6 +506,10 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
   };
 
   const triggerInput = () => {
+    if (isLimitReached) {
+      addToast(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement. (${photosCount}/${maxPhotos})`, 'error');
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -514,6 +536,27 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
         collageModeEnabled={eventSettings.collage_mode_enabled ?? true}
         onStopRecording={stopRecording}
       />
+
+      {/* Alerte limite atteinte */}
+      {isLimitReached && (
+        <div className="w-full max-w-2xl mx-auto mt-4 px-4">
+          <div className="bg-gradient-to-r from-red-600/95 via-orange-600/95 to-red-600/95 border-2 border-red-400/80 rounded-xl p-4 shadow-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-bold text-sm sm:text-base mb-1">Limite de photos atteinte</p>
+                <p className="text-white/90 text-xs sm:text-sm">
+                  La licence DEMO permet un maximum de {maxPhotos} photos par événement. ({photosCount}/{maxPhotos} photos)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4 w-full max-w-2xl mx-auto h-full mt-12 sm:mt-16">
         {burstPhotos.length > 0 ? (
@@ -547,6 +590,7 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
               addToast(newBurstMode ? 'Mode rafale activé' : 'Mode rafale désactivé', 'success');
             }}
             isCapturingBurst={isCapturingBurst}
+            isLimitReached={isLimitReached}
           />
         ) : (
           <PreviewView

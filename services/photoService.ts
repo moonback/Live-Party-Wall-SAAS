@@ -113,33 +113,42 @@ export const addPhotoToWall = async (
     throw new Error(validation.error || 'Image invalide');
   }
 
-  // Vérifier la limite de photos pour les licences DEMO
+  // Vérifier la limite de photos pour les licences DEMO (pour tous les utilisateurs, authentifiés ou non)
   try {
     const { getActiveLicense } = await import('./licenseService');
     const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
     const { data: { session } } = await supabase.auth.getSession();
     
+    // Vérifier la licence pour les utilisateurs authentifiés
+    let licenseKey: string | null = null;
     if (session?.user) {
       const activeLicense = await getActiveLicense(session.user.id);
-      const licenseKey = activeLicense?.license_key || null;
-      const maxPhotos = getMaxPhotos(licenseKey);
+      licenseKey = activeLicense?.license_key || null;
+    } else {
+      // Pour les invités non authentifiés, vérifier s'il y a une licence stockée localement
+      const storedLicenseKey = localStorage.getItem('partywall_license_key');
+      if (storedLicenseKey) {
+        licenseKey = storedLicenseKey;
+      }
+    }
+    
+    const maxPhotos = getMaxPhotos(licenseKey);
+    
+    if (maxPhotos !== null && isDemoLicense(licenseKey)) {
+      // Compter le nombre de photos existantes pour cet événement
+      const { count, error: countError } = await supabase
+        .from('photos')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', eventId);
       
-      if (maxPhotos !== null && isDemoLicense(licenseKey)) {
-        // Compter le nombre de photos existantes pour cet événement
-        const { count, error: countError } = await supabase
-          .from('photos')
-          .select('*', { count: 'exact', head: true })
-          .eq('event_id', eventId);
-        
-        if (countError) {
-          logger.error("Error counting photos for DEMO license check", countError, {
-            component: 'photoService',
-            action: 'addPhotoToWall',
-            eventId
-          });
-        } else if (count !== null && count >= maxPhotos) {
-          throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
-        }
+      if (countError) {
+        logger.error("Error counting photos for DEMO license check", countError, {
+          component: 'photoService',
+          action: 'addPhotoToWall',
+          eventId
+        });
+      } else if (count !== null && count >= maxPhotos) {
+        throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
       }
     }
   } catch (error) {
