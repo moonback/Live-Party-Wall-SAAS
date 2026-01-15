@@ -551,9 +551,32 @@ await updateEventSettings(eventId, {
 
 ### `exportService.ts`
 
+#### `exportPhotosToZip(photos, eventTitle, options?)`
+
+Exporte des photos en ZIP avec métadonnées et watermark optionnel.
+
+**Paramètres** :
+- `photos: Photo[]` - Liste des photos à exporter
+- `eventTitle: string` - Titre de l'événement (utilisé pour nommer le ZIP)
+- `options?: ExportOptions` - Options d'export (logoUrl, logoWatermarkEnabled)
+
+**Retour** : `Promise<void>` (télécharge automatiquement le ZIP)
+
+**Exemple** :
+```typescript
+await exportPhotosToZip(
+  selectedPhotos,
+  'Mariage Sophie et Marc',
+  {
+    logoUrl: 'https://...',
+    logoWatermarkEnabled: true
+  }
+);
+```
+
 #### `exportPhotosAsZip(eventId, photoIds?)`
 
-Exporte des photos en ZIP.
+Exporte des photos en ZIP (ancienne méthode, à déprécier).
 
 **Paramètres** :
 - `eventId: string` - ID de l'événement
@@ -561,15 +584,313 @@ Exporte des photos en ZIP.
 
 **Retour** : `Promise<Blob>` - Fichier ZIP
 
+---
+
+## 📷 Services Photobooth
+
+### `photoboothService.ts`
+
+#### `submitPhoto(params)`
+
+Soumet une photo depuis le photobooth avec traitement complet (filtres, cadres, IA).
+
+**Paramètres** :
+- `params: SubmitPhotoParams` - Paramètres complets :
+  - `imageDataUrl: string` - Image en base64
+  - `authorName: string` - Nom de l'auteur
+  - `userDescription?: string` - Description optionnelle
+  - `eventId: string` - ID de l'événement
+  - `eventSettings: EventSettings` - Paramètres de l'événement
+  - `activeFilter: string` - Filtre actif
+  - `activeFrame: string` - Cadre actif
+
+**Retour** : `Promise<Photo>`
+
 **Exemple** :
 ```typescript
-const zipBlob = await exportPhotosAsZip(eventId, selectedPhotoIds);
-const url = URL.createObjectURL(zipBlob);
-const a = document.createElement('a');
-a.href = url;
-a.download = 'photos.zip';
-a.click();
+const photo = await submitPhoto({
+  imageDataUrl: base64Image,
+  authorName: 'Sophie',
+  eventId: eventId,
+  eventSettings: settings,
+  activeFilter: 'vintage',
+  activeFrame: 'polaroid'
+});
 ```
+
+#### `submitVideo(params)`
+
+Soumet une vidéo depuis le photobooth.
+
+**Paramètres** :
+- `params: SubmitVideoParams` - Paramètres complets :
+  - `videoBlob: Blob` - Fichier vidéo
+  - `authorName: string` - Nom de l'auteur
+  - `userDescription?: string` - Description optionnelle
+  - `eventId: string` - ID de l'événement
+  - `videoDuration: number` - Durée en secondes
+  - `eventSettings: EventSettings` - Paramètres de l'événement
+
+**Retour** : `Promise<Photo>`
+
+---
+
+## 🖼️ Services Cadres
+
+### `frameService.ts`
+
+#### `uploadDecorativeFramePng(eventId, file)`
+
+Upload un cadre décoratif (PNG) dans Supabase Storage.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `file: File` - Fichier PNG (max 10MB)
+
+**Retour** : `Promise<UploadFrameResult>` - URL publique et chemin
+
+**Exemple** :
+```typescript
+const result = await uploadDecorativeFramePng(eventId, pngFile);
+// result.publicUrl : URL publique du cadre
+// result.path : Chemin dans Storage
+```
+
+### `localFramesService.ts`
+
+#### `getLocalFrames()`
+
+Récupère la liste des cadres locaux disponibles.
+
+**Retour** : `Promise<Frame[]>` - Liste des cadres
+
+---
+
+## 🎨 Services Backgrounds
+
+### `backgroundService.ts`
+
+#### `uploadBackground(eventId, file, type)`
+
+Upload une image de fond (desktop ou mobile) dans Supabase Storage.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `file: File` - Fichier image
+- `type: 'desktop' | 'mobile'` - Type de fond
+
+**Retour** : `Promise<string>` - URL publique
+
+---
+
+## 🔍 Services Reconnaissance Faciale
+
+### `faceRecognitionService.ts`
+
+#### `detectFaces(imageDataUrl)`
+
+Détecte les visages dans une image.
+
+**Paramètres** :
+- `imageDataUrl: string` - Image en base64
+
+**Retour** : `Promise<FaceDetection[]>` - Liste des visages détectés
+
+#### `matchFaces(imageDataUrl, storedFaces)`
+
+Compare une image avec des visages stockés.
+
+**Paramètres** :
+- `imageDataUrl: string` - Image à comparer
+- `storedFaces: StoredFace[]` - Visages stockés
+
+**Retour** : `Promise<FaceMatch[]>` - Correspondances trouvées
+
+### `faceStorageService.ts`
+
+#### `storeFaceDescriptor(eventId, authorName, descriptor)`
+
+Stocke un descripteur facial pour un invité.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `authorName: string` - Nom de l'invité
+- `descriptor: Float32Array` - Descripteur facial
+
+**Retour** : `Promise<void>`
+
+#### `getFaceDescriptors(eventId, authorName)`
+
+Récupère les descripteurs faciaux d'un invité.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `authorName: string` - Nom de l'invité
+
+**Retour** : `Promise<Float32Array[]>` - Liste des descripteurs
+
+---
+
+## 🌍 Services Traduction
+
+### `translationService.ts`
+
+#### `translateText(text, targetLanguage)`
+
+Traduit un texte dans une langue cible.
+
+**Paramètres** :
+- `text: string` - Texte à traduire
+- `targetLanguage: string` - Code langue cible (ex: 'en', 'es', 'de')
+
+**Retour** : `Promise<string>` - Texte traduit
+
+**Langues supportées** : FR, EN, ES, DE, IT, PT, NL, PL, RU, JA, ZH, KO, AR
+
+---
+
+## 🤖 Services IA Avancés
+
+### `aiService.ts`
+
+#### `analyzeAndCaptionImage(imageDataUrl, eventContext?, captionLanguage?, authorName?, companions?)`
+
+Analyse une image et génère une légende avec l'IA.
+
+**Paramètres** :
+- `imageDataUrl: string` - Image en base64
+- `eventContext?: string` - Contexte de l'événement
+- `captionLanguage?: string` - Langue de la légende
+- `authorName?: string` - Nom de l'auteur
+- `companions?: string[]` - Compagnons détectés
+
+**Retour** : `Promise<AIAnalysisResult>` - Résultat avec légende, tags, modération
+
+### `aiModerationService.ts`
+
+#### `moderateImage(imageDataUrl)`
+
+Modère une image pour détecter le contenu inapproprié.
+
+**Paramètres** :
+- `imageDataUrl: string` - Image en base64
+
+**Retour** : `Promise<ModerationResult>` - Résultat de modération
+
+### `aftermovieAIService.ts`
+
+#### `selectBestPhotosForAftermovie(photos, targetCount)`
+
+Sélectionne intelligemment les meilleures photos pour un aftermovie.
+
+**Paramètres** :
+- `photos: Photo[]` - Liste des photos
+- `targetCount: number` - Nombre de photos cible
+
+**Retour** : `Promise<Photo[]>` - Photos sélectionnées
+
+---
+
+## ⚔️ Services Battles Automatiques
+
+### `autoBattleService.ts`
+
+#### `createAutoBattle(eventId, photo1Id, photo2Id)`
+
+Crée automatiquement une battle entre deux photos.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `photo1Id: string` - ID de la première photo
+- `photo2Id: string` - ID de la deuxième photo
+
+**Retour** : `Promise<PhotoBattle>`
+
+---
+
+## 👏 Services Détection d'Applaudissements
+
+### `applauseDetectionService.ts`
+
+#### `detectApplause(audioBuffer)`
+
+Détecte les applaudissements dans un buffer audio.
+
+**Paramètres** :
+- `audioBuffer: AudioBuffer` - Buffer audio à analyser
+
+**Retour** : `Promise<boolean>` - True si applaudissements détectés
+
+---
+
+## 📤 Services Partage Social
+
+### `socialShareService.ts`
+
+#### `sharePhoto(photo, platform)`
+
+Partage une photo sur une plateforme sociale.
+
+**Paramètres** :
+- `photo: Photo` - Photo à partager
+- `platform: 'twitter' | 'facebook' | 'whatsapp'` - Plateforme
+
+**Retour** : `Promise<void>`
+
+---
+
+## 🎪 Services Contexte d'Événement
+
+### `eventContextService.ts`
+
+#### `getEventContext(eventId)`
+
+Récupère le contexte d'un événement.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+
+**Retour** : `Promise<string | null>` - Contexte de l'événement
+
+#### `updateEventContext(eventId, context)`
+
+Met à jour le contexte d'un événement.
+
+**Paramètres** :
+- `eventId: string` - ID de l'événement
+- `context: string` - Nouveau contexte
+
+**Retour** : `Promise<void>`
+
+---
+
+## 🔑 Services Licences
+
+### `licenseService.ts`
+
+#### `checkLicenseValidity(userId)`
+
+Vérifie la validité d'une licence utilisateur.
+
+**Paramètres** :
+- `userId: string` - ID de l'utilisateur
+
+**Retour** : `Promise<LicenseValidity>` - Informations de validité
+
+#### `getUserLicense(userId)`
+
+Récupère la licence d'un utilisateur.
+
+**Paramètres** :
+- `userId: string` - ID de l'utilisateur
+
+**Retour** : `Promise<License | null>`
+
+### `licenseSupabaseClient.ts`
+
+#### `licenseSupabase`
+
+Client Supabase spécialisé pour les opérations de licences (utilise service role key).
 
 ---
 

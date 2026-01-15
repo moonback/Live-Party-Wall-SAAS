@@ -42,7 +42,10 @@ Créer une animation collective et engageante où chaque photo devient un moment
 
 ## 📸 Aperçu visuel
 
-> 💡 **Note** : Ajoutez ici une capture d'écran ou un GIF de l'application en action.
+> 💡 **Note** : Pour ajouter des captures d'écran ou des GIFs :
+> 1. Placez vos fichiers dans le dossier `docs/Images/`
+> 2. Utilisez le format suivant : `![Description](./docs/Images/nom-fichier.png)`
+> 3. Recommandé : Capture d'écran de la landing page, du mur en action, et du dashboard admin
 
 ---
 
@@ -487,6 +490,78 @@ Ouvrez une [issue](https://github.com/moonback/Partywall-SAAS/issues) avec le la
 - Description détaillée
 - Cas d'usage
 - Bénéfices attendus
+
+---
+
+## 🔧 Troubleshooting
+
+### Problèmes courants et solutions
+
+#### Erreur "Supabase credentials missing"
+**Problème** : L'application ne peut pas se connecter à Supabase.
+
+**Solution** :
+1. Vérifiez que le fichier `.env` existe à la racine du projet
+2. Vérifiez que les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont définies
+3. Redémarrez le serveur de développement après modification du `.env`
+
+#### Erreur "GEMINI_API_KEY is not defined"
+**Problème** : Les fonctionnalités IA ne fonctionnent pas.
+
+**Solution** :
+1. Vérifiez que `GEMINI_API_KEY` est définie dans le fichier `.env`
+2. Obtenez une clé API sur [Google AI Studio](https://makersuite.google.com/app/apikey)
+3. Redémarrez le serveur après modification
+
+#### Les photos ne s'affichent pas en temps réel
+**Problème** : Les nouvelles photos n'apparaissent pas automatiquement.
+
+**Solution** :
+1. Vérifiez que Realtime est activé dans Supabase Dashboard > Database > Replication
+2. Vérifiez que les tables `photos`, `likes`, `reactions` ont Realtime activé
+3. Vérifiez votre connexion internet et les logs de la console navigateur
+
+#### Erreur lors de l'upload de photos
+**Problème** : Impossible d'uploader des photos.
+
+**Solution** :
+1. Vérifiez que le bucket `party-photos` existe dans Supabase Storage
+2. Vérifiez les politiques Storage (lecture/écriture publiques)
+3. Vérifiez la taille du fichier (max 20MB pour photos, 50MB pour vidéos)
+4. Vérifiez le type de fichier (JPEG, PNG, WebP pour photos ; MP4, WebM pour vidéos)
+
+#### L'application Electron ne se lance pas
+**Problème** : Erreur lors du lancement de l'application desktop.
+
+**Solution** :
+1. Vérifiez que Node.js >= 18.0.0 est installé
+2. Exécutez `npm install` pour installer les dépendances
+3. Vérifiez que les variables d'environnement sont définies
+4. Consultez les logs dans la console pour plus de détails
+
+#### Les modèles de reconnaissance faciale ne se chargent pas
+**Problème** : La fonctionnalité "Retrouve-moi" ne fonctionne pas.
+
+**Solution** :
+1. Exécutez `npm run download:face-models` pour télécharger les modèles
+2. Vérifiez que les fichiers sont présents dans `public/models/face-api/`
+3. Vérifiez la console navigateur pour les erreurs de chargement
+
+#### Problèmes de performance avec beaucoup de photos
+**Problème** : L'application devient lente avec 500+ photos.
+
+**Solution** :
+1. Utilisez la pagination (chargement par lots)
+2. Activez la virtualisation (déjà activée par défaut)
+3. Vérifiez que les index sont créés sur `event_id` et `created_at`
+4. Considérez l'archivage des anciennes photos
+
+### Obtenir de l'aide
+
+Si vous rencontrez un problème non listé ici :
+1. Consultez la [documentation complète](./ARCHITECTURE.md)
+2. Vérifiez les [issues GitHub](https://github.com/moonback/Partywall-SAAS/issues)
+3. Créez une nouvelle issue avec les détails du problème
 
 ---
 
