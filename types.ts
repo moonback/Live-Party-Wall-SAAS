@@ -23,6 +23,18 @@ export interface ReactionCounts {
   thumbsup?: number;
 }
 
+// Types pour les filtres IA
+export interface AIFilterParams {
+  brightness: number; // 0.8-1.2
+  contrast: number; // 0.9-1.3
+  saturation: number; // 0.7-1.4
+  hue: number; // -30 à +30 degrés
+  vignette: number; // 0-0.3
+  grain: number; // 0-0.2
+  blur: number; // 0-2px
+  colorMatrix?: number[]; // Matrice 5x4 pour transformations de couleur avancées (20 valeurs)
+}
+
 export interface Photo {
   id: string;
   url: string; // Base64 data URL ou URL Supabase Storage
@@ -36,6 +48,9 @@ export interface Photo {
   reactions?: ReactionCounts; // Compteurs de réactions par type
   tags?: string[]; // Tags suggérés par l'IA (ex: ['sourire', 'groupe', 'danse', 'fête'])
   user_description?: string; // Description saisie par l'utilisateur lors de l'upload
+  appliedFilter?: string; // Filtre appliqué à la photo (FilterType ou 'ai-custom')
+  aiFilterParams?: AIFilterParams; // Paramètres de filtre générés par IA (si filtre personnalisé)
+  suggestedArtisticStyle?: string; // Style artistique suggéré par l'IA (ArtisticFilterType)
 }
 
 export interface Aftermovie {
@@ -244,6 +259,9 @@ export interface PhotoRow {
   duration: number | null;
   tags: string[] | null; // Tags suggérés par l'IA (tableau JSON)
   user_description: string | null; // Description saisie par l'utilisateur
+  applied_filter: string | null; // Filtre appliqué à la photo
+  ai_filter_params: AIFilterParams | null; // Paramètres de filtre générés par IA (JSONB)
+  suggested_artistic_style: string | null; // Style artistique suggéré par l'IA
 }
 
 export interface LikeRow {

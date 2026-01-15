@@ -6,6 +6,8 @@ import { REACTIONS } from '../../constants';
 import { getImageClasses, ImageOrientation } from '../../hooks/useImageOrientation';
 import { get4KImageUrl, get4KImageSrcSet, get4KImageSizes } from '../../utils/imageUrl4K';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useAIFilters } from '../../hooks/useAIFilters';
+import { FilterType } from '../../utils/imageFilters';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -30,7 +32,9 @@ const PhotoCardComponent = ({
 }: PhotoCardProps) => {
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [filteredImageUrl, setFilteredImageUrl] = useState<string | null>(null);
   const hasAnimatedRef = useRef(false);
+  const { applyFilter, getFilteredImage } = useAIFilters();
   
   // Désactiver les animations initiales après le premier render
   useEffect(() => {
@@ -38,6 +42,40 @@ const PhotoCardComponent = ({
       hasAnimatedRef.current = true;
     }
   }, []);
+
+  // Appliquer les filtres à la volée si la photo en a un
+  useEffect(() => {
+    if (photo.type !== 'photo' || !photo.appliedFilter || photo.appliedFilter === 'none') {
+      setFilteredImageUrl(null);
+      return;
+    }
+
+    const imageUrl = get4KImageUrl(photo.url, true);
+    
+    // Vérifier le cache d'abord
+    const cached = getFilteredImage(imageUrl, photo.appliedFilter as FilterType | 'ai-custom');
+    if (cached) {
+      setFilteredImageUrl(cached);
+      return;
+    }
+
+    // Appliquer le filtre
+    const applyFilterAsync = async () => {
+      try {
+        const filtered = await applyFilter(
+          imageUrl,
+          photo.appliedFilter as FilterType | 'ai-custom',
+          photo.aiFilterParams
+        );
+        setFilteredImageUrl(filtered);
+      } catch (error) {
+        console.error('Error applying filter to photo:', error);
+        setFilteredImageUrl(null); // Fallback vers l'image originale
+      }
+    };
+
+    applyFilterAsync();
+  }, [photo.appliedFilter, photo.aiFilterParams, photo.url, photo.type, applyFilter, getFilteredImage]);
 
   const imageOrientation: ImageOrientation = photo.type === 'photo' 
     ? (photo.orientation || 'unknown')
@@ -82,9 +120,9 @@ const PhotoCardComponent = ({
           />
         ) : (
           <img 
-            src={get4KImageUrl(photo.url, true)} 
-            srcSet={get4KImageSrcSet(photo.url)}
-            sizes={get4KImageSizes()}
+            src={filteredImageUrl || get4KImageUrl(photo.url, true)} 
+            srcSet={filteredImageUrl ? undefined : get4KImageSrcSet(photo.url)}
+            sizes={filteredImageUrl ? undefined : get4KImageSizes()}
             alt={photo.caption} 
             className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="lazy"
@@ -235,6 +273,8 @@ const areEqual = (prevProps: PhotoCardProps, nextProps: PhotoCardProps): boolean
   if (prevProps.photo.author !== nextProps.photo.author) return false;
   if (prevProps.photo.type !== nextProps.photo.type) return false;
   if (prevProps.photo.orientation !== nextProps.photo.orientation) return false;
+  if (prevProps.photo.appliedFilter !== nextProps.photo.appliedFilter) return false;
+  if (JSON.stringify(prevProps.photo.aiFilterParams) !== JSON.stringify(nextProps.photo.aiFilterParams)) return false;
   
   // Comparer les réactions
   const prevReactions = prevProps.reactions;

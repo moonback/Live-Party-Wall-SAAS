@@ -13,7 +13,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
 
   // Redirection automatique vers le tableau de bord après 5 secondes avec barre de progression
   useEffect(() => {
-    const duration = 5000; // 5 secondes
+    const duration = 2000; // 5 secondes
     const interval = 50; // Mise à jour toutes les 50ms
     const increment = (100 / duration) * interval;
 

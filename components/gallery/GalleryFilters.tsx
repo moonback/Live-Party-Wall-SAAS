@@ -76,7 +76,7 @@ export const GalleryFilters: React.FC<GalleryFiltersProps> = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:gap-3 sm:px-2 md:px-1 sm:py-4 overflow-x-auto scrollbar-hide">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:gap-2.5 sm:px-4 md:gap-3 md:px-5 lg:px-6 sm:py-3 md:py-4 overflow-x-auto scrollbar-hide">
         {/* Battles Toggle */}
         {battleModeEnabled && (
           <motion.button

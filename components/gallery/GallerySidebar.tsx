@@ -162,30 +162,30 @@ export const GallerySidebar: React.FC<GallerySidebarProps> = ({
   const sidebarContent = (
     <div className="h-full flex flex-col bg-slate-900/95 backdrop-blur-xl border-r border-white/10">
       {/* Header */}
-      <div className="flex items-center justify-between p-2.5 border-b border-white/10 bg-gradient-to-r from-pink-500/5 to-purple-500/5 flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          <div className="p-1.5 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-lg border border-pink-500/30">
-            <Filter className="w-4 h-4 text-pink-400" />
+      <div className="flex items-center justify-between p-2.5 sm:p-3 md:p-4 border-b border-white/10 bg-gradient-to-r from-pink-500/5 to-purple-500/5 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="p-1.5 sm:p-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-lg sm:rounded-xl border border-pink-500/30">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-white">Filtres</h2>
+            <h2 className="text-sm sm:text-base md:text-lg font-black text-white">Filtres</h2>
             {activeFiltersCount > 0 && (
-              <p className="text-[10px] text-slate-400">{activeFiltersCount} actif{activeFiltersCount > 1 ? 's' : ''}</p>
+              <p className="text-[10px] sm:text-xs text-slate-400">{activeFiltersCount} actif{activeFiltersCount > 1 ? 's' : ''}</p>
             )}
           </div>
         </div>
         {isMobile && (
           <button
             onClick={() => setIsOpen()}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         )}
       </div>
 
       {/* Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-2 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-3 md:p-4 space-y-2 sm:space-y-3 scrollbar-hide">
         {/* Recherche (optionnel) */}
         {onSearchChange && (
           <div className="relative">
@@ -503,10 +503,10 @@ export const GallerySidebar: React.FC<GallerySidebarProps> = ({
     </div>
   );
 
-  // Desktop : Sidebar fixe
+  // Desktop : Sidebar fixe avec responsive
   if (!isMobile) {
     return (
-      <aside className="w-64 flex-shrink-0 h-full border-r border-white/10">
+      <aside className="w-56 md:w-64 lg:w-72 xl:w-80 flex-shrink-0 h-full border-r border-white/10">
         {sidebarContent}
       </aside>
     );
@@ -536,7 +536,7 @@ export const GallerySidebar: React.FC<GallerySidebarProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 bottom-0 w-64 z-[101]"
+            className="fixed left-0 top-0 bottom-0 w-72 sm:w-80 z-[101]"
           >
             {sidebarContent}
           </motion.div>

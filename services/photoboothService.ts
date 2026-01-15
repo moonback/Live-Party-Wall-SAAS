@@ -1,5 +1,5 @@
 import { analyzeAndCaptionImage } from './aiService';
-import { enhanceImageQuality } from '../utils/imageFilters';
+import { enhanceImageQuality, applyImageFilter, applyAIGeneratedFilter, FilterType } from '../utils/imageFilters';
 import { addPhotoToWall, addVideoToWall } from './photoService';
 import { composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
 import { Photo } from '../types';
@@ -118,7 +118,10 @@ export const submitPhoto = async ({
     caption,
     finalAuthorName,
     tags,
-    userDescription
+    userDescription,
+    appliedFilter,
+    aiFilterParams,
+    suggestedArtisticStyle
   );
 
   // Sauvegarder l'avatar si disponible

@@ -12,6 +12,8 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAIFilters } from '../../hooks/useAIFilters';
+import { FilterType } from '../../utils/imageFilters';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -91,7 +93,41 @@ export const GuestPhotoCard = React.memo(({
   
   // Lazy loading avec IntersectionObserver
   const [isInView, setIsInView] = useState(false);
+  const [filteredImageUrl, setFilteredImageUrl] = useState<string | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const { applyFilter, getFilteredImage } = useAIFilters();
+  
+  // Appliquer les filtres à la volée si la photo en a un
+  useEffect(() => {
+    if (photo.type !== 'photo' || !photo.appliedFilter || photo.appliedFilter === 'none' || !isInView) {
+      setFilteredImageUrl(null);
+      return;
+    }
+
+    // Vérifier le cache d'abord
+    const cached = getFilteredImage(photo.url, photo.appliedFilter as FilterType | 'ai-custom');
+    if (cached) {
+      setFilteredImageUrl(cached);
+      return;
+    }
+
+    // Appliquer le filtre
+    const applyFilterAsync = async () => {
+      try {
+        const filtered = await applyFilter(
+          photo.url,
+          photo.appliedFilter as FilterType | 'ai-custom',
+          photo.aiFilterParams
+        );
+        setFilteredImageUrl(filtered);
+      } catch (error) {
+        console.error('Error applying filter to photo:', error);
+        setFilteredImageUrl(null); // Fallback vers l'image originale
+      }
+    };
+
+    applyFilterAsync();
+  }, [photo.appliedFilter, photo.aiFilterParams, photo.url, photo.type, isInView, applyFilter, getFilteredImage]);
   
   useEffect(() => {
     if (!imageContainerRef.current) return;
@@ -372,11 +408,15 @@ export const GuestPhotoCard = React.memo(({
   };
   
   return (
-    <div 
+    <motion.div 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
-      className={`group relative bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl md:rounded-[2rem]'} overflow-hidden border transition-colors duration-300 ${
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={!selectionMode ? { y: -4, scale: 1.01 } : {}}
+      className={`group relative bg-slate-900/40 backdrop-blur-md ${isMobile ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl md:rounded-2xl lg:rounded-3xl'} overflow-hidden border transition-all duration-300 ${
         isSelected 
           ? 'border-indigo-500 ring-2 ring-indigo-500/50 shadow-2xl shadow-indigo-500/20' 
           : 'border-white/5 hover:border-white/20 shadow-xl'
@@ -386,15 +426,21 @@ export const GuestPhotoCard = React.memo(({
     >
       {/* Selection Overlay */}
       {selectionMode && (
-        <div className={`absolute ${isMobile ? 'top-2 left-2' : 'top-2 sm:top-4 left-2 sm:left-4'} z-40`}>
+        <motion.div 
+          className={`absolute ${isMobile ? 'top-2 left-2' : 'top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4'} z-40`}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
           <motion.div
             initial={false}
             animate={{ scale: isSelected ? 1.1 : 1 }}
-            className={`${isMobile ? 'p-1.5 min-w-[44px] min-h-[44px]' : 'p-1 sm:p-1.5'} rounded-full flex items-center justify-center ${isSelected ? 'bg-indigo-500 text-white shadow-lg' : 'bg-black/20 text-white/50 border border-white/20'}`}
+            transition={{ duration: 0.2, type: 'spring', stiffness: 400 }}
+            className={`${isMobile ? 'p-1.5 min-w-[44px] min-h-[44px]' : 'p-1 sm:p-1.5'} rounded-full flex items-center justify-center ${isSelected ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/50' : 'bg-black/20 text-white/50 border border-white/20'}`}
           >
             {isSelected ? <CheckCircle className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5 sm:w-6 sm:h-6'}`} /> : <Circle className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />}
           </motion.div>
-        </div>
+        </motion.div>
       )}
 
       {/* Header Photo */}
@@ -526,9 +572,12 @@ export const GuestPhotoCard = React.memo(({
               </div>
             )}
             {isInView && (
-              <img 
-                src={photo.url}
+              <motion.img 
+                src={filteredImageUrl || photo.url}
                 alt={photo.caption} 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
                 className={`w-full h-auto transition-transform duration-300 ${isHovered && !selectionMode ? 'scale-[1.02]' : 'scale-100'} ${getImageClasses(imageOrientation, isMobile)}`}
                 loading="lazy"
                 style={{ maxHeight: isMobile ? '60vh' : '500px', objectFit: 'contain' }}
@@ -836,7 +885,7 @@ export const GuestPhotoCard = React.memo(({
           </>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 });
 

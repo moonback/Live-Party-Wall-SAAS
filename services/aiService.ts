@@ -15,6 +15,10 @@ import {
   logGeminiError 
 } from '../utils/geminiErrorHandler';
 import { translateCaptionIfNeeded } from './translationService';
+import { 
+  generateArtisticFilterSuggestion, 
+  generateCustomFilterParams 
+} from './aiFilterService';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -325,6 +329,29 @@ FORMAT DE RÉPONSE ATTENDU (exemple) :
       estimatedQuality: parsed.estimatedQuality || parsed.quality || 'good',
       suggestedImprovements: Array.isArray(parsed.suggestedImprovements) ? parsed.suggestedImprovements : [],
     };
+
+    // Générer les suggestions de filtres artistiques en parallèle (non bloquant)
+    // Ces suggestions sont optionnelles et ne bloquent pas le flux principal
+    try {
+      const [artisticSuggestion, customParams] = await Promise.allSettled([
+        generateArtisticFilterSuggestion(base64Image),
+        generateCustomFilterParams(base64Image)
+      ]);
+
+      if (artisticSuggestion.status === 'fulfilled') {
+        analysis.artisticStyle = artisticSuggestion.value.style;
+      }
+
+      if (customParams.status === 'fulfilled') {
+        analysis.aiFilterParams = customParams.value;
+      }
+    } catch (filterError) {
+      // Ne pas bloquer le flux principal si les filtres échouent
+      logger.warn('Error generating filter suggestions', filterError, {
+        component: 'aiService',
+        action: 'analyzeAndCaptionImage'
+      });
+    }
 
     // Validation et fallback pour la légende
     let caption = parsed.caption?.trim() || "Party time! 🎉";
