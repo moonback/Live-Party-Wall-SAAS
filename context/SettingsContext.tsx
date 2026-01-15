@@ -97,14 +97,21 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     if (!currentEvent) {
       setSettings(defaultSettings);
+      setLoading(false);
       return;
     }
 
+    let isMounted = true;
+    const eventId = currentEvent.id;
+
+    // Load settings
     refresh();
 
     // Subscribe to settings updates for this event
     // Forcer la modération à toujours être activée lors des mises à jour
-    const subscription = subscribeToSettings(currentEvent.id, (newSettings) => {
+    const subscription = subscribeToSettings(eventId, (newSettings) => {
+      if (!isMounted) return;
+      
       // Normaliser alert_text (null si vide ou seulement espaces)
       const alertText = newSettings.alert_text && newSettings.alert_text.trim() ? newSettings.alert_text.trim() : null;
       const normalizedSettings = { 
@@ -117,6 +124,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       logger.info('Settings updated in context via Realtime', { 
         component: 'SettingsContext', 
         action: 'subscribeToSettings', 
+        eventId,
         alert_text: alertText,
         has_alert: !!alertText,
         timestamp: Date.now()
@@ -129,10 +137,12 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Polling de secours toutes les 5 secondes si Realtime ne fonctionne pas
     // Cela garantit que les mises à jour sont détectées même sans Realtime
     const pollingInterval = setInterval(async () => {
-      if (!currentEvent) return;
+      if (!isMounted || !currentEvent || currentEvent.id !== eventId) return;
       
       try {
-        const latestSettings = await getSettings(currentEvent.id);
+        const latestSettings = await getSettings(eventId);
+        if (!isMounted || currentEvent.id !== eventId) return;
+        
         setSettings(prev => {
           const prevAlert = prev.alert_text && prev.alert_text.trim() ? prev.alert_text.trim() : null;
           const latestAlert = latestSettings.alert_text && latestSettings.alert_text.trim() ? latestSettings.alert_text.trim() : null;
@@ -142,6 +152,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
             logger.info('Settings changed detected via polling', { 
               component: 'SettingsContext', 
               action: 'polling', 
+              eventId,
               prev_alert: prevAlert,
               latest_alert: latestAlert
             });
@@ -155,10 +166,13 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     }, 5000); // Poll toutes les 5 secondes
 
     return () => {
-      subscription.unsubscribe();
+      isMounted = false;
+      if (subscription && typeof subscription.unsubscribe === 'function') {
+        subscription.unsubscribe();
+      }
       clearInterval(pollingInterval);
     };
-  }, [currentEvent, refresh]);
+  }, [currentEvent?.id, refresh]);
 
   return (
     <SettingsContext.Provider

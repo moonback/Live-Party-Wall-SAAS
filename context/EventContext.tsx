@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Event } from '../types';
 import { getEventBySlug, getEventById, isEventOrganizer, canEditEvent } from '../services/eventService';
 import { useAuth } from './AuthContext';
@@ -24,6 +24,13 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isEventOwner, setIsEventOwner] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   const { user } = useAuth();
+  const loadingRef = useRef<string | null>(null); // Track which slug is currently loading
+  const currentEventRef = useRef<Event | null>(null); // Track current event for stable callbacks
+
+  // Mettre à jour la ref quand currentEvent change
+  useEffect(() => {
+    currentEventRef.current = currentEvent;
+  }, [currentEvent]);
 
   // Charger l'événement depuis l'URL au montage
   useEffect(() => {
@@ -32,12 +39,17 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const eventSlug = params.get('event');
 
       if (eventSlug) {
-        try {
-          await loadEventBySlug(eventSlug);
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Erreur lors du chargement de l\'événement');
-          setError(error);
-          logger.error('Failed to load event from URL', err);
+        // Ne charger que si l'événement actuel n'a pas le même slug
+        if (currentEventRef.current?.slug !== eventSlug) {
+          try {
+            await loadEventBySlug(eventSlug);
+          } catch (err) {
+            const error = err instanceof Error ? err : new Error('Erreur lors du chargement de l\'événement');
+            setError(error);
+            logger.error('Failed to load event from URL', err);
+          }
+        } else {
+          setLoading(false);
         }
       } else {
         setLoading(false);
@@ -45,7 +57,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     loadEventFromUrl();
-  }, []);
+  }, [loadEventBySlug]);
 
   // Mettre à jour les permissions quand l'événement ou l'utilisateur change
   useEffect(() => {
@@ -75,6 +87,17 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Charger un événement par slug
   const loadEventBySlug = useCallback(async (slug: string) => {
+    // Éviter de recharger si l'événement est déjà chargé avec le même slug
+    if (currentEventRef.current?.slug === slug && !loading) {
+      return;
+    }
+
+    // Éviter de charger si on est déjà en train de charger ce slug
+    if (loadingRef.current === slug) {
+      return;
+    }
+
+    loadingRef.current = slug;
     setLoading(true);
     setError(null);
 
@@ -84,18 +107,30 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         throw new Error(`Événement "${slug}" introuvable.`);
       }
 
+      // Éviter de mettre à jour si c'est le même événement
+      if (currentEventRef.current?.id === event.id) {
+        loadingRef.current = null;
+        setLoading(false);
+        return;
+      }
+
       setCurrentEvent(event);
+      currentEventRef.current = event;
       
-      // Mettre à jour l'URL sans recharger la page
+      // Mettre à jour l'URL sans recharger la page seulement si nécessaire
       const url = new URL(window.location.href);
-      url.searchParams.set('event', slug);
-      window.history.pushState({}, '', url.toString());
+      const currentSlug = url.searchParams.get('event');
+      if (currentSlug !== slug) {
+        url.searchParams.set('event', slug);
+        window.history.pushState({}, '', url.toString());
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erreur lors du chargement de l\'événement');
       setError(error);
       logger.error('Failed to load event by slug', err);
       throw error;
     } finally {
+      loadingRef.current = null;
       setLoading(false);
     }
   }, []);
