@@ -41,11 +41,11 @@ const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
   const [showCookiePreferences, setShowCookiePreferences] = useState(false);
   
-  // Contexts
+  // Contexts - L'ordre est important : useEvent doit être appelé avant usePhotosQuery
   const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
+  const { settings: eventSettings } = useSettings();
   const { data: photos = [], isLoading: photosLoading } = usePhotosQuery(currentEvent?.id);
   usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
-  const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { addToast: addToastContext, toasts, removeToast } = useToast();
   const addToastRef = useRef(addToastContext);

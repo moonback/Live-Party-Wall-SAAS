@@ -30,10 +30,10 @@ interface MobileControlProps {
 
 const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
   const { addToast } = useToast();
-  const { data: photos = [], isLoading: photosLoading, refetch: refreshPhotos } = usePhotosQuery(currentEvent?.id);
-  usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
+  const { data: photos = [], isLoading: photosLoading, refetch: refreshPhotos } = usePhotosQuery(currentEvent?.id);
+  usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
   const { isFeatureEnabled } = useLicenseFeatures();
   const [activeTab, setActiveTab] = useState<ControlTab>('overview');
 

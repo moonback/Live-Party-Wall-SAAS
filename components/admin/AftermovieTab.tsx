@@ -37,10 +37,10 @@ const toDatetimeLocal = (timestamp: number): string => {
 };
 
 export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
-  const { data: allPhotos = [], isLoading: photosLoading } = usePhotosQuery(currentEvent?.id);
   const { settings: config } = useSettings();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { data: allPhotos = [], isLoading: photosLoading } = usePhotosQuery(currentEvent?.id);
   const { isFeatureEnabled, licenseValidity } = useLicenseFeatures();
   
   const [aftermovieStart, setAftermovieStart] = useState<string>('');

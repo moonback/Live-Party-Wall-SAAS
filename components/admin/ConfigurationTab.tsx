@@ -24,9 +24,9 @@ interface ConfigurationTabProps {
 
 export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const { settings: config, updateSettings } = useSettings();
-  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   const { isFeatureEnabled } = useLicenseFeatures();
   
   const [localConfig, setLocalConfig] = useState<EventSettings>(config);

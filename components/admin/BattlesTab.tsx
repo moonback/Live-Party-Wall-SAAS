@@ -16,10 +16,10 @@ interface BattlesTabProps {
 const AUTO_BATTLE_INTERVAL = 30; // Intervalle fixe à 30 minutes
 
 export const BattlesTab: React.FC<BattlesTabProps> = () => {
-  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   const { currentEvent } = useEvent();
   const { settings: config } = useSettings();
   const { addToast } = useToast();
+  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   
   const [battles, setBattles] = useState<PhotoBattle[]>([]);
   const [loading, setLoading] = useState(false);
