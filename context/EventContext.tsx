@@ -27,6 +27,56 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const loadingRef = useRef<string | null>(null); // Track which slug is currently loading
   const currentEventRef = useRef<Event | null>(null); // Track current event for stable callbacks
 
+  // Charger un événement par slug
+  const loadEventBySlug = useCallback(async (slug: string) => {
+    // Éviter de recharger si l'événement est déjà chargé avec le même slug
+    if (currentEventRef.current?.slug === slug && !loading) {
+      return;
+    }
+
+    // Éviter de charger si on est déjà en train de charger ce slug
+    if (loadingRef.current === slug) {
+      return;
+    }
+
+    loadingRef.current = slug;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const event = await getEventBySlug(slug);
+      if (!event) {
+        throw new Error(`Événement "${slug}" introuvable.`);
+      }
+
+      // Éviter de mettre à jour si c'est le même événement
+      if (currentEventRef.current?.id === event.id) {
+        loadingRef.current = null;
+        setLoading(false);
+        return;
+      }
+
+      setCurrentEvent(event);
+      currentEventRef.current = event;
+      
+      // Mettre à jour l'URL sans recharger la page seulement si nécessaire
+      const url = new URL(window.location.href);
+      const currentSlug = url.searchParams.get('event');
+      if (currentSlug !== slug) {
+        url.searchParams.set('event', slug);
+        window.history.pushState({}, '', url.toString());
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Erreur lors du chargement de l\'événement');
+      setError(error);
+      logger.error('Failed to load event by slug', err);
+      throw error;
+    } finally {
+      loadingRef.current = null;
+      setLoading(false);
+    }
+  }, []);
+
   // Mettre à jour la ref quand currentEvent change
   useEffect(() => {
     currentEventRef.current = currentEvent;
@@ -84,56 +134,6 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     updatePermissions();
   }, [currentEvent, user]);
-
-  // Charger un événement par slug
-  const loadEventBySlug = useCallback(async (slug: string) => {
-    // Éviter de recharger si l'événement est déjà chargé avec le même slug
-    if (currentEventRef.current?.slug === slug && !loading) {
-      return;
-    }
-
-    // Éviter de charger si on est déjà en train de charger ce slug
-    if (loadingRef.current === slug) {
-      return;
-    }
-
-    loadingRef.current = slug;
-    setLoading(true);
-    setError(null);
-
-    try {
-      const event = await getEventBySlug(slug);
-      if (!event) {
-        throw new Error(`Événement "${slug}" introuvable.`);
-      }
-
-      // Éviter de mettre à jour si c'est le même événement
-      if (currentEventRef.current?.id === event.id) {
-        loadingRef.current = null;
-        setLoading(false);
-        return;
-      }
-
-      setCurrentEvent(event);
-      currentEventRef.current = event;
-      
-      // Mettre à jour l'URL sans recharger la page seulement si nécessaire
-      const url = new URL(window.location.href);
-      const currentSlug = url.searchParams.get('event');
-      if (currentSlug !== slug) {
-        url.searchParams.set('event', slug);
-        window.history.pushState({}, '', url.toString());
-      }
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Erreur lors du chargement de l\'événement');
-      setError(error);
-      logger.error('Failed to load event by slug', err);
-      throw error;
-    } finally {
-      loadingRef.current = null;
-      setLoading(false);
-    }
-  }, []);
 
   // Charger un événement par ID
   const loadEventById = useCallback(async (id: string) => {
