@@ -34,7 +34,7 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   isMobileMenuOpen = false, onMobileMenuToggle
 }) => {
   const { currentEvent } = useEvent();
-  const { isProLicense, isPartLicense } = useLicenseFeatures();
+  const { isProLicense, isPartLicense, isDemoLicense } = useLicenseFeatures();
   const [showEventLink, setShowEventLink] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const prefersReducedMotion = typeof window !== 'undefined' 
@@ -174,12 +174,14 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                     </>
                   )}
                   {/* Badge de licence */}
-                  {(isProLicense || isPartLicense) && (
+                  {(isProLicense || isPartLicense || isDemoLicense) && (
                     <>
                       <span className="text-slate-600 hidden sm:inline">•</span>
                       <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] sm:text-xs font-semibold ${
                         isProLicense 
                           ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-amber-500/40 text-amber-300' 
+                          : isDemoLicense
+                          ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/40 text-purple-300'
                           : 'bg-slate-700/30 border-slate-600/40 text-slate-400'
                       }`}>
                         {isProLicense ? (
@@ -187,6 +189,12 @@ export const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
                             <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             <span className="hidden sm:inline">PRO</span>
                             <span className="sm:hidden">PRO</span>
+                          </>
+                        ) : isDemoLicense ? (
+                          <>
+                            <User className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            <span className="hidden sm:inline">DEMO</span>
+                            <span className="sm:hidden">DEMO</span>
                           </>
                         ) : (
                           <>

@@ -9,7 +9,7 @@ import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { revokeLicenseByKey, getActiveLicense } from '../../services/licenseService';
-import { isProLicense, isPartLicense } from '../../utils/licenseUtils';
+import { isProLicense, isPartLicense, isDemoLicense } from '../../utils/licenseUtils';
 import { License } from '../../types';
 import { Crown, User, Sparkles, Tag, Video, UserSearch, Film, ArrowRight } from 'lucide-react';
 
@@ -179,6 +179,11 @@ const LicenseTab: React.FC = () => {
                           <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/30 border border-slate-600/40">
                             <User className="w-3 h-3 text-slate-400" />
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">PART</span>
+                          </div>
+                        ) : isDemoLicense(activeLicense.license_key) ? (
+                          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-700/30 border border-purple-600/40">
+                            <Sparkles className="w-3 h-3 text-purple-400" />
+                            <span className="text-xs font-bold uppercase tracking-wider text-purple-400">DEMO</span>
                           </div>
                         ) : null}
                       </div>

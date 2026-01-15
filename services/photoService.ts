@@ -113,6 +113,48 @@ export const addPhotoToWall = async (
     throw new Error(validation.error || 'Image invalide');
   }
 
+  // Vérifier la limite de photos pour les licences DEMO
+  try {
+    const { getActiveLicense } = await import('./licenseService');
+    const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.user) {
+      const activeLicense = await getActiveLicense(session.user.id);
+      const licenseKey = activeLicense?.license_key || null;
+      const maxPhotos = getMaxPhotos(licenseKey);
+      
+      if (maxPhotos !== null && isDemoLicense(licenseKey)) {
+        // Compter le nombre de photos existantes pour cet événement
+        const { count, error: countError } = await supabase
+          .from('photos')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_id', eventId);
+        
+        if (countError) {
+          logger.error("Error counting photos for DEMO license check", countError, {
+            component: 'photoService',
+            action: 'addPhotoToWall',
+            eventId
+          });
+        } else if (count !== null && count >= maxPhotos) {
+          throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
+        }
+      }
+    }
+  } catch (error) {
+    // Si c'est une erreur de limite, la propager
+    if (error instanceof Error && error.message.includes('Limite de photos atteinte')) {
+      throw error;
+    }
+    // Sinon, logger l'erreur mais continuer (ne pas bloquer l'upload si la vérification échoue)
+    logger.error("Error checking photo limit for DEMO license", error, {
+      component: 'photoService',
+      action: 'addPhotoToWall',
+      eventId
+    });
+  }
+
   try {
     // 1. Convert Base64 to Blob - Optimisé
     const base64Data = base64Image.split(',')[1];

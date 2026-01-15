@@ -14,8 +14,6 @@ export const MAX_PHOTOS_HISTORY = 150;
 // ⚡ Minimum number of photos to display (optimisé pour 200+ photos)
 export const MIN_PHOTOS_DISPLAYED = 200;
 
-// Placeholder for simulated data
-export const PLACEHOLDER_AVATAR = "https://picsum.photos/50/50";
 
 // Image processing constants
 export const MAX_IMAGE_WIDTH = 1000; // Non utilisé (conservé pour compatibilité)
@@ -91,10 +89,10 @@ export type KiosqueTransitionType = typeof KIOSQUE_TRANSITION_TYPES[number];
 
 // Author name constants
 export const MAX_AUTHOR_NAME_LENGTH = 50;
-export const MIN_AUTHOR_NAME_LENGTH = 1;
+export const MIN_AUTHOR_NAME_LENGTH = 3;
 
 // User description constants
-export const MAX_USER_DESCRIPTION_LENGTH = 500;
+export const MAX_USER_DESCRIPTION_LENGTH = 200;
 
 // Collage mode constants
 export const MIN_COLLAGE_PHOTOS = 2;
