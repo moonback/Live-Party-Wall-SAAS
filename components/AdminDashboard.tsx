@@ -189,7 +189,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
     try {
       await deletePhoto(photo.id, photo.url);
-      setPhotos(prev => prev.filter(p => p.id !== photo.id));
+      await refreshPhotos(); // Recharger les photos depuis la base de données
       addToast("Photo supprimée", 'success');
     } catch (error) {
       addToast("Erreur lors de la suppression", 'error');
