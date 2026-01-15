@@ -228,12 +228,14 @@ const EventManager: React.FC<EventManagerProps> = ({ event, onBack, onEventUpdat
               <motion.button
                 whileHover={{ scale: 1.02, x: -1 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  clearEvent();
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onBack();
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60 transition-all duration-200 text-slate-200 hover:text-white font-medium text-sm"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60 transition-all duration-200 text-slate-200 hover:text-white font-medium text-sm cursor-pointer"
                 aria-label="Retour aux événements"
+                type="button"
               >
                 <span className="flex items-center justify-center w-4 h-4 bg-red-500/20 rounded-full">
                   <X className="w-3 h-3 text-red-400" />
