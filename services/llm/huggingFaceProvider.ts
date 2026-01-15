@@ -7,7 +7,7 @@ import { LLMProvider } from './llmProvider';
 import { ImageAnalysis } from '../aiModerationService';
 import { CombinedAnalysisResult } from '../aiService';
 import { PhotoAnalysis } from '../aftermovieAIService';
-import { Photo } from '../types';
+import { Photo } from '../../types';
 import { 
   HUGGINGFACE_MODELS, 
   HUGGINGFACE_API_BASE, 
@@ -19,9 +19,9 @@ import {
   adaptTranslationPromptForHuggingFace,
   adaptAftermoviePromptForHuggingFace,
   adaptEventContextPromptForHuggingFace
-} from '../config/llmConfig';
-import { DEFAULTS, PROMPTS } from '../config/geminiConfig';
-import { logger } from '../utils/logger';
+} from '../../config/llmConfig';
+import { DEFAULTS, PROMPTS } from '../../config/geminiConfig';
+import { logger } from '../../utils/logger';
 
 /**
  * Convertit une URL d'image en base64

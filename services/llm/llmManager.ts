@@ -9,10 +9,10 @@ import { HuggingFaceProvider } from './huggingFaceProvider';
 import { ImageAnalysis } from '../aiModerationService';
 import { CombinedAnalysisResult } from '../aiService';
 import { PhotoAnalysis } from '../aftermovieAIService';
-import { Photo } from '../types';
-import { getProvider } from '../config/llmConfig';
-import { detectGeminiErrorType, isRecoverableError } from '../utils/geminiErrorHandler';
-import { logger } from '../utils/logger';
+import { Photo } from '../../types';
+import { getProvider } from '../../config/llmConfig';
+import { detectGeminiErrorType, isRecoverableError } from '../../utils/geminiErrorHandler';
+import { logger } from '../../utils/logger';
 
 /**
  * Instance singleton du provider principal

@@ -6,7 +6,7 @@
 import { ImageAnalysis } from '../aiModerationService';
 import { CombinedAnalysisResult } from '../aiService';
 import { PhotoAnalysis } from '../aftermovieAIService';
-import { Photo } from '../types';
+import { Photo } from '../../types';
 
 /**
  * Interface que tous les providers LLM doivent implémenter
