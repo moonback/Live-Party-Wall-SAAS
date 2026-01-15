@@ -647,7 +647,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
                     Images de fond
                   </label>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Desktop Background */}
                     <div className="space-y-1.5">
                       <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
@@ -660,7 +660,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                             <img
                               src={localConfig.background_desktop_url}
                               alt="Fond desktop"
-                              className="w-full h-28 object-cover"
+                              className="w-full h-64 object-contain"
                             />
                           </div>
                           <div className="flex gap-2 mt-1.5">
@@ -713,7 +713,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                             <img
                               src={localConfig.background_mobile_url}
                               alt="Fond mobile"
-                              className="w-full h-28 object-cover"
+                              className="w-full h-64 object-contain"
                             />
                           </div>
                           <div className="flex gap-2 mt-1.5">
