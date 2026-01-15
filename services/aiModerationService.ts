@@ -4,6 +4,8 @@ import {
   logGeminiError 
 } from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
+import { ArtisticFilterType } from '../utils/imageFilters';
+import { AIFilterParams } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -16,6 +18,8 @@ export interface ImageAnalysis {
   quality: 'good' | 'fair' | 'poor';
   suggestedImprovements?: string[]; // Suggestions d'amélioration (ex: ["améliorer luminosité", "recadrer"])
   estimatedQuality?: 'excellent' | 'good' | 'fair' | 'poor'; // Estimation plus précise de la qualité
+  artisticStyle?: ArtisticFilterType; // Style artistique suggéré par l'IA
+  aiFilterParams?: AIFilterParams; // Paramètres de filtre générés par IA (si filtre personnalisé)
 }
 
 /**

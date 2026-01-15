@@ -28,7 +28,7 @@ export const FilterSelector: React.FC<FilterSelectorProps> = ({
     <div className="absolute top-12 xs:top-14 sm:top-18 md:top-20 lg:top-24 left-1/2 -translate-x-1/2 z-30 bg-black/80 backdrop-blur-xl border border-white/20 rounded-xl sm:rounded-2xl md:rounded-3xl p-2 xs:p-2.5 sm:p-3 md:p-3.5 flex gap-1.5 xs:gap-2 sm:gap-2.5 md:gap-3 animate-scale-in max-w-[95%] xs:max-w-[92%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] overflow-x-auto scrollbar-hide">
       {showFilters && (
         <>
-          {(['none', 'vintage', 'blackwhite', 'warm', 'cool'] as FilterType[]).map(f => (
+          {(['none', 'vintage', 'blackwhite', 'warm', 'cool', 'impressionist', 'popart', 'cinematic', 'vibrant', 'dreamy', 'dramatic', 'retro', 'neon'] as FilterType[]).map(f => (
             <button
               key={f}
               onClick={() => onFilterChange(f)}
@@ -36,7 +36,7 @@ export const FilterSelector: React.FC<FilterSelectorProps> = ({
                 activeFilter === f ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/50' : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}
             >
-              {f === 'blackwhite' ? 'N&B' : f}
+              {f === 'blackwhite' ? 'N&B' : f === 'impressionist' ? 'Impressionniste' : f === 'popart' ? 'Pop Art' : f === 'cinematic' ? 'Cinématique' : f === 'vibrant' ? 'Vibrant' : f === 'dreamy' ? 'Onirique' : f === 'dramatic' ? 'Dramatique' : f === 'retro' ? 'Rétro' : f === 'neon' ? 'Néon' : f}
             </button>
           ))}
         </>

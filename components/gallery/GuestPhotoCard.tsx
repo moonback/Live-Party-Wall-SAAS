@@ -12,6 +12,8 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAIFilters } from '../../hooks/useAIFilters';
+import { FilterType } from '../../utils/imageFilters';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -91,7 +93,41 @@ export const GuestPhotoCard = React.memo(({
   
   // Lazy loading avec IntersectionObserver
   const [isInView, setIsInView] = useState(false);
+  const [filteredImageUrl, setFilteredImageUrl] = useState<string | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const { applyFilter, getFilteredImage } = useAIFilters();
+  
+  // Appliquer les filtres à la volée si la photo en a un
+  useEffect(() => {
+    if (photo.type !== 'photo' || !photo.appliedFilter || photo.appliedFilter === 'none' || !isInView) {
+      setFilteredImageUrl(null);
+      return;
+    }
+
+    // Vérifier le cache d'abord
+    const cached = getFilteredImage(photo.url, photo.appliedFilter as FilterType | 'ai-custom');
+    if (cached) {
+      setFilteredImageUrl(cached);
+      return;
+    }
+
+    // Appliquer le filtre
+    const applyFilterAsync = async () => {
+      try {
+        const filtered = await applyFilter(
+          photo.url,
+          photo.appliedFilter as FilterType | 'ai-custom',
+          photo.aiFilterParams
+        );
+        setFilteredImageUrl(filtered);
+      } catch (error) {
+        console.error('Error applying filter to photo:', error);
+        setFilteredImageUrl(null); // Fallback vers l'image originale
+      }
+    };
+
+    applyFilterAsync();
+  }, [photo.appliedFilter, photo.aiFilterParams, photo.url, photo.type, isInView, applyFilter, getFilteredImage]);
   
   useEffect(() => {
     if (!imageContainerRef.current) return;
@@ -537,7 +573,7 @@ export const GuestPhotoCard = React.memo(({
             )}
             {isInView && (
               <motion.img 
-                src={photo.url}
+                src={filteredImageUrl || photo.url}
                 alt={photo.caption} 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

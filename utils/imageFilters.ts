@@ -2,7 +2,10 @@
  * Utilitaires pour appliquer des filtres esthétiques aux images
  */
 
-export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
+import { AIFilterParams } from '../types';
+
+export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool' | 'impressionist' | 'popart' | 'cinematic' | 'vibrant' | 'dreamy' | 'dramatic' | 'retro' | 'neon' | 'ai-custom';
+export type ArtisticFilterType = 'impressionist' | 'popart' | 'cinematic' | 'vibrant' | 'dreamy' | 'dramatic' | 'retro' | 'neon';
 export type FrameType = 'none';
 
 /**
@@ -35,25 +38,35 @@ export const applyImageFilter = (
 
       // 3. Appliquer le filtre
       ctx.save();
-      switch (filter) {
-        case 'vintage':
-          ctx.filter = 'sepia(0.5) contrast(1.2) brightness(0.95)';
-          break;
-        case 'blackwhite':
-          ctx.filter = 'grayscale(100%)';
-          break;
-        case 'warm':
-          ctx.filter = 'sepia(0.3) saturate(1.2) brightness(1.05)';
-          break;
-        case 'cool':
-          ctx.filter = 'hue-rotate(180deg) saturate(0.8) brightness(1.1)';
-          break;
-        default:
-          ctx.filter = 'none';
+      
+      // Pour les filtres artistiques avancés, utiliser les fonctions spécialisées
+      if (['impressionist', 'popart', 'cinematic', 'vibrant', 'dreamy', 'dramatic', 'retro', 'neon'].includes(filter)) {
+        // Dessiner l'image d'abord
+        ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
+        // Appliquer le filtre artistique via traitement pixel
+        applyArtisticFilterToCanvas(ctx, canvasWidth, canvasHeight, filter as ArtisticFilterType);
+      } else {
+        // Filtres CSS classiques
+        switch (filter) {
+          case 'vintage':
+            ctx.filter = 'sepia(0.5) contrast(1.2) brightness(0.95)';
+            break;
+          case 'blackwhite':
+            ctx.filter = 'grayscale(100%)';
+            break;
+          case 'warm':
+            ctx.filter = 'sepia(0.3) saturate(1.2) brightness(1.05)';
+            break;
+          case 'cool':
+            ctx.filter = 'hue-rotate(180deg) saturate(0.8) brightness(1.1)';
+            break;
+          default:
+            ctx.filter = 'none';
+        }
+        // Dessiner l'image
+        ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
       }
-
-      // Dessiner l'image
-      ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
+      
       ctx.restore();
 
       // Les cadres générés par code ont été retirés
@@ -505,4 +518,321 @@ export const enhanceImageQuality = (
     img.onerror = reject;
     img.src = imageDataUrl;
   });
+};
+
+/**
+ * Applique un filtre artistique prédéfini à un canvas
+ */
+const applyArtisticFilterToCanvas = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  filter: ArtisticFilterType
+): void => {
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  
+  switch (filter) {
+    case 'impressionist':
+      applySoftBlur(data, width, height, 1.5);
+      reduceContrast(data, 0.7);
+      applyPastelColors(data);
+      break;
+    case 'popart':
+      increaseSaturation(data, 1.5);
+      increaseContrast(data, 1.4);
+      applyVividColors(data);
+      break;
+    case 'cinematic':
+      darkenImage(data, 0.85);
+      increaseContrast(data, 1.3);
+      applyColorTint(data, { r: 0.9, g: 0.95, b: 1.0 });
+      break;
+    case 'vibrant':
+      increaseSaturation(data, 1.4);
+      optimizeBrightness(data);
+      break;
+    case 'dreamy':
+      applySoftBlur(data, width, height, 0.8);
+      brightenImage(data, 1.15);
+      reduceContrast(data, 0.85);
+      break;
+    case 'dramatic':
+      increaseContrast(data, 1.5);
+      darkenImage(data, 0.9);
+      applyVignette(data, width, height, 0.3);
+      break;
+    case 'retro':
+      applySepia(data, 0.4);
+      applyGrain(data, width, height, 0.15);
+      increaseContrast(data, 1.1);
+      break;
+    case 'neon':
+      increaseSaturation(data, 1.6);
+      increaseContrast(data, 1.4);
+      applyNeonTint(data);
+      break;
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+};
+
+/**
+ * Applique un filtre généré par IA avec paramètres personnalisés
+ */
+export const applyAIGeneratedFilter = (
+  imageDataUrl: string,
+  params: AIFilterParams
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      const imageData = ctx.getImageData(0, 0, img.width, img.height);
+      const data = imageData.data;
+      
+      if (params.brightness !== 1.0) adjustBrightness(data, params.brightness);
+      if (params.contrast !== 1.0) {
+        if (params.contrast > 1.0) increaseContrast(data, params.contrast);
+        else reduceContrast(data, params.contrast);
+      }
+      if (params.saturation !== 1.0) {
+        if (params.saturation > 1.0) increaseSaturation(data, params.saturation);
+        else reduceSaturation(data, params.saturation);
+      }
+      if (params.hue !== 0) adjustHue(data, params.hue);
+      if (params.vignette > 0) applyVignette(data, img.width, img.height, params.vignette);
+      if (params.grain > 0) applyGrain(data, img.width, img.height, params.grain);
+      if (params.blur > 0) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.width;
+        tempCanvas.height = img.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx) {
+          tempCtx.putImageData(imageData, 0, 0);
+          tempCtx.filter = `blur(${params.blur}px)`;
+          tempCtx.drawImage(tempCanvas, 0, 0);
+          ctx.putImageData(tempCtx.getImageData(0, 0, img.width, img.height), 0, 0);
+        } else {
+          ctx.putImageData(imageData, 0, 0);
+        }
+      } else {
+        ctx.putImageData(imageData, 0, 0);
+      }
+      if (params.colorMatrix && params.colorMatrix.length === 20) {
+        applyColorMatrix(data, params.colorMatrix);
+        ctx.putImageData(imageData, 0, 0);
+      }
+      
+      resolve(canvas.toDataURL('image/jpeg', 1.0));
+    };
+    img.onerror = reject;
+    img.src = imageDataUrl;
+  });
+};
+
+// Fonctions utilitaires pour les effets de filtres
+const adjustBrightness = (data: Uint8ClampedArray, factor: number): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = Math.min(255, Math.max(0, data[i] * factor));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor));
+  }
+};
+
+const increaseContrast = (data: Uint8ClampedArray, factor: number): void => {
+  const intercept = 128 * (1 - factor);
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = Math.min(255, Math.max(0, data[i] * factor + intercept));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor + intercept));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor + intercept));
+  }
+};
+
+const reduceContrast = (data: Uint8ClampedArray, factor: number): void => {
+  const intercept = 128 * (1 - factor);
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = Math.min(255, Math.max(0, data[i] * factor + intercept));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * factor + intercept));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * factor + intercept));
+  }
+};
+
+const increaseSaturation = (data: Uint8ClampedArray, factor: number): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    data[i] = Math.min(255, Math.max(0, gray + (r - gray) * factor));
+    data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * factor));
+    data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * factor));
+  }
+};
+
+const reduceSaturation = (data: Uint8ClampedArray, factor: number): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    data[i] = Math.min(255, Math.max(0, gray + (r - gray) * factor));
+    data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * factor));
+    data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * factor));
+  }
+};
+
+const adjustHue = (data: Uint8ClampedArray, degrees: number): void => {
+  const radians = (degrees * Math.PI) / 180;
+  const cos = Math.cos(radians), sin = Math.sin(radians);
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const newR = r * (0.787 + 0.213 * cos - 0.213 * sin) + g * (0.213 - 0.213 * cos + 0.143 * sin) + b * (0.213 - 0.213 * cos - 0.143 * sin);
+    const newG = r * (0.213 - 0.213 * cos - 0.143 * sin) + g * (0.787 + 0.213 * cos + 0.143 * sin) + b * (0.213 - 0.213 * cos + 0.143 * sin);
+    const newB = r * (0.213 - 0.213 * cos + 0.143 * sin) + g * (0.213 - 0.213 * cos - 0.143 * sin) + b * (0.787 + 0.213 * cos + 0.213 * sin);
+    data[i] = Math.min(255, Math.max(0, newR));
+    data[i + 1] = Math.min(255, Math.max(0, newG));
+    data[i + 2] = Math.min(255, Math.max(0, newB));
+  }
+};
+
+const applyVignette = (data: Uint8ClampedArray, width: number, height: number, intensity: number): void => {
+  const centerX = width / 2, centerY = height / 2;
+  const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+      const factor = 1 - (distance / maxDistance) * intensity;
+      data[idx] = Math.min(255, Math.max(0, data[idx] * factor));
+      data[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] * factor));
+      data[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] * factor));
+    }
+  }
+};
+
+const applyGrain = (data: Uint8ClampedArray, width: number, height: number, intensity: number): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = (Math.random() - 0.5) * intensity * 255;
+    data[i] = Math.min(255, Math.max(0, data[i] + noise));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+  }
+};
+
+const applySoftBlur = (data: Uint8ClampedArray, width: number, height: number, radius: number): void => {
+  const kernelSize = Math.ceil(radius * 2);
+  const kernel: number[] = [];
+  let sum = 0;
+  for (let i = -kernelSize; i <= kernelSize; i++) {
+    const value = Math.exp(-(i * i) / (2 * radius * radius));
+    kernel.push(value);
+    sum += value;
+  }
+  for (let i = 0; i < kernel.length; i++) kernel[i] /= sum;
+  const tempData = new Uint8ClampedArray(data);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0, g = 0, b = 0;
+      for (let k = 0; k < kernel.length; k++) {
+        const px = Math.max(0, Math.min(width - 1, x + k - kernelSize));
+        const idx = (y * width + px) * 4;
+        r += tempData[idx] * kernel[k];
+        g += tempData[idx + 1] * kernel[k];
+        b += tempData[idx + 2] * kernel[k];
+      }
+      const idx = (y * width + x) * 4;
+      data[idx] = r;
+      data[idx + 1] = g;
+      data[idx + 2] = b;
+    }
+  }
+};
+
+const applyPastelColors = (data: Uint8ClampedArray): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    data[i] = Math.min(255, Math.max(0, gray + (r - gray) * 0.5 + 30));
+    data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * 0.5 + 30));
+    data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * 0.5 + 30));
+  }
+};
+
+const applyVividColors = (data: Uint8ClampedArray): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+    data[i] = Math.min(255, Math.max(0, gray + (r - gray) * 1.5));
+    data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * 1.5));
+    data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * 1.5));
+  }
+};
+
+const applyColorTint = (data: Uint8ClampedArray, tint: { r: number; g: number; b: number }): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = Math.min(255, Math.max(0, data[i] * tint.r));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * tint.g));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * tint.b));
+  }
+};
+
+const darkenImage = (data: Uint8ClampedArray, factor: number): void => adjustBrightness(data, factor);
+const brightenImage = (data: Uint8ClampedArray, factor: number): void => adjustBrightness(data, factor);
+
+const optimizeBrightness = (data: Uint8ClampedArray): void => {
+  let totalBrightness = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    totalBrightness += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+  }
+  const avgBrightness = totalBrightness / (data.length / 4);
+  const factor = 128 / avgBrightness;
+  if (factor < 0.9 || factor > 1.1) {
+    adjustBrightness(data, Math.min(1.2, Math.max(0.8, factor)));
+  }
+};
+
+const applySepia = (data: Uint8ClampedArray, intensity: number): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const tr = (r * 0.393 + g * 0.769 + b * 0.189) * intensity + r * (1 - intensity);
+    const tg = (r * 0.349 + g * 0.686 + b * 0.168) * intensity + g * (1 - intensity);
+    const tb = (r * 0.272 + g * 0.534 + b * 0.131) * intensity + b * (1 - intensity);
+    data[i] = Math.min(255, Math.max(0, tr));
+    data[i + 1] = Math.min(255, Math.max(0, tg));
+    data[i + 2] = Math.min(255, Math.max(0, tb));
+  }
+};
+
+const applyNeonTint = (data: Uint8ClampedArray): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const newR = r * 1.2 + g * 0.1 + b * 0.1;
+    const newG = r * 0.1 + g * 0.8 + b * 0.3;
+    const newB = r * 0.1 + g * 0.3 + b * 1.2;
+    data[i] = Math.min(255, Math.max(0, newR));
+    data[i + 1] = Math.min(255, Math.max(0, newG));
+    data[i + 2] = Math.min(255, Math.max(0, newB));
+  }
+};
+
+const applyColorMatrix = (data: Uint8ClampedArray, matrix: number[]): void => {
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+    const newR = r * matrix[0] + g * matrix[1] + b * matrix[2] + a * matrix[3] + matrix[4];
+    const newG = r * matrix[5] + g * matrix[6] + b * matrix[7] + a * matrix[8] + matrix[9];
+    const newB = r * matrix[10] + g * matrix[11] + b * matrix[12] + a * matrix[13] + matrix[14];
+    const newA = r * matrix[15] + g * matrix[16] + b * matrix[17] + a * matrix[18] + matrix[19];
+    data[i] = Math.min(255, Math.max(0, newR));
+    data[i + 1] = Math.min(255, Math.max(0, newG));
+    data[i + 2] = Math.min(255, Math.max(0, newB));
+    data[i + 3] = Math.min(255, Math.max(0, newA));
+  }
 };
