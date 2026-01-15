@@ -45,6 +45,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   const detectionCanvasRef = useRef<HTMLCanvasElement>(null);
   const [usingSavedDescriptor, setUsingSavedDescriptor] = useState(false);
   const [savedDescriptorAvailable, setSavedDescriptorAvailable] = useState(false);
+  const [checkingSavedDescriptor, setCheckingSavedDescriptor] = useState(true);
   
   // Charger les modèles au montage
   useEffect(() => {
@@ -106,14 +107,18 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   // Vérifier si un descripteur facial sauvegardé existe
   useEffect(() => {
     const checkSavedDescriptor = async () => {
+      setCheckingSavedDescriptor(true);
+      
       if (!currentEvent?.id) {
         setSavedDescriptorAvailable(false);
+        setCheckingSavedDescriptor(false);
         return;
       }
 
       const userName = localStorage.getItem('party_user_name');
       if (!userName) {
         setSavedDescriptorAvailable(false);
+        setCheckingSavedDescriptor(false);
         return;
       }
 
@@ -134,6 +139,8 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
           component: 'FindMe'
         });
         setSavedDescriptorAvailable(false);
+      } finally {
+        setCheckingSavedDescriptor(false);
       }
     };
 
@@ -176,16 +183,25 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   
   // Démarrer la caméra au montage (seulement si pas de descripteur sauvegardé)
   useEffect(() => {
+    // Attendre que la vérification du descripteur soit terminée
+    if (checkingSavedDescriptor) {
+      return;
+    }
+    
     // Ne pas démarrer la caméra automatiquement si un descripteur sauvegardé est disponible
     // L'utilisateur pourra choisir de l'utiliser ou de capturer une nouvelle photo
-    if (!savedDescriptorAvailable && !capturedImage && !usingSavedDescriptor) {
+    if (!savedDescriptorAvailable && !capturedImage && !usingSavedDescriptor && !stream) {
       startCamera();
     }
+    
     return () => {
-      stopCamera();
+      // Ne pas arrêter la caméra si on utilise le descripteur sauvegardé
+      if (!usingSavedDescriptor) {
+        stopCamera();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [checkingSavedDescriptor, savedDescriptorAvailable]);
   
   // Basculer entre caméra avant/arrière
   const handleSwitchCamera = () => {
@@ -555,7 +571,22 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
       
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:py-8 overflow-y-auto relative z-10 w-full max-w-7xl mx-auto">
-        {modelsLoading ? (
+        {checkingSavedDescriptor ? (
+          <div className="flex flex-col items-center gap-6 text-white text-center max-w-md px-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 rounded-full blur-2xl animate-pulse" />
+              <Loader2 className="relative w-16 h-16 animate-spin text-pink-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Vérification en cours...
+              </p>
+              <p className="text-sm text-gray-400">
+                Recherche d'un descripteur facial sauvegardé
+              </p>
+            </div>
+          </div>
+        ) : modelsLoading ? (
           <div className="flex flex-col items-center gap-6 text-white text-center max-w-md px-4">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 rounded-full blur-2xl animate-pulse" />
@@ -595,7 +626,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
               Réessayer
             </button>
           </div>
-        ) : savedDescriptorAvailable && !usingSavedDescriptor && !capturedImage ? (
+        ) : savedDescriptorAvailable && !usingSavedDescriptor && !capturedImage && !stream ? (
           <div className="w-full max-w-2xl space-y-6">
             {/* Carte pour utiliser le descripteur sauvegardé */}
             <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-gray-700/50 shadow-2xl">
@@ -924,7 +955,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
               </div>
             ) : null}
           </div>
-        ) : (
+        ) : !savedDescriptorAvailable && !usingSavedDescriptor ? (
           <div className="w-full max-w-3xl space-y-6 md:space-y-8">
             {/* Instructions Premium */}
             <div className="text-center text-white space-y-3">
@@ -1015,7 +1046,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
               <div className="w-16" />
             </div>
           </div>
-        )}
+        ) : null}
       </div>
       
       {/* Canvas caché pour la capture */}
