@@ -78,6 +78,31 @@ Créer une animation collective et engageante où chaque photo devient un moment
 
 ---
 
+## 🔑 Système de licences
+
+Partywall propose **3 types de licences** pour s'adapter à tous les besoins :
+
+| Caractéristique | Licence DEMO | Licence PART | Licence PROS |
+|----------------|--------------|--------------|--------------|
+| **Suffixe de la clé** | Se termine par `DEMO` | Se termine par `PART` | Se termine par `PROS` |
+| **Limite d'événements** | 1 événement maximum | 1 événement maximum | 20 événements maximum |
+| **Limite de photos** | 100 photos maximum | Illimité | Illimité |
+| **Fonctionnalités IA** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé (modération, légendes, traduction, tags) |
+| **"Retrouve-moi"** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé (reconnaissance faciale) |
+| **Capture vidéo** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé |
+| **Aftermovies premium** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé (formats HD, Full HD, Story) |
+| **Usage recommandé** | Test et démonstration | Événements ponctuels | Usage professionnel |
+
+### 📝 Notes importantes
+
+- **Licence DEMO** : Parfaite pour tester l'application. Une fois la limite de 100 photos atteinte, les boutons "Capturer" et "Explorer" sont automatiquement désactivés.
+- **Licence PART** : Idéale pour un événement unique (mariage, anniversaire, etc.) sans fonctionnalités premium.
+- **Licence PROS** : Pour les professionnels qui organisent plusieurs événements et ont besoin de toutes les fonctionnalités avancées.
+
+Les licences sont validées automatiquement via le système de gestion intégré. La clé de licence doit se terminer par le suffixe correspondant (`DEMO`, `PART`, ou `PROS`) pour être reconnue.
+
+---
+
 ## 🛠️ Stack technique
 
 | Catégorie | Technologie | Version |
