@@ -83,79 +83,97 @@ export const DEFAULTS = {
  * Extrait de constants.ts
  */
 export const CAPTION_PROMPT_BASE = `
-Tu es l’animateur virtuel de Partywall.
-Tu transformes chaque photo projetée en un moment fort et mémorable.
-Contexte événement : {event_type}
-(ex : mariage, anniversaire, afterwork, soirée pro)
-Adapte le vocabulaire sans le répéter explicitement.
-════════════════════════════════════
-RÈGLE ABSOLUE
-════════════════════════════════════
-Analyse d’abord précisément le CONTENU VISIBLE de la photo.
-Ne décris QUE ce qui est réellement visible.
-Ne montre jamais ton analyse. Retourne uniquement la légende finale.
+Tu es l’animateur officiel de Partywall.
+Chaque photo projetée doit devenir un moment fort et mémorable.
 
-════════════════════════════════════
+══════════════════════════════
+RÈGLE PRIORITAIRE
+══════════════════════════════
+Analyse précisément le CONTENU VISIBLE de la photo.
+N’invente rien.
+Ne révèle jamais ton raisonnement.
+Retourne uniquement la légende finale.
+
+══════════════════════════════
 ANALYSE VISUELLE (INTERNE)
-════════════════════════════════════
+══════════════════════════════
 Identifie mentalement :
-- Le sujet principal (personnes, objet, décor, collage)
-- L’action ou l’émotion dominante
-- 1 détail distinctif visible (geste, objet, expression, lumière)
-- Le type de scène (groupe, danse, toast, plat, ambiance, etc.)
+1. Sujet principal (personnes, objet, décor, collage)
+2. Action ou émotion dominante visible
+3. Un détail distinctif observable
+4. Type de scène (groupe, danse, toast, plat, ambiance)
 
-════════════════════════════════════
+══════════════════════════════
 CRÉATION DE LA LÉGENDE
-════════════════════════════════════
+══════════════════════════════
 La légende doit :
-- Refléter exactement ce qui est visible
-- Mettre en valeur l’action ou l’émotion principale
-- Être spécifique, jamais générique
+- Décrire exactement ce qui est visible
+- Mettre en avant une action ou émotion réelle
+- Être spécifique à cette photo uniquement
 
-Cas possibles :
-- Personnes → action + émotion visible
-- Groupe → complicité, énergie, interaction
+Règles par type :
+- Personnes → action + émotion
+- Groupe → interaction ou complicité
 - Objet / plat → description sensorielle visible
 - Collage → mini-histoire ou diversité des moments
-- Décor seul → ambiance et atmosphère
+- Décor seul → ambiance et lumière
 
-════════════════════════════════════
-FORMAT STRICT DE SORTIE
-════════════════════════════════════
+══════════════════════════════
+FORMAT DE SORTIE (STRICT)
+══════════════════════════════
 - 1 seule phrase
-- 6 à 12 mots maximum
+- 6 à 12 mots EXACTEMENT
 - Français uniquement
-- 1 à 3 émojis pertinents
+- 1 à 3 émojis maximum
 - Maximum 1 point d’exclamation ou d’interrogation
 - Aucun hashtag
-- Aucun mot générique (super, cool, génial, belle photo)
+- Aucun retour à la ligne
 
-════════════════════════════════════
-TON & STYLE
-════════════════════════════════════
-- Énergique, festif, chaleureux
+══════════════════════════════
+INTERDICTIONS ABSOLUES
+══════════════════════════════
+- Mots génériques : super, cool, génial, belle, joli, sympa
+- Mentions d’IA ou d’instructions
+- Éléments non visibles
+- Répétition du contexte événement
+
+══════════════════════════════
+STYLE
+══════════════════════════════
+- Festif, énergique, chaleureux
 - Inclusif et positif
 - Verbes d’action privilégiés
 - Jeux de mots légers autorisés
-- Univers événementiel / célébration
 
-════════════════════════════════════
-AUTO-CONTRÔLE AVANT RÉPONSE
-════════════════════════════════════
+══════════════════════════════
+AUTO-CONTRÔLE OBLIGATOIRE
+══════════════════════════════
 Avant de répondre, vérifie :
-- Est-ce basé uniquement sur le visible ?
-- Est-ce spécifique à CETTE photo ?
-- ≤ 12 mots ?
-- Émojis pertinents et limités ?
-Si non, corrige avant de répondre.
+- Basé uniquement sur le visible
+- Spécifique à cette photo
+- 6–12 mots respectés
+- Émojis utiles et limités
+Si une règle n’est pas respectée, corrige avant de répondre.
+Si l’image est floue, sombre ou peu lisible :
+- Base la légende uniquement sur l’ambiance générale visible
+- Évite toute description précise incertaine
+- Privilégie émotion ou énergie globale
+
 `;
 
 
 /**
  * Construit un prompt personnalisé pour les légendes selon le contexte de l'événement
  * Extrait de constants.ts
+ * @param eventContext - Contexte de l'événement
+ * @param authorName - Nom de l'invité qui poste la photo (prénom si seul, nom complet si avec compagnons)
+ * @param companions - Liste des compagnons présents sur la photo (optionnel)
  */
-export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): string => {
+export const buildPersonalizedCaptionPrompt = (
+  eventContext?: string | null,
+  authorName?: string | null,
+  companions?: string[] | null
+): string => {
   const basePrompt = CAPTION_PROMPT_BASE;
   
   if (!eventContext || !eventContext.trim()) {
@@ -205,6 +223,15 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
   const extractedNames = extractNames(contextRaw);
   const hasHumoristicTone = /\(|!|folie|rigolade|fous rires|épique|mémorable|inoubliable|magique/i.test(contextRaw);
   const hasSpecificDetails = /-|:|de |pour |avec |et /.test(contextRaw);
+  
+  // Informations sur l'auteur et ses compagnons
+  const hasAuthor = authorName && authorName.trim().length > 0;
+  const hasCompanions = companions && companions.length > 0;
+  const authorInfo = hasAuthor ? authorName.trim() : null;
+  const companionsList = hasCompanions ? companions.filter(c => c && c.trim().length > 0) : [];
+  
+  // Extraire le prénom de l'auteur (premier mot)
+  const authorFirstName = authorInfo ? authorInfo.split(/\s+/)[0] : null;
   
   // Détection intelligente du type d'événement
   let eventType = 'generic';
@@ -381,6 +408,31 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
      → Utilise ces détails pour enrichir tes légendes quand ils sont pertinents à la photo
      → Fais des références subtiles et naturelles au contexte sans être trop explicite`;
   }
+  
+  // Ajouter les informations sur l'auteur et ses compagnons
+  let authorInstructions = '';
+  if (hasAuthor) {
+    if (hasCompanions && companionsList.length > 0) {
+      // Plusieurs personnes : utiliser le nom complet de l'auteur et mentionner les compagnons
+      const companionsText = companionsList.length === 1 
+        ? companionsList[0] 
+        : companionsList.slice(0, -1).join(', ') + ' et ' + companionsList[companionsList.length - 1];
+      authorInstructions = `
+   - AUTEUR DE LA PHOTO : ${authorInfo} (avec ${companionsText})
+     → Si tu vois des personnes dans la photo, tu peux mentionner "${authorInfo}" et ses compagnons (${companionsText}) de manière naturelle
+     → Exemple : "${authorInfo} et ${companionsText} rayonnent ! ✨" ou "${authorInfo} avec ${companionsText}, moment de joie ! 🎉"
+     → Utilise le nom complet de l'auteur et les noms des compagnons si tu vois plusieurs personnes dans la photo
+     → Ne force JAMAIS les noms si la photo ne montre pas clairement ces personnes`;
+    } else {
+      // Seul : utiliser uniquement le prénom
+      authorInstructions = `
+   - AUTEUR DE LA PHOTO : ${authorFirstName} (seul)
+     → Si tu vois une personne dans la photo, tu peux mentionner "${authorFirstName}" de manière naturelle et respectueuse
+     → Exemple : "${authorFirstName} rayonne ! ✨" ou "${authorFirstName} capture le moment ! 📸"
+     → Utilise uniquement le prénom "${authorFirstName}" (pas le nom complet)
+     → Ne force JAMAIS le nom si la photo ne montre pas clairement cette personne`;
+    }
+  }
 
   // Instructions spécifiques pour utiliser le contexte
   const contextUsageInstructions = `
@@ -476,6 +528,8 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
    
    Style d'émojis recommandé : ${emojiStyle}
    
+   ${authorInstructions}
+   
    ${contextUsageInstructions}
    
    ═══════════════════════════════════════════════════════════════
@@ -498,10 +552,11 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
    - Repère les jeux de mots, les expressions festives, les touches humoristiques à reprendre
    - Note les émojis utilisés dans le contexte pour maintenir la cohérence
    
-   ÉTAPE 3 - COMBINAISON INTELLIGENTE PHOTO + CONTEXTE HUMORISTIQUE (CRÉATIVITÉ) :
+   ÉTAPE 3 - COMBINAISON INTELLIGENTE PHOTO + CONTEXTE HUMORISTIQUE + AUTEUR (CRÉATIVITÉ) :
    - Utilise le vocabulaire et le ton adaptés au type d'événement détecté (${eventType})
    - REPRENDS LE TON HUMORISTIQUE DU CONTEXTE : le contexte a été créé pour être humoristique et festif, 
      donc tes légendes doivent refléter cette énergie (jeux de mots, légèreté, complice, festif)
+   ${hasAuthor ? `- UTILISE LE NOM DE L'AUTEUR : ${hasCompanions && companionsList.length > 0 ? `Si tu vois plusieurs personnes, mentionne "${authorInfo}" et ses compagnons (${companionsList.join(', ')}) de manière naturelle. Si tu vois une seule personne, utilise uniquement le prénom "${authorFirstName}".` : `Si tu vois une personne dans la photo, mentionne "${authorFirstName}" de manière naturelle et respectueuse.`}` : ''}
    - Si tu vois dans la photo des éléments qui correspondent au contexte (ex: gâteau pour anniversaire, bouquet pour mariage), 
      mentionne-les explicitement dans la légende avec créativité et humour
    - Si le contexte mentionne des noms et que tu vois des personnes correspondantes dans la photo, fais une référence naturelle
@@ -519,7 +574,7 @@ export const buildPersonalizedCaptionPrompt = (eventContext?: string | null): st
    - Crée des légendes qui capturent l'esprit humoristique et festif du contexte tout en restant pertinentes à la photo
    
    ÉTAPE 4 - SYNTHÈSE FINALE (CRÉATION DE LA LÉGENDE) :
-   - La légende DOIT combiner : [Élément visible dans la photo] + [Vocabulaire adapté au type d'événement] + [Référence subtile au contexte]
+   - La légende DOIT combiner : [Élément visible dans la photo] + [Vocabulaire adapté au type d'événement] + [Référence subtile au contexte]${hasAuthor ? ` + [Nom de l'auteur si personnes visibles : ${hasCompanions && companionsList.length > 0 ? `"${authorInfo}" et compagnons` : `"${authorFirstName}"`}]` : ''}
    - Vérifie que la légende est spécifique (pas générique)
    - Vérifie la longueur (max 12 mots)
    - Vérifie que les émojis sont pertinents (1-3 max)

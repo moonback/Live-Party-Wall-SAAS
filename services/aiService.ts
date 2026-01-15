@@ -67,12 +67,16 @@ export interface CombinedAnalysisResult {
  * @param base64Image - Image en base64
  * @param eventContext - Contexte optionnel de l'événement pour personnaliser les légendes
  * @param captionLanguage - Code langue ISO 639-1 pour la traduction de la légende (ex: 'en', 'es', 'de')
+ * @param authorName - Nom de l'invité qui poste la photo (prénom si seul, nom complet si avec compagnons)
+ * @param companions - Liste des compagnons présents sur la photo (optionnel)
  * @returns Promise<CombinedAnalysisResult> - Analyse complète + légende (traduite si nécessaire)
  */
 export const analyzeAndCaptionImage = async (
   base64Image: string,
   eventContext?: string | null,
-  captionLanguage?: string | null
+  captionLanguage?: string | null,
+  authorName?: string | null,
+  companions?: string[] | null
 ): Promise<CombinedAnalysisResult> => {
   try {
     // Validation de l'input
@@ -101,24 +105,32 @@ export const analyzeAndCaptionImage = async (
     cleanCache();
     
     // Générer un hash de l'image pour le cache
-    // Le hash inclut aussi le contexte de l'événement et la langue (car la légende dépend du contexte et de la langue)
+    // Le hash inclut aussi le contexte de l'événement, la langue et l'auteur (car la légende dépend de ces éléments)
     const imageHash = await getImageHash(base64Image);
-    const cacheKey = `${imageHash}_${eventContext || 'default'}_${captionLanguage || 'fr'}`;
+    const authorKey = authorName ? `${authorName}_${companions?.join(',') || ''}` : 'no-author';
+    const cacheKey = `${imageHash}_${eventContext || 'default'}_${captionLanguage || 'fr'}_${authorKey}`;
     
     // Vérifier le cache
     const cached = analysisCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-      logger.debug('Cache hit for image analysis', { hash: imageHash.substring(0, 8), language: captionLanguage });
+      logger.debug('Cache hit for image analysis', { 
+        hash: imageHash.substring(0, 8), 
+        language: captionLanguage,
+        authorName: authorName || 'none'
+      });
       return cached.result;
     }
     
-    logger.debug('Cache miss, calling Gemini API', { hash: imageHash.substring(0, 8) });
-    
+    logger.debug('Cache miss, calling Gemini API', { 
+      hash: imageHash.substring(0, 8),
+      authorName: authorName || 'none'
+    });
+
     // Strip the data:image/xyz;base64, prefix if present
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
 
-    // Construire le prompt personnalisé pour la légende
-    const captionPrompt = PROMPTS.caption.buildPersonalized(eventContext);
+    // Construire le prompt personnalisé pour la légende (avec informations sur l'auteur)
+    const captionPrompt = PROMPTS.caption.buildPersonalized(eventContext, authorName, companions);
 
     // Prompt combiné : modération + légende + tags + améliorations
     const combinedPrompt = PROMPTS.combinedAnalysis(captionPrompt);
