@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import electron from 'vite-plugin-electron';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import type { Plugin } from 'vite';
 
 // Plugin pour désactiver les preloads CSS en développement (évite les warnings HMR)
@@ -43,6 +44,7 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [
+        TanStackRouterVite(),
         react(),
         tailwindcss(),
         // Désactiver les preloads CSS en développement pour éviter les warnings HMR

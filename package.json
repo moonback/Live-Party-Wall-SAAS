@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "tsr:generate": "tsr generate",
     "preview": "vite preview",
     "generate:icons": "node scripts/generate-icons.js",
     "download:face-models": "node scripts/download-face-api-models.js",
@@ -29,6 +30,8 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "@tanstack/react-query": "^5.62.11",
+    "@tanstack/react-router": "^1.95.0",
+    "@tanstack/router-plugin": "^1.95.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
