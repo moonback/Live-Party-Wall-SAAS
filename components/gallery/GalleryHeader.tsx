@@ -82,8 +82,8 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
           : `bg-transparent py-3 md:py-4 lg:py-6`
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-4">
           {/* Left: Back + Sidebar Toggle + Logo */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             <motion.button 
@@ -208,7 +208,7 @@ Votre mur social interactif
             {/* Search Bar (Desktop) */}
             {!isMobile && (
               <motion.div 
-                className="relative max-w-xs w-full group"
+                className="relative max-w-xs lg:max-w-sm xl:max-w-md w-full group"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
@@ -223,9 +223,9 @@ Votre mur social interactif
                     repeat: Infinity,
                     ease: 'easeInOut'
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                 >
-                  <Search className="w-4 h-4 text-slate-400 group-focus-within:text-pink-400 transition-colors duration-300" />
+                  <Search className="w-4 h-4 sm:w-4 sm:h-4 text-slate-400 group-focus-within:text-pink-400 transition-colors duration-300" />
                 </motion.div>
                 <input
                   ref={searchRef}
@@ -233,7 +233,7 @@ Votre mur social interactif
                   placeholder="Rechercher... (Ctrl+K)"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full pl-11 pr-11 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/30 transition-all shadow-inner hover:bg-white/10 hover:border-white/20"
+                  className="w-full pl-10 sm:pl-11 pr-10 sm:pr-11 py-2 sm:py-2.5 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500/30 focus:border-pink-500/30 transition-all shadow-inner hover:bg-white/10 hover:border-white/20"
                 />
                 <AnimatePresence>
                   {searchQuery && (
