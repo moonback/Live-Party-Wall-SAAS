@@ -1434,7 +1434,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
                         <Grid3x3 className="w-3.5 h-3.5 text-indigo-400" />
-                        Galerie interactive
+                       Le Mur interactive
                         {localConfig.gallery_enabled ? (
                           <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
                         ) : (

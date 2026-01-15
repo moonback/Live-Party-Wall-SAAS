@@ -26,7 +26,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const allFeatureConfigs = [
-    { key: 'gallery_enabled', label: 'Galerie interactive', icon: Images, disabled: false, isPremium: false },
+    { key: 'gallery_enabled', label: 'Le Mur interactive', icon: Images, disabled: false, isPremium: false },
     { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false, isPremium: false },
     { key: 'video_capture_enabled', label: 'Capture Vidéo', icon: Video, disabled: false, isPremium: true },
     { key: 'content_moderation_enabled', label: 'Modération IA', icon: Shield, disabled: true, isPremium: false },
@@ -236,7 +236,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
           </div>
           <h2 className="text-base md:text-lg font-semibold text-white">Images de fond</h2>
         </div>
-        <div className="space-y-3 md:space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {/* Desktop Background */}
           <div className="space-y-2">
             <label className="block text-xs md:text-sm font-medium mb-2 flex items-center gap-2 text-white/80">
@@ -251,7 +251,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                   <img
                     src={settings.background_desktop_url}
                     alt="Fond desktop"
-                    className="w-full h-32 md:h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-48 md:h-64 object-contain bg-white/5 transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <button
@@ -324,7 +324,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                   <img
                     src={settings.background_mobile_url}
                     alt="Fond mobile"
-                    className="w-full h-32 md:h-40 object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-48 md:h-64 object-contain bg-white/5 transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <button
