@@ -1,8 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { 
   detectGeminiErrorType, 
-  logGeminiError, 
-  GeminiErrorType 
+  logGeminiError
 } from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
@@ -63,7 +62,7 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
   try {
     // Validation de l'input
     if (!base64Image || base64Image.trim().length === 0) {
-      logger.warn('Empty base64 image provided to generateImageCaption', null, {
+      logger.warn('Empty base64 image provided to generateImageCaption', undefined, {
         component: 'geminiService',
         action: 'generateImageCaption'
       });
@@ -117,7 +116,7 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
 
     const caption = response.text;
     if (!caption || caption.trim().length === 0) {
-      logger.warn('Empty caption returned from Gemini', null, {
+      logger.warn('Empty caption returned from Gemini', undefined, {
         component: 'geminiService',
         action: 'generateImageCaption'
       });

@@ -33,7 +33,7 @@ export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> 
   try {
     // Validation de l'input
     if (!base64Image || base64Image.trim().length === 0) {
-      logger.warn('Empty base64 image provided to analyzeImage', null, {
+      logger.warn('Empty base64 image provided to analyzeImage', undefined, {
         component: 'aiModerationService',
         action: 'analyzeImage'
       });
@@ -61,10 +61,10 @@ export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> 
       },
     });
 
-    const responseText = response.text.trim();
+    const responseText = response.text?.trim();
     
     if (!responseText || responseText.length === 0) {
-      logger.warn('Empty response from Gemini in analyzeImage', null, {
+      logger.warn('Empty response from Gemini in analyzeImage', undefined, {
         component: 'aiModerationService',
         action: 'analyzeImage'
       });
