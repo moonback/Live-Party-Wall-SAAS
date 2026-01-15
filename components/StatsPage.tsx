@@ -36,8 +36,8 @@ const StatsPage: React.FC<StatsPageProps> = ({ photos, onBack, isDisplayMode = f
   const [selectedBattle, setSelectedBattle] = useState<PhotoBattle | null>(null);
   const [showStarPhotoModal, setShowStarPhotoModal] = useState(false);
   const [guestAvatars, setGuestAvatars] = useState<Map<string, string>>(new Map());
-  const { refresh: refreshPhotos } = usePhotos();
   const { currentEvent } = useEvent();
+  const { refetch: refreshPhotos } = usePhotosQuery(currentEvent?.id);
 
   // Mode plein écran automatique pour l'écran dédié
   useEffect(() => {

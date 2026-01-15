@@ -103,7 +103,7 @@ export const useDeletePhoto = () => {
         }
       }
     },
-    onError: (error, variables, context) => {
+    onError: (error, variables) => {
       // En cas d'erreur, refetch pour restaurer l'état
       const queryCache = queryClient.getQueryCache();
       const queries = queryCache.findAll({ queryKey: ['photos'] });
