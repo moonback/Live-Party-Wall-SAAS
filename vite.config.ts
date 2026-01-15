@@ -34,6 +34,8 @@ function disableCssPreloadsInDev(): Plugin {
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     const isElectron = process.env.ELECTRON === 'true';
+    // Base path : './' pour Electron (chemins relatifs), '/' pour le web
+    const base = isElectron ? './' : '/';
     
     return {
       server: {
@@ -88,7 +90,7 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
-      base: './', // Important pour Electron : chemins relatifs
+      base: base, // './' pour Electron, '/' pour le web
       worker: {
         format: 'es', // Format ES modules pour les workers
       },
