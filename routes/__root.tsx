@@ -126,5 +126,21 @@ export const Route = createRootRoute({
       </AuthProvider>
     </ToastProvider>
   ),
+  errorComponent: ({ error }) => {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950 text-white">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold mb-4">Erreur de routage</h2>
+          <p className="text-gray-300 mb-4">{error instanceof Error ? error.message : 'Une erreur est survenue'}</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
+          >
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  },
 });
 

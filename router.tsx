@@ -2,6 +2,11 @@ import { createRouter, RouterProvider as TanStackRouterProvider } from '@tanstac
 import { routeTree } from './routeTree.gen';
 
 // Créer le router avec toutes les routes
+// Vérifier que routeTree est bien défini avant de créer le router
+if (!routeTree) {
+  throw new Error('routeTree is not defined. Please regenerate routeTree.gen.ts');
+}
+
 const router = createRouter({ 
   routeTree,
   defaultPreload: 'intent',
