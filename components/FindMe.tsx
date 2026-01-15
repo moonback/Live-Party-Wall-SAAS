@@ -7,6 +7,7 @@ import {
   findPhotosWithFace, 
   loadImageFromBase64 
 } from '../services/faceRecognitionService';
+import { getFaceDescriptor } from '../services/faceStorageService';
 import { useToast } from '../context/ToastContext';
 import { useEvent } from '../context/EventContext';
 import { ArrowLeft, Camera, Search, Loader2, User, Image as ImageIcon, X, Sparkles, CheckCircle, AlertCircle, RefreshCw, Zap, ArrowRight, Download, Heart } from 'lucide-react';
@@ -42,6 +43,8 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [faceDetections, setFaceDetections] = useState<Array<{ box: { x: number; y: number; width: number; height: number }; landmarks: Array<{ x: number; y: number }> }>>([]);
   const detectionCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [usingSavedDescriptor, setUsingSavedDescriptor] = useState(false);
+  const [savedDescriptorAvailable, setSavedDescriptorAvailable] = useState(false);
   
   // Charger les modèles au montage
   useEffect(() => {
@@ -99,6 +102,43 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
     
     loadPhotos();
   }, [currentEvent?.id, addToast]);
+
+  // Vérifier si un descripteur facial sauvegardé existe
+  useEffect(() => {
+    const checkSavedDescriptor = async () => {
+      if (!currentEvent?.id) {
+        setSavedDescriptorAvailable(false);
+        return;
+      }
+
+      const userName = localStorage.getItem('party_user_name');
+      if (!userName) {
+        setSavedDescriptorAvailable(false);
+        return;
+      }
+
+      try {
+        const descriptor = await getFaceDescriptor(userName, currentEvent.id);
+        if (descriptor) {
+          setSavedDescriptorAvailable(true);
+          logger.info('Saved face descriptor found', {
+            component: 'FindMe',
+            userName,
+            eventId: currentEvent.id
+          });
+        } else {
+          setSavedDescriptorAvailable(false);
+        }
+      } catch (error) {
+        logger.warn('Error checking for saved descriptor', error, {
+          component: 'FindMe'
+        });
+        setSavedDescriptorAvailable(false);
+      }
+    };
+
+    checkSavedDescriptor();
+  }, [currentEvent?.id]);
   
   // Démarrer la caméra
   const startCamera = async (preferredFacingMode?: 'user' | 'environment') => {
@@ -134,12 +174,17 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
     }
   };
   
-  // Démarrer la caméra au montage
+  // Démarrer la caméra au montage (seulement si pas de descripteur sauvegardé)
   useEffect(() => {
-    startCamera();
+    // Ne pas démarrer la caméra automatiquement si un descripteur sauvegardé est disponible
+    // L'utilisateur pourra choisir de l'utiliser ou de capturer une nouvelle photo
+    if (!savedDescriptorAvailable && !capturedImage && !usingSavedDescriptor) {
+      startCamera();
+    }
     return () => {
       stopCamera();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   // Basculer entre caméra avant/arrière
@@ -276,12 +321,49 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
     }
   };
   
+  // Utiliser le descripteur sauvegardé
+  const useSavedDescriptor = async () => {
+    if (!currentEvent?.id) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    const userName = localStorage.getItem('party_user_name');
+    if (!userName) {
+      addToast('Nom d\'utilisateur non trouvé', 'error');
+      return;
+    }
+
+    try {
+      const descriptor = await getFaceDescriptor(userName, currentEvent.id);
+      if (!descriptor) {
+        addToast('Descripteur facial non trouvé', 'error');
+        setSavedDescriptorAvailable(false);
+        return;
+      }
+
+      setUsingSavedDescriptor(true);
+      setFaceDetected(true);
+      setCapturedImage(null); // Pas d'image à afficher car on utilise le descripteur sauvegardé
+      
+      // Rechercher directement les photos correspondantes
+      await searchForMatchingPhotos(descriptor);
+      
+      addToast('Descripteur sauvegardé utilisé', 'success');
+    } catch (error) {
+      logger.error('Error using saved descriptor', error, { component: 'FindMe' });
+      addToast('Erreur lors de l\'utilisation du descripteur sauvegardé', 'error');
+      setUsingSavedDescriptor(false);
+    }
+  };
+
   // Réinitialiser et reprendre la caméra
   const handleReset = () => {
     setCapturedImage(null);
     setFaceDetected(false);
     setMatchingPhotos([]);
     setFaceDetections([]);
+    setUsingSavedDescriptor(false);
     startCamera();
   };
   
@@ -512,6 +594,176 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
               <RefreshCw className="w-5 h-5" />
               Réessayer
             </button>
+          </div>
+        ) : savedDescriptorAvailable && !usingSavedDescriptor && !capturedImage ? (
+          <div className="w-full max-w-2xl space-y-6">
+            {/* Carte pour utiliser le descripteur sauvegardé */}
+            <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-gray-700/50 shadow-2xl">
+              <div className="text-center space-y-4">
+                <div className="relative inline-block">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 rounded-full blur-2xl" />
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center border-2 border-pink-500/30">
+                    <Sparkles className="w-10 h-10 text-pink-400" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white">
+                    Descripteur facial sauvegardé trouvé
+                  </h2>
+                  <p className="text-gray-400 text-base md:text-lg">
+                    Nous avons trouvé votre descripteur facial enregistré lors de l'inscription.
+                    Vous pouvez l'utiliser directement pour rechercher vos photos, ou capturer une nouvelle photo.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <button
+                    onClick={useSavedDescriptor}
+                    className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Zap className="w-5 h-5" />
+                    Utiliser le descripteur sauvegardé
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSavedDescriptorAvailable(false);
+                      startCamera();
+                    }}
+                    className="px-6 py-3 bg-gray-700/50 hover:bg-gray-700/70 text-white rounded-xl font-semibold transition-all border border-gray-600/50 hover:border-gray-500 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Camera className="w-5 h-5" />
+                    Prendre une nouvelle photo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : usingSavedDescriptor && !capturedImage ? (
+          <div className="w-full max-w-4xl space-y-6">
+            {/* Indicateur que le descripteur sauvegardé est utilisé */}
+            <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-green-500/30 shadow-2xl">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-full blur-lg" />
+                  <CheckCircle className="relative w-6 h-6 text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white">Descripteur sauvegardé utilisé</h3>
+                  <p className="text-sm text-gray-300">Recherche en cours avec votre descripteur facial enregistré...</p>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="p-2 hover:bg-gray-700/50 rounded-xl transition-all active:scale-95"
+                  aria-label="Réinitialiser"
+                >
+                  <X className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Résultats de recherche */}
+            {isSearching ? (
+              <div className="flex flex-col items-center gap-6 text-white py-12">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 rounded-full blur-2xl animate-pulse" />
+                  <Loader2 className="relative w-16 h-16 animate-spin text-pink-500" />
+                </div>
+                <div className="space-y-2 text-center">
+                  <p className="text-xl font-bold">Recherche en cours...</p>
+                  <p className="text-sm text-gray-400">Analyse de {allPhotos.length} photo(s) avec l'IA</p>
+                </div>
+                <div className="w-full max-w-md h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 rounded-full animate-pulse" style={{ width: '70%' }} />
+                </div>
+              </div>
+            ) : matchingPhotos.length > 0 ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-purple-500/30 rounded-full blur-lg" />
+                      <Sparkles className="relative w-6 h-6 text-pink-400" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white">
+                      {matchingPhotos.length} photo{matchingPhotos.length > 1 ? 's' : ''} trouvée{matchingPhotos.length > 1 ? 's' : ''} !
+                    </h2>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+                  {matchingPhotos.map((match, index) => {
+                    const photo = getPhotoById(match.id);
+                    if (!photo) return null;
+                    const similarityPercent = Math.round(match.similarity * 100);
+                    
+                    return (
+                      <div
+                        key={match.id}
+                        onClick={() => openLightbox(index)}
+                        className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl overflow-hidden border border-gray-700/50 hover:border-pink-500/50 transition-all cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
+                        style={{
+                          animation: 'slideInBottom 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                          animationDelay: `${index * 100}ms`
+                        }}
+                      >
+                        <div className="relative aspect-square overflow-hidden">
+                          <img 
+                            src={match.url} 
+                            alt={photo.caption}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute top-2 right-2 bg-gradient-to-r from-pink-500/90 to-purple-500/90 text-white px-2 py-1 rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 shadow-lg backdrop-blur-sm border border-white/20">
+                            <Zap className="w-3 h-3" />
+                            {similarityPercent}%
+                          </div>
+                          {similarityPercent >= 80 && (
+                            <div className="absolute top-2 left-2 bg-yellow-500/90 text-white p-1 rounded-full shadow-lg">
+                              <Sparkles className="w-3 h-3" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3 space-y-1.5">
+                          <p className="text-xs sm:text-sm font-semibold text-white line-clamp-1">{photo.caption || 'Sans légende'}</p>
+                          <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-400">
+                            <div className="flex items-center gap-1.5">
+                              <User className="w-3 h-3" />
+                              <span className="truncate max-w-[80px]">{photo.author}</span>
+                            </div>
+                            {photo.likes_count > 0 && (
+                              <div className="flex items-center gap-1 text-pink-400">
+                                <Heart className="w-3 h-3 fill-current" />
+                                <span>{photo.likes_count}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-6 text-white py-12 text-center max-w-md">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gray-700/30 rounded-full blur-2xl" />
+                  <div className="relative w-24 h-24 rounded-full bg-gray-800/50 border-2 border-gray-700 flex items-center justify-center">
+                    <Search className="w-12 h-12 text-gray-400" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl md:text-3xl font-bold">Aucune correspondance</h2>
+                  <p className="text-gray-400">
+                    Aucune photo sur le mur ne contient un visage similaire au vôtre.
+                  </p>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="mt-4 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-2"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  Réessayer
+                </button>
+              </div>
+            )}
           </div>
         ) : capturedImage ? (
           <div className="w-full max-w-4xl space-y-6">

@@ -10,6 +10,9 @@ import { registerGuest, isGuestBlocked, getBlockedGuestInfo } from '../services/
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
+import { loadFaceModels, detectFaces, loadImageFromBase64 } from '../services/faceRecognitionService';
+import { saveFaceDescriptor } from '../services/faceStorageService';
+import { logger } from '../utils/logger';
 
 interface UserOnboardingProps {
   onComplete: (userName: string, avatarUrl: string) => void;
@@ -248,6 +251,63 @@ const UserOnboarding: React.FC<UserOnboardingProps> = ({ onComplete, onBack }) =
         console.warn('Failed to save user avatar to mapping:', error);
         // Ne pas bloquer l'application si la sauvegarde échoue
       });
+
+      // Détecter et sauvegarder le descripteur facial de manière asynchrone
+      // Ne pas bloquer l'inscription si la détection échoue
+      (async () => {
+        try {
+          // Charger les modèles de reconnaissance faciale
+          const modelsLoaded = await loadFaceModels();
+          if (!modelsLoaded) {
+            logger.warn('Face recognition models not loaded, skipping face descriptor save', {
+              component: 'UserOnboarding'
+            });
+            return;
+          }
+
+          // Charger l'image depuis base64
+          const imageElement = await loadImageFromBase64(avatarPhoto);
+          
+          // Détecter les visages dans l'image
+          const detections = await detectFaces(imageElement);
+          
+          if (detections.length > 0) {
+            // Sélectionner le visage le plus grand (ou le premier si un seul)
+            let selectedDetection = detections[0];
+            if (detections.length > 1) {
+              // Trouver le visage avec la plus grande surface
+              let maxArea = selectedDetection.detection.box.width * selectedDetection.detection.box.height;
+              for (const detection of detections) {
+                const area = detection.detection.box.width * detection.detection.box.height;
+                if (area > maxArea) {
+                  maxArea = area;
+                  selectedDetection = detection;
+                }
+              }
+            }
+
+            // Sauvegarder le descripteur facial
+            await saveFaceDescriptor(userName, currentEvent.id, selectedDetection.descriptor);
+            logger.info('Face descriptor saved successfully', {
+              component: 'UserOnboarding',
+              userName,
+              eventId: currentEvent.id
+            });
+          } else {
+            logger.warn('No face detected in avatar photo', {
+              component: 'UserOnboarding',
+              userName
+            });
+          }
+        } catch (error) {
+          // Erreur silencieuse - ne pas bloquer l'inscription
+          logger.warn('Failed to detect and save face descriptor', error, {
+            component: 'UserOnboarding',
+            userName,
+            eventId: currentEvent.id
+          });
+        }
+      })();
 
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
