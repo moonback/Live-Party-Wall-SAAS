@@ -9,6 +9,7 @@ import {
   detectGeminiErrorType, 
   logGeminiError 
 } from '../utils/geminiErrorHandler';
+import { MODELS, PROMPTS } from '../config/geminiConfig';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -57,16 +58,10 @@ export const translateCaption = async (
   try {
     const languageName = SUPPORTED_LANGUAGES[targetLanguage as SupportedLanguage] || targetLanguage;
     
-    const translationPrompt = `Traduis cette légende de photo de fête en ${languageName}. 
-Conserve le ton festif, énergique et humoristique.
-Conserve les emojis exactement tels quels.
-La longueur doit rester similaire (maximum 12 mots).
-Réponds UNIQUEMENT avec la traduction, sans explication, sans guillemets, sans formatage.
-
-Légende à traduire: "${caption}"`;
+    const translationPrompt = PROMPTS.translation(caption, languageName);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: MODELS.translation,
       contents: {
         parts: [
           {

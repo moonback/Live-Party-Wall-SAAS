@@ -1,14 +1,72 @@
 /**
  * Utilitaires pour appliquer des filtres esthétiques aux images
+ * Utilise des Web Workers pour éviter de bloquer le thread principal
  */
 
 export type FilterType = 'none' | 'vintage' | 'blackwhite' | 'warm' | 'cool';
 export type FrameType = 'none';
 
+// Cache pour les workers (singleton pattern)
+let filterWorker: Worker | null = null;
+let enhancementWorker: Worker | null = null;
+
 /**
- * Applique un filtre CSS à une image via canvas
+ * Vérifie si les Web Workers sont supportés
  */
-export const applyImageFilter = (
+const isWorkerSupported = (): boolean => {
+  return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined';
+};
+
+/**
+ * Obtient ou crée le worker de filtres
+ */
+const getFilterWorker = (): Worker | null => {
+  if (!isWorkerSupported()) {
+    return null;
+  }
+  
+  if (!filterWorker) {
+    try {
+      filterWorker = new Worker(
+        new URL('../workers/imageFilters.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+    } catch (error) {
+      console.warn('Failed to create filter worker, falling back to sync processing', error);
+      return null;
+    }
+  }
+  
+  return filterWorker;
+};
+
+/**
+ * Obtient ou crée le worker d'amélioration
+ */
+const getEnhancementWorker = (): Worker | null => {
+  if (!isWorkerSupported()) {
+    return null;
+  }
+  
+  if (!enhancementWorker) {
+    try {
+      enhancementWorker = new Worker(
+        new URL('../workers/imageEnhancement.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+    } catch (error) {
+      console.warn('Failed to create enhancement worker, falling back to sync processing', error);
+      return null;
+    }
+  }
+  
+  return enhancementWorker;
+};
+
+/**
+ * Applique un filtre CSS à une image via canvas (version synchrone pour fallback)
+ */
+const applyImageFilterSync = (
   imageDataUrl: string,
   filter: FilterType,
   frame: FrameType = 'none'
@@ -17,7 +75,6 @@ export const applyImageFilter = (
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      // 1. Définir la taille du canvas
       const canvasWidth = img.width;
       const canvasHeight = img.height;
       const offsetX = 0;
@@ -33,7 +90,6 @@ export const applyImageFilter = (
         return;
       }
 
-      // 3. Appliquer le filtre
       ctx.save();
       switch (filter) {
         case 'vintage':
@@ -52,19 +108,62 @@ export const applyImageFilter = (
           ctx.filter = 'none';
       }
 
-      // Dessiner l'image
       ctx.drawImage(img, offsetX, offsetY, img.width, img.height);
       ctx.restore();
 
-      // Les cadres générés par code ont été retirés
-      // Seuls les cadres PNG personnalisés sont disponibles via les settings
-
-      // Qualité maximale HD pour les cadres
       resolve(canvas.toDataURL('image/jpeg', 1.0));
     };
 
     img.onerror = reject;
     img.src = imageDataUrl;
+  });
+};
+
+/**
+ * Applique un filtre CSS à une image via canvas
+ * Utilise un Web Worker si disponible, sinon fallback synchrone
+ */
+export const applyImageFilter = (
+  imageDataUrl: string,
+  filter: FilterType,
+  frame: FrameType = 'none'
+): Promise<string> => {
+  const worker = getFilterWorker();
+  
+  // Si pas de worker, utiliser la version synchrone
+  if (!worker) {
+    return applyImageFilterSync(imageDataUrl, filter, frame);
+  }
+  
+  return new Promise((resolve, reject) => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data.type === 'filtered') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        resolve(e.data.imageDataUrl);
+      } else if (e.data.type === 'error') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        // Fallback vers synchrone en cas d'erreur
+        applyImageFilterSync(imageDataUrl, filter, frame).then(resolve).catch(reject);
+      }
+    };
+
+    const handleError = (error: ErrorEvent) => {
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      // Fallback vers synchrone en cas d'erreur
+      applyImageFilterSync(imageDataUrl, filter, frame).then(resolve).catch(reject);
+    };
+
+    worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+
+    worker.postMessage({
+      type: 'apply-filter',
+      imageDataUrl,
+      filter
+    });
   });
 };
 
@@ -315,24 +414,9 @@ const applyWhiteBalance = (
 };
 
 /**
- * Améliore la qualité d'une image de manière intelligente et poussée
- * Détecte automatiquement les problèmes et applique des corrections ciblées avancées
- * Optimisé pour la projection sur grand écran
- * 
- * Techniques utilisées :
- * - Correction automatique de l'exposition (sous/surexposition)
- * - Amélioration du contraste adaptatif
- * - Correction de la balance des blancs
- * - Débruitage intelligent
- * - Netteté avancée (unsharp mask)
- * - Correction de la saturation
- * 
- * @param imageDataUrl - Image en base64
- * @param suggestedImprovements - Suggestions d'amélioration de l'IA (optionnel)
- * @param aggressiveMode - Mode agressif pour améliorations plus poussées (défaut: false)
- * @returns Promise<string> - Image optimisée en base64
+ * Améliore la qualité d'une image de manière intelligente et poussée (version synchrone pour fallback)
  */
-export const enhanceImageQuality = (
+const enhanceImageQualitySync = (
   imageDataUrl: string,
   suggestedImprovements?: string[],
   aggressiveMode: boolean = false
@@ -504,5 +588,70 @@ export const enhanceImageQuality = (
 
     img.onerror = reject;
     img.src = imageDataUrl;
+  });
+};
+
+/**
+ * Améliore la qualité d'une image de manière intelligente et poussée
+ * Détecte automatiquement les problèmes et applique des corrections ciblées avancées
+ * Optimisé pour la projection sur grand écran
+ * 
+ * Techniques utilisées :
+ * - Correction automatique de l'exposition (sous/surexposition)
+ * - Amélioration du contraste adaptatif
+ * - Correction de la balance des blancs
+ * - Débruitage intelligent
+ * - Netteté avancée (unsharp mask)
+ * - Correction de la saturation
+ * 
+ * Utilise un Web Worker si disponible, sinon fallback synchrone
+ * 
+ * @param imageDataUrl - Image en base64
+ * @param suggestedImprovements - Suggestions d'amélioration de l'IA (optionnel)
+ * @param aggressiveMode - Mode agressif pour améliorations plus poussées (défaut: false)
+ * @returns Promise<string> - Image optimisée en base64
+ */
+export const enhanceImageQuality = (
+  imageDataUrl: string,
+  suggestedImprovements?: string[],
+  aggressiveMode: boolean = false
+): Promise<string> => {
+  const worker = getEnhancementWorker();
+  
+  // Si pas de worker, utiliser la version synchrone
+  if (!worker) {
+    return enhanceImageQualitySync(imageDataUrl, suggestedImprovements, aggressiveMode);
+  }
+  
+  return new Promise((resolve, reject) => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data.type === 'enhanced') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        resolve(e.data.imageDataUrl);
+      } else if (e.data.type === 'error') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        // Fallback vers synchrone en cas d'erreur
+        enhanceImageQualitySync(imageDataUrl, suggestedImprovements, aggressiveMode).then(resolve).catch(reject);
+      }
+    };
+
+    const handleError = (error: ErrorEvent) => {
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      // Fallback vers synchrone en cas d'erreur
+      enhanceImageQualitySync(imageDataUrl, suggestedImprovements, aggressiveMode).then(resolve).catch(reject);
+    };
+
+    worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+
+    worker.postMessage({
+      type: 'enhance-quality',
+      imageDataUrl,
+      suggestedImprovements,
+      aggressiveMode
+    });
   });
 };

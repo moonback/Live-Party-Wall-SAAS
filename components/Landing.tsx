@@ -574,6 +574,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     statsEnabled: defaultSettings.stats_enabled,
     findMeEnabled: defaultSettings.find_me_enabled,
     battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
+    galleryEnabled: defaultSettings.gallery_enabled ?? true,
     backgroundDesktopUrl: defaultSettings.background_desktop_url,
     backgroundMobileUrl: defaultSettings.background_mobile_url,
     logoUrl: defaultSettings.logo_url
@@ -612,6 +613,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         statsEnabled: defaultSettings.stats_enabled,
         findMeEnabled: defaultSettings.find_me_enabled,
         battleModeEnabled: defaultSettings.battle_mode_enabled ?? false,
+        galleryEnabled: defaultSettings.gallery_enabled ?? true,
         backgroundDesktopUrl: defaultSettings.background_desktop_url,
         backgroundMobileUrl: defaultSettings.background_mobile_url,
         logoUrl: defaultSettings.logo_url
@@ -626,6 +628,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         statsEnabled: settings.stats_enabled ?? prev.statsEnabled,
         findMeEnabled: settings.find_me_enabled ?? prev.findMeEnabled,
         battleModeEnabled: settings.battle_mode_enabled ?? prev.battleModeEnabled,
+        galleryEnabled: settings.gallery_enabled ?? prev.galleryEnabled,
         backgroundDesktopUrl: settings.background_desktop_url ?? prev.backgroundDesktopUrl,
         backgroundMobileUrl: settings.background_mobile_url ?? prev.backgroundMobileUrl,
         logoUrl: settings.logo_url ?? prev.logoUrl
@@ -639,6 +642,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         statsEnabled: newSettings.stats_enabled ?? prev.statsEnabled,
         findMeEnabled: newSettings.find_me_enabled ?? prev.findMeEnabled,
         battleModeEnabled: newSettings.battle_mode_enabled ?? prev.battleModeEnabled,
+        galleryEnabled: newSettings.gallery_enabled ?? prev.galleryEnabled,
         backgroundDesktopUrl: newSettings.background_desktop_url ?? prev.backgroundDesktopUrl,
         backgroundMobileUrl: newSettings.background_mobile_url ?? prev.backgroundMobileUrl,
         logoUrl: newSettings.logo_url ?? prev.logoUrl
@@ -677,8 +681,12 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         glowColor: 'rgba(236, 72, 153, 0.4)',
         delay: 0.1,
         isPrimary: true,
-      },
-      {
+      }
+    ];
+
+    // Ajouter la galerie seulement si elle est activée
+    if (uiConfig.galleryEnabled) {
+      options.push({
         id: 'gallery',
         title: 'Mur Social',
         description: 'Découvrez toutes les photos',
@@ -687,8 +695,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         glowColor: 'rgba(99, 102, 241, 0.4)',
         delay: 0.2,
         isPrimary: false,
-      }
-    ];
+      });
+    }
 
     if (uiConfig.findMeEnabled) {
       options.push({
@@ -704,7 +712,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     }
 
     return options;
-  }, [uiConfig.findMeEnabled]);
+  }, [uiConfig.findMeEnabled, uiConfig.galleryEnabled]);
 
   // Vérifier si l'événement est suspendu
   const isEventSuspended = currentEvent && !currentEvent.is_active;

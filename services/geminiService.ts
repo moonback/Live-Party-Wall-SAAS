@@ -1,19 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
-import { buildPersonalizedCaptionPrompt } from '../constants';
 import { 
   detectGeminiErrorType, 
-  logGeminiError, 
-  GeminiErrorType 
+  logGeminiError
 } from '../utils/geminiErrorHandler';
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
+import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-/**
- * Légende par défaut en cas d'erreur
- */
-const DEFAULT_CAPTION = "Party time! 🎉";
 
 // Cache en mémoire pour les légendes (évite les appels API pour images identiques)
 // Structure : Map<cacheKey, { caption: string, timestamp: number }>
@@ -62,49 +56,59 @@ function cleanCache(): void {
  * @param eventContext - Contexte optionnel de l'événement pour personnaliser les légendes
  *                       Exemples : "Mariage de Sophie et Marc", "Anniversaire 30 ans", 
  *                                  "Soirée entreprise", "Fête de famille", etc.
+ * @param authorName - Nom de l'invité qui poste la photo (prénom si seul, nom complet si avec compagnons)
+ * @param companions - Liste des compagnons présents sur la photo (optionnel)
  * @returns Promise<string> - Légende personnalisée selon le type d'événement, ou légende par défaut en cas d'erreur
  */
-export const generateImageCaption = async (base64Image: string, eventContext?: string | null): Promise<string> => {
+export const generateImageCaption = async (
+  base64Image: string, 
+  eventContext?: string | null,
+  authorName?: string | null,
+  companions?: string[] | null
+): Promise<string> => {
   try {
     // Validation de l'input
     if (!base64Image || base64Image.trim().length === 0) {
-      logger.warn('Empty base64 image provided to generateImageCaption', null, {
+      logger.warn('Empty base64 image provided to generateImageCaption', undefined, {
         component: 'geminiService',
         action: 'generateImageCaption'
       });
-      return DEFAULT_CAPTION;
+      return DEFAULTS.caption;
     }
 
     // Nettoyer le cache périodiquement
     cleanCache();
     
     // Générer un hash de l'image pour le cache
-    // Le hash inclut aussi le contexte de l'événement (car la légende dépend du contexte)
+    // Le hash inclut aussi le contexte de l'événement et l'auteur (car la légende dépend du contexte et de l'auteur)
     const imageHash = await getImageHash(base64Image);
-    const cacheKey = `${imageHash}_${eventContext || 'default'}`;
+    const authorKey = authorName ? `${authorName}_${companions?.join(',') || ''}` : 'no-author';
+    const cacheKey = `${imageHash}_${eventContext || 'default'}_${authorKey}`;
     
     // Vérifier le cache
     const cached = captionCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
       logger.debug('Cache hit for image caption', { 
         hash: imageHash.substring(0, 8), 
-        eventContext: eventContext || 'default' 
+        eventContext: eventContext || 'default',
+        authorName: authorName || 'none'
       });
       return cached.caption;
     }
     
     logger.debug('Cache miss, calling Gemini API for caption', { 
-      hash: imageHash.substring(0, 8) 
+      hash: imageHash.substring(0, 8),
+      authorName: authorName || 'none'
     });
 
     // Strip the data:image/xyz;base64, prefix if present
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
 
-    // Construire le prompt personnalisé selon le contexte de l'événement
-    const prompt = buildPersonalizedCaptionPrompt(eventContext);
+    // Construire le prompt personnalisé selon le contexte de l'événement et l'auteur
+    const prompt = PROMPTS.caption.buildPersonalized(eventContext, authorName, companions);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: MODELS.caption,
       contents: {
         parts: [
           {
@@ -122,11 +126,11 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
 
     const caption = response.text;
     if (!caption || caption.trim().length === 0) {
-      logger.warn('Empty caption returned from Gemini', null, {
+      logger.warn('Empty caption returned from Gemini', undefined, {
         component: 'geminiService',
         action: 'generateImageCaption'
       });
-      return DEFAULT_CAPTION;
+      return DEFAULTS.caption;
     }
     
     const trimmedCaption = caption.trim();
@@ -153,6 +157,6 @@ export const generateImageCaption = async (base64Image: string, eventContext?: s
     // Toujours retourner une légende par défaut pour éviter que l'application plante
     // L'utilisateur ne verra pas d'erreur, juste une légende générique
     // Ne pas mettre en cache les erreurs
-    return DEFAULT_CAPTION;
+    return DEFAULTS.caption;
   }
 };

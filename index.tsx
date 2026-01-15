@@ -1,6 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
+
+// Configuration du QueryClient
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000, // 30 secondes - les photos restent "fraîches" pendant 30s
+      gcTime: 5 * 60 * 1000, // 5 minutes - garder en cache pendant 5 minutes (anciennement cacheTime)
+      refetchOnWindowFocus: false, // Ne pas refetch automatiquement au focus
+      retry: 1, // Retry une fois en cas d'erreur
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 // Enregistrer le Service Worker pour le cache offline
 if ('serviceWorker' in navigator) {
@@ -37,6 +53,8 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </React.StrictMode>
 );

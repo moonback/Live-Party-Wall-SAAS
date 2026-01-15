@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { ListSkeleton } from './SkeletonLoaders';
 import { useSettings } from '../../context/SettingsContext';
-import { usePhotos } from '../../context/PhotosContext';
+import { usePhotosQuery } from '../../hooks/queries/usePhotosQuery';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
@@ -24,9 +24,9 @@ interface ConfigurationTabProps {
 
 export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const { settings: config, updateSettings } = useSettings();
-  const { photos: allPhotos } = usePhotos();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
+  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   const { isFeatureEnabled } = useLicenseFeatures();
   
   const [localConfig, setLocalConfig] = useState<EventSettings>(config);
@@ -344,6 +344,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
       ar_scene_enabled: false,
       battle_mode_enabled: false,
       auto_carousel_enabled: false,
+      gallery_enabled: false,
       // content_moderation_enabled reste toujours à true
     }));
     addToast("Toutes les fonctionnalités ont été désactivées. N'oubliez pas de sauvegarder.", 'info');
@@ -647,7 +648,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
                     Images de fond
                   </label>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Desktop Background */}
                     <div className="space-y-1.5">
                       <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
@@ -660,7 +661,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                             <img
                               src={localConfig.background_desktop_url}
                               alt="Fond desktop"
-                              className="w-full h-28 object-cover"
+                              className="w-full h-64 object-contain"
                             />
                           </div>
                           <div className="flex gap-2 mt-1.5">
@@ -713,7 +714,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                             <img
                               src={localConfig.background_mobile_url}
                               alt="Fond mobile"
-                              className="w-full h-28 object-cover"
+                              className="w-full h-64 object-contain"
                             />
                           </div>
                           <div className="flex gap-2 mt-1.5">
@@ -988,7 +989,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   <p className="text-xs text-slate-400">Paramétrez les animations et transitions</p>
                 </div>
               </header>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
                   <label className="block text-xs font-medium text-slate-200 mb-1.5 flex items-center gap-1.5">
                     <Move className="w-3.5 h-3.5 text-teal-400" />
@@ -1420,6 +1421,30 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     </div>
                   );
                 })()}
+                {/* Galerie interactive */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="gallery_enabled"
+                      checked={localConfig.gallery_enabled ?? true}
+                      onChange={handleConfigChange}
+                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                        <Grid3x3 className="w-3.5 h-3.5 text-indigo-400" />
+                       Le Mur interactive
+                        {localConfig.gallery_enabled ? (
+                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">Permet aux invités d'explorer toutes les photos avec likes, réactions et filtres.</p>
+                    </div>
+                  </label>
+                </div>
                 {/* Carrousel automatique */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-2.5 cursor-pointer">

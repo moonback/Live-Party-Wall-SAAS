@@ -10,6 +10,7 @@ import {
   detectGeminiErrorType, 
   logGeminiError 
 } from '../utils/geminiErrorHandler';
+import { MODELS, PROMPTS } from '../config/geminiConfig';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -56,42 +57,10 @@ async function analyzePhoto(
     const base64 = await blobToBase64(imageBlob);
     const cleanBase64 = base64.split(',')[1] || base64;
 
-    const prompt = `
-Analyse cette photo de fête et réponds UNIQUEMENT avec un JSON valide (sans markdown, sans code blocks) :
-
-{
-  "score": number (0-100, qualité + importance + émotion),
-  "isKeyMoment": boolean (true si moment important : émotions fortes, groupes, actions spéciales),
-  "suggestedDuration": number (durée en ms, 2000-6000, plus long pour moments clés),
-  "suggestedTransition": string ("fade" | "zoom-in" | "zoom-out" | "slide-left" | "slide-right" | "cross-fade"),
-  "emotion": string ("joy" | "excitement" | "tenderness" | "celebration" | "neutral"),
-  "contentType": string ("group" | "couple" | "individual" | "object" | "scene"),
-  "quality": string ("excellent" | "good" | "fair" | "poor"),
-  "shouldInclude": boolean (true si la photo doit être dans l'aftermovie),
-  "reason": string (raison courte de la décision, max 50 caractères)
-}
-
-CRITÈRES D'ANALYSE :
-1. score : combine qualité technique (net, exposé) + importance (personnes, actions) + émotion (sourires, joie)
-2. isKeyMoment : true si groupe nombreux, émotions fortes, actions spéciales (toast, danse, gâteau)
-3. suggestedDuration : 3000-5000ms pour moments clés, 2000-3500ms pour photos normales
-4. suggestedTransition : 
-   - "zoom-in" pour portraits individuels
-   - "zoom-out" pour groupes
-   - "slide-left/right" pour panoramas
-   - "fade" pour transitions douces
-   - "cross-fade" pour moments émotionnels
-5. emotion : détecte l'émotion principale visible
-6. contentType : type de contenu principal
-7. quality : qualité technique (net, exposé, composition)
-8. shouldInclude : true sauf si flou, sombre, ou contenu inapproprié
-9. reason : explication courte (ex: "Groupe joyeux", "Photo floue", "Moment clé")
-
-${eventContext ? `Contexte de l'événement : ${eventContext}` : ''}
-`;
+    const prompt = PROMPTS.aftermovieAnalysis(eventContext);
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: MODELS.analysis,
       contents: {
         parts: [
           {

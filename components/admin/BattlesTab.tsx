@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Trophy, Clock, X, Image as ImageIcon, User, CheckCircle2, Sparkles } from 'lucide-react';
-import { usePhotos } from '../../context/PhotosContext';
+import { usePhotosQuery } from '../../hooks/queries/usePhotosQuery';
 import { useEvent } from '../../context/EventContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -16,10 +16,10 @@ interface BattlesTabProps {
 const AUTO_BATTLE_INTERVAL = 30; // Intervalle fixe à 30 minutes
 
 export const BattlesTab: React.FC<BattlesTabProps> = () => {
-  const { photos: allPhotos } = usePhotos();
   const { currentEvent } = useEvent();
   const { settings: config } = useSettings();
   const { addToast } = useToast();
+  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   
   const [battles, setBattles] = useState<PhotoBattle[]>([]);
   const [loading, setLoading] = useState(false);

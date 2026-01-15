@@ -6,7 +6,7 @@ import { getEventPhotosCount } from '../services/photoService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
-import { getMaxEvents, getEventLimitInfo } from '../utils/licenseUtils';
+import { getMaxEvents, getEventLimitInfo, isPartLicense as isPartLicenseUtil } from '../utils/licenseUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isElectron } from '../utils/electronPaths';
 import { 
@@ -45,6 +45,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   const [photosCounts, setPhotosCounts] = useState<Map<string, number>>(new Map());
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Calculer la limite et vérifier si elle est atteinte (avant le useEffect pour être disponible)
+  const maxEvents = getMaxEvents(licenseKey);
+  const limitInfo = getEventLimitInfo(licenseKey);
+  const isPartLicense = limitInfo.type === 'PART';
+
   // Focus search on mount
   useEffect(() => {
     if (searchInputRef.current) {
@@ -63,15 +68,57 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       try {
         setLoading(true);
         const userEvents = await getUserEvents(user.id);
-        setEvents(userEvents);
+        
+        // Vérifier le type de licence actuel dans le useEffect pour être sûr d'avoir la bonne valeur
+        // Utiliser directement isPartLicenseUtil pour une vérification stricte (vérifie les 4 derniers caractères = "PART")
+        const currentIsPartLicense = isPartLicenseUtil(licenseKey);
+        const currentMaxEvents = getMaxEvents(licenseKey);
+        
+        // Si licence PART et plus d'1 événement, suspendre automatiquement les événements au-delà du premier
+        // IMPORTANT: Ne suspendre QUE si c'est vraiment une licence PART (vérification stricte)
+        if (currentIsPartLicense && userEvents.length > currentMaxEvents) {
+          const eventsToSuspend = userEvents.slice(currentMaxEvents);
+          const suspendPromises = eventsToSuspend
+            .filter(event => event.is_active) // Ne suspendre que ceux qui sont actifs
+            .map(async (event) => {
+              try {
+                await updateEvent(event.id, { is_active: false });
+                return event.id;
+              } catch (error) {
+                console.error(`Error suspending event ${event.id}:`, error);
+                return null;
+              }
+            });
+          
+          const suspendedIds = await Promise.all(suspendPromises);
+          const suspendedCount = suspendedIds.filter(id => id !== null).length;
+          
+          if (suspendedCount > 0) {
+            // Recharger les événements pour avoir les statuts mis à jour
+            const updatedEvents = await getUserEvents(user.id);
+            setEvents(updatedEvents);
+            
+            addToast(
+              `${suspendedCount} événement${suspendedCount > 1 ? 's' : ''} suspendu${suspendedCount > 1 ? 's' : ''} automatiquement (licence PART)`,
+              'info'
+            );
+          } else {
+            setEvents(userEvents);
+          }
+        } else {
+          setEvents(userEvents);
+        }
         
         // Compter les événements créés par l'utilisateur (owner)
         const count = await getUserEventsCount(user.id);
         setEventsCount(count);
         
         // Charger les compteurs de photos pour tous les événements en parallèle
+        const finalEvents = currentIsPartLicense && userEvents.length > currentMaxEvents 
+          ? await getUserEvents(user.id) 
+          : userEvents;
         const countsMap = new Map<string, number>();
-        const photosCountPromises = userEvents.map(async (event) => {
+        const photosCountPromises = finalEvents.map(async (event) => {
           const photosCount = await getEventPhotosCount(event.id);
           countsMap.set(event.id, photosCount);
         });
@@ -86,7 +133,8 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     };
 
     loadEvents();
-  }, [user, addToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, addToast, licenseKey]);
 
   // Copier le lien de l'événement
   const copyEventLink = (slug: string, id: string, e: React.MouseEvent) => {
@@ -122,6 +170,13 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
 
   // Sélectionner un événement
   const handleSelectEvent = async (event: Event) => {
+    // Empêcher la sélection si l'événement est désactivé (licence PART)
+    const eventIndex = filteredAndSortedEvents.findIndex(e => e.id === event.id);
+    if (isPartLicense && events.length > maxEvents && eventIndex >= maxEvents) {
+      addToast('Cet événement n\'est pas accessible avec une licence PART. Passez à PRO pour accéder à tous vos événements.', 'error');
+      return;
+    }
+    
     try {
       await loadEventBySlug(event.slug);
       if (onEventSelected) {
@@ -270,11 +325,8 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     }
   }, [newEventName]);
 
-  // Calculer la limite et vérifier si elle est atteinte
-  const maxEvents = getMaxEvents(licenseKey);
-  const limitInfo = getEventLimitInfo(licenseKey);
+  // Calculer si la limite est atteinte
   const isLimitReached = eventsCount >= maxEvents;
-  const isPartLicense = limitInfo.type === 'PART';
 
   if (!user) {
     return (
@@ -652,91 +704,107 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                 const isDeleting = deletingEventId === event.id;
                 const showConfirm = confirmDeleteId === event.id;
                 const isCopied = copiedId === event.id;
+                // Griser les événements au-delà du premier si licence PART et plus d'1 événement
+                const isDisabled = isPartLicense && events.length > maxEvents && index >= maxEvents;
                 
                 return (
                   <motion.div
                     layout
                     key={event.id}
                     initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: isDisabled ? 0.5 : 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: index * 0.02, duration: 0.25 }}
-                    whileHover={{ y: -2, scale: 1.005 }}
+                    whileHover={!isDisabled ? { y: -2, scale: 1.005 } : {}}
                     className={`group relative bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-900/70 backdrop-blur-xl rounded-xl p-4 border transition-all duration-200 flex flex-col shadow-md ${
-                      isSelected 
-                        ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/15 ring-1 ring-indigo-500/20' 
-                        : 'border-slate-800/50 hover:border-slate-700/50 hover:shadow-lg hover:shadow-black/15'
+                      isDisabled
+                        ? 'border-slate-700/30 opacity-50 cursor-not-allowed'
+                        : isSelected 
+                          ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/15 ring-1 ring-indigo-500/20' 
+                          : 'border-slate-800/50 hover:border-slate-700/50 hover:shadow-lg hover:shadow-black/15'
                     }`}
                   >
+                    {/* Badge licence PART si événement désactivé */}
+                    {isDisabled && (
+                      <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded-md text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+                        <Lock className="w-3 h-3" />
+                        <span>PART</span>
+                      </div>
+                    )}
+
                     {/* Event Status & Actions */}
                     <div className="flex justify-between items-start mb-3">
                       <motion.div 
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={!isDisabled ? { scale: 1.05 } : {}}
                         className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 ${
                           event.is_active 
                             ? 'bg-teal-500/15 text-teal-400 border border-teal-500/25' 
                             : 'bg-slate-800/60 text-slate-400 border border-slate-700/40'
-                        }`}
+                        } ${isDisabled ? 'opacity-60' : ''}`}
                       >
                         <div className={`w-1.5 h-1.5 rounded-full ${event.is_active ? 'bg-teal-400 animate-pulse' : 'bg-slate-500'}`}></div>
                         {event.is_active ? 'Actif' : 'Archivé'}
                       </motion.div>
                       
                       <div className="flex items-center gap-1.5">
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => handleToggleEventStatus(event, e)}
-                          disabled={togglingEventId === event.id}
-                          className={`p-1.5 rounded-lg transition-all duration-200 ${
-                            togglingEventId === event.id
-                              ? 'bg-slate-800/60 text-slate-500 border border-slate-700/40 cursor-not-allowed'
-                              : event.is_active
-                                ? 'bg-slate-800/60 text-slate-400 hover:text-amber-400 border border-slate-700/40 hover:border-amber-500/30'
-                                : 'bg-slate-800/60 text-slate-400 hover:text-teal-400 border border-slate-700/40 hover:border-teal-500/30'
-                          }`}
-                          title={event.is_active ? 'Suspendre l\'événement' : 'Activer l\'événement'}
-                        >
-                          {togglingEventId === event.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : event.is_active ? (
-                            <Pause className="w-3.5 h-3.5" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5" />
-                          )}
-                        </motion.button>
-                        
-                        <motion.button 
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => copyEventLink(event.slug, event.id, e)}
-                          className={`p-1.5 rounded-lg transition-all duration-200 ${
-                            isCopied 
-                              ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30' 
-                              : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/40 hover:border-slate-600/50'
-                          }`}
-                          title="Copier le lien"
-                        >
-                          {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        </motion.button>
-                        
-                        {!isSelected && (
-                          <motion.button 
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmDeleteId(showConfirm ? null : event.id);
-                            }}
-                            className={`p-1.5 rounded-lg transition-all duration-200 ${
-                              showConfirm 
-                                ? 'bg-red-600/90 text-white border border-red-500/40' 
-                                : 'bg-slate-800/60 text-slate-400 hover:text-red-400 border border-slate-700/40 hover:border-red-500/30'
-                            }`}
-                            title="Supprimer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </motion.button>
+                        {!isDisabled && (
+                          <>
+                            <motion.button 
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => handleToggleEventStatus(event, e)}
+                              disabled={togglingEventId === event.id}
+                              className={`p-1.5 rounded-lg transition-all duration-200 ${
+                                togglingEventId === event.id
+                                  ? 'bg-slate-800/60 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                                  : event.is_active
+                                    ? 'bg-slate-800/60 text-slate-400 hover:text-amber-400 border border-slate-700/40 hover:border-amber-500/30'
+                                    : 'bg-slate-800/60 text-slate-400 hover:text-teal-400 border border-slate-700/40 hover:border-teal-500/30'
+                              }`}
+                              title={event.is_active ? 'Suspendre l\'événement' : 'Activer l\'événement'}
+                            >
+                              {togglingEventId === event.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : event.is_active ? (
+                                <Pause className="w-3.5 h-3.5" />
+                              ) : (
+                                <Play className="w-3.5 h-3.5" />
+                              )}
+                            </motion.button>
+                            
+                            <motion.button 
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => copyEventLink(event.slug, event.id, e)}
+                              className={`p-1.5 rounded-lg transition-all duration-200 ${
+                                isCopied 
+                                  ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30' 
+                                  : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 border border-slate-700/40 hover:border-slate-600/50'
+                              }`}
+                              title="Copier le lien"
+                            >
+                              {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                            </motion.button>
+                            
+                            {!isSelected && (
+                              <motion.button 
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirmDeleteId(showConfirm ? null : event.id);
+                                }}
+                                className={`p-1.5 rounded-lg transition-all duration-200 ${
+                                  showConfirm 
+                                    ? 'bg-red-600/90 text-white border border-red-500/40' 
+                                    : 'bg-slate-800/60 text-slate-400 hover:text-red-400 border border-slate-700/40 hover:border-red-500/30'
+                                }`}
+                                title="Supprimer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </motion.button>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -821,34 +889,43 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                       </div>
 
                       <div className="flex gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.01, y: -1 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={() => handleSelectEvent(event)}
-                          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-xs transition-all duration-200 ${
-                            isSelected 
-                              ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 cursor-default' 
-                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35'
-                          }`}
-                        >
-                          {isSelected ? 'Tableau de bord' : 'Ouvrir'}
-                          {!isSelected && <ArrowRight className="w-3.5 h-3.5" />}
-                        </motion.button>
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onSettingsClick) {
-                              onSettingsClick(event);
-                            }
-                          }}
-                          className="p-2 rounded-lg border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-all duration-200"
-                          title="Paramètres de l'événement"
-                        >
-                          <SettingsIcon className="w-4 h-4" />
-                        </motion.button>
+                        {isDisabled ? (
+                          <div className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-xs bg-slate-800/40 text-slate-500 border border-slate-700/30 cursor-not-allowed">
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Licence PART</span>
+                          </div>
+                        ) : (
+                          <>
+                            <motion.button
+                              whileHover={{ scale: 1.01, y: -1 }}
+                              whileTap={{ scale: 0.99 }}
+                              onClick={() => handleSelectEvent(event)}
+                              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-xs transition-all duration-200 ${
+                                isSelected 
+                                  ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 cursor-default' 
+                                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35'
+                              }`}
+                            >
+                              {isSelected ? 'Tableau de bord' : 'Ouvrir'}
+                              {!isSelected && <ArrowRight className="w-3.5 h-3.5" />}
+                            </motion.button>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onSettingsClick) {
+                                  onSettingsClick(event);
+                                }
+                              }}
+                              className="p-2 rounded-lg border border-slate-800/50 bg-slate-900/40 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-all duration-200"
+                              title="Paramètres de l'événement"
+                            >
+                              <SettingsIcon className="w-4 h-4" />
+                            </motion.button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </motion.div>

@@ -372,7 +372,7 @@ const CollageMode: React.FC<CollageModeProps> = ({ onCollageUploaded, onBack }) 
       let caption = '';
       if (eventSettings.caption_generation_enabled) {
         setLoadingStep('Génération de la légende...');
-        caption = await generateImageCaption(previewCollage, eventSettings.event_context);
+        caption = await generateImageCaption(previewCollage, eventSettings.event_context, authorName, undefined);
       }
 
       if (!currentEvent) {

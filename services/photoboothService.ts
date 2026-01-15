@@ -51,10 +51,14 @@ export const submitPhoto = async ({
   }
 
   // Analyse IA et génération de légende
+  // Détecter les compagnons basé sur le nombre de visages détectés
+  // Pour l'instant, on passe juste authorName, les compagnons seront détectés automatiquement par l'IA
   const aiResult = await analyzeAndCaptionImage(
     imageForAnalysis,
     eventSettings.caption_generation_enabled ? eventSettings.event_context : null,
-    eventSettings.caption_language || 'fr' // Langue pour la traduction
+    eventSettings.caption_language || 'fr', // Langue pour la traduction
+    authorName, // Nom de l'auteur
+    undefined // Companions seront détectés automatiquement par l'IA basé sur faceCount
   );
   
   // Vérifier la modération
@@ -121,10 +125,12 @@ export const submitPhoto = async ({
     userDescription
   );
 
-  // Sauvegarder l'avatar si disponible
+  // Sauvegarder l'avatar si disponible (de manière asynchrone, ne pas bloquer)
   const currentAvatar = getCurrentUserAvatar();
   if (currentAvatar && finalAuthorName === localStorage.getItem('party_user_name')) {
-    saveUserAvatar(finalAuthorName, currentAvatar);
+    saveUserAvatar(finalAuthorName, currentAvatar).catch(error => {
+      logger.warn('Failed to save user avatar', { component: 'photoboothService', action: 'submitPhoto' }, error);
+    });
   }
 
   return photo;
@@ -153,10 +159,12 @@ export const submitVideo = async ({
     userDescription
   );
 
-  // Sauvegarder l'avatar si disponible
+  // Sauvegarder l'avatar si disponible (de manière asynchrone, ne pas bloquer)
   const currentAvatar = getCurrentUserAvatar();
   if (currentAvatar && finalAuthorName === localStorage.getItem('party_user_name')) {
-    saveUserAvatar(finalAuthorName, currentAvatar);
+    saveUserAvatar(finalAuthorName, currentAvatar).catch(error => {
+      logger.warn('Failed to save user avatar', { component: 'photoboothService', action: 'submitVideo' }, error);
+    });
   }
 
   return photo;
