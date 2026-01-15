@@ -16,7 +16,7 @@ export const MODELS = {
   caption: 'gemini-2.5-flash',
   
   /** Modèle pour la modération de contenu (plus puissant) */
-  moderation: 'gemini-3-flash-preview',
+  moderation: 'gemini-2.5-flash',
   
   /** Modèle pour l'analyse d'images (aftermovie, etc.) */
   analysis: 'gemini-2.5-flash',
