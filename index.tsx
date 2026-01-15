@@ -52,9 +52,9 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider />
-    </QueryClientProvider>
-  </React.StrictMode>
+  // Temporairement désactivé StrictMode pour éviter les problèmes avec TanStack Router et React 19
+  // TODO: Réactiver StrictMode une fois que TanStack Router sera complètement compatible avec React 19
+  <QueryClientProvider client={queryClient}>
+    <RouterProvider />
+  </QueryClientProvider>
 );
