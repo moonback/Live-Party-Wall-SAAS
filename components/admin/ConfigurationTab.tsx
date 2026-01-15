@@ -988,7 +988,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                   <p className="text-xs text-slate-400">Paramétrez les animations et transitions</p>
                 </div>
               </header>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-slate-900/50 rounded-lg p-3 border border-slate-800">
                   <label className="block text-xs font-medium text-slate-200 mb-1.5 flex items-center gap-1.5">
                     <Move className="w-3.5 h-3.5 text-teal-400" />
