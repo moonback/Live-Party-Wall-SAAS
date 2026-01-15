@@ -1148,6 +1148,32 @@ export const getUserReactions = async (userIdentifier: string): Promise<Map<stri
 };
 
 /**
+ * Compte le nombre de photos pour un événement
+ * @param eventId - ID de l'événement
+ * @returns Promise résolue avec le nombre de photos
+ */
+export const getEventPhotosCount = async (eventId: string): Promise<number> => {
+  if (!isSupabaseConfigured() || !eventId) return 0;
+
+  try {
+    const { count, error } = await supabase
+      .from('photos')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+
+    if (error) {
+      logger.error("Error counting photos for event", error, { component: 'photoService', action: 'getEventPhotosCount', eventId });
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    logger.error("Error in getEventPhotosCount", error, { component: 'photoService', action: 'getEventPhotosCount', eventId });
+    return 0;
+  }
+};
+
+/**
  * Subscribe to reactions updates in real-time.
  * @param onReactionsUpdate - Callback appelé quand les réactions changent (après revalidation)
  * @param onReactionEvent - Callback optionnel appelé immédiatement à chaque événement (pour animations)

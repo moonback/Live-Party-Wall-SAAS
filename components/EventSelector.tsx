@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
-import { getUserEvents, createEvent, deleteEvent, getUserEventsCount } from '../services/eventService';
+import { getUserEvents, createEvent, deleteEvent, getUserEventsCount, updateEvent } from '../services/eventService';
+import { getEventPhotosCount } from '../services/photoService';
 import { Event } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
@@ -12,7 +13,7 @@ import {
   Plus, Calendar, Search, Loader2, Clock, 
   ExternalLink, X, Trash2, AlertTriangle, Copy, 
   Check, Filter, SortAsc, SortDesc,
-  ArrowRight, LayoutDashboard, Settings as SettingsIcon, Lock, Sparkles
+  ArrowRight, LayoutDashboard, Settings as SettingsIcon, Lock, Sparkles, Image, Pause, Play
 } from 'lucide-react';
 
 interface EventSelectorProps {
@@ -38,8 +39,10 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [togglingEventId, setTogglingEventId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'created_at' | 'name'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [photosCounts, setPhotosCounts] = useState<Map<string, number>>(new Map());
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Focus search on mount
@@ -65,6 +68,15 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
         // Compter les événements créés par l'utilisateur (owner)
         const count = await getUserEventsCount(user.id);
         setEventsCount(count);
+        
+        // Charger les compteurs de photos pour tous les événements en parallèle
+        const countsMap = new Map<string, number>();
+        const photosCountPromises = userEvents.map(async (event) => {
+          const photosCount = await getEventPhotosCount(event.id);
+          countsMap.set(event.id, photosCount);
+        });
+        await Promise.all(photosCountPromises);
+        setPhotosCounts(countsMap);
       } catch (error) {
         console.error('Error loading events:', error);
         addToast('Erreur lors du chargement des événements', 'error');
@@ -121,6 +133,33 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
     }
   };
 
+  // Basculer le statut actif/inactif d'un événement
+  const handleToggleEventStatus = async (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    try {
+      setTogglingEventId(event.id);
+      const updatedEvent = await updateEvent(event.id, {
+        is_active: !event.is_active
+      });
+      
+      if (updatedEvent) {
+        setEvents(prev => prev.map(e => e.id === event.id ? updatedEvent : e));
+        addToast(
+          updatedEvent.is_active 
+            ? 'Événement activé avec succès' 
+            : 'Événement suspendu avec succès',
+          'success'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error toggling event status:', error);
+      addToast(error.message || 'Erreur lors de la modification du statut', 'error');
+    } finally {
+      setTogglingEventId(null);
+    }
+  };
+
   // Supprimer un événement
   const handleDeleteEvent = async (event: Event, e: React.MouseEvent) => {
     e.stopPropagation(); // Empêcher la sélection de l'événement
@@ -142,11 +181,16 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       await deleteEvent(event.id);
       setEvents(prev => prev.filter(e => e.id !== event.id));
       
-      // Mettre à jour le compteur d'événements
+      // Mettre à jour le compteur d'événements et supprimer le compteur de photos
       if (user) {
         const newCount = await getUserEventsCount(user.id);
         setEventsCount(newCount);
       }
+      setPhotosCounts(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(event.id);
+        return newMap;
+      });
       
       addToast('Événement supprimé avec succès', 'success');
       setConfirmDeleteId(null);
@@ -188,9 +232,14 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
       setNewEventName('');
       setNewEventDescription('');
       
-      // Mettre à jour le compteur d'événements
+      // Mettre à jour le compteur d'événements et initialiser le compteur de photos
       const newCount = await getUserEventsCount(user.id);
       setEventsCount(newCount);
+      setPhotosCounts(prev => {
+        const newMap = new Map(prev);
+        newMap.set(newEvent.id, 0); // Nouvel événement, 0 photos
+        return newMap;
+      });
       
       addToast('Événement créé avec succès', 'success');
       
@@ -637,6 +686,29 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                         <motion.button 
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          onClick={(e) => handleToggleEventStatus(event, e)}
+                          disabled={togglingEventId === event.id}
+                          className={`p-1.5 rounded-lg transition-all duration-200 ${
+                            togglingEventId === event.id
+                              ? 'bg-slate-800/60 text-slate-500 border border-slate-700/40 cursor-not-allowed'
+                              : event.is_active
+                                ? 'bg-slate-800/60 text-slate-400 hover:text-amber-400 border border-slate-700/40 hover:border-amber-500/30'
+                                : 'bg-slate-800/60 text-slate-400 hover:text-teal-400 border border-slate-700/40 hover:border-teal-500/30'
+                          }`}
+                          title={event.is_active ? 'Suspendre l\'événement' : 'Activer l\'événement'}
+                        >
+                          {togglingEventId === event.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : event.is_active ? (
+                            <Pause className="w-3.5 h-3.5" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5" />
+                          )}
+                        </motion.button>
+                        
+                        <motion.button 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={(e) => copyEventLink(event.slug, event.id, e)}
                           className={`p-1.5 rounded-lg transition-all duration-200 ${
                             isCopied 
@@ -719,9 +791,17 @@ const EventSelector: React.FC<EventSelectorProps> = ({ onEventSelected, onSettin
                         {event.description || "Aucune description fournie."}
                       </p>
                       
-                      <div className="flex items-center gap-1.5 text-slate-500 text-xs font-mono bg-slate-950/60 py-1.5 px-2.5 rounded-lg border border-slate-800/40 w-fit">
-                        <ExternalLink className="w-3 h-3 text-slate-400" />
-                        <span className="text-indigo-400">?event={event.slug}</span>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs bg-slate-950/60 py-1.5 px-2.5 rounded-lg border border-slate-800/40">
+                          <Image className="w-3.5 h-3.5 text-indigo-400" />
+                          <span className="font-semibold text-slate-300">{photosCounts.get(event.id) ?? 0}</span>
+                          <span className="text-slate-500">{photosCounts.get(event.id) === 1 ? 'photo' : 'photos'}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1.5 text-slate-500 text-xs font-mono bg-slate-950/60 py-1.5 px-2.5 rounded-lg border border-slate-800/40">
+                          <ExternalLink className="w-3 h-3 text-slate-400" />
+                          <span className="text-indigo-400">?event={event.slug}</span>
+                        </div>
                       </div>
                     </div>
 

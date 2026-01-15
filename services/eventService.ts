@@ -147,6 +147,7 @@ export const createEvent = async (
 
 /**
  * Récupère un événement par son slug
+ * Permet de charger les événements suspendus pour afficher un message approprié
  * @param slug - Slug de l'événement
  * @returns Promise résolue avec l'événement ou null si non trouvé
  */
@@ -154,11 +155,24 @@ export const getEventBySlug = async (slug: string): Promise<Event | null> => {
   if (!isSupabaseConfigured()) return null;
 
   try {
-    const { data, error } = await supabase
+    // Essayer d'abord de charger l'événement actif (pour les invités)
+    const { data: activeData, error: activeError } = await supabase
       .from('events')
       .select('*')
       .eq('slug', slug.toLowerCase())
       .eq('is_active', true)
+      .single();
+
+    if (activeData && !activeError) {
+      return mapEventRowToEvent(activeData as EventRow);
+    }
+
+    // Si l'événement actif n'est pas trouvé, essayer de charger sans filtre is_active
+    // Cela permet aux organisateurs de voir leurs événements suspendus (via RLS)
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('slug', slug.toLowerCase())
       .single();
 
     if (error || !data) return null;

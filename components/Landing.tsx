@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ViewMode } from '../types';
-import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap, Sparkles } from 'lucide-react';
+import { Images, Camera, User, Lock, HelpCircle, BarChart3, Smartphone, Trophy, LucideIcon, ArrowRight, Zap, Sparkles, Pause, AlertTriangle } from 'lucide-react';
 import { getCurrentUserName, getCurrentUserAvatar } from '../utils/userAvatar';
 import { getSettings, subscribeToSettings, defaultSettings } from '../services/settingsService';
 import { useEvent } from '../context/EventContext';
@@ -706,6 +706,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     return options;
   }, [uiConfig.findMeEnabled]);
 
+  // Vérifier si l'événement est suspendu
+  const isEventSuspended = currentEvent && !currentEvent.is_active;
+
   return (
     <div
       className="min-h-screen w-full flex flex-col items-center justify-center bg-transparent text-white relative overflow-x-hidden overflow-y-auto lg:overflow-y-hidden lg:h-screen"
@@ -760,6 +763,69 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
           ? 'py-6 sm:py-8 md:py-8 lg:py-6' 
           : 'pt-20 sm:pt-24 md:pt-24 lg:pt-20 py-6 sm:py-8 md:py-8 lg:py-6'
       }`}>
+        
+        {/* Message de suspension si l'événement est suspendu */}
+        {isEventSuspended ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center gap-6 px-6 py-12"
+          >
+            {/* Icône de suspension */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 20 }}
+              className="relative"
+            >
+              <div className="relative flex items-center justify-center">
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/30 via-orange-500/30 to-red-500/30 rounded-full blur-2xl scale-150" />
+                {/* Icon container */}
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-3xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 backdrop-blur-xl border-2 border-amber-500/40 flex items-center justify-center shadow-2xl">
+                  <Pause className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-amber-400 drop-shadow-lg" />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Titre */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-2"
+            >
+              <span className="bg-gradient-to-br from-amber-200 via-orange-200 to-amber-400 bg-clip-text text-transparent drop-shadow-2xl">
+                Événement suspendu
+              </span>
+            </motion.h1>
+
+            {/* Message */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="w-full max-w-lg mx-auto text-center space-y-4"
+            >
+              <p className="text-base sm:text-lg lg:text-xl font-light text-white/80 leading-relaxed">
+                Cet événement est actuellement suspendu par l'organisateur.
+              </p>
+              {currentEvent?.name && (
+                <p className="text-sm sm:text-base text-white/60 italic">
+                  "{currentEvent.name}"
+                </p>
+              )}
+              <div className="pt-4 flex items-center justify-center gap-2 text-amber-400/80">
+                <AlertTriangle className="w-5 h-5" />
+                <p className="text-sm font-medium">
+                  Veuillez contacter l'organisateur pour plus d'informations.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : (
+          <>
         
         {/* Header avec logo et titre */}
         {currentEvent && (
@@ -878,6 +944,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
         <div className="flex-shrink-0 mt-auto pb-4 lg:pb-6 px-4">
           <LandingFooter />
         </div>
+          </>
+        )}
       </main>
 
       {/* Floating Particles Effect modernisé */}
