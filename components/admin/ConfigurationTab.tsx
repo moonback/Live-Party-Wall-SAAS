@@ -344,6 +344,7 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
       ar_scene_enabled: false,
       battle_mode_enabled: false,
       auto_carousel_enabled: false,
+      gallery_enabled: false,
       // content_moderation_enabled reste toujours à true
     }));
     addToast("Toutes les fonctionnalités ont été désactivées. N'oubliez pas de sauvegarder.", 'info');
@@ -1420,6 +1421,30 @@ export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
                     </div>
                   );
                 })()}
+                {/* Galerie interactive */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="gallery_enabled"
+                      checked={localConfig.gallery_enabled ?? true}
+                      onChange={handleConfigChange}
+                      className="h-3.5 w-3.5 accent-indigo-500 mt-0.5 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-slate-100 flex items-center gap-1.5 mb-0.5">
+                        <Grid3x3 className="w-3.5 h-3.5 text-indigo-400" />
+                        Galerie interactive
+                        {localConfig.gallery_enabled ? (
+                          <span className="px-1.5 py-0.5 ml-1.5 bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded">Actif</span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 ml-1.5 bg-slate-700 text-slate-400 text-xs rounded">Inactif</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">Permet aux invités d'explorer toutes les photos avec likes, réactions et filtres.</p>
+                    </div>
+                  </label>
+                </div>
                 {/* Carrousel automatique */}
                 <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 hover:border-indigo-500/30 transition-colors">
                   <label className="flex items-start gap-2.5 cursor-pointer">

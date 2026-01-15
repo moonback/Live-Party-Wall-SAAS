@@ -186,7 +186,10 @@ const AppContent: React.FC = () => {
     } else if (modeParam === 'admin') {
       setViewMode('admin');
     } else if (modeParam === 'gallery') {
-      if (!isRegistered) {
+      if (eventSettings.gallery_enabled === false) {
+        setViewMode('landing');
+        addToastRef.current('La galerie est désactivée', 'info');
+      } else if (!isRegistered) {
         setViewMode('onboarding');
       } else {
         setViewMode('gallery');
@@ -231,7 +234,7 @@ const AppContent: React.FC = () => {
       addToastRef.current('Le mode collage est désactivé', 'info');
     }
     // Si pas de paramètre mode, on reste sur landing (accessible sans profil)
-  }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled]);
+  }, [eventSettings.collage_mode_enabled, eventSettings.find_me_enabled, eventSettings.gallery_enabled]);
 
   // Déterminer le type de transition selon la vue
   const getTransitionType = (mode: ViewMode): 'fade' | 'slide-left' | 'slide-right' | 'slide-bottom' | 'scale' | 'zoom-bounce' => {
@@ -393,7 +396,7 @@ const AppContent: React.FC = () => {
             <TransitionWrapper type="slide-right" duration={600}>
               <CollageMode 
                 onCollageUploaded={(p) => {
-                  setViewMode('gallery');
+                  setViewMode(eventSettings.gallery_enabled !== false ? 'gallery' : 'landing');
                 }} 
                 onBack={() => setViewMode('guest')}
               />
@@ -401,7 +404,7 @@ const AppContent: React.FC = () => {
           )}
 
           {/* Galerie Interactive - Vue interactive mobile (likes, réactions, filtres) */}
-          {viewMode === 'gallery' && (
+          {viewMode === 'gallery' && eventSettings.gallery_enabled !== false && (
             <TransitionWrapper type="slide-bottom" duration={600}>
                <GuestGallery 
                   onBack={() => setViewMode('landing')}
@@ -509,10 +512,10 @@ const AppContent: React.FC = () => {
           {viewMode === 'findme' && (
             <TransitionWrapper type="slide-right" duration={600}>
               <FindMe 
-                onBack={() => setViewMode('gallery')}
+                onBack={() => setViewMode(eventSettings.gallery_enabled !== false ? 'gallery' : 'landing')}
                 onPhotoClick={(photo) => {
-                  // Optionnel: naviguer vers la galerie avec la photo sélectionnée
-                  setViewMode('gallery');
+                  // Optionnel: naviguer vers la galerie avec la photo sélectionnée (ou landing si désactivée)
+                  setViewMode(eventSettings.gallery_enabled !== false ? 'gallery' : 'landing');
                 }}
               />
             </TransitionWrapper>

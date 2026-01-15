@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play, Languages } from 'lucide-react';
+import { Bell, LogOut, Grid3x3, Video, Shield, BarChart2, User, Sparkles, Trophy, Type, Frame, X, Tag, Upload, Image as ImageIcon, Monitor, Smartphone, Play, Languages, Images } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -26,6 +26,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const allFeatureConfigs = [
+    { key: 'gallery_enabled', label: 'Galerie interactive', icon: Images, disabled: false, isPremium: false },
     { key: 'collage_mode_enabled', label: 'Mode Collage', icon: Grid3x3, disabled: false, isPremium: false },
     { key: 'video_capture_enabled', label: 'Capture Vidéo', icon: Video, disabled: false, isPremium: true },
     { key: 'content_moderation_enabled', label: 'Modération IA', icon: Shield, disabled: true, isPremium: false },
