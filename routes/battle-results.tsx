@@ -19,6 +19,8 @@ export const Route = createFileRoute('/battle-results')({
 function BattleResultsRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
+  const navigate = useNavigate();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -35,7 +37,7 @@ function BattleResultsRoute() {
       <TransitionWrapper type="fade" duration={500}>
         <BattleResultsProjection
           onBack={() => {
-            window.location.href = event ? `/?event=${event}` : '/';
+            navigate({ to: '/', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>

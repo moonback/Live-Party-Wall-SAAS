@@ -17,6 +17,16 @@ import { Route as HelpRoute } from './routes/help'
 import { Route as EventsRoute } from './routes/events'
 import { Route as DataManagementRoute } from './routes/data-management'
 import { Route as PrivacyRoute } from './routes/privacy'
+import { Route as GuestRoute } from './routes/guest'
+import { Route as GalleryRoute } from './routes/gallery'
+import { Route as WallRoute } from './routes/wall'
+import { Route as ProjectionRoute } from './routes/projection'
+import { Route as AdminRoute } from './routes/admin'
+import { Route as MobileControlRoute } from './routes/mobile-control'
+import { Route as StatsDisplayRoute } from './routes/stats-display'
+import { Route as FindmeRoute } from './routes/findme'
+import { Route as CollageRoute } from './routes/collage'
+import { Route as BattleResultsRoute } from './routes/battle-results'
 
 // Create/Update Routes
 
@@ -26,6 +36,16 @@ const HelpRouteWithChildren = HelpRoute._addFileChildren()
 const EventsRouteWithChildren = EventsRoute._addFileChildren()
 const DataManagementRouteWithChildren = DataManagementRoute._addFileChildren()
 const PrivacyRouteWithChildren = PrivacyRoute._addFileChildren()
+const GuestRouteWithChildren = GuestRoute._addFileChildren()
+const GalleryRouteWithChildren = GalleryRoute._addFileChildren()
+const WallRouteWithChildren = WallRoute._addFileChildren()
+const ProjectionRouteWithChildren = ProjectionRoute._addFileChildren()
+const AdminRouteWithChildren = AdminRoute._addFileChildren()
+const MobileControlRouteWithChildren = MobileControlRoute._addFileChildren()
+const StatsDisplayRouteWithChildren = StatsDisplayRoute._addFileChildren()
+const FindmeRouteWithChildren = FindmeRoute._addFileChildren()
+const CollageRouteWithChildren = CollageRoute._addFileChildren()
+const BattleResultsRouteWithChildren = BattleResultsRoute._addFileChildren()
 
 // Populate the FileRoutesByPath interface
 
@@ -36,6 +56,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/battle-results': {
+      id: '/battle-results'
+      path: '/battle-results'
+      fullPath: '/battle-results'
+      preLoaderRoute: typeof BattleResultsRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/collage': {
+      id: '/collage'
+      path: '/collage'
+      fullPath: '/collage'
+      preLoaderRoute: typeof CollageRouteWithChildren
       parentRoute: typeof rootRoute
     }
     '/data-management': {
@@ -52,11 +93,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsRouteWithChildren
       parentRoute: typeof rootRoute
     }
+    '/findme': {
+      id: '/findme'
+      path: '/findme'
+      fullPath: '/findme'
+      preLoaderRoute: typeof FindmeRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/guest': {
+      id: '/guest'
+      path: '/guest'
+      fullPath: '/guest'
+      preLoaderRoute: typeof GuestRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
     '/help': {
       id: '/help'
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/mobile-control': {
+      id: '/mobile-control'
+      path: '/mobile-control'
+      fullPath: '/mobile-control'
+      preLoaderRoute: typeof MobileControlRouteWithChildren
       parentRoute: typeof rootRoute
     }
     '/onboarding': {
@@ -73,6 +142,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteWithChildren
       parentRoute: typeof rootRoute
     }
+    '/projection': {
+      id: '/projection'
+      path: '/projection'
+      fullPath: '/projection'
+      preLoaderRoute: typeof ProjectionRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/stats-display': {
+      id: '/stats-display'
+      path: '/stats-display'
+      fullPath: '/stats-display'
+      preLoaderRoute: typeof StatsDisplayRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
+    '/wall': {
+      id: '/wall'
+      path: '/wall'
+      fullPath: '/wall'
+      preLoaderRoute: typeof WallRouteWithChildren
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -80,12 +170,21 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexRouteWithChildren,
+  AdminRouteWithChildren,
+  BattleResultsRouteWithChildren,
+  CollageRouteWithChildren,
   DataManagementRouteWithChildren,
   EventsRouteWithChildren,
+  FindmeRouteWithChildren,
+  GalleryRouteWithChildren,
+  GuestRouteWithChildren,
   HelpRouteWithChildren,
+  MobileControlRouteWithChildren,
   OnboardingRouteWithChildren,
   PrivacyRouteWithChildren,
+  ProjectionRouteWithChildren,
+  StatsDisplayRouteWithChildren,
+  WallRouteWithChildren,
 })
 
 /* prettier-ignore-end */
-

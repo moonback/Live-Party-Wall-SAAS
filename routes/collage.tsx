@@ -5,6 +5,7 @@ import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
 import { useSettings } from '../context/SettingsContext';
+import { requireUserRegistration } from '../utils/routeGuards';
 
 const CollageMode = lazy(() => import('../components/CollageMode'));
 
@@ -14,6 +15,9 @@ const collageSearchSchema = z.object({
 
 export const Route = createFileRoute('/collage')({
   validateSearch: collageSearchSchema,
+  beforeLoad: () => {
+    requireUserRegistration();
+  },
   component: CollageRoute,
 });
 
@@ -21,6 +25,7 @@ function CollageRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
   const { settings } = useSettings();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -30,7 +35,7 @@ function CollageRoute() {
 
   // Vérifier si la fonctionnalité est activée
   if (!settings.collage_mode_enabled) {
-    window.location.href = event ? `/guest?event=${event}` : '/guest';
+    navigate({ to: '/guest', search: event ? { event } : undefined });
     return null;
   }
 
@@ -43,10 +48,10 @@ function CollageRoute() {
       <TransitionWrapper type="slide-right" duration={600}>
         <CollageMode
           onCollageUploaded={() => {
-            window.location.href = event ? `/gallery?event=${event}` : '/gallery';
+            navigate({ to: '/gallery', search: event ? { event } : undefined });
           }}
           onBack={() => {
-            window.location.href = event ? `/guest?event=${event}` : '/guest';
+            navigate({ to: '/guest', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>

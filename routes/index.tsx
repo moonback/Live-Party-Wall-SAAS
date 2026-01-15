@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
 import React from 'react';
 import { z } from 'zod';
@@ -23,6 +23,7 @@ function IndexRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Charger l'événement si le paramètre event est présent
   React.useEffect(() => {
@@ -42,8 +43,7 @@ function IndexRoute() {
         <TransitionWrapper type="fade" duration={500}>
           <Accueil
             onAdminClick={() => {
-              // Navigation sera gérée par TanStack Router
-              window.location.href = '/admin';
+              navigate({ to: '/admin' });
             }}
           />
         </TransitionWrapper>
@@ -61,23 +61,22 @@ function IndexRoute() {
       <TransitionWrapper type="zoom-bounce" duration={800}>
         <Landing 
           onSelectMode={(mode) => {
-            // Navigation sera gérée par TanStack Router
-            // Pour l'instant, on utilise window.location pour la migration progressive
             const eventSlug = currentEvent.slug;
-            const modeMap: Record<string, string> = {
-              'guest': `/guest?event=${eventSlug}`,
-              'gallery': `/gallery?event=${eventSlug}`,
-              'wall': `/wall?event=${eventSlug}`,
-              'projection': `/projection?event=${eventSlug}`,
-              'admin': `/admin?event=${eventSlug}`,
-              'mobile-control': `/mobile-control?event=${eventSlug}`,
-              'collage': `/collage?event=${eventSlug}`,
-              'help': '/help',
-              'findme': `/findme?event=${eventSlug}`,
-              'stats-display': `/stats-display?event=${eventSlug}`,
+            const modeMap: Record<string, { to: string; search?: { event: string } }> = {
+              'guest': { to: '/guest', search: { event: eventSlug } },
+              'gallery': { to: '/gallery', search: { event: eventSlug } },
+              'wall': { to: '/wall', search: { event: eventSlug } },
+              'projection': { to: '/projection', search: { event: eventSlug } },
+              'admin': { to: '/admin', search: { event: eventSlug } },
+              'mobile-control': { to: '/mobile-control', search: { event: eventSlug } },
+              'collage': { to: '/collage', search: { event: eventSlug } },
+              'help': { to: '/help' },
+              'findme': { to: '/findme', search: { event: eventSlug } },
+              'stats-display': { to: '/stats-display', search: { event: eventSlug } },
+              'battle-results': { to: '/battle-results', search: { event: eventSlug } },
             };
-            const url = modeMap[mode] || '/';
-            window.location.href = url;
+            const route = modeMap[mode] || { to: '/' };
+            navigate(route);
           }}
           isAdminAuthenticated={isAdminAuthenticated}
         />

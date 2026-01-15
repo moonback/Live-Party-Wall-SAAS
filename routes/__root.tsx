@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { Suspense } from 'react';
 import { ToastProvider } from '../context/ToastContext';
 import { AuthProvider } from '../context/AuthContext';
@@ -20,6 +20,7 @@ const AppContent = () => {
   const { isValid: isLicenseValid, loading: licenseLoading } = useLicense();
   const { loading: eventLoading, error: eventError } = useEvent();
   const [showCookiePreferences, setShowCookiePreferences] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="font-sans min-h-screen text-white relative overflow-hidden">
@@ -69,7 +70,7 @@ const AppContent = () => {
               <h2 className="text-2xl font-bold mb-4">Erreur de chargement de l'événement</h2>
               <p className="text-gray-300 mb-4">{eventError.message}</p>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => navigate({ to: '/' })}
                 className="px-4 py-2 bg-pink-500 rounded-lg hover:bg-pink-600 transition"
               >
                 Retour à l'accueil
@@ -87,8 +88,7 @@ const AppContent = () => {
               <ConsentBanner
                 onPreferencesClick={() => setShowCookiePreferences(true)}
                 onPrivacyClick={() => {
-                  // Navigation sera gérée par TanStack Router
-                  window.location.href = '/privacy';
+                  navigate({ to: '/privacy' });
                 }}
               />
             </Suspense>
@@ -100,7 +100,7 @@ const AppContent = () => {
                   onClose={() => setShowCookiePreferences(false)}
                   onPrivacyClick={() => {
                     setShowCookiePreferences(false);
-                    window.location.href = '/privacy';
+                    navigate({ to: '/privacy' });
                   }}
                 />
               </Suspense>

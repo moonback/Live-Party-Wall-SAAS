@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Suspense, lazy } from 'react';
 import TransitionWrapper from '../components/TransitionWrapper';
 
@@ -9,6 +9,8 @@ export const Route = createFileRoute('/help')({
 });
 
 function HelpRoute() {
+  const navigate = useNavigate();
+
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
@@ -17,7 +19,7 @@ function HelpRoute() {
     }>
       <TransitionWrapper type="slide-left" duration={600}>
         <HelpPage onBack={() => {
-          window.location.href = '/';
+          navigate({ to: '/' });
         }} />
       </TransitionWrapper>
     </Suspense>

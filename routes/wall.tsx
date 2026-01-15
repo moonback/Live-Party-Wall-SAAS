@@ -7,9 +7,10 @@ import { useEvent } from '../context/EventContext';
 import { useAuth } from '../context/AuthContext';
 import { usePhotosQuery } from '../hooks/queries/usePhotosQuery';
 import { usePhotosRealtime } from '../hooks/queries/usePhotosRealtime';
+import { requireAdminAuth } from '../utils/routeGuards';
+import { supabase } from '../services/supabaseClient';
 
 const WallView = lazy(() => import('../components/WallView'));
-const AdminLogin = lazy(() => import('../components/AdminLogin'));
 
 const wallSearchSchema = z.object({
   event: z.string().optional(),
@@ -17,15 +18,20 @@ const wallSearchSchema = z.object({
 
 export const Route = createFileRoute('/wall')({
   validateSearch: wallSearchSchema,
+  beforeLoad: async () => {
+    // Vérifier l'authentification admin
+    const { data: { session } } = await supabase.auth.getSession();
+    requireAdminAuth(!!session?.user);
+  },
   component: WallRoute,
 });
 
 function WallRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
-  const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { data: photos = [] } = usePhotosQuery(currentEvent?.id);
   usePhotosRealtime(currentEvent?.id);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -40,23 +46,12 @@ function WallRoute() {
       </div>
     }>
       <TransitionWrapper type="fade" duration={500}>
-        {isAdminAuthenticated ? (
-          <WallView
-            photos={photos}
-            onBack={() => {
-              window.location.href = event ? `/?event=${event}` : '/';
-            }}
-          />
-        ) : (
-          <AdminLogin
-            onLoginSuccess={() => {
-              // Reste sur la même route après login
-            }}
-            onBack={() => {
-              window.location.href = event ? `/?event=${event}` : '/';
-            }}
-          />
-        )}
+        <WallView
+          photos={photos}
+          onBack={() => {
+            navigate({ to: '/', search: event ? { event } : undefined });
+          }}
+        />
       </TransitionWrapper>
     </Suspense>
   );

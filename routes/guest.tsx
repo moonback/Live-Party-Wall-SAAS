@@ -4,6 +4,7 @@ import React from 'react';
 import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
+import { requireUserRegistration } from '../utils/routeGuards';
 
 const GuestUpload = lazy(() => import('../components/GuestUpload'));
 
@@ -14,12 +15,16 @@ const guestSearchSchema = z.object({
 
 export const Route = createFileRoute('/guest')({
   validateSearch: guestSearchSchema,
+  beforeLoad: () => {
+    requireUserRegistration();
+  },
   component: GuestRoute,
 });
 
 function GuestRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
+  const navigate = useNavigate();
 
   // Charger l'événement si le paramètre event est présent
   React.useEffect(() => {
@@ -40,10 +45,10 @@ function GuestRoute() {
             // Navigation sera gérée par TanStack Router
           }}
           onBack={() => {
-            window.location.href = event ? `/?event=${event}` : '/';
+            navigate({ to: '/', search: event ? { event } : undefined });
           }}
           onCollageMode={() => {
-            window.location.href = `/collage?event=${event}`;
+            navigate({ to: '/collage', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>

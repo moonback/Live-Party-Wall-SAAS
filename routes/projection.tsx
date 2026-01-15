@@ -4,12 +4,12 @@ import React from 'react';
 import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
-import { useAuth } from '../context/AuthContext';
 import { usePhotosQuery } from '../hooks/queries/usePhotosQuery';
 import { usePhotosRealtime } from '../hooks/queries/usePhotosRealtime';
+import { requireAdminAuth } from '../utils/routeGuards';
+import { supabase } from '../services/supabaseClient';
 
 const ProjectionWall = lazy(() => import('../components/ProjectionWall'));
-const AdminLogin = lazy(() => import('../components/AdminLogin'));
 
 const projectionSearchSchema = z.object({
   event: z.string().optional(),
@@ -17,15 +17,19 @@ const projectionSearchSchema = z.object({
 
 export const Route = createFileRoute('/projection')({
   validateSearch: projectionSearchSchema,
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    requireAdminAuth(!!session?.user);
+  },
   component: ProjectionRoute,
 });
 
 function ProjectionRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
-  const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { data: photos = [] } = usePhotosQuery(currentEvent?.id);
   usePhotosRealtime(currentEvent?.id);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -40,26 +44,15 @@ function ProjectionRoute() {
       </div>
     }>
       <TransitionWrapper type="fade" duration={500}>
-        {isAdminAuthenticated ? (
-          <ProjectionWall
-            photos={photos}
-            onBack={() => {
-              window.location.href = event ? `/?event=${event}` : '/';
-            }}
-            displayDuration={5000}
-            transitionDuration={1000}
-            transitionType="fade"
-          />
-        ) : (
-          <AdminLogin
-            onLoginSuccess={() => {
-              // Reste sur la même route après login
-            }}
-            onBack={() => {
-              window.location.href = event ? `/?event=${event}` : '/';
-            }}
-          />
-        )}
+        <ProjectionWall
+          photos={photos}
+          onBack={() => {
+            navigate({ to: '/', search: event ? { event } : undefined });
+          }}
+          displayDuration={5000}
+          transitionDuration={1000}
+          transitionType="fade"
+        />
       </TransitionWrapper>
     </Suspense>
   );

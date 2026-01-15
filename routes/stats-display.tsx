@@ -23,6 +23,7 @@ function StatsDisplayRoute() {
   const { currentEvent, loadEventBySlug } = useEvent();
   const { data: photos = [] } = usePhotosQuery(currentEvent?.id);
   usePhotosRealtime(currentEvent?.id);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -41,8 +42,7 @@ function StatsDisplayRoute() {
           photos={photos}
           isDisplayMode={true}
           onBack={() => {
-            window.location.href = event ? `/?event=${event}` : '/';
-            window.history.pushState({}, '', window.location.pathname);
+            navigate({ to: '/', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>

@@ -4,6 +4,7 @@ import React from 'react';
 import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
+import { requireUserRegistration } from '../utils/routeGuards';
 
 const GuestGallery = lazy(() => import('../components/GuestGallery'));
 
@@ -13,12 +14,16 @@ const gallerySearchSchema = z.object({
 
 export const Route = createFileRoute('/gallery')({
   validateSearch: gallerySearchSchema,
+  beforeLoad: () => {
+    requireUserRegistration();
+  },
   component: GalleryRoute,
 });
 
 function GalleryRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -35,13 +40,13 @@ function GalleryRoute() {
       <TransitionWrapper type="slide-bottom" duration={600}>
         <GuestGallery
           onBack={() => {
-            window.location.href = event ? `/?event=${event}` : '/';
+            navigate({ to: '/', search: event ? { event } : undefined });
           }}
           onUploadClick={() => {
-            window.location.href = `/guest?event=${event}`;
+            navigate({ to: '/guest', search: event ? { event } : undefined });
           }}
           onFindMeClick={() => {
-            window.location.href = `/findme?event=${event}`;
+            navigate({ to: '/findme', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>

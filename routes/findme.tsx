@@ -5,6 +5,8 @@ import { z } from 'zod';
 import TransitionWrapper from '../components/TransitionWrapper';
 import { useEvent } from '../context/EventContext';
 import { useSettings } from '../context/SettingsContext';
+import { requireUserRegistrationAndFeature } from '../utils/routeGuards';
+import { getSettings } from '../services/settingsService';
 
 const FindMe = lazy(() => import('../components/FindMe'));
 
@@ -14,6 +16,10 @@ const findmeSearchSchema = z.object({
 
 export const Route = createFileRoute('/findme')({
   validateSearch: findmeSearchSchema,
+  beforeLoad: () => {
+    requireUserRegistration();
+    // Le guard de feature sera géré dans le composant
+  },
   component: FindMeRoute,
 });
 
@@ -21,6 +27,7 @@ function FindMeRoute() {
   const { event } = Route.useSearch();
   const { currentEvent, loadEventBySlug } = useEvent();
   const { settings } = useSettings();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (event && event !== currentEvent?.slug) {
@@ -30,7 +37,7 @@ function FindMeRoute() {
 
   // Vérifier si la fonctionnalité est activée
   if (!settings.find_me_enabled) {
-    window.location.href = event ? `/gallery?event=${event}` : '/gallery';
+    navigate({ to: '/gallery', search: event ? { event } : undefined });
     return null;
   }
 
@@ -43,10 +50,10 @@ function FindMeRoute() {
       <TransitionWrapper type="slide-right" duration={600}>
         <FindMe
           onBack={() => {
-            window.location.href = event ? `/gallery?event=${event}` : '/gallery';
+            navigate({ to: '/gallery', search: event ? { event } : undefined });
           }}
           onPhotoClick={(photo) => {
-            window.location.href = event ? `/gallery?event=${event}` : '/gallery';
+            navigate({ to: '/gallery', search: event ? { event } : undefined });
           }}
         />
       </TransitionWrapper>
