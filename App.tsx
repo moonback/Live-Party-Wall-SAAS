@@ -3,7 +3,8 @@ import { ViewMode } from './types';
 import Toast from './components/Toast';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { EventProvider, useEvent } from './context/EventContext';
-import { PhotosProvider, usePhotos } from './context/PhotosContext';
+import { usePhotosQuery } from './hooks/queries/usePhotosQuery';
+import { usePhotosRealtime } from './hooks/queries/usePhotosRealtime';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LicenseProvider, useLicense } from './context/LicenseContext';
@@ -42,7 +43,8 @@ const AppContent: React.FC = () => {
   
   // Contexts
   const { currentEvent, loading: eventLoading, error: eventError } = useEvent();
-  const { photos } = usePhotos();
+  const { data: photos = [], isLoading: photosLoading } = usePhotosQuery(currentEvent?.id);
+  usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
   const { settings: eventSettings } = useSettings();
   const { isAuthenticated: isAdminAuthenticated } = useAuth();
   const { addToast: addToastContext, toasts, removeToast } = useToast();
@@ -585,9 +587,7 @@ const App: React.FC = () => {
         <LicenseProvider>
           <EventProvider>
             <SettingsProvider>
-              <PhotosProvider>
-                <AppContent />
-              </PhotosProvider>
+              <AppContent />
             </SettingsProvider>
           </EventProvider>
         </LicenseProvider>

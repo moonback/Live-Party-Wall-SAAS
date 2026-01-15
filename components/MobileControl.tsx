@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../context/ToastContext';
-import { usePhotos } from '../context/PhotosContext';
+import { usePhotosQuery } from '../hooks/queries/usePhotosQuery';
+import { usePhotosRealtime } from '../hooks/queries/usePhotosRealtime';
 import { useSettings } from '../context/SettingsContext';
 import { useEvent } from '../context/EventContext';
 import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
@@ -29,7 +30,8 @@ interface MobileControlProps {
 
 const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
   const { addToast } = useToast();
-  const { photos, loading: photosLoading, refresh: refreshPhotos } = usePhotos();
+  const { data: photos = [], isLoading: photosLoading, refetch: refreshPhotos } = usePhotosQuery(currentEvent?.id);
+  usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
   const { isFeatureEnabled } = useLicenseFeatures();

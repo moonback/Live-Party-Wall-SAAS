@@ -4,7 +4,7 @@ import { generateLeaderboard, getStarPhoto, getTopPhotographer } from '../servic
 import { ArrowLeft, BarChart3, RefreshCw } from 'lucide-react';
 import { getBaseUrl } from '../utils/urlUtils';
 import { getPhotoReactions, getPhotos } from '../services/photoService';
-import { usePhotos } from '../context/PhotosContext';
+import { usePhotosQuery } from '../hooks/queries/usePhotosQuery';
 import { useEvent } from '../context/EventContext';
 import { getFinishedBattles } from '../services/battleService';
 import { getAllGuests } from '../services/guestService';

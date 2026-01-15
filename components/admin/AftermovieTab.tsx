@@ -3,7 +3,7 @@ import { Video, Zap, Star, Award, Sparkles, ChevronDown, ChevronRight, ChevronUp
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhotoGridSkeleton } from './SkeletonLoaders';
 import { QRCodeCanvas } from 'qrcode.react';
-import { usePhotos } from '../../context/PhotosContext';
+import { usePhotosQuery } from '../../hooks/queries/usePhotosQuery';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
@@ -37,7 +37,7 @@ const toDatetimeLocal = (timestamp: number): string => {
 };
 
 export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
-  const { photos: allPhotos, loading: photosLoading } = usePhotos();
+  const { data: allPhotos = [], isLoading: photosLoading } = usePhotosQuery(currentEvent?.id);
   const { settings: config } = useSettings();
   const { addToast } = useToast();
   const { currentEvent } = useEvent();

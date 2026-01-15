@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { ListSkeleton } from './SkeletonLoaders';
 import { useSettings } from '../../context/SettingsContext';
-import { usePhotos } from '../../context/PhotosContext';
+import { usePhotosQuery } from '../../hooks/queries/usePhotosQuery';
 import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
@@ -24,7 +24,7 @@ interface ConfigurationTabProps {
 
 export const ConfigurationTab: React.FC<ConfigurationTabProps> = () => {
   const { settings: config, updateSettings } = useSettings();
-  const { photos: allPhotos } = usePhotos();
+  const { data: allPhotos = [] } = usePhotosQuery(currentEvent?.id);
   const { addToast } = useToast();
   const { currentEvent } = useEvent();
   const { isFeatureEnabled } = useLicenseFeatures();

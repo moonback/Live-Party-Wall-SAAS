@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { deletePhoto, deleteAllPhotos, getPhotosReactions } from '../services/photoService';
 import { exportPhotosToZip, exportPhotosWithMetadataToZip, ExportProgress } from '../services/exportService';
 import { useToast } from '../context/ToastContext';
-import { usePhotos } from '../context/PhotosContext';
+import { usePhotosQuery } from '../hooks/queries/usePhotosQuery';
+import { usePhotosRealtime } from '../hooks/queries/usePhotosRealtime';
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
 import { useEvent } from '../context/EventContext';
@@ -33,7 +34,8 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const { addToast } = useToast();
-  const { photos: allPhotos, loading: photosLoading, refresh: refreshPhotos } = usePhotos();
+  const { data: allPhotos = [], isLoading: photosLoading, refetch: refreshPhotos } = usePhotosQuery(currentEvent?.id);
+  usePhotosRealtime(currentEvent?.id); // Gérer les subscriptions Realtime
   const { settings: config } = useSettings();
   const { signOut, user } = useAuth();
   const { currentEvent, loadEventBySlug } = useEvent();
