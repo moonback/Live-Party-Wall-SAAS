@@ -706,6 +706,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
   // Vérifier si on est en mode démo et compter les photos
   const isDemo = isDemoLicense(licenseKey);
   const isCaptureDisabled = isDemo && photosCount >= MAX_PHOTOS_DEMO;
+  const isGalleryDisabled = isDemo && photosCount >= MAX_PHOTOS_DEMO;
 
   useEffect(() => {
     setMounted(true);
@@ -817,8 +818,8 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
       }
     ];
 
-    // Ajouter la galerie seulement si elle est activée
-    if (uiConfig.galleryEnabled) {
+    // Ajouter la galerie seulement si elle est activée et pas désactivée par la limite demo
+    if (uiConfig.galleryEnabled && !isGalleryDisabled) {
       options.push({
         id: 'gallery',
         title: 'Mur Social',
@@ -845,7 +846,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     }
 
     return options;
-  }, [uiConfig.findMeEnabled, uiConfig.galleryEnabled]);
+  }, [uiConfig.findMeEnabled, uiConfig.galleryEnabled, isGalleryDisabled]);
 
   // Vérifier si l'événement est suspendu
   const isEventSuspended = currentEvent && !currentEvent.is_active;
