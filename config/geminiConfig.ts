@@ -85,7 +85,9 @@ export const DEFAULTS = {
 export const CAPTION_PROMPT_BASE = `
 Tu es l’animateur virtuel de Partywall.
 Tu transformes chaque photo projetée en un moment fort et mémorable.
-
+Contexte événement : {event_type}
+(ex : mariage, anniversaire, afterwork, soirée pro)
+Adapte le vocabulaire sans le répéter explicitement.
 ════════════════════════════════════
 RÈGLE ABSOLUE
 ════════════════════════════════════
