@@ -8,7 +8,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { getStaticAssetPath } from '../utils/electronPaths';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLicenseFeatures } from '../hooks/useLicenseFeatures';
-import { isDemoLicense, MAX_PHOTOS_DEMO } from '../utils/licenseUtils';
+import { isDemoLicense, isPartLicense, getMaxPhotos } from '../utils/licenseUtils';
 import { getEventPhotosCount } from '../services/photoService';
 
 interface LandingProps {
@@ -370,6 +370,7 @@ interface NavigationCardsProps {
   mounted: boolean;
   onSelectMode: (mode: ViewMode) => void;
   isCaptureDisabled?: boolean;
+  maxPhotos: number | null;
 }
 
 const NavigationCards: React.FC<NavigationCardsProps> = ({
@@ -377,6 +378,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
   mounted,
   onSelectMode,
   isCaptureDisabled = false,
+  maxPhotos,
 }) => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
@@ -420,7 +422,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                         Limite atteinte
                       </span>
                       <span className="text-[10px] lg:text-xs text-white/90 font-medium">
-                        {MAX_PHOTOS_DEMO} photos maximum
+                        {maxPhotos !== null ? `${maxPhotos} photos maximum` : 'Limite atteinte'}
                       </span>
                     </div>
                   </motion.div>
@@ -626,7 +628,7 @@ const NavigationCards: React.FC<NavigationCardsProps> = ({
                       : 'text-white/60 group-hover:text-white/80 hidden lg:block'
                   }`}>
                     {isDisabled 
-                      ? `${MAX_PHOTOS_DEMO} photos maximum atteint` 
+                      ? `${maxPhotos !== null ? maxPhotos : 'Limite'} photos maximum atteint` 
                       : option.description}
                   </p>
                 </div>
@@ -703,10 +705,12 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
   const [mounted, setMounted] = useState(false);
   const [hasUserProfile, setHasUserProfile] = useState(false);
 
-  // Vérifier si on est en mode démo et compter les photos
+  // Vérifier si on est en mode démo ou PART et compter les photos
   const isDemo = isDemoLicense(licenseKey);
-  const isCaptureDisabled = isDemo && photosCount >= MAX_PHOTOS_DEMO;
-  const isGalleryDisabled = isDemo && photosCount >= MAX_PHOTOS_DEMO;
+  const isPart = isPartLicense(licenseKey);
+  const maxPhotos = getMaxPhotos(licenseKey);
+  const isCaptureDisabled = (isDemo || isPart) && maxPhotos !== null && photosCount >= maxPhotos;
+  const isGalleryDisabled = (isDemo || isPart) && maxPhotos !== null && photosCount >= maxPhotos;
 
   useEffect(() => {
     setMounted(true);
@@ -715,9 +719,9 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
     setHasUserProfile(!!(userName && userAvatar));
   }, []);
 
-  // Compter les photos de l'événement actuel (pour vérifier la limite en mode démo)
+  // Compter les photos de l'événement actuel (pour vérifier la limite en mode démo ou PART)
   useEffect(() => {
-    if (!currentEvent?.id || !isDemo) {
+    if (!currentEvent?.id || (!isDemo && !isPart)) {
       setPhotosCount(0);
       return;
     }
@@ -734,10 +738,10 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
 
     countPhotos();
 
-    // Rafraîchir le compteur toutes les 5 secondes en mode démo
+    // Rafraîchir le compteur toutes les 5 secondes en mode démo ou PART
     const interval = setInterval(countPhotos, 5000);
     return () => clearInterval(interval);
-  }, [currentEvent?.id, isDemo]);
+  }, [currentEvent?.id, isDemo, isPart]);
 
   useEffect(() => {
     if (!currentEvent?.id) {
@@ -1080,6 +1084,7 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
             mounted={mounted}
             onSelectMode={onSelectMode}
             isCaptureDisabled={isCaptureDisabled}
+            maxPhotos={maxPhotos}
           />
         </div>
 

@@ -113,10 +113,10 @@ export const addPhotoToWall = async (
     throw new Error(validation.error || 'Image invalide');
   }
 
-  // Vérifier la limite de photos pour les licences DEMO
+  // Vérifier la limite de photos pour les licences DEMO et PART
   try {
     const { getActiveLicense } = await import('./licenseService');
-    const { getMaxPhotos, isDemoLicense } = await import('../utils/licenseUtils');
+    const { getMaxPhotos, isDemoLicense, isPartLicense } = await import('../utils/licenseUtils');
     const { data: { session } } = await supabase.auth.getSession();
     
     if (session?.user) {
@@ -124,7 +124,7 @@ export const addPhotoToWall = async (
       const licenseKey = activeLicense?.license_key || null;
       const maxPhotos = getMaxPhotos(licenseKey);
       
-      if (maxPhotos !== null && isDemoLicense(licenseKey)) {
+      if (maxPhotos !== null && (isDemoLicense(licenseKey) || isPartLicense(licenseKey))) {
         // Compter le nombre de photos existantes pour cet événement
         const { count, error: countError } = await supabase
           .from('photos')
@@ -132,13 +132,14 @@ export const addPhotoToWall = async (
           .eq('event_id', eventId);
         
         if (countError) {
-          logger.error("Error counting photos for DEMO license check", countError, {
+          logger.error("Error counting photos for license check", countError, {
             component: 'photoService',
             action: 'addPhotoToWall',
             eventId
           });
         } else if (count !== null && count >= maxPhotos) {
-          throw new Error(`Limite de photos atteinte. La licence DEMO permet un maximum de ${maxPhotos} photos par événement.`);
+          const licenseType = isDemoLicense(licenseKey) ? 'DEMO' : 'PART';
+          throw new Error(`Limite de photos atteinte. La licence ${licenseType} permet un maximum de ${maxPhotos} photos par événement.`);
         }
       }
     }
@@ -148,7 +149,7 @@ export const addPhotoToWall = async (
       throw error;
     }
     // Sinon, logger l'erreur mais continuer (ne pas bloquer l'upload si la vérification échoue)
-    logger.error("Error checking photo limit for DEMO license", error, {
+    logger.error("Error checking photo limit for license", error, {
       component: 'photoService',
       action: 'addPhotoToWall',
       eventId

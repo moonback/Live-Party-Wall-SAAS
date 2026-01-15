@@ -86,7 +86,7 @@ Partywall propose **3 types de licences** pour s'adapter à tous les besoins :
 |----------------|--------------|--------------|--------------|
 | **Suffixe de la clé** | Se termine par `DEMO` | Se termine par `PART` | Se termine par `PROS` |
 | **Limite d'événements** | 1 événement maximum | 1 événement maximum | 20 événements maximum |
-| **Limite de photos** | 100 photos maximum | Illimité | Illimité |
+| **Limite de photos** | 100 photos maximum | 400 photos maximum | Illimité |
 | **Fonctionnalités IA** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé (modération, légendes, traduction, tags) |
 | **"Retrouve-moi"** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé (reconnaissance faciale) |
 | **Capture vidéo** | 🚫 Désactivé | 🚫 Désactivé | ✅ Activé |
