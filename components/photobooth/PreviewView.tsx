@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Download, Palette, Sparkles, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { FilterSelector } from './FilterSelector';
 import { FilterType, FrameType } from '../../utils/imageFilters';
@@ -65,21 +66,21 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
   return (
     <div className={`absolute inset-0 z-10 bg-gradient-to-br from-black via-slate-900 to-black flex flex-col transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
       {/* Toolbar Top - Visible uniquement en desktop, positionnée plus bas et centrée verticalement */}
-      <div className="hidden sm:flex absolute top-1/3 right-3 sm:right-6 z-50 flex-col gap-2.5 sm:gap-3 animate-fade-in-down -translate-y-1/2">
+      <div className="hidden md:flex absolute top-1/3 right-4 md:right-6 lg:right-8 z-50 flex-col gap-3 md:gap-3.5 lg:gap-4 animate-fade-in-down -translate-y-1/2">
         {mediaType === 'photo' && (
           <>
             <button 
               onClick={onDownload}
-              className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-black/80 backdrop-blur-xl border-2 border-white/30 flex items-center justify-center hover:bg-black/90 hover:border-white/50 hover:scale-110 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl hover:shadow-pink-500/50"
+              className="group relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-2xl bg-black/80 backdrop-blur-xl border-2 border-white/30 flex items-center justify-center hover:bg-black/90 hover:border-white/50 hover:scale-110 active:scale-95 transition-all duration-300 text-white touch-manipulation shadow-2xl hover:shadow-pink-500/50"
               title="Télécharger"
               aria-label="Télécharger la photo"
             >
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Download className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+              <Download className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
             </button>
             <button 
               onClick={onToggleFilters}
-              className={`group relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
+              className={`group relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-2xl backdrop-blur-xl border-2 flex items-center justify-center transition-all duration-300 touch-manipulation shadow-2xl hover:shadow-xl hover:scale-110 active:scale-95 ${
                 showFilters 
                   ? 'bg-gradient-to-br from-pink-500 to-pink-600 border-pink-400/70 text-white shadow-pink-500/50' 
                   : 'bg-black/80 border-white/30 text-white hover:bg-black/90 hover:border-white/50'
@@ -92,7 +93,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                   ? 'bg-gradient-to-br from-pink-400/20 to-pink-600/20 opacity-100' 
                   : 'bg-gradient-to-br from-white/0 to-white/10 opacity-0 group-hover:opacity-100'
               }`} />
-              <Palette className="w-5 h-5 sm:w-6 sm:h-6 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
+              <Palette className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 relative z-10 transition-transform duration-300 group-hover:scale-110" strokeWidth={2.5} />
             </button>
             
           </>
@@ -114,32 +115,50 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
       <div className="relative flex-1 w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 via-black to-slate-900">
         {/* Progress Bar Overlay */}
         {loading && (
-          <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 animate-fade-in">
-            <div className="w-full max-w-[300px] sm:max-w-[400px] px-4">
-              <div className="w-full bg-white/10 rounded-full h-3 sm:h-4 overflow-hidden backdrop-blur-sm border-2 border-white/20 shadow-2xl">
-                <div 
-                  className="h-full bg-gradient-to-r from-pink-500 via-pink-400 to-pink-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
-                  style={{ width: `${uploadProgress}%` }}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 md:gap-6"
+          >
+            <div className="w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] px-4">
+              <div className="w-full bg-white/10 rounded-full h-2.5 xs:h-3 sm:h-4 md:h-5 overflow-hidden backdrop-blur-sm border-2 border-white/20 shadow-2xl">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${uploadProgress}%` }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="h-full bg-gradient-to-r from-pink-500 via-pink-400 to-pink-500 rounded-full relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced" />
-                </div>
+                </motion.div>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-white" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center gap-2 md:gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
+                <motion.svg
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white"
+                  viewBox="0 0 24 24"
+                >
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span className="text-sm sm:text-base font-bold text-white drop-shadow-lg">{loadingStep}</span>
+                </motion.svg>
+                <span className="text-xs xs:text-sm sm:text-base md:text-lg font-bold text-white drop-shadow-lg">{loadingStep}</span>
               </div>
-              <span className="text-xs sm:text-sm text-white/70 font-medium">{uploadProgress}%</span>
+              <span className="text-[10px] xs:text-xs sm:text-sm md:text-base text-white/70 font-medium">{uploadProgress}%</span>
             </div>
-          </div>
+          </motion.div>
         )}
-        <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4 landscape:p-1 landscape:sm:p-2">
+        <div className="absolute inset-0 flex items-center justify-center p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 landscape:p-1 landscape:xs:p-1.5 landscape:sm:p-2 landscape:md:p-3">
           {mediaType === 'video' && preview ? (
-            <div className="relative w-full h-full max-h-[85vh] landscape:max-h-[90vh] rounded-2xl sm:rounded-3xl landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full h-full max-h-[85vh] md:max-h-[90vh] landscape:max-h-[90vh] rounded-2xl sm:rounded-3xl md:rounded-[2rem] landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10"
+            >
               <video
                 src={preview}
                 controls
@@ -148,14 +167,19 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 loop
                 playsInline
               />
-            </div>
+            </motion.div>
           ) : (
-            <div className="relative w-full h-full max-h-[85vh] landscape:max-h-[90vh] flex items-center justify-center">
-              <div className="relative w-full h-full flex items-center justify-center rounded-2xl sm:rounded-3xl landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/20">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full h-full max-h-[85vh] md:max-h-[90vh] landscape:max-h-[90vh] flex items-center justify-center"
+            >
+              <div className="relative w-full h-full flex items-center justify-center rounded-2xl sm:rounded-3xl md:rounded-[2rem] landscape:rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/20">
                 <img 
                   src={preview} 
                   alt="Preview" 
-                  className="w-full h-full object-contain animate-fade-in"
+                  className="w-full h-full object-contain"
                   style={{
                     maxWidth: '100%',
                     height: 'auto'
@@ -169,15 +193,18 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                   />
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
         
         {/* Author Name Input - Compact en bas à gauche */}
         {showInputs && (
-          <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-3 sm:left-4 landscape:left-2 landscape:sm:left-3 z-40 transition-all duration-500 ${
-            mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
-          }`}>
+          <motion.div
+            initial={{ opacity: 0, y: 20, x: -20 }}
+            animate={mounted ? { opacity: 1, y: 0, x: 0 } : { opacity: 0, y: 20, x: -20 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute bottom-[140px] xs:bottom-[130px] sm:bottom-[110px] md:bottom-[100px] landscape:bottom-[100px] landscape:xs:bottom-[90px] landscape:sm:bottom-[80px] landscape:md:bottom-[75px] left-3 xs:left-4 sm:left-5 md:left-6 landscape:left-2 landscape:xs:left-2.5 landscape:sm:left-3 landscape:md:left-4 z-40 pointer-events-auto"
+          >
             <div className={`relative transition-all duration-300 ${
               isAuthorNameFocused ? 'scale-105' : 'scale-100'
             }`}>
@@ -208,14 +235,17 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* User Description Input - Centré en haut si nécessaire */}
         {showInputs && (
-          <div className={`absolute bottom-[140px] sm:bottom-[100px] landscape:bottom-[100px] landscape:sm:bottom-[80px] left-0 w-full px-3 sm:px-4 landscape:px-2 landscape:sm:px-3 flex justify-center z-40 transition-all duration-500 ${
-            mounted ? 'translate-y-0 opacity-100 pointer-events-auto' : 'translate-y-4 opacity-0 pointer-events-none'
-          }`}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute bottom-[140px] xs:bottom-[130px] sm:bottom-[110px] md:bottom-[100px] landscape:bottom-[100px] landscape:xs:bottom-[90px] landscape:sm:bottom-[80px] landscape:md:bottom-[75px] left-0 w-full px-3 xs:px-4 sm:px-5 md:px-6 landscape:px-2 landscape:xs:px-2.5 landscape:sm:px-3 landscape:md:px-4 flex justify-center z-40 pointer-events-auto"
+          >
             <div className={`relative w-full sm:max-w-md transition-all duration-300 delay-100 ${
               isDescriptionFocused ? 'scale-105' : 'scale-100'
             }`}>
@@ -246,15 +276,16 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Bottom Controls - Design moderne amélioré avec meilleure visibilité mobile */}
-      <div
-        className={`absolute bottom-0 left-0 w-full px-2 py-2 sm:px-4 sm:py-4 landscape:px-1.5 landscape:py-1.5 bg-gradient-to-t from-black via-black/95 to-black/90 flex items-end gap-1 sm:gap-2 landscape:gap-1 z-50 transition-all duration-500 delay-200 ${
-          mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        } overflow-x-auto sm:overflow-visible`}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={mounted ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute bottom-0 left-0 w-full px-2 xs:px-3 sm:px-4 md:px-6 py-2 xs:py-2.5 sm:py-4 md:py-5 landscape:px-1.5 landscape:xs:px-2 landscape:sm:px-2.5 landscape:md:px-3 landscape:py-1.5 landscape:xs:py-2 landscape:sm:py-2.5 landscape:md:py-3 bg-gradient-to-t from-black via-black/95 to-black/90 flex items-end gap-1.5 xs:gap-2 sm:gap-2.5 md:gap-3 landscape:gap-1 landscape:xs:gap-1.5 landscape:sm:gap-2 landscape:md:gap-2.5 z-50 overflow-x-auto sm:overflow-visible"
       >
         {/* Toggle Inputs */}
         <button
@@ -334,7 +365,7 @@ export const PreviewView: React.FC<PreviewViewProps> = ({
             </span>
           )}
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 };

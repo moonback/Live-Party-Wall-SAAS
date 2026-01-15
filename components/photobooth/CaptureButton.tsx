@@ -87,9 +87,9 @@ export const CaptureButton: React.FC<CaptureButtonProps> = ({
       onTouchEnd={handleTouchEnd}
       disabled={isDisabled}
       className={`
-        relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center
+        relative w-18 h-18 xs:w-20 xs:h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full flex items-center justify-center
         ${baseColor} transition-all shadow-lg
-        border-4 border-white/80
+        border-[3px] xs:border-4 sm:border-4 md:border-[5px] lg:border-[6px] border-white/80
         outline-none focus:ring-4 ${ringColor}
         ${isDisabled ? 'opacity-40 scale-100 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
         touch-manipulation
@@ -123,21 +123,21 @@ export const CaptureButton: React.FC<CaptureButtonProps> = ({
       <span className="relative z-10 flex items-center justify-center">
         {mediaType === 'video' ? (
           isRecording ? (
-            <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white" />
+            <span className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-md bg-white" />
           ) : (
             <span
               className="block w-0 h-0 
-                border-l-[14px] sm:border-l-[18px]
+                border-l-[12px] xs:border-l-[14px] sm:border-l-[18px] md:border-l-[22px] lg:border-l-[26px]
                 border-l-white
-                border-t-[9px] sm:border-t-[11px] border-t-transparent
-                border-b-[9px] sm:border-b-[11px] border-b-transparent
-                ml-1"
+                border-t-[8px] xs:border-t-[9px] sm:border-t-[11px] md:border-t-[13px] lg:border-t-[15px] border-t-transparent
+                border-b-[8px] xs:border-b-[9px] sm:border-b-[11px] md:border-b-[13px] lg:border-b-[15px] border-b-transparent
+                ml-0.5 xs:ml-1"
               style={{}}
             />
           )
         ) : (
           <CameraIcon
-            className="w-7 h-7 sm:w-8 sm:h-8 text-white/90 drop-shadow"
+            className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white/90 drop-shadow"
             strokeWidth={2.4}
           />
         )}
