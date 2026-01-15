@@ -6,6 +6,7 @@ import { License } from '../types';
 import { 
   isProLicense, 
   isPartLicense, 
+  isDemoLicense,
   isFeatureEnabled,
   getLicenseSuffix 
 } from '../utils/licenseUtils';
@@ -48,6 +49,7 @@ export const useLicenseFeatures = () => {
   const licenseSuffix = getLicenseSuffix(licenseKey);
   const isPro = isProLicense(licenseKey);
   const isPart = isPartLicense(licenseKey);
+  const isDemo = isDemoLicense(licenseKey);
 
   /**
    * Vérifie si une fonctionnalité est disponible
@@ -64,6 +66,7 @@ export const useLicenseFeatures = () => {
     licenseSuffix,
     isProLicense: isPro,
     isPartLicense: isPart,
+    isDemoLicense: isDemo,
     isFeatureEnabled: checkFeature,
     loading
   };
