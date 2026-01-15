@@ -4,10 +4,45 @@
  * 
  * IMPORTANT: face-api.js est chargé de manière dynamique pour éviter
  * de dégrader le score LCP (Largest Contentful Paint) au chargement initial.
+ * 
+ * Utilise des Web Workers pour éviter de bloquer le thread principal.
  */
 
 import { logger } from '../utils/logger';
 import { getFaceModelsPath } from '../utils/electronPaths';
+
+// Cache pour le worker (singleton pattern)
+let faceRecognitionWorker: Worker | null = null;
+
+/**
+ * Vérifie si les Web Workers sont supportés
+ */
+const isWorkerSupported = (): boolean => {
+  return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined';
+};
+
+/**
+ * Obtient ou crée le worker de reconnaissance faciale
+ */
+const getFaceRecognitionWorker = (): Worker | null => {
+  if (!isWorkerSupported()) {
+    return null;
+  }
+  
+  if (!faceRecognitionWorker) {
+    try {
+      faceRecognitionWorker = new Worker(
+        new URL('../workers/faceRecognition.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+    } catch (error) {
+      logger.warn('Failed to create face recognition worker, falling back to sync processing', error, { component: 'faceRecognitionService' });
+      return null;
+    }
+  }
+  
+  return faceRecognitionWorker;
+};
 
 // Type pour face-api.js (chargé dynamiquement)
 type FaceApi = typeof import('face-api.js');
@@ -147,11 +182,9 @@ export const loadFaceModels = async (): Promise<boolean> => {
 };
 
 /**
- * Détecte les visages dans une image
- * @param imageElement - Élément HTMLImageElement, HTMLCanvasElement ou ImageData
- * @returns Promise avec les descripteurs de visages détectés
+ * Détecte les visages dans une image (version synchrone pour fallback)
  */
-export const detectFaces = async (
+const detectFacesSync = async (
   imageElement: HTMLImageElement | HTMLCanvasElement | ImageData
 ): Promise<FaceDetectionWithDescriptor[]> => {
   // Charger les modèles si nécessaire (cela chargera aussi face-api.js)
@@ -183,6 +216,102 @@ export const detectFaces = async (
   } catch (error) {
     logger.error('Error detecting faces', error, { component: 'faceRecognitionService' });
     throw error;
+  }
+};
+
+/**
+ * Convertit un élément image en data URL
+ */
+const imageElementToDataUrl = (imageElement: HTMLImageElement | HTMLCanvasElement | ImageData): string => {
+  if (imageElement instanceof HTMLImageElement) {
+    // Créer un canvas temporaire
+    const canvas = document.createElement('canvas');
+    canvas.width = imageElement.width;
+    canvas.height = imageElement.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
+    ctx.drawImage(imageElement, 0, 0);
+    return canvas.toDataURL('image/jpeg', 1.0);
+  } else if (imageElement instanceof HTMLCanvasElement) {
+    return imageElement.toDataURL('image/jpeg', 1.0);
+  } else {
+    // ImageData
+    const canvas = document.createElement('canvas');
+    canvas.width = imageElement.width;
+    canvas.height = imageElement.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
+    ctx.putImageData(imageElement, 0, 0);
+    return canvas.toDataURL('image/jpeg', 1.0);
+  }
+};
+
+/**
+ * Détecte les visages dans une image
+ * Utilise un Web Worker si disponible, sinon fallback synchrone
+ * @param imageElement - Élément HTMLImageElement, HTMLCanvasElement ou ImageData
+ * @returns Promise avec les descripteurs de visages détectés
+ */
+export const detectFaces = async (
+  imageElement: HTMLImageElement | HTMLCanvasElement | ImageData
+): Promise<FaceDetectionWithDescriptor[]> => {
+  const worker = getFaceRecognitionWorker();
+  
+  // Si pas de worker, utiliser la version synchrone
+  if (!worker) {
+    return detectFacesSync(imageElement);
+  }
+  
+  try {
+    // Convertir l'élément image en data URL
+    const imageDataUrl = imageElementToDataUrl(imageElement);
+    const modelUrl = getFaceModelsPath();
+    
+    return new Promise((resolve, reject) => {
+      const handleMessage = (e: MessageEvent) => {
+        if (e.data.type === 'faces-detected') {
+          worker.removeEventListener('message', handleMessage);
+          worker.removeEventListener('error', handleError);
+          
+          // Convertir les descripteurs sérialisés en Float32Array
+          const detections: FaceDetectionWithDescriptor[] = e.data.detections.map((det: any) => ({
+            detection: det.detection,
+            landmarks: det.landmarks,
+            descriptor: new Float32Array(det.descriptor)
+          }));
+          
+          resolve(detections);
+        } else if (e.data.type === 'error') {
+          worker.removeEventListener('message', handleMessage);
+          worker.removeEventListener('error', handleError);
+          // Fallback vers synchrone en cas d'erreur
+          detectFacesSync(imageElement).then(resolve).catch(reject);
+        }
+      };
+
+      const handleError = (error: ErrorEvent) => {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        // Fallback vers synchrone en cas d'erreur
+        detectFacesSync(imageElement).then(resolve).catch(reject);
+      };
+
+      worker.addEventListener('message', handleMessage);
+      worker.addEventListener('error', handleError);
+
+      worker.postMessage({
+        type: 'detect-faces',
+        imageDataUrl,
+        modelUrl
+      });
+    });
+  } catch (error) {
+    // Fallback vers synchrone en cas d'erreur
+    return detectFacesSync(imageElement);
   }
 };
 
@@ -237,12 +366,9 @@ export const areFacesSimilar = (
 };
 
 /**
- * Trouve les photos contenant un visage similaire au visage de référence
- * @param referenceDescriptor - Descripteur du visage de référence
- * @param photos - Liste des photos à analyser
- * @returns Promise avec les photos contenant un visage similaire
+ * Trouve les photos contenant un visage similaire au visage de référence (version synchrone pour fallback)
  */
-export const findPhotosWithFace = async (
+const findPhotosWithFaceSync = async (
   referenceDescriptor: Float32Array,
   photos: Array<{ id: string; url: string; type: 'photo' | 'video' }>
 ): Promise<Array<{ id: string; url: string; similarity: number }>> => {
@@ -267,7 +393,7 @@ export const findPhotosWithFace = async (
       const img = await loadImageFromUrl(photo.url);
       
       // Détecter les visages dans la photo
-      const detections = await detectFaces(img);
+      const detections = await detectFacesSync(img);
       
       // Vérifier si un des visages correspond
       for (const detection of detections) {
@@ -296,6 +422,68 @@ export const findPhotosWithFace = async (
   matchingPhotos.sort((a, b) => b.similarity - a.similarity);
 
   return matchingPhotos;
+};
+
+/**
+ * Trouve les photos contenant un visage similaire au visage de référence
+ * Utilise un Web Worker si disponible, sinon fallback synchrone
+ * @param referenceDescriptor - Descripteur du visage de référence
+ * @param photos - Liste des photos à analyser
+ * @param onProgress - Callback appelé à chaque progression (optionnel)
+ * @returns Promise avec les photos contenant un visage similaire
+ */
+export const findPhotosWithFace = async (
+  referenceDescriptor: Float32Array,
+  photos: Array<{ id: string; url: string; type: 'photo' | 'video' }>,
+  onProgress?: (current: number, total: number, photoId: string) => void
+): Promise<Array<{ id: string; url: string; similarity: number }>> => {
+  const worker = getFaceRecognitionWorker();
+  
+  // Si pas de worker, utiliser la version synchrone
+  if (!worker) {
+    return findPhotosWithFaceSync(referenceDescriptor, photos);
+  }
+  
+  try {
+    const modelUrl = getFaceModelsPath();
+    
+    return new Promise((resolve, reject) => {
+      const handleMessage = (e: MessageEvent) => {
+        if (e.data.type === 'progress' && onProgress) {
+          onProgress(e.data.current, e.data.total, e.data.photoId);
+        } else if (e.data.type === 'matching-photos-found') {
+          worker.removeEventListener('message', handleMessage);
+          worker.removeEventListener('error', handleError);
+          resolve(e.data.matches);
+        } else if (e.data.type === 'error') {
+          worker.removeEventListener('message', handleMessage);
+          worker.removeEventListener('error', handleError);
+          // Fallback vers synchrone en cas d'erreur
+          findPhotosWithFaceSync(referenceDescriptor, photos).then(resolve).catch(reject);
+        }
+      };
+
+      const handleError = (error: ErrorEvent) => {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        // Fallback vers synchrone en cas d'erreur
+        findPhotosWithFaceSync(referenceDescriptor, photos).then(resolve).catch(reject);
+      };
+
+      worker.addEventListener('message', handleMessage);
+      worker.addEventListener('error', handleError);
+
+      worker.postMessage({
+        type: 'find-matching-photos',
+        referenceDescriptor: Array.from(referenceDescriptor),
+        photos,
+        modelUrl
+      });
+    });
+  } catch (error) {
+    // Fallback vers synchrone en cas d'erreur
+    return findPhotosWithFaceSync(referenceDescriptor, photos);
+  }
 };
 
 /**

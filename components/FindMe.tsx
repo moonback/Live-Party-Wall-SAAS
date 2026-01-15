@@ -253,7 +253,12 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
     try {
       const matches = await findPhotosWithFace(
         referenceDescriptor,
-        allPhotos.map(p => ({ id: p.id, url: p.url, type: p.type }))
+        allPhotos.map(p => ({ id: p.id, url: p.url, type: p.type })),
+        // Callback de progression pour mettre à jour l'UI
+        (current, total, photoId) => {
+          // Optionnel : on pourrait afficher un pourcentage de progression
+          // Pour l'instant, on laisse juste l'indicateur de chargement
+        }
       );
       
       if (matches.length === 0) {

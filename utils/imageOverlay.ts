@@ -1,8 +1,42 @@
 /**
  * Chargement + cache d'overlay PNG (via fetch -> Blob -> ImageBitmap) pour éviter les soucis CORS.
+ * Utilise des Web Workers pour éviter de bloquer le thread principal
  */
 
 const overlayCache = new Map<string, ImageBitmap | HTMLImageElement>();
+
+// Cache pour le worker (singleton pattern)
+let overlayWorker: Worker | null = null;
+
+/**
+ * Vérifie si les Web Workers sont supportés
+ */
+const isWorkerSupported = (): boolean => {
+  return typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined';
+};
+
+/**
+ * Obtient ou crée le worker d'overlay
+ */
+const getOverlayWorker = (): Worker | null => {
+  if (!isWorkerSupported()) {
+    return null;
+  }
+  
+  if (!overlayWorker) {
+    try {
+      overlayWorker = new Worker(
+        new URL('../workers/imageOverlay.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+    } catch (error) {
+      console.warn('Failed to create overlay worker, falling back to sync processing', error);
+      return null;
+    }
+  }
+  
+  return overlayWorker;
+};
 
 async function loadOverlay(url: string): Promise<ImageBitmap | HTMLImageElement> {
   const cached = overlayCache.get(url);
@@ -48,10 +82,9 @@ export async function drawPngOverlay(
 }
 
 /**
- * Compose une image (dataURL) + un overlay PNG (URL) en une nouvelle image (JPEG dataURL).
- * Qualité maximale HD par défaut (1.0)
+ * Compose une image (dataURL) + un overlay PNG (URL) en une nouvelle image (JPEG dataURL) - version synchrone pour fallback
  */
-export async function composeDataUrlWithPngOverlay(
+async function composeDataUrlWithPngOverlaySync(
   baseImageDataUrl: string,
   overlayUrl: string,
   quality = 1.0
@@ -72,6 +105,56 @@ export async function composeDataUrlWithPngOverlay(
   ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
   await drawPngOverlay(ctx, overlayUrl, canvas.width, canvas.height);
   return canvas.toDataURL('image/jpeg', quality);
+}
+
+/**
+ * Compose une image (dataURL) + un overlay PNG (URL) en une nouvelle image (JPEG dataURL).
+ * Qualité maximale HD par défaut (1.0)
+ * Utilise un Web Worker si disponible, sinon fallback synchrone
+ */
+export async function composeDataUrlWithPngOverlay(
+  baseImageDataUrl: string,
+  overlayUrl: string,
+  quality = 1.0
+): Promise<string> {
+  const worker = getOverlayWorker();
+  
+  // Si pas de worker, utiliser la version synchrone
+  if (!worker) {
+    return composeDataUrlWithPngOverlaySync(baseImageDataUrl, overlayUrl, quality);
+  }
+  
+  return new Promise((resolve, reject) => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data.type === 'composed') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        resolve(e.data.imageDataUrl);
+      } else if (e.data.type === 'error') {
+        worker.removeEventListener('message', handleMessage);
+        worker.removeEventListener('error', handleError);
+        // Fallback vers synchrone en cas d'erreur
+        composeDataUrlWithPngOverlaySync(baseImageDataUrl, overlayUrl, quality).then(resolve).catch(reject);
+      }
+    };
+
+    const handleError = (error: ErrorEvent) => {
+      worker.removeEventListener('message', handleMessage);
+      worker.removeEventListener('error', handleError);
+      // Fallback vers synchrone en cas d'erreur
+      composeDataUrlWithPngOverlaySync(baseImageDataUrl, overlayUrl, quality).then(resolve).catch(reject);
+    };
+
+    worker.addEventListener('message', handleMessage);
+    worker.addEventListener('error', handleError);
+
+    worker.postMessage({
+      type: 'compose-overlay',
+      baseImageDataUrl,
+      overlayUrl,
+      quality
+    });
+  });
 }
 
 
