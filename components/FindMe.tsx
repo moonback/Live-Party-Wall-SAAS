@@ -93,7 +93,9 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
 
     const loadPhotos = async () => {
       try {
-        const photos = await getPhotos(currentEvent.id);
+        const result = await getPhotos(currentEvent.id);
+        // getPhotos peut retourner Photo[] ou PaginatedPhotosResult
+        const photos = Array.isArray(result) ? result : result.photos;
         setAllPhotos(photos);
       } catch (error) {
         logger.error('Error loading photos', error, { component: 'FindMe' });
@@ -135,8 +137,9 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
           setSavedDescriptorAvailable(false);
         }
       } catch (error) {
-        logger.warn('Error checking for saved descriptor', error, {
-          component: 'FindMe'
+        logger.warn('Error checking for saved descriptor', {
+          component: 'FindMe',
+          error: error instanceof Error ? error.message : String(error)
         });
         setSavedDescriptorAvailable(false);
       } finally {
@@ -639,11 +642,11 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    Descripteur facial sauvegardé trouvé
+                    Votre avatar sauvegardé trouvé
                   </h2>
                   <p className="text-gray-400 text-base md:text-lg">
-                    Nous avons trouvé votre descripteur facial enregistré lors de l'inscription.
-                    Vous pouvez l'utiliser directement pour rechercher vos photos, ou capturer une nouvelle photo.
+                    Nous avons trouvé votre avatar enregistré lors de l'inscription.
+                    Vous pouvez l'utiliser directement pour rechercher vos photos, ou capturer un nouveau visage.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -652,7 +655,7 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
                     className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                   >
                     <Zap className="w-5 h-5" />
-                    Utiliser le descripteur sauvegardé
+                    Utiliser votre avatar sauvegardé
                   </button>
                   <button
                     onClick={() => {
@@ -678,8 +681,8 @@ const FindMe: React.FC<FindMeProps> = ({ onBack, onPhotoClick }) => {
                   <CheckCircle className="relative w-6 h-6 text-green-400" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white">Descripteur sauvegardé utilisé</h3>
-                  <p className="text-sm text-gray-300">Recherche en cours avec votre descripteur facial enregistré...</p>
+                  <h3 className="text-lg font-bold text-white">Votre avatar sauvegardé utilisé</h3>
+                  <p className="text-sm text-gray-300">Recherche en cours avec votre avatar enregistré...</p>
                 </div>
                 <button
                   onClick={handleReset}
