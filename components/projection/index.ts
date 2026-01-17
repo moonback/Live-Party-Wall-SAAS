@@ -4,4 +4,5 @@ export { ProjectionControls } from './ProjectionControls';
 export { ProjectionSettings } from './ProjectionSettings';
 export { ProjectionStats } from './ProjectionStats';
 export { MediaDisplay } from './MediaDisplay';
+export { BattleOverlay } from './BattleOverlay';
 
