@@ -504,68 +504,159 @@ const drawMetadataOnImage = async (
                   drawMetadataOnCanvas(ctx, imgFallback, author, likesCount, reactions, caption);
                   
                   // Appliquer le filigrane si activé
-            if (logoUrl && logoWatermarkEnabled) {
-              const logo = new Image();
-              logo.onload = () => {
-                try {
-                  const logoMaxWidth = Math.min(imgRetry.width * 0.08, 150);
-                  const logoAspectRatio = logo.width / logo.height;
-                  const logoWidth = logoMaxWidth;
-                  const logoHeight = logoWidth / logoAspectRatio;
-                  const padding = Math.max(imgRetry.width, imgRetry.height) * 0.02;
-                  const logoX = padding;
-                  const logoY = imgRetry.height - logoHeight - padding;
-                  const backgroundPadding = 8;
-                  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-                  ctx.fillRect(
-                    logoX - backgroundPadding,
-                    logoY - backgroundPadding,
-                    logoWidth + (backgroundPadding * 2),
-                    logoHeight + (backgroundPadding * 2)
-                  );
-                  ctx.globalAlpha = 0.8;
-                  ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
-                  ctx.globalAlpha = 1.0;
+                  const applyWatermarkAndConvertFallback = () => {
+                    if (logoUrl && logoWatermarkEnabled) {
+                      const logo = new Image();
+                      logo.onload = () => {
+                        try {
+                          const logoMaxWidth = Math.min(imgFallback.width * 0.08, 150);
+                          const logoAspectRatio = logo.width / logo.height;
+                          const logoWidth = logoMaxWidth;
+                          const logoHeight = logoWidth / logoAspectRatio;
+                          const padding = Math.max(imgFallback.width, imgFallback.height) * 0.02;
+                          const logoX = padding;
+                          const logoY = imgFallback.height - logoHeight - padding;
+                          const backgroundPadding = 8;
+                          ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                          ctx.fillRect(
+                            logoX - backgroundPadding,
+                            logoY - backgroundPadding,
+                            logoWidth + (backgroundPadding * 2),
+                            logoHeight + (backgroundPadding * 2)
+                          );
+                          ctx.globalAlpha = 0.8;
+                          ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                          ctx.globalAlpha = 1.0;
+                        } catch (err) {
+                          console.warn('Erreur lors du dessin du logo:', err);
+                        }
+                        
+                        canvas.toBlob((blob) => {
+                          if (blob) {
+                            resolve(blob);
+                          } else {
+                            reject(new Error('Impossible de convertir le canvas en blob'));
+                          }
+                        }, 'image/png');
+                      };
+                      logo.onerror = () => {
+                        // Continuer sans logo si erreur
+                        canvas.toBlob((blob) => {
+                          if (blob) {
+                            resolve(blob);
+                          } else {
+                            reject(new Error('Impossible de convertir le canvas en blob'));
+                          }
+                        }, 'image/png');
+                      };
+                      logo.src = logoUrl;
+                    } else {
+                      canvas.toBlob((blob) => {
+                        if (blob) {
+                          resolve(blob);
+                        } else {
+                          reject(new Error('Impossible de convertir le canvas en blob'));
+                        }
+                      }, 'image/png');
+                    }
+                  };
+                  
+                  applyWatermarkAndConvertFallback();
                 } catch (err) {
-                  console.warn('Erreur lors du dessin du logo:', err);
+                  reject(err);
                 }
+              };
+              imgFallback.onerror = () => {
+                reject(new Error(`Impossible de charger l'image: ${imageUrl}`));
+              };
+              imgFallback.src = imageUrl;
+            };
+            
+            imgRetry.src = objectUrl;
+          })
+          .catch(() => {
+            // Si fetch échoue complètement, essayer sans CORS en dernier recours
+            const imgFallback = new Image();
+            imgFallback.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgFallback.width;
+                canvas.height = imgFallback.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                  reject(new Error('Impossible de créer le contexte canvas'));
+                  return;
+                }
+                ctx.drawImage(imgFallback, 0, 0);
+                drawMetadataOnCanvas(ctx, imgFallback, author, likesCount, reactions, caption);
                 
-                canvas.toBlob((blob) => {
-                  if (blob) {
-                    resolve(blob);
+                // Appliquer le filigrane si activé
+                const applyWatermarkAndConvertFallback = () => {
+                  if (logoUrl && logoWatermarkEnabled) {
+                    const logo = new Image();
+                    logo.onload = () => {
+                      try {
+                        const logoMaxWidth = Math.min(imgFallback.width * 0.08, 150);
+                        const logoAspectRatio = logo.width / logo.height;
+                        const logoWidth = logoMaxWidth;
+                        const logoHeight = logoWidth / logoAspectRatio;
+                        const padding = Math.max(imgFallback.width, imgFallback.height) * 0.02;
+                        const logoX = padding;
+                        const logoY = imgFallback.height - logoHeight - padding;
+                        const backgroundPadding = 8;
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                        ctx.fillRect(
+                          logoX - backgroundPadding,
+                          logoY - backgroundPadding,
+                          logoWidth + (backgroundPadding * 2),
+                          logoHeight + (backgroundPadding * 2)
+                        );
+                        ctx.globalAlpha = 0.8;
+                        ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                        ctx.globalAlpha = 1.0;
+                      } catch (err) {
+                        console.warn('Erreur lors du dessin du logo:', err);
+                      }
+                      
+                      canvas.toBlob((blob) => {
+                        if (blob) {
+                          resolve(blob);
+                        } else {
+                          reject(new Error('Impossible de convertir le canvas en blob'));
+                        }
+                      }, 'image/png');
+                    };
+                    logo.onerror = () => {
+                      canvas.toBlob((blob) => {
+                        if (blob) {
+                          resolve(blob);
+                        } else {
+                          reject(new Error('Impossible de convertir le canvas en blob'));
+                        }
+                      }, 'image/png');
+                    };
+                    logo.src = logoUrl;
                   } else {
-                    reject(new Error('Impossible de convertir le canvas en blob'));
+                    canvas.toBlob((blob) => {
+                      if (blob) {
+                        resolve(blob);
+                      } else {
+                        reject(new Error('Impossible de convertir le canvas en blob'));
+                      }
+                    }, 'image/png');
                   }
-                }, 'image/png');
-              };
-              logo.onerror = () => {
-                // Continuer sans logo si erreur
-                canvas.toBlob((blob) => {
-                  if (blob) {
-                    resolve(blob);
-                  } else {
-                    reject(new Error('Impossible de convertir le canvas en blob'));
-                  }
-                }, 'image/png');
-              };
-              logo.src = logoUrl;
-            } else {
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  resolve(blob);
-                } else {
-                  reject(new Error('Impossible de convertir le canvas en blob'));
-                }
-              }, 'image/png');
-            }
-          } catch (err) {
-            reject(err);
-          }
-        };
-        imgRetry.onerror = () => {
-          reject(new Error(`Impossible de charger l'image: ${imageUrl}`));
-        };
-        imgRetry.src = imageUrl;
+                };
+                
+                applyWatermarkAndConvertFallback();
+              } catch (err) {
+                reject(err);
+              }
+            };
+            imgFallback.onerror = () => {
+              reject(new Error(`Impossible de charger l'image: ${imageUrl}`));
+            };
+            imgFallback.src = imageUrl;
+          });
       } else {
         reject(new Error(`Impossible de charger l'image: ${imageUrl}`));
       }
