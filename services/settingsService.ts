@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { logger } from '../utils/logger';
+import { memoryCache } from '../utils/cache';
 
 export interface EventSettings {
   id?: number;
@@ -68,10 +69,18 @@ export const defaultSettings: EventSettings = {
  * @returns Promise résolue avec les paramètres de l'événement
  */
 export const getSettings = async (eventId: string): Promise<EventSettings> => {
+  // Vérifier le cache
+  const cacheKey = `settings:${eventId}`;
+  const cached = memoryCache.get<EventSettings>(cacheKey, eventId);
+  if (cached) {
+    return cached;
+  }
+
   try {
+    // Sélection ciblée au lieu de select('*')
     const { data, error } = await supabase
       .from('event_settings')
-      .select('*')
+      .select('id, event_id, event_title, event_subtitle, scroll_speed, slide_transition, decorative_frame_enabled, decorative_frame_url, caption_generation_enabled, content_moderation_enabled, video_capture_enabled, collage_mode_enabled, stats_enabled, event_context, find_me_enabled, ar_scene_enabled, battle_mode_enabled, auto_battles_enabled, tags_generation_enabled, alert_text, background_desktop_url, background_mobile_url, logo_url, logo_watermark_enabled, auto_carousel_enabled, auto_carousel_delay, aftermovies_enabled, caption_language, gallery_enabled')
       .eq('event_id', eventId)
       .limit(1)
       .maybeSingle();
@@ -89,7 +98,11 @@ export const getSettings = async (eventId: string): Promise<EventSettings> => {
 
     // Merge pour garantir les nouveaux champs avec des valeurs par défaut
     // Forcer la modération à toujours être activée
-    return { ...defaultSettings, ...(data || {}), content_moderation_enabled: true } as EventSettings;
+    const result = { ...defaultSettings, ...(data || {}), content_moderation_enabled: true } as EventSettings;
+    
+    // Mettre en cache
+    memoryCache.set(cacheKey, eventId, result);
+    return result;
   } catch (error) {
     logger.error('Unexpected error fetching settings', error, { component: 'settingsService', action: 'getSettings', eventId });
     return defaultSettings;
@@ -109,9 +122,10 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
     
     // Récupérer les settings existants directement depuis la base de données
     // pour préserver les valeurs non modifiées (sans passer par getSettings qui retourne des defaults)
+    // Sélection ciblée
     const { data: existingSettingsRow } = await supabase
       .from('event_settings')
-      .select('*')
+      .select('id, event_id, event_title, event_subtitle, scroll_speed, slide_transition, decorative_frame_enabled, decorative_frame_url, caption_generation_enabled, content_moderation_enabled, video_capture_enabled, collage_mode_enabled, stats_enabled, event_context, find_me_enabled, ar_scene_enabled, battle_mode_enabled, auto_battles_enabled, tags_generation_enabled, alert_text, background_desktop_url, background_mobile_url, logo_url, logo_watermark_enabled, auto_carousel_enabled, auto_carousel_delay, aftermovies_enabled, caption_language, gallery_enabled')
       .eq('event_id', eventId)
       .limit(1)
       .maybeSingle();
@@ -174,6 +188,11 @@ export const updateSettings = async (eventId: string, settings: Partial<EventSet
 
     // S'assurer que la valeur retournée a toujours content_moderation_enabled à true
     const result = data ? { ...defaultSettings, ...data, alert_text: alertText, content_moderation_enabled: true } : null;
+    
+    // Invalider le cache pour forcer un refresh
+    if (result) {
+      memoryCache.invalidateKey(cacheKey);
+    }
     
     logger.info('Settings updated successfully', { 
       component: 'settingsService', 

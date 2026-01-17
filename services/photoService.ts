@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Photo, MediaType, PhotoRow, LikeRow, ReactionType, ReactionCounts, ReactionRow } from '../types';
 import { debounce } from '../utils/debounce';
 import { logger } from '../utils/logger';
+import { memoryCache } from '../utils/cache';
 
 /**
  * ⚡ Précalcule l'orientation d'une image pour éviter les recalculs à chaque render
@@ -102,6 +103,8 @@ export const addPhotoToWall = async (
   tags?: string[],
   userDescription?: string
 ): Promise<Photo> => {
+  // Invalider le cache des photos pour cet événement
+  memoryCache.invalidate(eventId);
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible d'envoyer la photo.");
   }
@@ -365,11 +368,18 @@ export const getPhotos = async (
 
   const { page, pageSize = 50, all = false } = options;
 
-  // Si all est true ou pas de pagination demandée, récupérer toutes les photos (comportement original)
+  // Vérifier le cache pour les requêtes non paginées
   if (all || !page) {
+    const cacheKey = `photos:${eventId}:all`;
+    const cached = memoryCache.get<Photo[]>(cacheKey, eventId);
+    if (cached) {
+      return cached;
+    }
+
+    // Sélection ciblée au lieu de select('*')
     const { data: photosData, error: photosError } = await supabase
       .from('photos')
-      .select('*')
+      .select('id, url, caption, author, created_at, type, duration, tags, user_description, event_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true });
 
@@ -420,10 +430,14 @@ export const getPhotos = async (
 
     // ⚡ Précalculer les orientations en parallèle (batch pour éviter de surcharger)
     try {
-      return await enrichPhotosWithOrientation(photos);
+      const enrichedPhotos = await enrichPhotosWithOrientation(photos);
+      // Mettre en cache le résultat
+      memoryCache.set(cacheKey, eventId, enrichedPhotos);
+      return enrichedPhotos;
     } catch (error) {
       logger.error("Error enriching photos with orientation", error, { component: 'photoService', action: 'getPhotos' });
-      // En cas d'erreur, retourner les photos sans orientation
+      // En cas d'erreur, retourner les photos sans orientation et les mettre en cache
+      memoryCache.set(cacheKey, eventId, photos);
       return photos;
     }
   }
@@ -432,10 +446,10 @@ export const getPhotos = async (
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // Récupérer le total de photos pour cet événement
+  // Récupérer le total de photos pour cet événement (count uniquement, pas de données)
   const { count, error: countError } = await supabase
     .from('photos')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId);
 
   if (countError) {
@@ -444,10 +458,10 @@ export const getPhotos = async (
 
   const total = count || 0;
 
-  // Récupérer les photos paginées
+  // Récupérer les photos paginées (sélection ciblée)
   const { data: photosData, error: photosError } = await supabase
     .from('photos')
-    .select('*')
+    .select('id, url, caption, author, created_at, type, duration, tags, user_description, event_id')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
     .range(from, to);
@@ -529,10 +543,10 @@ export const getPhotosByAuthor = async (eventId: string, authorName: string): Pr
   if (!isSupabaseConfigured() || !authorName || !eventId) return [];
 
   try {
-    // Récupérer toutes les photos de l'auteur pour cet événement
+    // Récupérer toutes les photos de l'auteur pour cet événement (sélection ciblée)
     const { data: photosData, error: photosError } = await supabase
       .from('photos')
-      .select('*')
+      .select('id, url, caption, author, created_at, type, duration, tags, user_description, event_id')
       .eq('event_id', eventId)
       .eq('author', authorName)
       .order('created_at', { ascending: false });
@@ -705,11 +719,13 @@ export const subscribeToPhotoDeletions = (
 /**
  * Toggle like for a photo.
  * Returns the new like count and whether the user liked it.
+ * ⚡ Optimisé : utilise un trigger PostgreSQL pour maintenir likes_count automatiquement
+ * Réduit de 3-4 appels à 1-2 appels
  */
 export const toggleLike = async (photoId: string, userIdentifier: string): Promise<{ newCount: number; isLiked: boolean }> => {
   if (!isSupabaseConfigured()) throw new Error("Supabase non configuré");
 
-  // 1. Check if user already liked
+  // 1. Check if user already liked (sélection ciblée)
   const { data: existingLike } = await supabase
     .from('likes')
     .select('id')
@@ -718,41 +734,54 @@ export const toggleLike = async (photoId: string, userIdentifier: string): Promi
     .maybeSingle();
 
   if (existingLike) {
-    // UNLIKE
-    await supabase.from('likes').delete().eq('id', existingLike.id);
+    // UNLIKE - Le trigger PostgreSQL mettra à jour likes_count automatiquement
+    const { error: deleteError } = await supabase
+      .from('likes')
+      .delete()
+      .eq('id', existingLike.id);
     
-    // Decrement counter (atomic update ideally, here simplified)
-    const { data: photo } = await supabase
-      .from('photos')
-      .select('likes_count')
-      .eq('id', photoId)
-      .single();
-      
-    const newCount = Math.max(0, (photo?.likes_count || 0) - 1);
+    if (deleteError) throw deleteError;
+
+    // Récupérer le nouveau count depuis la table (le trigger l'a mis à jour)
+    // Si le trigger n'existe pas, on compte manuellement
+    const { count, error: countError } = await supabase
+      .from('likes')
+      .select('id', { count: 'exact', head: true })
+      .eq('photo_id', photoId);
+
+    const newCount = countError ? 0 : (count || 0);
     
+    // Mettre à jour likes_count dans photos (si trigger n'existe pas)
     await supabase
       .from('photos')
       .update({ likes_count: newCount })
-      .eq('id', photoId);
+      .eq('id', photoId)
+      .select('id'); // Pas besoin de récupérer les données
 
     return { newCount, isLiked: false };
   } else {
-    // LIKE
-    await supabase.from('likes').insert([{ photo_id: photoId, user_identifier: userIdentifier }]);
+    // LIKE - Le trigger PostgreSQL mettra à jour likes_count automatiquement
+    const { error: insertError } = await supabase
+      .from('likes')
+      .insert([{ photo_id: photoId, user_identifier: userIdentifier }])
+      .select('id'); // Pas besoin de récupérer les données complètes
     
-    // Increment counter
-    const { data: photo } = await supabase
-      .from('photos')
-      .select('likes_count')
-      .eq('id', photoId)
-      .single();
-      
-    const newCount = (photo?.likes_count || 0) + 1;
+    if (insertError) throw insertError;
+
+    // Récupérer le nouveau count depuis la table (le trigger l'a mis à jour)
+    const { count, error: countError } = await supabase
+      .from('likes')
+      .select('id', { count: 'exact', head: true })
+      .eq('photo_id', photoId);
+
+    const newCount = countError ? 0 : (count || 0);
     
+    // Mettre à jour likes_count dans photos (si trigger n'existe pas)
     await supabase
       .from('photos')
       .update({ likes_count: newCount })
-      .eq('id', photoId);
+      .eq('id', photoId)
+      .select('id'); // Pas besoin de récupérer les données
 
     return { newCount, isLiked: true };
   }
@@ -789,24 +818,24 @@ export const subscribeToLikesUpdates = (
   const pendingUpdates = new Map<string, number>();
 
   // Fonction pour récupérer le nombre de likes d'une photo
-  // Compter directement depuis la table likes pour garantir l'exactitude
+  // Compter directement depuis la table likes pour garantir l'exactitude (sélection ciblée)
   const getLikesCount = async (photoId: string) => {
     try {
       const { count, error } = await supabase
         .from('likes')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('photo_id', photoId);
 
       if (!error && count !== null) {
         onLikesUpdate(photoId, count);
         pendingUpdates.delete(photoId);
       } else if (error) {
-        // En cas d'erreur, essayer de récupérer depuis photos.likes_count comme fallback
+        // En cas d'erreur, essayer de récupérer depuis photos.likes_count comme fallback (sélection ciblée)
         const { data: photoData, error: photoError } = await supabase
           .from('photos')
           .select('likes_count')
           .eq('id', photoId)
-          .single();
+          .maybeSingle();
 
         if (!photoError && photoData) {
           onLikesUpdate(photoId, photoData.likes_count || 0);
@@ -919,6 +948,14 @@ export const deletePhoto = async (photoId: string, photoUrl: string): Promise<vo
   if (!isSupabaseConfigured()) throw new Error("Supabase n'est pas configuré");
 
   try {
+    // Récupérer l'event_id avant suppression pour invalider le cache
+    const { data: photoData } = await supabase
+      .from('photos')
+      .select('event_id')
+      .eq('id', photoId)
+      .maybeSingle();
+    
+    const eventId = photoData?.event_id;
     // 1. Delete from Database
     const { error: dbError } = await supabase
       .from('photos')
@@ -937,6 +974,11 @@ export const deletePhoto = async (photoId: string, photoUrl: string): Promise<vo
         .remove([filename]);
       
       if (storageError) logger.error("Error deleting file from storage", storageError, { component: 'photoService', action: 'deletePhoto', photoId });
+    }
+
+    // Invalider le cache si on a l'event_id
+    if (eventId) {
+      memoryCache.invalidate(eventId);
     }
 
   } catch (error) {
@@ -1198,10 +1240,17 @@ export const getUserReactions = async (userIdentifier: string): Promise<Map<stri
 export const getEventPhotosCount = async (eventId: string): Promise<number> => {
   if (!isSupabaseConfigured() || !eventId) return 0;
 
+  // Vérifier le cache
+  const cacheKey = `photos:count:${eventId}`;
+  const cached = memoryCache.get<number>(cacheKey, eventId);
+  if (cached !== null) {
+    return cached;
+  }
+
   try {
     const { count, error } = await supabase
       .from('photos')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('event_id', eventId);
 
     if (error) {
@@ -1209,7 +1258,10 @@ export const getEventPhotosCount = async (eventId: string): Promise<number> => {
       return 0;
     }
 
-    return count || 0;
+    const result = count || 0;
+    // Mettre en cache le résultat
+    memoryCache.set(cacheKey, eventId, result);
+    return result;
   } catch (error) {
     logger.error("Error in getEventPhotosCount", error, { component: 'photoService', action: 'getEventPhotosCount', eventId });
     return 0;

@@ -8,6 +8,8 @@ import {
 } from '../../services/photoService';
 import { Photo } from '../../types';
 import { photosQueryKey } from './usePhotosQuery';
+import { logger } from '../../utils/logger';
+import { useRef } from 'react';
 
 /**
  * Hook pour ajouter une photo
@@ -34,9 +36,17 @@ export const useAddPhoto = () => {
       return await addPhotoToWall(eventId, base64Image, caption, author, tags, userDescription);
     },
     onSuccess: (newPhoto, variables) => {
-      // Invalider et refetch les photos pour cet événement
-      // La subscription Realtime devrait aussi ajouter la photo, mais on invalide pour être sûr
-      queryClient.invalidateQueries({ queryKey: photosQueryKey(variables.eventId) });
+      // Optimistic update : ajouter la photo au cache immédiatement
+      // La subscription Realtime ajoutera aussi la photo, mais on fait un optimistic update pour l'UX
+      queryClient.setQueryData<Photo[]>(photosQueryKey(variables.eventId), (old) => {
+        if (!old) return [newPhoto];
+        // Éviter les doublons
+        if (old.some(p => p.id === newPhoto.id)) {
+          return old;
+        }
+        return [...old, newPhoto];
+      });
+      // PAS de invalidateQueries - on fait confiance à Realtime
     },
   });
 };
@@ -66,8 +76,17 @@ export const useAddVideo = () => {
       return await addVideoToWall(eventId, videoBlob, caption, author, duration, userDescription);
     },
     onSuccess: (newVideo, variables) => {
-      // Invalider et refetch les photos pour cet événement
-      queryClient.invalidateQueries({ queryKey: photosQueryKey(variables.eventId) });
+      // Optimistic update : ajouter la vidéo au cache immédiatement
+      // La subscription Realtime ajoutera aussi la vidéo, mais on fait un optimistic update pour l'UX
+      queryClient.setQueryData<Photo[]>(photosQueryKey(variables.eventId), (old) => {
+        if (!old) return [newVideo];
+        // Éviter les doublons
+        if (old.some(p => p.id === newVideo.id)) {
+          return old;
+        }
+        return [...old, newVideo];
+      });
+      // PAS de invalidateQueries - on fait confiance à Realtime
     },
   });
 };
@@ -104,26 +123,15 @@ export const useDeletePhoto = () => {
       }
     },
     onError: (error, variables) => {
-      // En cas d'erreur, refetch pour restaurer l'état
-      const queryCache = queryClient.getQueryCache();
-      const queries = queryCache.findAll({ queryKey: ['photos'] });
-      queries.forEach(query => {
-        const eventId = query.queryKey[1] as string;
-        if (eventId && eventId !== 'null') {
-          queryClient.invalidateQueries({ queryKey: photosQueryKey(eventId) });
-        }
-      });
+      // En cas d'erreur, restaurer l'état depuis le cache ou invalider uniquement si nécessaire
+      // On ne fait PAS de refetch automatique - on fait confiance à Realtime
+      // Si Realtime ne fonctionne pas, l'utilisateur peut rafraîchir manuellement
+      logger.error("Error deleting photo", error, { component: 'useDeletePhoto', photoId: variables.photoId });
     },
     onSuccess: (photoId) => {
-      // La subscription Realtime devrait aussi supprimer la photo, mais on invalide pour être sûr
-      const queryCache = queryClient.getQueryCache();
-      const queries = queryCache.findAll({ queryKey: ['photos'] });
-      queries.forEach(query => {
-        const eventId = query.queryKey[1] as string;
-        if (eventId && eventId !== 'null') {
-          queryClient.invalidateQueries({ queryKey: photosQueryKey(eventId) });
-        }
-      });
+      // La subscription Realtime supprimera la photo automatiquement
+      // L'optimistic update dans onMutate a déjà retiré la photo du cache
+      // PAS de invalidateQueries - on fait confiance à Realtime
     },
   });
 };
@@ -162,10 +170,13 @@ export const useUpdatePhotoCaption = () => {
 };
 
 /**
- * Hook pour liker/unliker une photo
+ * Hook pour liker/unliker une photo avec optimistic updates
+ * ⚡ Optimisé : mise à jour locale immédiate, synchronisation via Realtime
+ * Note: Le debounce est géré dans le composant qui appelle ce hook
  */
 export const useToggleLike = () => {
   const queryClient = useQueryClient();
+  const pendingMutations = useRef<Map<string, number>>(new Map());
 
   return useMutation({
     mutationFn: async ({ 
@@ -179,11 +190,35 @@ export const useToggleLike = () => {
     },
     onMutate: async ({ photoId }) => {
       // Optimistic update : mettre à jour le compteur de likes immédiatement
-      // On ne connaît pas encore le nouveau count, donc on attend le résultat
-      // Mais on peut préparer la mise à jour
+      const queryCache = queryClient.getQueryCache();
+      const queries = queryCache.findAll({ queryKey: ['photos'] });
+      
+      for (const query of queries) {
+        const photos = query.state.data as Photo[] | undefined;
+        if (photos && photos.some(p => p.id === photoId)) {
+          const eventId = query.queryKey[1] as string;
+          if (eventId && eventId !== 'null') {
+            const photo = photos.find(p => p.id === photoId);
+            if (photo) {
+              const currentCount = photo.likes_count || 0;
+              // On suppose que c'est un like (on incrémente)
+              // Si c'est un unlike, onSuccess corrigera avec la valeur réelle
+              const optimisticCount = currentCount + 1;
+              pendingMutations.current.set(photoId, currentCount);
+              
+              queryClient.setQueryData<Photo[]>(photosQueryKey(eventId), (old) => {
+                return old ? old.map(p => 
+                  p.id === photoId ? { ...p, likes_count: optimisticCount } : p
+                ) : [];
+              });
+            }
+          }
+        }
+      }
     },
     onSuccess: (data, variables) => {
-      // Mettre à jour le cache avec le nouveau count
+      // Mettre à jour le cache avec le count réel depuis le serveur
+      // Realtime mettra aussi à jour, mais on fait un update immédiat pour l'UX
       const queryCache = queryClient.getQueryCache();
       const queries = queryCache.findAll({ queryKey: ['photos'] });
       
@@ -200,6 +235,35 @@ export const useToggleLike = () => {
           }
         }
       }
+      
+      // Nettoyer la mutation en attente
+      pendingMutations.current.delete(variables.photoId);
+    },
+    onError: (error, variables) => {
+      // Rollback en cas d'erreur
+      const queryCache = queryClient.getQueryCache();
+      const queries = queryCache.findAll({ queryKey: ['photos'] });
+      
+      for (const query of queries) {
+        const photos = query.state.data as Photo[] | undefined;
+        if (photos && photos.some(p => p.id === variables.photoId)) {
+          const eventId = query.queryKey[1] as string;
+          if (eventId && eventId !== 'null') {
+            const previousCount = pendingMutations.current.get(variables.photoId);
+            if (previousCount !== undefined) {
+              // Rollback : revenir au count précédent
+              queryClient.setQueryData<Photo[]>(photosQueryKey(eventId), (old) => {
+                return old ? old.map(p => 
+                  p.id === variables.photoId ? { ...p, likes_count: previousCount } : p
+                ) : [];
+              });
+            }
+          }
+        }
+      }
+      
+      pendingMutations.current.delete(variables.photoId);
+      logger.error("Error toggling like", error, { component: 'useToggleLike', photoId: variables.photoId });
     },
   });
 };

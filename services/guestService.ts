@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { Guest, GuestRow, BlockedGuest, BlockedGuestRow } from '../types';
 import { logger } from '../utils/logger';
+import { memoryCache } from '../utils/cache';
 
 /**
  * Vérifie si un invité est actuellement bloqué pour un événement
@@ -27,7 +28,7 @@ export const isGuestBlocked = async (eventId: string, guestName: string): Promis
 
     const { data, error } = await supabase
       .from('blocked_guests')
-      .select('*')
+      .select('id, event_id, name, blocked_at, expires_at')
       .eq('event_id', eventId)
       .eq('name', guestName)
       .gt('expires_at', new Date().toISOString())
@@ -59,7 +60,7 @@ export const getBlockedGuestInfo = async (eventId: string, guestName: string): P
   try {
     const { data, error } = await supabase
       .from('blocked_guests')
-      .select('*')
+      .select('id, event_id, name, blocked_at, expires_at')
       .eq('event_id', eventId)
       .eq('name', guestName)
       .gt('expires_at', new Date().toISOString())
@@ -139,6 +140,8 @@ export const registerGuest = async (
   base64Image: string,
   guestName: string
 ): Promise<Guest> => {
+  // Invalider le cache des invités pour cet événement
+  memoryCache.invalidate(eventId);
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible d'enregistrer l'invité.");
   }
@@ -233,7 +236,7 @@ export const getGuestByName = async (eventId: string, guestName: string): Promis
   try {
     const { data, error } = await supabase
       .from('guests')
-      .select('*')
+      .select('id, name, avatar_url, created_at, updated_at, event_id')
       .eq('event_id', eventId)
       .eq('name', guestName)
       .order('created_at', { ascending: false })
@@ -263,22 +266,33 @@ export const getGuestByName = async (eventId: string, guestName: string): Promis
 export const getAllGuests = async (eventId: string): Promise<Guest[]> => {
   if (!isSupabaseConfigured()) return [];
 
+  // Vérifier le cache
+  const cacheKey = `guests:${eventId}`;
+  const cached = memoryCache.get<Guest[]>(cacheKey, eventId);
+  if (cached) {
+    return cached;
+  }
+
   try {
     const { data, error } = await supabase
       .from('guests')
-      .select('*')
+      .select('id, name, avatar_url, created_at, updated_at, event_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false });
 
     if (error || !data) return [];
 
-    return data.map((row: GuestRow) => ({
+    const guests = data.map((row: GuestRow) => ({
       id: row.id,
       name: row.name,
       avatarUrl: row.avatar_url,
       createdAt: new Date(row.created_at).getTime(),
       updatedAt: new Date(row.updated_at).getTime()
     }));
+
+    // Mettre en cache
+    memoryCache.set(cacheKey, eventId, guests);
+    return guests;
   } catch (error) {
     logger.error("Error in getAllGuests", error, { component: 'guestService', action: 'getAllGuests' });
     return [];
@@ -297,6 +311,8 @@ export const updateGuestAvatar = async (
   guestName: string,
   base64Image: string
 ): Promise<Guest> => {
+  // Invalider le cache des invités pour cet événement
+  memoryCache.invalidate(eventId);
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de mettre à jour l'avatar.");
   }
@@ -369,6 +385,8 @@ export const updateGuestAvatar = async (
  * @returns Promise résolue si la suppression réussit
  */
 export const deleteGuest = async (eventId: string, guestId: string, guestName?: string): Promise<void> => {
+  // Invalider le cache des invités pour cet événement
+  memoryCache.invalidate(eventId);
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase n'est pas configuré. Impossible de supprimer l'invité.");
   }
