@@ -117,6 +117,9 @@ export const getSettings = async (eventId: string): Promise<EventSettings> => {
  */
 export const updateSettings = async (eventId: string, settings: Partial<EventSettings>): Promise<EventSettings | null> => {
   try {
+    // Clé de cache pour invalidation
+    const cacheKey = `settings:${eventId}`;
+    
     // Normaliser alert_text (null si vide ou seulement espaces)
     const alertText = settings.alert_text && settings.alert_text.trim() ? settings.alert_text.trim() : null;
     
