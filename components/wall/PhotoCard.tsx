@@ -161,19 +161,14 @@ const PhotoCardComponent = ({
       
       {/* Badge NEW - Bandeau au-dessus du nom */}
       {index === 0 && (
-        <div className="pointer-events-none select-none absolute bottom-12 md:bottom-14 lg:bottom-16 xl:bottom-[72px] 2xl:bottom-20 left-2 md:left-3 lg:left-4 xl:left-5 2xl:left-6 z-30 animate-bounce-slow flex items-center gap-2 md:gap-3 lg:gap-4">
+        <div className="pointer-events-none select-none absolute top-2 md:top-3 lg:top-4 xl:top-5 2xl:top-6 right-2 md:right-3 lg:right-4 xl:right-5 2xl:right-6 z-30 animate-bounce-slow flex items-center gap-2 md:gap-3 lg:gap-4">
           <div className="relative">
-            {/* Effet de halo animé modernisé */}
             <div className="absolute -inset-1 md:-inset-1.5 lg:-inset-2 xl:-inset-2.5 2xl:-inset-3 rounded-full bg-gradient-to-r from-pink-500/70 via-purple-500/60 to-cyan-400/60 blur-2xl opacity-90 animate-pulse-xs shadow-xl" />
-            
-            {/* Bandeau principal, épuré et plus lisible */}
             <div className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400/90 backdrop-blur-md px-4 md:px-5 lg:px-6 xl:px-8 2xl:px-10 py-1.5 md:py-2 lg:py-2.5 xl:py-3 2xl:py-4 rounded-full border border-white/80 shadow-[0_0_22px_rgba(236,72,153,0.23)] flex items-center justify-center">
-              {/* Icône sparkle pour plus de dynamique */}
-              <span className="mr-1.5 md:mr-2 lg:mr-2.5 xl:mr-3 2xl:mr-4 text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl animate-spin-slower">✨</span>
-              <span className="text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-extrabold text-white tracking-widest drop-shadow-[0_1px_7px_rgba(236,72,153,0.65)] relative z-10 italic">
+              <span className="mr-2 text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl animate-spin-slower">✨</span>
+              <span className="text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl font-extrabold text-white tracking-widest drop-shadow-[0_1px_7px_rgba(236,72,153,0.65)] italic">
                 New
               </span>
-              {/* Brillance persistante subtile */}
               <div className="absolute inset-0 rounded-full overflow-hidden opacity-30 pointer-events-none animate-pulse-slow">
                 <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 animate-shimmer-enhanced" />
               </div>
