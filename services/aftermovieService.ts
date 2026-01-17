@@ -6,7 +6,6 @@ import {
   Photo,
   TransitionType,
 } from '../types';
-import { drawPngOverlay } from '../utils/imageOverlay';
 import { logger } from '../utils/logger';
 
 function assertNotAborted(signal?: AbortSignal): void {
@@ -143,7 +142,7 @@ async function loadImageSourceFromUrl(url: string, signal?: AbortSignal): Promis
       return await createImageBitmap(blob);
     } catch (error) {
       // Si createImageBitmap échoue, fallback vers Image
-      logger.warn('createImageBitmap échoué, utilisation du fallback Image', error, { component: 'aftermovieService', action: 'loadImage' });
+      logger.warn('createImageBitmap échoué, utilisation du fallback Image', { component: 'aftermovieService', action: 'loadImage', error });
     }
   }
 
@@ -190,12 +189,12 @@ async function loadVideoSource(url: string, signal?: AbortSignal): Promise<HTMLV
         resolve(video);
     };
 
-    const onError = (e: ErrorEvent | Event) => {
+    const onError: OnErrorEventHandler = (e) => {
         if (resolved) return;
         resolved = true;
         clearTimeout(timeout);
         video.src = '';
-        const errorMessage = e instanceof ErrorEvent ? e.message : 'unknown';
+        const errorMessage = (e instanceof ErrorEvent ? e.message : (typeof e === 'string' ? e : 'unknown'));
         reject(new Error(`Erreur chargement vidéo: ${errorMessage}`));
     };
 
@@ -268,11 +267,10 @@ function drawRoundedRect(
   height: number,
   radius: number
 ): void {
-  interface CanvasRenderingContext2DWithRoundRect extends CanvasRenderingContext2D {
-    roundRect?: (x: number, y: number, width: number, height: number, radius: number) => void;
-  }
-  
-  const ctxWithRoundRect = ctx as CanvasRenderingContext2DWithRoundRect;
+  // Vérifier si roundRect est disponible (navigateurs modernes)
+  const ctxWithRoundRect = ctx as CanvasRenderingContext2D & {
+    roundRect?: (x: number, y: number, w: number, h: number, radii?: number | DOMPointInit | (number | DOMPointInit)[]) => void;
+  };
   if (typeof ctxWithRoundRect.roundRect === 'function') {
     ctxWithRoundRect.roundRect(x, y, width, height, radius);
     return;
@@ -1104,7 +1102,7 @@ export async function generateTimelapseAftermovie(
         worker.postMessage({ type: 'cancel' } as { type: 'cancel' });
         worker.terminate();
       } catch (error) {
-        logger.warn('Erreur lors de l\'annulation du worker', error, { component: 'aftermovieService', action: 'cleanupWorker' });
+        logger.warn('Erreur lors de l\'annulation du worker', { component: 'aftermovieService', action: 'cleanupWorker', error });
       }
       worker = null;
     }
@@ -1128,7 +1126,7 @@ export async function generateTimelapseAftermovie(
           // L'ImageBitmap a été transféré depuis le worker
           mediaCache.set(response.id, response.bitmap);
         } else if (response.type === 'imageError') {
-          logger.warn(`Erreur chargement image ${response.id} dans worker`, response.error, { component: 'aftermovieService', action: 'workerMessage', imageId: response.id });
+          logger.warn(`Erreur chargement image ${response.id} dans worker`, { component: 'aftermovieService', action: 'workerMessage', imageId: response.id, error: response.error });
         } else if (response.type === 'batchProgress') {
           // Mettre à jour le progrès si nécessaire
           onProgress?.({
@@ -1141,13 +1139,13 @@ export async function generateTimelapseAftermovie(
       };
       
       worker.onerror = (error) => {
-        logger.warn('Erreur Web Worker aftermovie', error, { component: 'aftermovieService', action: 'workerError' });
+        logger.warn('Erreur Web Worker aftermovie', { component: 'aftermovieService', action: 'workerError', error: error.message || String(error) });
         // Désactiver le worker en cas d'erreur
         worker?.terminate();
         worker = null;
       };
     } catch (error) {
-      logger.warn('Impossible de créer le Web Worker, utilisation du mode synchrone', error, { component: 'aftermovieService', action: 'createWorker' });
+      logger.warn('Impossible de créer le Web Worker, utilisation du mode synchrone', { component: 'aftermovieService', action: 'createWorker', error });
       worker = null;
     }
   }
@@ -1168,7 +1166,7 @@ export async function generateTimelapseAftermovie(
             mediaCache.set(url, bitmap);
           } catch (bitmapError) {
             // Fallback vers Image si createImageBitmap échoue
-            logger.warn('createImageBitmap échoué, fallback Image', bitmapError, { component: 'aftermovieService', action: 'preloadImage', url });
+            logger.warn('createImageBitmap échoué, fallback Image', { component: 'aftermovieService', action: 'preloadImage', url, error: bitmapError });
             const objectUrl = URL.createObjectURL(blob);
             const img = new Image();
             img.src = objectUrl;
@@ -1194,7 +1192,7 @@ export async function generateTimelapseAftermovie(
       } catch (err) {
         // Ignorer les erreurs de préchargement (sera chargé plus tard si nécessaire)
         if (err instanceof Error && err.name !== 'AbortError') {
-          logger.warn(`Erreur préchargement ${url}`, err, { component: 'aftermovieService', action: 'preloadImage', url });
+          logger.warn(`Erreur préchargement ${url}`, { component: 'aftermovieService', action: 'preloadImage', url, error: err });
         }
       }
     });
@@ -1207,7 +1205,7 @@ export async function generateTimelapseAftermovie(
       // Précharger les premières photos via le worker (non-bloquant pour l'UI)
       const firstPhotos = photos.slice(0, Math.min(20, photos.length));
       const photosToPreload = firstPhotos
-        .filter(p => p.type === 'image') // Seulement les images (pas les vidéos)
+        .filter(p => p.type === 'photo') // Seulement les photos (pas les vidéos)
         .map(p => ({ id: p.url, url: p.url, type: p.type as 'image' | 'video' }));
       
       if (photosToPreload.length > 0) {
@@ -1217,12 +1215,12 @@ export async function generateTimelapseAftermovie(
         } as { type: 'loadImageBatch'; photos: Array<{ id: string; url: string; type: 'image' | 'video' }> });
       }
     } catch (error) {
-      logger.warn('Erreur préchargement via worker', error, { component: 'aftermovieService', action: 'preloadViaWorker' });
+      logger.warn('Erreur préchargement via worker', { component: 'aftermovieService', action: 'preloadViaWorker', error });
     }
   } else if (photos.length > 0) {
     // Fallback : préchargement synchrone (mais optimisé avec createImageBitmap)
     const firstPhotos = photos.slice(0, Math.min(10, photos.length))
-      .filter(p => p.type === 'image')
+      .filter(p => p.type === 'photo')
       .map(p => p.url);
     preloadMedia(firstPhotos, signal).catch(() => {
       // Ignorer les erreurs de préchargement
@@ -1626,14 +1624,14 @@ export async function generateTimelapseAftermovie(
     cleanupWorker();
     
     // Nettoyer les ImageBitmap du cache pour libérer la mémoire
-    for (const [url, media] of mediaCache.entries()) {
+    for (const [, media] of mediaCache.entries()) {
       if (media instanceof ImageBitmap) {
         media.close(); // Libérer la mémoire de l'ImageBitmap
       }
     }
     mediaCache.clear();
     
-    for (const [url, overlay] of frameOverlayCache.entries()) {
+    for (const [, overlay] of frameOverlayCache.entries()) {
       if (overlay instanceof ImageBitmap) {
         overlay.close(); // Libérer la mémoire de l'ImageBitmap
       }
