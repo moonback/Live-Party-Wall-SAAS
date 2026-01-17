@@ -345,9 +345,11 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               'linear-gradient(225deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
               'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
             ],
-            backgroundSize: '200% 200%',
             backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
           } : {}}
+          style={{
+            backgroundSize: '200% 200%',
+          }}
           transition={{ duration: 1.5, repeat: Infinity }}
         />
       </div>

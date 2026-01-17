@@ -177,15 +177,30 @@ const VirtualColumn = React.memo(({
     >
       {virtualizer.getVirtualItems().map((virtualRow) => {
         const item = data[virtualRow.index];
+        if (!item) return null;
+        
+        // Générer une clé unique en combinant le type, l'id et l'index pour éviter les doublons
+        const uniqueKey = item.type === 'battle' 
+          ? `battle-${item.battle.id}-${virtualRow.index}` 
+          : `photo-${item.photo.id}-${virtualRow.index}`;
         
         return (
           <div
-            key={
-              item.type === 'battle' 
-                ? `battle-${item.battle.id}` 
-                : `photo-${item.photo.id}`
-            }
-            ref={el => virtualRow && typeof virtualRow.index === 'number' ? virtualizer.measureElement(el) : undefined}
+            key={uniqueKey}
+            ref={(el) => {
+              if (el && virtualRow && typeof virtualRow.index === 'number') {
+                // Utiliser une approche plus sûre pour éviter les boucles infinies
+                const currentIndex = virtualRow.index;
+                if (el.isConnected) {
+                  // Mesurer seulement si l'élément est connecté au DOM
+                  requestAnimationFrame(() => {
+                    if (el.isConnected) {
+                      virtualizer.measureElement(el);
+                    }
+                  });
+                }
+              }
+            }}
             data-index={virtualRow.index}
             style={{
               position: 'absolute',
