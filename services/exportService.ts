@@ -388,24 +388,122 @@ const drawMetadataOnImage = async (
     };
 
     img.onerror = () => {
-      // Si CORS échoue, essayer sans CORS (pour les images locales ou base64)
+      // Si CORS échoue, essayer de charger via fetch pour contourner CORS
       if (img.crossOrigin === 'anonymous' && !imageUrl.startsWith('data:')) {
-        const imgRetry = new Image();
-        imgRetry.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = imgRetry.width;
-            canvas.height = imgRetry.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error('Impossible de créer le contexte canvas'));
-              return;
-            }
-            ctx.drawImage(imgRetry, 0, 0);
-            // Réutiliser la fonction de dessin
-            drawMetadataOnCanvas(ctx, imgRetry, author, likesCount, reactions, caption);
+        // Essayer de charger l'image via fetch (proxy ou CORS configuré)
+        fetch(imageUrl, { mode: 'cors' })
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.blob();
+          })
+          .then(blob => {
+            const imgRetry = new Image();
+            const objectUrl = URL.createObjectURL(blob);
             
-            // Appliquer le filigrane si activé
+            imgRetry.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgRetry.width;
+                canvas.height = imgRetry.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                  URL.revokeObjectURL(objectUrl);
+                  reject(new Error('Impossible de créer le contexte canvas'));
+                  return;
+                }
+                ctx.drawImage(imgRetry, 0, 0);
+                // Réutiliser la fonction de dessin
+                drawMetadataOnCanvas(ctx, imgRetry, author, likesCount, reactions, caption);
+                
+                // Appliquer le filigrane si activé
+                const applyWatermarkAndConvert = () => {
+                  if (logoUrl && logoWatermarkEnabled) {
+                    const logo = new Image();
+                    logo.onload = () => {
+                      try {
+                        const logoMaxWidth = Math.min(imgRetry.width * 0.08, 150);
+                        const logoAspectRatio = logo.width / logo.height;
+                        const logoWidth = logoMaxWidth;
+                        const logoHeight = logoWidth / logoAspectRatio;
+                        const padding = Math.max(imgRetry.width, imgRetry.height) * 0.02;
+                        const logoX = padding;
+                        const logoY = imgRetry.height - logoHeight - padding;
+                        const backgroundPadding = 8;
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                        ctx.fillRect(
+                          logoX - backgroundPadding,
+                          logoY - backgroundPadding,
+                          logoWidth + (backgroundPadding * 2),
+                          logoHeight + (backgroundPadding * 2)
+                        );
+                        ctx.globalAlpha = 0.8;
+                        ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
+                        ctx.globalAlpha = 1.0;
+                      } catch (err) {
+                        console.warn('Erreur lors du dessin du logo:', err);
+                      }
+                      
+                      // Nettoyer l'URL et convertir
+                      URL.revokeObjectURL(objectUrl);
+                      canvas.toBlob((blob) => {
+                        if (blob) {
+                          resolve(blob);
+                        } else {
+                          reject(new Error('Impossible de convertir le canvas en blob'));
+                        }
+                      }, 'image/png');
+                    };
+                    logo.onerror = () => {
+                      // Continuer sans logo si erreur
+                      URL.revokeObjectURL(objectUrl);
+                      canvas.toBlob((blob) => {
+                        if (blob) {
+                          resolve(blob);
+                        } else {
+                          reject(new Error('Impossible de convertir le canvas en blob'));
+                        }
+                      }, 'image/png');
+                    };
+                    logo.src = logoUrl;
+                  } else {
+                    // Nettoyer l'URL et convertir sans filigrane
+                    URL.revokeObjectURL(objectUrl);
+                    canvas.toBlob((blob) => {
+                      if (blob) {
+                        resolve(blob);
+                      } else {
+                        reject(new Error('Impossible de convertir le canvas en blob'));
+                      }
+                    }, 'image/png');
+                  }
+                };
+                
+                applyWatermarkAndConvert();
+              } catch (err) {
+                URL.revokeObjectURL(objectUrl);
+                reject(err);
+              }
+            };
+            
+            imgRetry.onerror = () => {
+              URL.revokeObjectURL(objectUrl);
+              // Si fetch échoue aussi, essayer sans CORS en dernier recours
+              const imgFallback = new Image();
+              imgFallback.onload = () => {
+                try {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = imgFallback.width;
+                  canvas.height = imgFallback.height;
+                  const ctx = canvas.getContext('2d');
+                  if (!ctx) {
+                    reject(new Error('Impossible de créer le contexte canvas'));
+                    return;
+                  }
+                  // Utiliser toBlob au lieu de toDataURL pour éviter CORS
+                  ctx.drawImage(imgFallback, 0, 0);
+                  drawMetadataOnCanvas(ctx, imgFallback, author, likesCount, reactions, caption);
+                  
+                  // Appliquer le filigrane si activé
             if (logoUrl && logoWatermarkEnabled) {
               const logo = new Image();
               logo.onload = () => {
