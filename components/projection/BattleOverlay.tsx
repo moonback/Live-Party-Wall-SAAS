@@ -4,13 +4,15 @@ import { PhotoBattle, Photo } from '../../types';
 import { subscribeToBattleUpdates } from '../../services/battleService';
 import { Trophy, Clock, Users, Zap } from 'lucide-react';
 import { FireworksEffect } from '../arEffects/FireworksEffect';
+import { WinnerOverlay } from '../wall/Overlays/WinnerOverlay';
+import { TieOverlay } from '../wall/Overlays/TieOverlay';
 
 interface BattleOverlayProps {
   battle: PhotoBattle | null;
   onBattleFinished?: (battleId: string, winnerId: string | null, winnerPhoto?: Photo) => void;
 }
 
-type BattleDisplayState = 'launch' | 'discrete' | 'winner' | 'hidden';
+type BattleDisplayState = 'launch' | 'discrete' | 'hidden';
 
 /**
  * Composant overlay pour afficher les battles en cours dans la projection
@@ -24,6 +26,8 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
   const [displayState, setDisplayState] = useState<BattleDisplayState>('hidden');
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [battleStartTime, setBattleStartTime] = useState<number | null>(null);
+  const [winnerPhoto, setWinnerPhoto] = useState<Photo | null>(null);
+  const [tieData, setTieData] = useState<{ photo1: Photo; photo2: Photo } | null>(null);
 
   // Mettre à jour la battle locale quand elle change
   useEffect(() => {
@@ -42,15 +46,18 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
         
         return () => clearTimeout(timer);
       } else if (battle.status === 'finished') {
-        // Battle terminée, afficher le gagnant
-        setDisplayState('winner');
-        
-        // Cacher après 10 secondes
-        const timer = setTimeout(() => {
-          setDisplayState('hidden');
-        }, 10000);
-        
-        return () => clearTimeout(timer);
+        // Battle terminée, déterminer le gagnant ou l'égalité
+        if (battle.winnerId) {
+          const winner = battle.winnerId === battle.photo1.id ? battle.photo1 : battle.photo2;
+          setWinnerPhoto(winner);
+          setTimeout(() => setWinnerPhoto(null), 5000);
+        } else {
+          setTieData({
+            photo1: battle.photo1,
+            photo2: battle.photo2
+          });
+          setTimeout(() => setTieData(null), 5000);
+        }
       }
     } else {
       setDisplayState('hidden');
@@ -99,18 +106,22 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
           }
         }
         
-        // Afficher le gagnant
-        setDisplayState('winner');
+        // Afficher le modal de résultat
+        if (winnerPhoto) {
+          setWinnerPhoto(winnerPhoto);
+          setTimeout(() => setWinnerPhoto(null), 5000);
+        } else {
+          setTieData({
+            photo1: updatedBattle.photo1,
+            photo2: updatedBattle.photo2
+          });
+          setTimeout(() => setTieData(null), 5000);
+        }
         
         // Appeler le callback
         if (onBattleFinished) {
           onBattleFinished(updatedBattle.id, updatedBattle.winnerId, winnerPhoto);
         }
-        
-        // Cacher après 10 secondes
-        setTimeout(() => {
-          setDisplayState('hidden');
-        }, 10000);
       }
     });
 
@@ -125,22 +136,19 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  if (!localBattle || displayState === 'hidden') {
-    return null;
-  }
+  const totalVotes = localBattle ? localBattle.votes1Count + localBattle.votes2Count : 0;
+  const photo1Percentage = totalVotes > 0 && localBattle ? (localBattle.votes1Count / totalVotes) * 100 : 50;
+  const photo2Percentage = totalVotes > 0 && localBattle ? (localBattle.votes2Count / totalVotes) * 100 : 50;
 
-  const totalVotes = localBattle.votes1Count + localBattle.votes2Count;
-  const photo1Percentage = totalVotes > 0 ? (localBattle.votes1Count / totalVotes) * 100 : 50;
-  const photo2Percentage = totalVotes > 0 ? (localBattle.votes2Count / totalVotes) * 100 : 50;
-
-  const isPhoto1Winner = localBattle.status === 'finished' && localBattle.winnerId === localBattle.photo1.id;
-  const isPhoto2Winner = localBattle.status === 'finished' && localBattle.winnerId === localBattle.photo2.id;
-  const isDraw = localBattle.status === 'finished' && !localBattle.winnerId;
+  const isPhoto1Winner = localBattle?.status === 'finished' && localBattle.winnerId === localBattle.photo1.id;
+  const isPhoto2Winner = localBattle?.status === 'finished' && localBattle.winnerId === localBattle.photo2.id;
+  const isDraw = localBattle?.status === 'finished' && !localBattle.winnerId;
 
   // État "Déclenchement" - Affichage complet
-  if (displayState === 'launch') {
+  if (localBattle && displayState === 'launch') {
     return (
-      <motion.div
+      <>
+        <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -100, opacity: 0 }}
@@ -235,13 +243,18 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
           </div>
         </div>
       </motion.div>
+        {/* Modals de résultats de battle */}
+        <WinnerOverlay photo={winnerPhoto} />
+        <TieOverlay tieData={tieData} />
+      </>
     );
   }
 
   // État "Discret" - Affichage réduit
-  if (displayState === 'discrete') {
+  if (localBattle && displayState === 'discrete') {
     return (
-      <motion.div
+      <>
+        <motion.div
         initial={{ opacity: 1, scale: 1 }}
         animate={{ opacity: 0.35, scale: 0.8 }}
         transition={{ duration: 0.5 }}
@@ -292,150 +305,20 @@ export const BattleOverlay: React.FC<BattleOverlayProps> = ({
           </div>
         </div>
       </motion.div>
+        {/* Modals de résultats de battle */}
+        <WinnerOverlay photo={winnerPhoto} />
+        <TieOverlay tieData={tieData} />
+      </>
     );
   }
 
-  // État "Gagnant" - Affichage complet avec animation de victoire
-  if (displayState === 'winner') {
-    const winnerPhoto = isPhoto1Winner
-      ? localBattle.photo1
-      : isPhoto2Winner
-      ? localBattle.photo2
-      : null;
-
-    return (
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-        className="absolute inset-0 z-40 flex items-center justify-center"
-      >
-        {/* Effet artifice (feux d'artifice) */}
-        <FireworksEffect
-          intensity={1.2}
-          duration={10000}
-          count={5}
-        />
-
-        {/* Overlay sombre */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        />
-
-        {/* Contenu du gagnant */}
-        <div className="relative z-10 w-full max-w-3xl px-4 md:px-6">
-          {isDraw ? (
-            // Égalité
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="bg-gradient-to-br from-slate-900/95 via-purple-900/40 to-slate-800/95 backdrop-blur-xl rounded-3xl p-6 md:p-8 border-2 border-yellow-500/50 shadow-2xl text-center">
-              <div className="mb-6">
-                <Trophy className="w-16 h-16 md:w-20 md:h-20 text-yellow-400 mx-auto mb-4 animate-bounce" />
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Égalité !</h2>
-                <p className="text-slate-300 text-lg">Les deux photos ont reçu le même nombre de votes</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl overflow-hidden">
-                  <img
-                    src={localBattle.photo1.url}
-                    alt={localBattle.photo1.caption}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-                <div className="rounded-xl overflow-hidden">
-                  <img
-                    src={localBattle.photo2.url}
-                    alt={localBattle.photo2.caption}
-                    className="w-full h-48 object-cover"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          ) : winnerPhoto ? (
-            // Gagnant
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="relative"
-            >
-              {/* Effet de glow animé */}
-              <motion.div
-                animate={{
-                  scale: [1, 1.05, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className="absolute -inset-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 rounded-3xl blur-2xl"
-              />
-
-              <div className="relative bg-gradient-to-br from-slate-900/95 via-purple-900/40 to-slate-800/95 backdrop-blur-xl rounded-3xl p-6 md:p-8 border-2 border-yellow-500/50 shadow-2xl">
-                {/* Badge gagnant */}
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 rounded-full p-4 shadow-2xl"
-                  >
-                    <Trophy className="w-8 h-8 md:w-10 md:h-10 text-yellow-900" />
-                  </motion.div>
-                </div>
-
-                <div className="text-center mb-6 mt-4">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-2 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
-                    Photo Gagnante !
-                  </h2>
-                  <p className="text-slate-300 text-lg">
-                    {Math.max(photo1Percentage, photo2Percentage).toFixed(1)}% des votes
-                  </p>
-                </div>
-
-                {/* Photo gagnante */}
-                <motion.div
-                  initial={{ scale: 0.9 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                  className="rounded-2xl overflow-hidden shadow-2xl ring-4 ring-yellow-400/50"
-                >
-                  <img
-                    src={winnerPhoto.url}
-                    alt={winnerPhoto.caption}
-                    className="w-full h-64 md:h-80 object-cover"
-                  />
-                  <div className="bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4">
-                    <p className="text-white text-lg md:text-xl font-bold text-center">
-                      {winnerPhoto.caption}
-                    </p>
-                    <p className="text-white/80 text-sm md:text-base text-center mt-2">
-                      Par {winnerPhoto.author}
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* Stats */}
-                <div className="mt-6 flex items-center justify-center gap-4 pt-6 border-t border-yellow-500/30">
-                  <div className="text-center">
-                    <Users className="w-5 h-5 md:w-6 md:h-6 text-yellow-400 mx-auto mb-1" />
-                    <p className="text-white font-bold text-lg">{totalVotes}</p>
-                    <p className="text-slate-400 text-sm">votes</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : null}
-        </div>
-      </motion.div>
-    );
-  }
-
-  return null;
+  // Retour par défaut : seulement les modals (si aucune battle active)
+  return (
+    <>
+      {/* Modals de résultats de battle */}
+      <WinnerOverlay photo={winnerPhoto} />
+      <TieOverlay tieData={tieData} />
+    </>
+  );
 };
 
