@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Video, ChevronDown, ChevronRight, Crown } from 'lucide-react';
+import { Sparkles, Video, ChevronDown, ChevronRight, Crown, Info } from 'lucide-react';
 import { TransitionType } from '../../../types';
 import {
   AFTERMOVIE_MIN_MS_PER_PHOTO,
@@ -89,53 +89,75 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
         Options principales
       </h3>
 
-      <label className="flex items-start gap-3 cursor-pointer">
+      <label className="flex items-start gap-3 cursor-pointer group">
         <input
           type="checkbox"
           checked={includeTitle}
           onChange={(e) => onIncludeTitleChange(e.target.checked)}
-          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0 transition-all"
           disabled={disabled}
         />
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-100">Titre en bas</div>
-          <div className="text-xs text-slate-400">Affiche le titre de l'événement sur la vidéo.</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-slate-100 group-hover:text-indigo-300 transition-colors">
+            Titre en bas
+          </div>
+          <div className="text-xs text-slate-400 mt-0.5">
+            Affiche le titre de l'événement en bas de la vidéo pour l'identifier.
+          </div>
         </div>
       </label>
 
-      <label className="flex items-start gap-3 cursor-pointer">
+      <label className="flex items-start gap-3 cursor-pointer group">
         <input
           type="checkbox"
           checked={includeFrame}
           onChange={(e) => onIncludeFrameChange(e.target.checked)}
-          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0 transition-all"
           disabled={disabled}
         />
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-100">Cadre décoratif</div>
-          <div className="text-xs text-slate-400">Incruste le cadre actif (si configuré).</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-slate-100 group-hover:text-indigo-300 transition-colors">
+            Cadre décoratif
+          </div>
+          <div className="text-xs text-slate-400 mt-0.5">
+            Incruste le cadre décoratif actif sur chaque photo (si configuré dans les paramètres).
+          </div>
         </div>
       </label>
 
-      <label className="flex items-start gap-3 cursor-pointer">
+      <label className="flex items-start gap-3 cursor-pointer group">
         <input
           type="checkbox"
           checked={enableKenBurns}
           onChange={(e) => onEnableKenBurnsChange(e.target.checked)}
-          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0"
+          className="h-4 w-4 accent-indigo-500 mt-0.5 flex-shrink-0 transition-all"
           disabled={disabled}
         />
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-100">Effet Ken Burns</div>
-          <div className="text-xs text-slate-400">Ajoute un zoom/pan progressif sur chaque photo.</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-slate-100 group-hover:text-indigo-300 transition-colors">
+            Effet Ken Burns
+          </div>
+          <div className="text-xs text-slate-400 mt-0.5">
+            Ajoute un zoom et un mouvement progressif sur chaque photo pour un rendu cinématique.
+          </div>
         </div>
       </label>
 
       {/* Durée par photo */}
       <div className="pt-2 border-t border-slate-800">
-        <label className="block text-sm font-medium text-slate-300 mb-3">
-          Durée par photo
-        </label>
+        <div className="flex items-center gap-2 mb-3">
+          <label className="block text-sm font-medium text-slate-300">
+            Durée par photo
+          </label>
+          <div className="group relative">
+            <Info className="w-4 h-4 text-slate-500 cursor-help" />
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-10">
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 shadow-xl w-48">
+                Temps d'affichage de chaque photo dans la vidéo. Plus long = plus de temps pour apprécier chaque moment.
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="space-y-3">
           <div className="flex items-center gap-4">
             <input

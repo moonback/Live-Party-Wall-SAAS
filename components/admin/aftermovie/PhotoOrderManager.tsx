@@ -244,15 +244,21 @@ export const PhotoOrderManager: React.FC<PhotoOrderManagerProps> = ({
       )}
 
       {!showPhotoOrder && photos.length > 0 && (
-        <div className="space-y-3">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-3"
+        >
           <div className="flex items-center gap-2 flex-wrap">
             {orderedPhotos.slice(0, 12).map((photo, index) => (
               <motion.div
                 key={photo.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className="relative group"
+                initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ delay: index * 0.03, type: 'spring', stiffness: 200 }}
+                whileHover={{ scale: 1.1, zIndex: 10 }}
+                className="relative group cursor-pointer"
+                title={`Photo ${index + 1}: ${photo.caption || 'Sans légende'}`}
               >
                 <div className="relative w-14 h-14 rounded-xl overflow-hidden border-2 border-slate-700 group-hover:border-indigo-500/50 transition-all shadow-lg group-hover:shadow-indigo-500/20">
                   <img
@@ -262,23 +268,34 @@ export const PhotoOrderManager: React.FC<PhotoOrderManagerProps> = ({
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute top-1 left-1 w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border border-white/20">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: index * 0.03 + 0.1 }}
+                    className="absolute top-1 left-1 w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border border-white/20"
+                  >
                     {index + 1}
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             ))}
             {orderedPhotos.length > 12 && (
-              <div className="w-14 h-14 rounded-xl border-2 border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-xs font-bold text-slate-300 shadow-lg">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 12 * 0.03 }}
+                className="w-14 h-14 rounded-xl border-2 border-slate-700 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center text-xs font-bold text-slate-300 shadow-lg hover:border-indigo-500/50 transition-colors"
+                title={`${orderedPhotos.length - 12} photo(s) supplémentaire(s)`}
+              >
                 +{orderedPhotos.length - 12}
-              </div>
+              </motion.div>
             )}
           </div>
           <p className="text-xs text-slate-400 flex items-center gap-1.5">
             <Move className="w-3 h-3" />
-            Cliquez sur "Afficher" pour réorganiser l'ordre
+            Cliquez sur "Afficher" pour réorganiser l'ordre • Glissez-déposez pour réorganiser
           </p>
-        </div>
+        </motion.div>
       )}
     </div>
   );

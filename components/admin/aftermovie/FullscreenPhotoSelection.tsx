@@ -27,6 +27,23 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Raccourcis clavier
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        onSelectAll();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, onSelectAll]);
+
   if (!isOpen) return null;
 
   const filteredPhotos = photos.filter((p) => {
@@ -110,7 +127,7 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
           </button>
         </div>
         <div className="text-sm text-slate-400">
-          Double-cliquez sur une photo pour la sélectionner/désélectionner
+          Cliquez sur une photo pour la sélectionner/désélectionner • <kbd className="px-2 py-1 bg-slate-800 rounded text-xs">Ctrl+A</kbd> Tout sélectionner • <kbd className="px-2 py-1 bg-slate-800 rounded text-xs">Esc</kbd> Fermer
         </div>
       </div>
 
@@ -124,9 +141,11 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                 <motion.button
                   key={p.id}
                   initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: 1, scale: selected ? 0.95 : 1 }}
+                  whileHover={{ scale: selected ? 0.95 : 1.05 }}
+                  whileTap={{ scale: 0.9 }}
                   type="button"
-                  onDoubleClick={() => onToggleSelection(p.id)}
+                  onClick={() => onToggleSelection(p.id)}
                   className={`relative group rounded-xl overflow-hidden border-2 transition-all aspect-square ${
                     selected
                       ? 'border-indigo-500 ring-4 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
@@ -190,8 +209,10 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                   key={p.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
-                  onDoubleClick={() => onToggleSelection(p.id)}
+                  onClick={() => onToggleSelection(p.id)}
                   className={`w-full flex items-center gap-4 p-3 rounded-lg border-2 transition-all ${
                     selected
                       ? 'border-indigo-500 bg-indigo-500/10'

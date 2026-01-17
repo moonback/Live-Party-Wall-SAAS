@@ -27,46 +27,58 @@ export const PresetSelector: React.FC<PresetSelectorProps> = ({
         <button
           type="button"
           onClick={() => onPresetModeChange('rapide')}
-          className={`p-4 rounded-lg border-2 transition-all ${
+          className={`p-4 rounded-lg border-2 transition-all group ${
             presetMode === 'rapide'
-              ? 'border-indigo-500 bg-indigo-500/10'
-              : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20'
+              : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30 hover:bg-slate-900/70'
           }`}
           disabled={disabled}
+          title="Génération rapide avec qualité réduite"
         >
-          <Zap className={`w-6 h-6 mb-2 mx-auto ${presetMode === 'rapide' ? 'text-indigo-400' : 'text-slate-400'}`} />
-          <div className="text-sm font-semibold text-slate-100">Rapide</div>
+          <Zap className={`w-6 h-6 mb-2 mx-auto transition-colors ${presetMode === 'rapide' ? 'text-indigo-400' : 'text-slate-400 group-hover:text-indigo-400'}`} />
+          <div className={`text-sm font-semibold mb-1 transition-colors ${presetMode === 'rapide' ? 'text-indigo-300' : 'text-slate-100 group-hover:text-indigo-300'}`}>
+            Rapide
+          </div>
           <div className="text-xs text-slate-400 mt-1">720p • 24 FPS • 4 Mbps</div>
+          <div className="text-[10px] text-slate-500 mt-1.5">Idéal pour tests</div>
         </button>
         <button
           type="button"
           onClick={() => onPresetModeChange('standard')}
-          className={`p-4 rounded-lg border-2 transition-all ${
+          className={`p-4 rounded-lg border-2 transition-all group ${
             presetMode === 'standard'
-              ? 'border-indigo-500 bg-indigo-500/10'
-              : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+              ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20'
+              : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30 hover:bg-slate-900/70'
           }`}
           disabled={disabled}
+          title="Équilibre parfait entre qualité et vitesse"
         >
-          <Star className={`w-6 h-6 mb-2 mx-auto ${presetMode === 'standard' ? 'text-indigo-400' : 'text-slate-400'}`} />
-          <div className="text-sm font-semibold text-slate-100">Standard</div>
+          <Star className={`w-6 h-6 mb-2 mx-auto transition-colors ${presetMode === 'standard' ? 'text-indigo-400' : 'text-slate-400 group-hover:text-indigo-400'}`} />
+          <div className={`text-sm font-semibold mb-1 transition-colors ${presetMode === 'standard' ? 'text-indigo-300' : 'text-slate-100 group-hover:text-indigo-300'}`}>
+            Standard
+          </div>
           <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 12 Mbps</div>
+          <div className="text-[10px] text-slate-500 mt-1.5">Recommandé</div>
         </button>
         {/* Mode Qualité - Premium */}
         {isPremium ? (
           <button
             type="button"
             onClick={() => onPresetModeChange('qualite')}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`p-4 rounded-lg border-2 transition-all group ${
               presetMode === 'qualite'
-                ? 'border-indigo-500 bg-indigo-500/10'
-                : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+                ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20'
+                : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30 hover:bg-slate-900/70'
             }`}
             disabled={disabled}
+            title="Qualité maximale pour diffusion professionnelle"
           >
-            <Award className={`w-6 h-6 mb-2 mx-auto ${presetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400'}`} />
-            <div className="text-sm font-semibold text-slate-100">Qualité</div>
+            <Award className={`w-6 h-6 mb-2 mx-auto transition-colors ${presetMode === 'qualite' ? 'text-indigo-400' : 'text-slate-400 group-hover:text-indigo-400'}`} />
+            <div className={`text-sm font-semibold mb-1 transition-colors ${presetMode === 'qualite' ? 'text-indigo-300' : 'text-slate-100 group-hover:text-indigo-300'}`}>
+              Qualité
+            </div>
             <div className="text-xs text-slate-400 mt-1">1080p • 30 FPS • 20 Mbps</div>
+            <div className="text-[10px] text-slate-500 mt-1.5">Meilleure qualité</div>
           </button>
         ) : (
           <div className="relative p-4 rounded-lg border-2 border-amber-500/30 bg-slate-900/30 opacity-50 cursor-not-allowed">
@@ -84,16 +96,20 @@ export const PresetSelector: React.FC<PresetSelectorProps> = ({
           <button
             type="button"
             onClick={() => onPresetModeChange('story')}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`p-4 rounded-lg border-2 transition-all group ${
               presetMode === 'story'
-                ? 'border-indigo-500 bg-indigo-500/10'
-                : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30'
+                ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20'
+                : 'border-slate-800 bg-slate-900/50 hover:border-indigo-500/30 hover:bg-slate-900/70'
             }`}
             disabled={disabled}
+            title="Format vertical pour réseaux sociaux (Instagram, TikTok)"
           >
-            <Video className={`w-6 h-6 mb-2 mx-auto ${presetMode === 'story' ? 'text-indigo-400' : 'text-slate-400'}`} />
-            <div className="text-sm font-semibold text-slate-100">Story</div>
+            <Video className={`w-6 h-6 mb-2 mx-auto transition-colors ${presetMode === 'story' ? 'text-indigo-400' : 'text-slate-400 group-hover:text-indigo-400'}`} />
+            <div className={`text-sm font-semibold mb-1 transition-colors ${presetMode === 'story' ? 'text-indigo-300' : 'text-slate-100 group-hover:text-indigo-300'}`}>
+              Story
+            </div>
             <div className="text-xs text-slate-400 mt-1">9:16 • 30 FPS • 10 Mbps</div>
+            <div className="text-[10px] text-slate-500 mt-1.5">Réseaux sociaux</div>
           </button>
         ) : (
           <div className="relative p-4 rounded-lg border-2 border-amber-500/30 bg-slate-900/30 opacity-50 cursor-not-allowed">

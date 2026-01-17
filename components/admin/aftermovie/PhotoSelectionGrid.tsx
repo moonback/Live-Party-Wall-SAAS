@@ -1,5 +1,6 @@
 import React from 'react';
-import { Maximize2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Maximize2, CheckCircle2 } from 'lucide-react';
 import { Photo } from '../../../types';
 
 interface PhotoSelectionGridProps {
@@ -84,13 +85,15 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
           {filteredPhotos.map((p) => {
             const selected = selectedIds.has(p.id);
             return (
-              <button
+              <motion.button
                 key={p.id}
                 type="button"
-                onDoubleClick={(e) => {
+                onClick={(e) => {
                   e.preventDefault();
                   onToggleSelection(p.id);
                 }}
+                whileHover={{ scale: selected ? 0.95 : 1.05 }}
+                whileTap={{ scale: 0.9 }}
                 className={`relative group w-full rounded-lg overflow-hidden border transition-all aspect-square ${
                   selected
                     ? 'border-indigo-500/60 ring-2 ring-indigo-500/30'
@@ -105,11 +108,15 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
                   loading="lazy"
                 />
                 {selected && (
-                  <div className="absolute top-1 left-1 z-10">
-                    <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black bg-indigo-500 text-white border border-indigo-400 shadow-lg">
-                      ✓
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-1 left-1 z-10"
+                  >
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-2 border-white shadow-lg">
+                      <CheckCircle2 className="w-4 h-4" />
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 {/* Overlay avec légende et tags au survol */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end">
@@ -142,7 +149,7 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
                     )}
                   </div>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>

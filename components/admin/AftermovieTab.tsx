@@ -31,6 +31,7 @@ import { ProgressDisplay } from './aftermovie/ProgressDisplay';
 import { ActionButtons } from './aftermovie/ActionButtons';
 import { ShareSection } from './aftermovie/ShareSection';
 import { FullscreenPhotoSelection } from './aftermovie/FullscreenPhotoSelection';
+import { CreationGuide } from './aftermovie/CreationGuide';
 
 interface AftermovieTabProps {
   // Props si nécessaire
@@ -84,6 +85,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   const [existingAftermovies, setExistingAftermovies] = useState<Aftermovie[]>([]);
   const [loadingAftermovies, setLoadingAftermovies] = useState<boolean>(false);
   const [deletingAftermovieIds, setDeletingAftermovieIds] = useState<Set<string>>(new Set());
+  const [showGuide, setShowGuide] = useState<boolean>(true);
 
   // Charger les aftermovies existants
   const loadExistingAftermovies = async () => {
@@ -475,6 +477,51 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
           onRefresh={loadExistingAftermovies}
           onDelete={handleDeleteAftermovie}
         />
+
+        {/* Guide de création */}
+        {showGuide && (
+          <CreationGuide
+            steps={[
+              {
+                id: '1',
+                title: 'Choisir un mode de génération',
+                description: 'Sélectionnez un preset (Rapide, Standard, Qualité, Story) selon vos besoins',
+                completed: !!aftermoviePresetMode
+              },
+              {
+                id: '2',
+                title: 'Définir la plage de dates',
+                description: 'Sélectionnez le début et la fin de la période pour vos photos',
+                completed: !!aftermovieStart && !!aftermovieEnd
+              },
+              {
+                id: '3',
+                title: 'Sélectionner les photos',
+                description: `Sélectionnez les photos à inclure (${aftermovieSelectedPhotos.length} sélectionnée${aftermovieSelectedPhotos.length > 1 ? 's' : ''})`,
+                completed: aftermovieSelectedPhotos.length > 0
+              },
+              {
+                id: '4',
+                title: 'Configurer les options',
+                description: 'Ajustez les options d\'affichage, transitions et musique selon vos préférences',
+                completed: true // Toujours complété car les options ont des valeurs par défaut
+              },
+              {
+                id: '5',
+                title: 'Générer l\'aftermovie',
+                description: 'Cliquez sur "Générer & Télécharger" pour créer votre vidéo',
+                completed: !!lastGeneratedBlob
+              }
+            ]}
+            currentStep={
+              !aftermoviePresetMode ? 0 :
+              (!aftermovieStart || !aftermovieEnd) ? 1 :
+              aftermovieSelectedPhotos.length === 0 ? 2 :
+              !lastGeneratedBlob ? 4 : 3
+            }
+            onClose={() => setShowGuide(false)}
+          />
+        )}
 
         {/* Presets simplifiés */}
         <PresetSelector
