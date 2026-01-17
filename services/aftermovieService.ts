@@ -6,7 +6,6 @@ import {
   Photo,
   TransitionType,
 } from '../types';
-import { drawPngOverlay } from '../utils/imageOverlay';
 import { logger } from '../utils/logger';
 
 function assertNotAborted(signal?: AbortSignal): void {
@@ -143,7 +142,14 @@ async function loadImageSourceFromUrl(url: string, signal?: AbortSignal): Promis
       return await createImageBitmap(blob);
     } catch (error) {
       // Si createImageBitmap échoue, fallback vers Image
-      logger.warn('createImageBitmap échoué, utilisation du fallback Image', error, { component: 'aftermovieService', action: 'loadImage' });
+      const errorContext = error instanceof Error 
+        ? { message: error.message, name: error.name }
+        : { error: String(error) };
+      logger.warn('createImageBitmap échoué, utilisation du fallback Image', undefined, { 
+        component: 'aftermovieService', 
+        action: 'loadImage',
+        ...errorContext
+      });
     }
   }
 
@@ -190,12 +196,12 @@ async function loadVideoSource(url: string, signal?: AbortSignal): Promise<HTMLV
         resolve(video);
     };
 
-    const onError = (e: ErrorEvent | Event) => {
+    const onError: OnErrorEventHandler = (e) => {
         if (resolved) return;
         resolved = true;
         clearTimeout(timeout);
         video.src = '';
-        const errorMessage = e instanceof ErrorEvent ? e.message : 'unknown';
+        const errorMessage = e instanceof ErrorEvent ? e.message : typeof e === 'string' ? e : 'unknown';
         reject(new Error(`Erreur chargement vidéo: ${errorMessage}`));
     };
 
@@ -268,13 +274,9 @@ function drawRoundedRect(
   height: number,
   radius: number
 ): void {
-  interface CanvasRenderingContext2DWithRoundRect extends CanvasRenderingContext2D {
-    roundRect?: (x: number, y: number, width: number, height: number, radius: number) => void;
-  }
-  
-  const ctxWithRoundRect = ctx as CanvasRenderingContext2DWithRoundRect;
-  if (typeof ctxWithRoundRect.roundRect === 'function') {
-    ctxWithRoundRect.roundRect(x, y, width, height, radius);
+  // Vérifier si roundRect est disponible (méthode native du Canvas)
+  if (typeof (ctx as CanvasRenderingContext2D & { roundRect?: (x: number, y: number, w: number, h: number, radii?: number | DOMPointInit | (number | DOMPointInit)[]) => void }).roundRect === 'function') {
+    (ctx as CanvasRenderingContext2D & { roundRect: (x: number, y: number, w: number, h: number, radii?: number | DOMPointInit | (number | DOMPointInit)[]) => void }).roundRect(x, y, width, height, radius);
     return;
   }
   
@@ -432,7 +434,7 @@ function drawCinematicLegend(
   ctx.restore();
 }
 
-// Légende style bande dessinée avec design complet et professionnel
+// Légende style bulle moderne et professionnelle (design épuré sans aspect comics)
 function drawComicBubble(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -441,105 +443,80 @@ function drawComicBubble(
 ): void {
   if (!text) return;
 
-  // Dimensions optimisées pour un style professionnel (plus compact)
-  const bubbleW = Math.min(width * 0.7, 600);
-  const bubbleH = Math.max(60, Math.min(height * 0.1, 100));
+  // Dimensions optimisées pour un style moderne et épuré
+  const bubbleW = Math.min(width * 0.75, 700);
+  const padding = 32; // Padding généreux pour un look moderne
   const x = (width - bubbleW) / 2;
   const y = height * 0.82; // Position basse pour style cinématique
-  const borderRadius = 20; // Coins arrondis plus prononcés
+  const borderRadius = 16; // Coins arrondis subtils et modernes
 
   ctx.save();
 
-  // Ombre portée externe pour effet de profondeur
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 4;
+  // Calcul de la hauteur dynamique basée sur le texte
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  let fontSize = Math.max(22, Math.min(36, Math.round(height * 0.032)));
+  ctx.font = `500 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
   
-  // Fond avec gradient professionnel et effet de profondeur
+  // Mesurer le texte et ajuster si nécessaire
+  const textWidth = ctx.measureText(text).width;
+  const maxTextWidth = bubbleW - (padding * 2);
+  if (textWidth > maxTextWidth) {
+    const scale = maxTextWidth / textWidth;
+    fontSize = Math.max(18, Math.floor(fontSize * scale));
+    ctx.font = `500 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
+  }
+
+  // Calculer la hauteur nécessaire pour le texte
+  const lineHeight = fontSize * 1.4;
+  const textHeight = lineHeight;
+  const bubbleH = textHeight + (padding * 2);
+
+  // Ombre portée moderne et douce (multi-couches pour profondeur)
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 8;
+  
+  // Fond avec glassmorphism moderne (effet de verre dépoli)
   const bgGradient = ctx.createLinearGradient(x, y, x, y + bubbleH);
-  bgGradient.addColorStop(0, 'rgba(20, 20, 30, 0.95)');
-  bgGradient.addColorStop(0.3, 'rgba(15, 15, 25, 0.98)');
-  bgGradient.addColorStop(0.5, 'rgba(10, 10, 20, 1)');
-  bgGradient.addColorStop(0.7, 'rgba(15, 15, 25, 0.98)');
-  bgGradient.addColorStop(1, 'rgba(20, 20, 30, 0.95)');
+  bgGradient.addColorStop(0, 'rgba(15, 15, 20, 0.92)');
+  bgGradient.addColorStop(0.5, 'rgba(10, 10, 15, 0.95)');
+  bgGradient.addColorStop(1, 'rgba(15, 15, 20, 0.92)');
   
   drawRoundedRect(ctx, x, y, bubbleW, bubbleH, borderRadius);
   ctx.fillStyle = bgGradient;
   ctx.fill();
 
-  // Bordure avec gradient pour effet premium
+  // Bordure subtile et moderne (fine et élégante)
   ctx.shadowColor = 'transparent';
-  const borderGradient = ctx.createLinearGradient(x, y, x, y + bubbleH);
-  borderGradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
-  borderGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
-  borderGradient.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
-  ctx.strokeStyle = borderGradient;
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Ligne intérieure subtile pour plus de profondeur
-  const innerY = y + 2;
-  const innerH = bubbleH - 4;
-  const innerW = bubbleW - 4;
-  const innerX = x + 2;
-  const innerRadius = borderRadius - 2;
-  
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 1;
-  drawRoundedRect(ctx, innerX, innerY, innerW, innerH, innerRadius);
-  ctx.stroke();
+  // Effet de brillance subtil en haut (accent moderne)
+  const highlightGradient = ctx.createLinearGradient(x, y, x, y + bubbleH * 0.3);
+  highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+  highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = highlightGradient;
+  drawRoundedRect(ctx, x, y, bubbleW, bubbleH * 0.3, borderRadius);
+  ctx.fill();
 
-  // Texte avec typographie professionnelle
+  // Texte avec typographie moderne et lisible
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   
-  // Taille de police optimisée (proportionnelle mais pas trop grande)
-  let fontSize = Math.max(20, Math.min(32, Math.round(height * 0.028)));
-  ctx.font = `600 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
+  // Texte blanc pur pour contraste optimal
+  ctx.fillStyle = '#ffffff';
   
-  // Ajuster la taille si le texte est trop long
-  const textWidth = ctx.measureText(text).width;
-  const maxTextWidth = bubbleW * 0.85;
-  if (textWidth > maxTextWidth) {
-    const scale = maxTextWidth / textWidth;
-    fontSize = Math.max(16, Math.floor(fontSize * scale));
-    ctx.font = `600 ${fontSize}px "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
-  }
-
-  // Texte avec gradient élégant
-  const textGradient = ctx.createLinearGradient(
-    width / 2 - bubbleW * 0.3,
-    y + bubbleH / 2,
-    width / 2 + bubbleW * 0.3,
-    y + bubbleH / 2
-  );
-  textGradient.addColorStop(0, '#ffffff');
-  textGradient.addColorStop(0.25, '#f5f5f5');
-  textGradient.addColorStop(0.5, '#ffffff');
-  textGradient.addColorStop(0.75, '#f5f5f5');
-  textGradient.addColorStop(1, '#ffffff');
-  
-  ctx.fillStyle = textGradient;
-  
-  // Ombre portée pour le texte (multi-couches)
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 12;
+  // Ombre portée douce pour le texte (lisibilité)
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  ctx.shadowBlur = 8;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   
-  // Contour subtil pour le texte
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeText(text, width / 2, y + bubbleH / 2);
-  
-  // Ombre plus douce pour le remplissage
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 1;
   ctx.fillText(text, width / 2, y + bubbleH / 2);
-  
+
   ctx.restore();
 }
 
@@ -1104,7 +1081,14 @@ export async function generateTimelapseAftermovie(
         worker.postMessage({ type: 'cancel' } as { type: 'cancel' });
         worker.terminate();
       } catch (error) {
-        logger.warn('Erreur lors de l\'annulation du worker', error, { component: 'aftermovieService', action: 'cleanupWorker' });
+        const errorContext = error instanceof Error 
+          ? { message: error.message, name: error.name }
+          : { error: String(error) };
+        logger.warn('Erreur lors de l\'annulation du worker', undefined, { 
+          component: 'aftermovieService', 
+          action: 'cleanupWorker',
+          ...errorContext
+        });
       }
       worker = null;
     }
@@ -1141,13 +1125,27 @@ export async function generateTimelapseAftermovie(
       };
       
       worker.onerror = (error) => {
-        logger.warn('Erreur Web Worker aftermovie', error, { component: 'aftermovieService', action: 'workerError' });
+        const errorContext = error instanceof ErrorEvent
+          ? { message: error.message, filename: error.filename, lineno: error.lineno, colno: error.colno }
+          : { error: String(error) };
+        logger.warn('Erreur Web Worker aftermovie', undefined, { 
+          component: 'aftermovieService', 
+          action: 'workerError',
+          ...errorContext
+        });
         // Désactiver le worker en cas d'erreur
         worker?.terminate();
         worker = null;
       };
     } catch (error) {
-      logger.warn('Impossible de créer le Web Worker, utilisation du mode synchrone', error, { component: 'aftermovieService', action: 'createWorker' });
+      const errorContext = error instanceof Error 
+        ? { message: error.message, name: error.name }
+        : { error: String(error) };
+      logger.warn('Impossible de créer le Web Worker, utilisation du mode synchrone', undefined, { 
+        component: 'aftermovieService', 
+        action: 'createWorker',
+        ...errorContext
+      });
       worker = null;
     }
   }
@@ -1168,7 +1166,15 @@ export async function generateTimelapseAftermovie(
             mediaCache.set(url, bitmap);
           } catch (bitmapError) {
             // Fallback vers Image si createImageBitmap échoue
-            logger.warn('createImageBitmap échoué, fallback Image', bitmapError, { component: 'aftermovieService', action: 'preloadImage', url });
+            const errorContext = bitmapError instanceof Error 
+              ? { message: bitmapError.message, name: bitmapError.name }
+              : { error: String(bitmapError) };
+            logger.warn('createImageBitmap échoué, fallback Image', undefined, { 
+              component: 'aftermovieService', 
+              action: 'preloadImage', 
+              url,
+              ...errorContext
+            });
             const objectUrl = URL.createObjectURL(blob);
             const img = new Image();
             img.src = objectUrl;
@@ -1194,7 +1200,13 @@ export async function generateTimelapseAftermovie(
       } catch (err) {
         // Ignorer les erreurs de préchargement (sera chargé plus tard si nécessaire)
         if (err instanceof Error && err.name !== 'AbortError') {
-          logger.warn(`Erreur préchargement ${url}`, err, { component: 'aftermovieService', action: 'preloadImage', url });
+          logger.warn(`Erreur préchargement ${url}`, undefined, { 
+            component: 'aftermovieService', 
+            action: 'preloadImage', 
+            url,
+            message: err.message,
+            name: err.name
+          });
         }
       }
     });
@@ -1207,22 +1219,29 @@ export async function generateTimelapseAftermovie(
       // Précharger les premières photos via le worker (non-bloquant pour l'UI)
       const firstPhotos = photos.slice(0, Math.min(20, photos.length));
       const photosToPreload = firstPhotos
-        .filter(p => p.type === 'image') // Seulement les images (pas les vidéos)
-        .map(p => ({ id: p.url, url: p.url, type: p.type as 'image' | 'video' }));
+        .filter(p => p.type === 'photo') // Seulement les photos (pas les vidéos)
+        .map(p => ({ id: p.url, url: p.url, type: p.type as 'photo' | 'video' }));
       
       if (photosToPreload.length > 0) {
         worker.postMessage({
           type: 'loadImageBatch',
           photos: photosToPreload
-        } as { type: 'loadImageBatch'; photos: Array<{ id: string; url: string; type: 'image' | 'video' }> });
+        } as { type: 'loadImageBatch'; photos: Array<{ id: string; url: string; type: 'photo' | 'video' }> });
       }
     } catch (error) {
-      logger.warn('Erreur préchargement via worker', error, { component: 'aftermovieService', action: 'preloadViaWorker' });
+      const errorContext = error instanceof Error 
+        ? { message: error.message, name: error.name }
+        : { error: String(error) };
+      logger.warn('Erreur préchargement via worker', undefined, { 
+        component: 'aftermovieService', 
+        action: 'preloadViaWorker',
+        ...errorContext
+      });
     }
   } else if (photos.length > 0) {
     // Fallback : préchargement synchrone (mais optimisé avec createImageBitmap)
     const firstPhotos = photos.slice(0, Math.min(10, photos.length))
-      .filter(p => p.type === 'image')
+      .filter(p => p.type === 'photo')
       .map(p => p.url);
     preloadMedia(firstPhotos, signal).catch(() => {
       // Ignorer les erreurs de préchargement
@@ -1626,14 +1645,14 @@ export async function generateTimelapseAftermovie(
     cleanupWorker();
     
     // Nettoyer les ImageBitmap du cache pour libérer la mémoire
-    for (const [url, media] of mediaCache.entries()) {
+    for (const [, media] of mediaCache.entries()) {
       if (media instanceof ImageBitmap) {
         media.close(); // Libérer la mémoire de l'ImageBitmap
       }
     }
     mediaCache.clear();
     
-    for (const [url, overlay] of frameOverlayCache.entries()) {
+    for (const [, overlay] of frameOverlayCache.entries()) {
       if (overlay instanceof ImageBitmap) {
         overlay.close(); // Libérer la mémoire de l'ImageBitmap
       }

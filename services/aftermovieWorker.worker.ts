@@ -15,7 +15,7 @@ export interface LoadImageMessage {
 
 export interface LoadImageBatchMessage {
   type: 'loadImageBatch';
-  photos: Array<{ id: string; url: string; type: 'image' | 'video' }>;
+  photos: Array<{ id: string; url: string; type: 'photo' | 'video' }>;
 }
 
 export interface CancelMessage {

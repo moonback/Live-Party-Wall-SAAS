@@ -228,8 +228,8 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
           disabled={disabled}
         />
         <div className="min-w-0">
-          <div className="text-xs sm:text-sm font-medium text-slate-100">Légendes BD (Comics)</div>
-          <div className="text-[10px] sm:text-xs text-slate-400">Affiche les légendes dans des bulles style bande dessinée.</div>
+          <div className="text-xs sm:text-sm font-medium text-slate-100">Légendes en bulles modernes</div>
+          <div className="text-[10px] sm:text-xs text-slate-400">Affiche les légendes dans des bulles modernes et professionnelles.</div>
         </div>
       </label>
 
