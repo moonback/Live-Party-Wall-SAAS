@@ -17,11 +17,11 @@ class GeminiRateLimiter {
   private processing = false;
   private lastCallTime = 0;
   
-  // Limite : 1 appel toutes les 100ms (10 appels/seconde max)
-  private readonly MIN_INTERVAL_MS = 100;
+  // Limite : 1 appel toutes les 200ms (5 appels/seconde max) - plus conservateur
+  private readonly MIN_INTERVAL_MS = 200;
   
-  // Limite : 60 appels par minute (pour éviter les quotas)
-  private readonly MAX_CALLS_PER_MINUTE = 60;
+  // Limite : 30 appels par minute (pour éviter les quotas Gemini)
+  private readonly MAX_CALLS_PER_MINUTE = 30;
   private callsInLastMinute: number[] = [];
   
   // Retry config
@@ -75,9 +75,53 @@ class GeminiRateLimiter {
   }
 
   /**
-   * Calcule le délai de backoff pour un retry
+   * Extrait le retryDelay depuis l'erreur Gemini (si présent)
+   * Gemini retourne parfois un retryDelay dans l'erreur (ex: "27s")
    */
-  private getBackoffDelay(retryCount: number): number {
+  private extractRetryDelayFromError(error: any): number | null {
+    try {
+      // Chercher retryDelay dans le message d'erreur
+      const errorMessage = error?.message || '';
+      const retryDelayMatch = errorMessage.match(/retryDelay["\s:]*"?(\d+)s/i);
+      if (retryDelayMatch) {
+        const seconds = parseInt(retryDelayMatch[1], 10);
+        return seconds * 1000; // Convertir en millisecondes
+      }
+      
+      // Chercher dans les détails de l'erreur
+      if (error?.details) {
+        for (const detail of error.details) {
+          if (detail['@type'] === 'type.googleapis.com/google.rpc.RetryInfo') {
+            const retryInfo = detail as { retryDelay?: string };
+            if (retryInfo.retryDelay) {
+              // Format: "27s" -> convertir en ms
+              const match = retryInfo.retryDelay.match(/(\d+)s/);
+              if (match) {
+                return parseInt(match[1], 10) * 1000;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Ignorer les erreurs de parsing
+    }
+    return null;
+  }
+
+  /**
+   * Calcule le délai de backoff pour un retry
+   * Utilise le retryDelay de Gemini si disponible, sinon backoff exponentiel
+   */
+  private getBackoffDelay(retryCount: number, error?: any): number {
+    // Essayer d'extraire le retryDelay depuis l'erreur Gemini
+    const geminiRetryDelay = error ? this.extractRetryDelayFromError(error) : null;
+    if (geminiRetryDelay !== null) {
+      // Ajouter un petit buffer (10%) pour être sûr
+      return Math.ceil(geminiRetryDelay * 1.1);
+    }
+    
+    // Fallback: backoff exponentiel
     const exponentialDelay = this.INITIAL_BACKOFF_MS * Math.pow(2, retryCount);
     const jitter = Math.random() * 1000; // Jitter aléatoire pour éviter les collisions
     return Math.min(exponentialDelay + jitter, this.MAX_BACKOFF_MS);
@@ -128,14 +172,18 @@ class GeminiRateLimiter {
                                  ));
 
         if (isRetryableError && call.retries < this.MAX_RETRIES) {
-          // Retry avec backoff exponentiel
+          // Retry avec backoff (utilise retryDelay de Gemini si disponible)
           call.retries++;
-          const backoffDelay = this.getBackoffDelay(call.retries - 1);
+          const backoffDelay = this.getBackoffDelay(call.retries - 1, error);
+          
+          // Extraire le retryDelay de Gemini pour le log
+          const geminiRetryDelay = this.extractRetryDelayFromError(error);
           
           logger.warn(`Gemini API rate limit/error, retrying (${call.retries}/${this.MAX_RETRIES})`, error, {
             component: 'geminiRateLimiter',
             retryCount: call.retries,
-            backoffDelay
+            backoffDelay,
+            geminiRetryDelay: geminiRetryDelay ? `${geminiRetryDelay / 1000}s` : null
           });
 
           // Remettre dans la queue après le backoff

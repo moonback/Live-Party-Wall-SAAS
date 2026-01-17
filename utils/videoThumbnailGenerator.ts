@@ -25,24 +25,46 @@ export async function generateVideoThumbnail(
     video.playsInline = true;
 
     const handleLoadedData = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Impossible de créer le contexte canvas'));
-        return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Impossible de créer le contexte canvas'));
+          return;
+        }
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Utiliser toBlob au lieu de toDataURL pour éviter les problèmes CORS
+        // Puis convertir le blob en data URL
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error('Impossible de convertir le canvas en blob'));
+            return;
+          }
+          
+          // Convertir blob en data URL
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const thumbnail = reader.result as string;
+            resolve(thumbnail);
+            
+            // Nettoyage
+            video.removeEventListener('loadeddata', handleLoadedData);
+            video.removeEventListener('error', handleError);
+            video.src = '';
+          };
+          reader.onerror = () => {
+            reject(new Error('Erreur lors de la conversion du blob en data URL'));
+          };
+          reader.readAsDataURL(blob);
+        }, 'image/jpeg', quality);
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('Erreur lors de la génération de la miniature'));
       }
-
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const thumbnail = canvas.toDataURL('image/jpeg', quality);
-      resolve(thumbnail);
-
-      // Nettoyage
-      video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('error', handleError);
-      video.src = '';
     };
 
     const handleError = (error: Event) => {
