@@ -21,6 +21,7 @@ import { ConfigurationTab } from './admin/ConfigurationTab';
 import { AftermovieTab } from './admin/AftermovieTab';
 import { BattlesTab } from './admin/BattlesTab';
 import { PasswordChangeTab } from './admin/PasswordChangeTab';
+import { PrintRequestsTab } from './admin/PrintRequestsTab';
 import LicenseTab from './mobileControl/LicenseTab';
 import { AdminTab } from './admin/types';
 import { getAllGuests, deleteGuest, deleteAllGuests } from '../services/guestService';
@@ -471,6 +472,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             guestStats={guestStats}
             onRefresh={loadGuests}
             onDelete={handleDeleteGuest}
+          />
+        )}
+
+        {activeTab === 'print-requests' && currentEvent && (
+          <PrintRequestsTab
+            eventId={currentEvent.id}
+            photos={photos}
           />
         )}
 

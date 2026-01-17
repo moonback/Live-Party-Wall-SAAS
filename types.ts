@@ -436,3 +436,28 @@ export interface LicenseUpdate {
   expires_at?: string;
   notes?: string | null;
 }
+
+// Print Request Types
+export type PrintRequestStatus = 'pending' | 'printed' | 'cancelled';
+
+export interface PrintRequest {
+  id: string;
+  event_id: string;
+  photo_id: string;
+  requested_by: string;
+  status: PrintRequestStatus;
+  created_at: number; // Timestamp
+  printed_at?: number; // Timestamp (optionnel)
+  printed_by?: string; // Nom de l'organisateur (optionnel)
+}
+
+export interface PrintRequestRow {
+  id: string;
+  event_id: string;
+  photo_id: string;
+  requested_by: string;
+  status: PrintRequestStatus;
+  created_at: string;
+  printed_at: string | null;
+  printed_by: string | null;
+}

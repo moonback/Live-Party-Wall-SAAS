@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Image as ImageIcon, BarChart2, Settings, Video, 
-  Zap, Users, Menu, Key, X, Shield
+  Zap, Users, Menu, Key, X, Shield, Printer
 } from 'lucide-react';
 import { AdminTab } from './types';
 import { isElectron, getStaticAssetPath } from '../../utils/electronPaths';
@@ -95,6 +95,7 @@ export const AdminTabsNavigation: React.FC<AdminTabsNavigationProps> = ({
     { id: 'aftermovie', label: 'Aftermovie', icon: Video, requiresEvent: true },
     { id: 'battles', label: 'Battles', icon: Zap, count: battlesCount, requiresEvent: true, requiresBattleMode: true },
     { id: 'guests', label: 'Inviter', icon: Users, count: guestsCount, requiresEvent: true },
+    { id: 'print-requests', label: 'Impressions', icon: Printer, requiresEvent: true },
   ];
 
   const getVisibleTabs = (tabs: TabConfig[]) => {
