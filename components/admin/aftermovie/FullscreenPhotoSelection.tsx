@@ -60,7 +60,7 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="w-full flex flex-col bg-slate-900 rounded-lg border border-slate-800"
+      className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-sm flex flex-col"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border-b border-slate-800 bg-slate-900/50">
@@ -132,7 +132,7 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
       </div>
 
       {/* Grille de photos */}
-      <div className="max-h-[600px] overflow-y-auto p-3 sm:p-4 md:p-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
             {filteredPhotos.map((p) => {
