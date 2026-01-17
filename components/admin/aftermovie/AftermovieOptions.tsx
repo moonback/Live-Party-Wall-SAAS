@@ -381,6 +381,14 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
                   <option value="rotate">Rotation 3D ✨</option>
                   <option value="blur">Flou progressif ✨</option>
                   <option value="pixelate">Pixelisé ✨</option>
+                  <option value="circle-wipe">Révélation circulaire ✨</option>
+                  <option value="diamond-wipe">Révélation losange ✨</option>
+                  <option value="split-screen">Écran divisé ✨</option>
+                  <option value="page-turn">Tourne de page ✨</option>
+                  <option value="glitch">Glitch numérique ✨</option>
+                  <option value="wave">Vague ✨</option>
+                  <option value="mosaic">Mosaïque ✨</option>
+                  <option value="radial-wipe">Balayage radial ✨</option>
                 </select>
               </>
             )}
