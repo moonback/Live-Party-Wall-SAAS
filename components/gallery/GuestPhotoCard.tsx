@@ -12,6 +12,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { logger } from '../../utils/logger';
 
 interface GuestPhotoCardProps {
   photo: Photo;
@@ -313,6 +314,11 @@ export const GuestPhotoCard = React.memo(({
         }
       }
     } catch (error) {
+      logger.error('Error sharing photo', error, { 
+        component: 'GuestPhotoCard', 
+        action: 'handleShare', 
+        photoId: photo.id 
+      });
       addToast('Erreur lors du partage', 'error');
     } finally {
       setIsSharing(false);
@@ -334,6 +340,11 @@ export const GuestPhotoCard = React.memo(({
       setShowEditCaptionModal(false);
       addToast('Légende mise à jour', 'success');
     } catch (error) {
+      logger.error('Error updating caption', error, { 
+        component: 'GuestPhotoCard', 
+        action: 'handleSaveCaption', 
+        photoId: photo.id 
+      });
       addToast('Erreur lors de la mise à jour', 'error');
     } finally {
       setIsUpdatingCaption(false);
@@ -349,6 +360,11 @@ export const GuestPhotoCard = React.memo(({
       setShowMoreMenu(false);
       addToast('Légende supprimée', 'success');
     } catch (error) {
+      logger.error('Error clearing caption', error, { 
+        component: 'GuestPhotoCard', 
+        action: 'handleClearCaption', 
+        photoId: photo.id 
+      });
       addToast('Erreur lors de la suppression', 'error');
     } finally {
       setIsUpdatingCaption(false);
@@ -365,6 +381,11 @@ export const GuestPhotoCard = React.memo(({
       setShowMoreMenu(false);
       addToast('Photo supprimée', 'success');
     } catch (error) {
+      logger.error('Error deleting photo', error, { 
+        component: 'GuestPhotoCard', 
+        action: 'handleDeletePhoto', 
+        photoId: photo.id 
+      });
       addToast('Erreur lors de la suppression', 'error');
     } finally {
       setIsDeleting(false);
@@ -436,6 +457,8 @@ export const GuestPhotoCard = React.memo(({
                     }
                   }}
             className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center ${isOwner ? 'cursor-pointer' : ''}`}
+            aria-label={isOwner ? 'Options de la photo' : undefined}
+            disabled={!isOwner}
           >
             <MoreVertical className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
           </button>
@@ -609,6 +632,7 @@ export const GuestPhotoCard = React.memo(({
                 onTouchEnd={handleReactionTouchEnd}
                 disabled={selectionMode}
                 className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} transition-all touch-manipulation flex items-center justify-center ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+                aria-label={isLiked ? 'Retirer le like' : 'Ajouter un like'}
               >
                 <Heart className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} ${isLiked ? 'fill-current' : ''}`} />
               </button>
@@ -650,6 +674,7 @@ export const GuestPhotoCard = React.memo(({
               onClick={handleShare}
               disabled={selectionMode || isSharing}
               className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} transition-all touch-manipulation flex items-center justify-center ${isSharing ? 'text-indigo-400' : 'text-slate-400 hover:text-indigo-400'} ${selectionMode || isSharing ? 'opacity-50' : 'active:scale-90'}`}
+              aria-label="Partager la photo"
             >
               {isSharing ? (
                 <div className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} border-2 border-indigo-400 border-t-transparent rounded-full animate-spin`} />
@@ -663,6 +688,7 @@ export const GuestPhotoCard = React.memo(({
               onClick={() => onDownload(photo)}
               disabled={isDownloading || selectionMode}
               className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} transition-all touch-manipulation flex items-center justify-center ${isDownloading ? 'text-blue-400' : 'text-slate-400 hover:text-blue-400'} ${selectionMode ? 'opacity-50' : 'active:scale-90'}`}
+              aria-label="Télécharger la photo"
             >
               {isDownloading ? <div className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} border-2 border-blue-400 border-t-transparent rounded-full animate-spin`} /> : <Download className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'}`} />}
             </button>
@@ -748,6 +774,7 @@ export const GuestPhotoCard = React.memo(({
                 <button
                   onClick={() => setShowEditCaptionModal(false)}
                   className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center rounded-lg hover:bg-white/5`}
+                  aria-label="Fermer la modification de légende"
                 >
                   <X className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
                 </button>
@@ -813,6 +840,7 @@ export const GuestPhotoCard = React.memo(({
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}
                   className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} text-slate-400 hover:text-white transition-colors touch-manipulation flex items-center justify-center rounded-lg hover:bg-white/5 disabled:opacity-50`}
+                  aria-label="Fermer la confirmation de suppression"
                 >
                   <X className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
                 </button>

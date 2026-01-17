@@ -6,6 +6,7 @@ import {
 import { logger } from '../utils/logger';
 import { getImageHash } from '../utils/imageHash';
 import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
+import { geminiRateLimiter } from '../utils/geminiRateLimiter';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -107,22 +108,25 @@ export const generateImageCaption = async (
     // Construire le prompt personnalisé selon le contexte de l'événement et l'auteur
     const prompt = PROMPTS.caption.buildPersonalized(eventContext, authorName, companions);
 
-    const response = await ai.models.generateContent({
-      model: MODELS.caption,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg', // Assuming JPEG for simplicity from canvas export
+    // Utiliser le rate limiter pour éviter les erreurs 429
+    const response = await geminiRateLimiter.call(() =>
+      ai.models.generateContent({
+        model: MODELS.caption,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: cleanBase64,
+                mimeType: 'image/jpeg', // Assuming JPEG for simplicity from canvas export
+              },
             },
-          },
-          {
-            text: prompt,
-          },
-        ],
-      },
-    });
+            {
+              text: prompt,
+            },
+          ],
+        },
+      })
+    );
 
     const caption = response.text;
     if (!caption || caption.trim().length === 0) {

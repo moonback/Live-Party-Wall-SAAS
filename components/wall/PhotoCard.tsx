@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { Photo, ReactionCounts, Badge } from '../../types';
@@ -56,6 +56,9 @@ const PhotoCardComponent = ({
       whileHover={onClick && !hasAnimatedRef.current ? { scale: 1.05 } : undefined}
       onClick={onClick}
       style={{ willChange: hasAnimatedRef.current ? 'auto' : 'transform, opacity' }}
+      role={onClick ? 'button' : undefined}
+      aria-label={onClick ? `Voir la photo de ${photo.author}${photo.caption ? ` : ${photo.caption}` : ''}` : undefined}
+      tabIndex={onClick ? 0 : undefined}
     >
       {/* Glow effect au hover */}
       <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-cyan-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-cyan-500/30 rounded-none blur-xl transition-all duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"></div>
@@ -79,13 +82,14 @@ const PhotoCardComponent = ({
             src={photo.url}
             className="w-full h-auto object-contain max-h-[20vh] md:max-h-none md:object-cover transition-transform duration-700 group-hover:scale-[1.02]"
             preload="metadata"
+            aria-label={`Vidéo de ${photo.author}${photo.caption ? ` : ${photo.caption}` : ''}`}
           />
         ) : (
           <img 
             src={get4KImageUrl(photo.url, true)} 
             srcSet={get4KImageSrcSet(photo.url)}
             sizes={get4KImageSizes()}
-            alt={photo.caption} 
+            alt={photo.caption || `Photo de ${photo.author}`} 
             className={`${getImageClasses(imageOrientation, isMobile)} md:object-cover md:group-hover:scale-[1.02] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="lazy"
             decoding="async"

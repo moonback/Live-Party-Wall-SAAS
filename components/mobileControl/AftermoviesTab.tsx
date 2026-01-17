@@ -6,6 +6,7 @@ import { useEvent } from '../../context/EventContext';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { logger } from '../../utils/logger';
 
 interface AftermoviesTabProps {
   onRefresh?: () => void;
@@ -31,7 +32,11 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
       const allAftermovies = await getAftermovies(currentEvent.id);
       setAftermovies(allAftermovies);
     } catch (error) {
-      console.error('Error loading aftermovies:', error);
+      logger.error('Error loading aftermovies', error, { 
+        component: 'AftermoviesTab', 
+        action: 'loadAftermovies', 
+        eventId: currentEvent.id 
+      });
       addToast('Erreur lors du chargement des aftermovies', 'error');
     } finally {
       setLoading(false);
@@ -58,6 +63,11 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
       await loadAftermovies();
       if (onRefresh) onRefresh();
     } catch (error) {
+      logger.error('Error deleting aftermovie', error, { 
+        component: 'AftermoviesTab', 
+        action: 'handleDelete', 
+        aftermovieId: aftermovie.id 
+      });
       const msg = error instanceof Error ? error.message : String(error);
       addToast(`Erreur lors de la suppression: ${msg}`, 'error');
     } finally {
@@ -117,6 +127,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
         <button
           onClick={loadAftermovies}
           className="mt-4 px-4 py-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 rounded-xl text-sm transition-all border border-white/20 shadow-sm touch-manipulation"
+          aria-label="Actualiser la liste des aftermovies"
         >
           <RefreshCw className="w-4 h-4 inline mr-2" />
           Actualiser
@@ -151,6 +162,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
           disabled={loading}
           className="p-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-95 rounded-xl transition-all disabled:opacity-50 border border-white/20 shadow-sm touch-manipulation"
           title="Actualiser"
+          aria-label="Actualiser la liste des aftermovies"
         >
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -216,6 +228,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
                     download={aftermovie.filename}
                     className="p-2.5 bg-indigo-500/20 hover:bg-indigo-500/30 active:bg-indigo-500/40 active:scale-95 rounded-xl transition-all border border-indigo-500/30 shadow-sm touch-manipulation"
                     title="Télécharger"
+                    aria-label={`Télécharger l'aftermovie ${aftermovie.title || aftermovie.filename}`}
                   >
                     <Download className="w-5 h-5 text-indigo-400" />
                   </a>
@@ -224,6 +237,7 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
                     disabled={deletingIds.has(aftermovie.id)}
                     className="p-2.5 bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40 active:scale-95 rounded-xl transition-all disabled:opacity-50 border border-red-500/30 shadow-sm touch-manipulation"
                     title="Supprimer"
+                    aria-label={`Supprimer l'aftermovie ${aftermovie.title || aftermovie.filename}`}
                   >
                     {deletingIds.has(aftermovie.id) ? (
                       <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />

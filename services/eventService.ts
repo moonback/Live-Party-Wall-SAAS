@@ -3,6 +3,7 @@ import { Event, EventRow, EventOrganizer, EventOrganizerRow } from '../types';
 import { logger } from '../utils/logger';
 import { getActiveLicense } from './licenseService';
 import { getMaxEvents, getEventLimitInfo } from '../utils/licenseUtils';
+import { memoryCache } from '../utils/cache';
 
 /**
  * Crée un nouvel événement
@@ -83,7 +84,7 @@ export const createEvent = async (
           const eventIds = userEvents.map(e => e.id);
           const { count: totalPhotosCount } = await supabase
             .from('photos')
-            .select('*', { count: 'exact', head: true })
+            .select('id', { count: 'exact', head: true })
             .in('event_id', eventIds);
           
           if (totalPhotosCount !== null && totalPhotosCount >= 40) {
@@ -190,9 +191,10 @@ export const getEventBySlug = async (slug: string): Promise<Event | null> => {
 
   try {
     // Essayer d'abord de charger l'événement actif (pour les invités)
+    // Sélection ciblée
     const { data: activeData, error: activeError } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('slug', slug.toLowerCase())
       .eq('is_active', true)
       .single();
@@ -203,9 +205,10 @@ export const getEventBySlug = async (slug: string): Promise<Event | null> => {
 
     // Si l'événement actif n'est pas trouvé, essayer de charger sans filtre is_active
     // Cela permet aux organisateurs de voir leurs événements suspendus (via RLS)
+    // Sélection ciblée
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('slug', slug.toLowerCase())
       .single();
 
@@ -226,10 +229,19 @@ export const getEventBySlug = async (slug: string): Promise<Event | null> => {
 export const getEventById = async (id: string): Promise<Event | null> => {
   if (!isSupabaseConfigured()) return null;
 
+  // Vérifier le cache
+  const cacheKey = `event:${id}`;
+  // Pour les événements, on utilise l'id comme eventId pour le cache
+  const cached = memoryCache.get<Event>(cacheKey, id);
+  if (cached) {
+    return cached;
+  }
+
   try {
+    // Sélection ciblée
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('id', id)
       .single();
 
@@ -251,10 +263,10 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
   if (!isSupabaseConfigured()) return [];
 
   try {
-    // Récupérer les événements où l'utilisateur est owner
+    // Récupérer les événements où l'utilisateur est owner (sélection ciblée)
     const { data: ownedEvents, error: ownedError } = await supabase
       .from('events')
-      .select('*')
+      .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
       .eq('owner_id', userId)
       .order('created_at', { ascending: false });
 
@@ -276,9 +288,10 @@ export const getUserEvents = async (userId: string): Promise<Event[]> => {
     let organizedEventsData: EventRow[] = [];
     if (organizerRows && organizerRows.length > 0) {
       const eventIds = organizerRows.map(row => row.event_id);
+      // Sélection ciblée
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('*')
+        .select('id, slug, name, description, owner_id, created_at, updated_at, is_active')
         .in('id', eventIds);
 
       if (eventsError) {
@@ -333,7 +346,7 @@ export const getUserEventsCount = async (userId?: string): Promise<number> => {
 
     const { count, error } = await supabase
       .from('events')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('owner_id', finalUserId);
 
     if (error) {
@@ -538,9 +551,10 @@ export const getEventOrganizers = async (eventId: string): Promise<EventOrganize
   if (!isSupabaseConfigured()) return [];
 
   try {
+    // Sélection ciblée
     const { data, error } = await supabase
       .from('event_organizers')
-      .select('*')
+      .select('id, event_id, user_id, role, created_at')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true });
 

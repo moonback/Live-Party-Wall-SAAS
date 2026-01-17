@@ -1,4 +1,6 @@
 import { analyzeAndCaptionImage } from './aiService';
+import { analyzeImage } from './aiModerationService';
+import { generateImageCaption } from './geminiService';
 import { enhanceImageQuality } from '../utils/imageFilters';
 import { addPhotoToWall, addVideoToWall } from './photoService';
 import { composeDataUrlWithPngOverlay } from '../utils/imageOverlay';
@@ -50,25 +52,38 @@ export const submitPhoto = async ({
     }
   }
 
-  // Analyse IA et génération de légende
-  // Détecter les compagnons basé sur le nombre de visages détectés
-  // Pour l'instant, on passe juste authorName, les compagnons seront détectés automatiquement par l'IA
-  const aiResult = await analyzeAndCaptionImage(
-    imageForAnalysis,
-    eventSettings.caption_generation_enabled ? eventSettings.event_context : null,
-    eventSettings.caption_language || 'fr', // Langue pour la traduction
-    authorName, // Nom de l'auteur
-    undefined // Companions seront détectés automatiquement par l'IA basé sur faceCount
-  );
+  // ⚡ Optimisation : Si la génération de légende est désactivée, on fait seulement la modération
+  // Cela réduit les appels Gemini de 50% quand la légende n'est pas activée
+  let analysis;
+  let caption = '';
+  let tags: string[] | undefined = undefined;
   
-  // Vérifier la modération
-  if (!aiResult.analysis.isAppropriate) {
+  if (eventSettings.caption_generation_enabled || eventSettings.tags_generation_enabled) {
+    // Si légende ou tags activés : utiliser analyzeAndCaptionImage (1 appel combiné)
+    const aiResult = await analyzeAndCaptionImage(
+      imageForAnalysis,
+      eventSettings.caption_generation_enabled ? eventSettings.event_context : null,
+      eventSettings.caption_language || 'fr',
+      authorName,
+      undefined
+    );
+    
+    analysis = aiResult.analysis;
+    caption = eventSettings.caption_generation_enabled ? aiResult.caption : '';
+    tags = eventSettings.tags_generation_enabled && aiResult.tags && aiResult.tags.length > 0 
+      ? aiResult.tags 
+      : undefined;
+  } else {
+    // Si légende et tags désactivés : seulement modération (appel plus léger)
+    analysis = await analyzeImage(imageForAnalysis);
+  }
+  
+  // Vérifier la modération (toujours activée)
+  if (!analysis.isAppropriate) {
     throw new Error(
-      aiResult.analysis.moderationReason || "Cette photo ne peut pas être publiée pour des raisons de modération."
+      analysis.moderationReason || "Cette photo ne peut pas être publiée pour des raisons de modération."
     );
   }
-
-  const analysis = aiResult.analysis;
 
   // Amélioration automatique de la qualité si nécessaire
   // Utilise estimatedQuality pour une détection plus précise
@@ -109,11 +124,6 @@ export const submitPhoto = async ({
       // En cas d'erreur, continuer avec l'image originale
     }
   }
-
-  const caption = eventSettings.caption_generation_enabled ? aiResult.caption : '';
-  const tags = eventSettings.tags_generation_enabled && aiResult.tags && aiResult.tags.length > 0 
-    ? aiResult.tags 
-    : undefined;
 
   const finalAuthorName = authorName || 'Invité VIP';
   const photo = await addPhotoToWall(

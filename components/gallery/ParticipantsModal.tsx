@@ -149,7 +149,12 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      logger.error('Error downloading photo', error, { photoId: photo.id });
+      logger.error('Error downloading photo', error, { 
+        component: 'ParticipantsModal', 
+        action: 'handleDownload', 
+        photoId: photo.id,
+        participantName: selectedParticipantData?.name 
+      });
     }
   };
 
@@ -196,6 +201,7 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                     <button
                       onClick={() => setSelectedParticipant(null)}
                       className={`${isMobile ? 'p-2 min-w-[44px] min-h-[44px]' : 'p-1.5 sm:p-2'} rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all active:scale-95 touch-manipulation flex items-center justify-center`}
+                      aria-label="Retour à la liste des participants"
                     >
                       <X className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
                     </button>
@@ -219,6 +225,7 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                 <button
                   onClick={onClose}
                   className={`${isMobile ? 'p-3 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-3 rounded-xl sm:rounded-2xl'} bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all active:scale-95 touch-manipulation flex items-center justify-center`}
+                  aria-label="Fermer la modale des participants"
                 >
                   <X className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
                 </button>
@@ -273,6 +280,7 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                                   : 'opacity-0 group-hover:opacity-100'
                               } transition-opacity`}
                               title="Télécharger"
+                              aria-label="Télécharger la photo"
                             >
                               <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </button>
@@ -305,10 +313,14 @@ export const ParticipantsModal: React.FC<ParticipantsModalProps> = ({
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className={`w-full ${isMobile ? 'pl-10 pr-4 py-2.5 min-h-[44px] text-sm' : 'pl-10 pr-4 py-2 text-sm'} bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30`}
                         />
-                        <X 
-                          className={`absolute ${isMobile ? 'right-3 top-1/2 -translate-y-1/2 w-4 h-4' : 'right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5'} text-slate-400 ${searchQuery ? 'cursor-pointer hover:text-white' : 'pointer-events-none'}`}
+                        <button
                           onClick={() => setSearchQuery('')}
-                        />
+                          className={`absolute ${isMobile ? 'right-3 top-1/2 -translate-y-1/2 p-2 min-w-[40px] min-h-[40px]' : 'right-3 top-1/2 -translate-y-1/2 p-1.5 min-w-[32px] min-h-[32px]'} text-slate-400 ${searchQuery ? 'cursor-pointer hover:text-white' : 'pointer-events-none opacity-0'} transition-opacity flex items-center justify-center`}
+                          aria-label="Effacer la recherche"
+                          disabled={!searchQuery}
+                        >
+                          <X className={`${isMobile ? 'w-4 h-4' : 'w-3.5 h-3.5'}`} />
+                        </button>
                       </div>
                     </div>
 

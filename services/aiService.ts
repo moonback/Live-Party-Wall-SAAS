@@ -15,6 +15,7 @@ import {
 } from '../utils/geminiErrorHandler';
 import { translateCaptionIfNeeded } from './translationService';
 import { MODELS, DEFAULTS, PROMPTS } from '../config/geminiConfig';
+import { geminiRateLimiter } from '../utils/geminiRateLimiter';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -135,22 +136,25 @@ export const analyzeAndCaptionImage = async (
     // Prompt combiné : modération + légende + tags + améliorations
     const combinedPrompt = PROMPTS.combinedAnalysis(captionPrompt);
 
-    const response = await ai.models.generateContent({
-      model: MODELS.analysis,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg',
+    // Utiliser le rate limiter pour éviter les erreurs 429
+    const response = await geminiRateLimiter.call(() =>
+      ai.models.generateContent({
+        model: MODELS.analysis,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: cleanBase64,
+                mimeType: 'image/jpeg',
+              },
             },
-          },
-          {
-            text: combinedPrompt,
-          },
-        ],
-      },
-    });
+            {
+              text: combinedPrompt,
+            },
+          ],
+        },
+      })
+    );
 
     const responseText = response.text.trim();
     

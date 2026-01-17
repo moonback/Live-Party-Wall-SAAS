@@ -259,6 +259,11 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       await refreshPhotos();
       addToast('Données actualisées', 'success');
     } catch (error) {
+      logger.error('Error refreshing photos', error, { 
+        component: 'MobileControl', 
+        action: 'handleRefresh',
+        eventId: currentEvent?.id 
+      });
       addToast('Erreur lors de l\'actualisation', 'error');
     } finally {
       setIsAutoRefreshing(false);
@@ -277,6 +282,11 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
       setBattles(activeBattles);
       addToast('Battles actualisées', 'success');
     } catch (error) {
+      logger.error('Error refreshing battles', error, { 
+        component: 'MobileControl', 
+        action: 'handleRefreshBattles',
+        eventId: currentEvent.id 
+      });
       addToast('Erreur lors de l\'actualisation', 'error');
     } finally {
       setBattlesLoading(false);

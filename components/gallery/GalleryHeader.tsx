@@ -190,12 +190,13 @@ Votre mur social interactif
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 justify-end">
             {/* Participants Button (Desktop) - À gauche de la recherche */}
             {!isMobile && onParticipantsClick && (
-              <motion.button
+                <motion.button
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onParticipantsClick}
                 className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl md:px-4 md:py-2.5 md:rounded-2xl bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 text-slate-400 hover:text-indigo-400 transition-all touch-manipulation flex items-center justify-center gap-2 relative overflow-hidden group"
                 title="Voir les participants"
+                aria-label="Voir les participants"
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 transition-all duration-300"
@@ -245,6 +246,7 @@ Votre mur social interactif
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 min-w-[32px] min-h-[32px] text-slate-400 hover:text-white transition-colors flex items-center justify-center touch-manipulation rounded-full hover:bg-white/10"
                       whileHover={{ scale: 1.1, rotate: 90 }}
                       whileTap={{ scale: 0.9 }}
+                      aria-label="Effacer la recherche"
                     >
                       <X className="w-4 h-4" />
                     </motion.button>
@@ -259,6 +261,7 @@ Votre mur social interactif
                 onClick={onParticipantsClick}
                 className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl border bg-white/5 border-white/10 text-white hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all touch-manipulation flex items-center justify-center"
                 title="Voir les participants"
+                aria-label="Voir les participants"
               >
                 <Users className="w-5 h-5" />
               </button>
@@ -271,6 +274,7 @@ Votre mur social interactif
                 className={`p-2.5 min-w-[44px] min-h-[44px] rounded-xl border transition-all touch-manipulation flex items-center justify-center ${
                   showMobileSearch ? 'bg-pink-500/20 border-pink-500/50 text-pink-400' : 'bg-white/5 border-white/10 text-white'
                 }`}
+                aria-label={showMobileSearch ? 'Fermer la recherche' : 'Ouvrir la recherche'}
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -286,6 +290,7 @@ Votre mur social interactif
                     : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                 }`}
                 title="Mode sélection"
+                aria-label={selectionMode ? 'Désactiver le mode sélection' : 'Activer le mode sélection'}
               >
                 {selectionMode ? <CheckSquare className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" /> : <Square className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />}
                 <span className="hidden lg:inline font-semibold text-sm">Sélectionner</span>
@@ -301,6 +306,7 @@ Votre mur social interactif
                     ? 'bg-pink-500/20 border-pink-500/50 text-pink-400'
                     : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                 }`}
+                aria-label={isFiltersModalOpen ? 'Fermer les filtres' : 'Ouvrir les filtres'}
               >
                 <Filter className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                 <span className="hidden lg:inline font-semibold text-sm">Filtres</span>
@@ -313,6 +319,7 @@ Votre mur social interactif
               whileTap={{ scale: 0.95 }}
               onClick={onUploadClick}
               className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white p-2.5 min-w-[44px] min-h-[44px] rounded-xl sm:p-2 md:px-5 md:py-2.5 md:rounded-2xl font-bold transition-all shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 flex items-center justify-center sm:gap-1.5 md:gap-2 touch-manipulation relative overflow-hidden group"
+              aria-label="Publier une photo"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -354,6 +361,7 @@ Votre mur social interactif
                 <button
                   onClick={() => setShowMobileSearch(false)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 min-w-[40px] min-h-[40px] text-slate-400 touch-manipulation flex items-center justify-center"
+                  aria-label="Fermer la recherche"
                 >
                   <X className="w-4 h-4" />
                 </button>

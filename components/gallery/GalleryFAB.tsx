@@ -36,6 +36,7 @@ export const GalleryFAB: React.FC<GalleryFABProps> = ({
             onClick={onScrollTop}
             className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-slate-900/90 backdrop-blur-xl flex items-center justify-center text-white shadow-2xl border border-white/10 hover:border-pink-500/50 transition-all duration-300 pointer-events-auto touch-manipulation relative overflow-hidden group"
             title="Haut de page"
+            aria-label="Retour en haut de page"
           >
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-purple-500/0 to-indigo-500/0 group-hover:from-pink-500/30 group-hover:via-purple-500/30 group-hover:to-indigo-500/30"

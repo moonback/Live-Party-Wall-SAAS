@@ -44,22 +44,25 @@ export const analyzeImage = async (base64Image: string): Promise<ImageAnalysis> 
 
     const analysisPrompt = PROMPTS.moderation;
 
-    const response = await ai.models.generateContent({
-      model: MODELS.moderation,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: cleanBase64,
-              mimeType: 'image/jpeg',
+    // Utiliser le rate limiter pour éviter les erreurs 429
+    const response = await geminiRateLimiter.call(() =>
+      ai.models.generateContent({
+        model: MODELS.moderation,
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                data: cleanBase64,
+                mimeType: 'image/jpeg',
+              },
             },
-          },
-          {
-            text: analysisPrompt,
-          },
-        ],
-      },
-    });
+            {
+              text: analysisPrompt,
+            },
+          ],
+        },
+      })
+    );
 
     const responseText = response.text?.trim();
     
