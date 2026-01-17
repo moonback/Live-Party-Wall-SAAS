@@ -38,10 +38,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabChange, b
     if (tab.id === 'battles' && battleModeEnabled === false) {
       return false;
     }
-    // Masquer aftermovies si la licence est PART (fonctionnalité premium)
-    if (tab.id === 'aftermovies' && !isFeatureEnabled('aftermovies_enabled')) {
-      return false;
-    }
+    // L'onglet aftermovies est toujours visible pour permettre de voir les aftermovies existants
+    // même si la fonctionnalité est désactivée dans les paramètres
     return true;
   });
 

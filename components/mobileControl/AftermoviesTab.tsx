@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Video, Trash2, Download, Calendar, Clock, HardDrive, TrendingUp, RefreshCw } from 'lucide-react';
+import { Video, Trash2, Download, Calendar, Clock, HardDrive, TrendingUp, RefreshCw, Info } from 'lucide-react';
 import { Aftermovie } from '../../types';
 import { getAftermovies, deleteAftermovie } from '../../services/aftermovieShareService';
 import { useEvent } from '../../context/EventContext';
@@ -97,14 +97,9 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
     });
   };
 
-  if (settings.aftermovies_enabled === false) {
-    return (
-      <div className="text-center py-12">
-        <Video className="w-16 h-16 text-white/30 mx-auto mb-4" />
-        <p className="text-white/60">Les aftermovies sont désactivés</p>
-      </div>
-    );
-  }
+  // Afficher un message informatif si les aftermovies sont désactivés dans les paramètres
+  // mais permettre quand même de voir les aftermovies existants
+  const aftermoviesDisabled = settings.aftermovies_enabled === false;
 
   if (loading) {
     return (
@@ -132,6 +127,19 @@ const AftermoviesTab: React.FC<AftermoviesTabProps> = ({ onRefresh }) => {
 
   return (
     <div className="space-y-4">
+      {/* Message informatif si les aftermovies sont désactivés */}
+      {aftermoviesDisabled && (
+        <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-3 flex items-start gap-3">
+          <Info className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-yellow-200 font-medium">Aftermovies désactivés</p>
+            <p className="text-xs text-yellow-300/80 mt-1">
+              Les aftermovies sont désactivés dans les paramètres, mais vous pouvez toujours voir et gérer les aftermovies existants.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header avec bouton refresh */}
       <div className="flex items-center justify-between">
         <div>

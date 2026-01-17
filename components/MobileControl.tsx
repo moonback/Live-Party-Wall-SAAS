@@ -408,7 +408,7 @@ const MobileControl: React.FC<MobileControlProps> = ({ onBack }) => {
         )}
 
         {/* Aftermovies */}
-        {activeTab === 'aftermovies' && isFeatureEnabled('aftermovies_enabled') && (
+        {activeTab === 'aftermovies' && (
           <AftermoviesTab onRefresh={handleRefresh} />
         )}
 
