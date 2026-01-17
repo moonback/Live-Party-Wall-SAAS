@@ -150,7 +150,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
             Durée par photo
           </label>
           <div className="group relative">
-            <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 cursor-help" />
+            <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 cursor-help" aria-label="Information sur la durée par photo" />
             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-10">
               <div className="bg-slate-900 border border-slate-700 rounded-lg p-2 text-[10px] sm:text-xs text-slate-300 shadow-xl w-40 sm:w-48">
                 Temps d'affichage de chaque photo dans la vidéo. Plus long = plus de temps pour apprécier chaque moment.
@@ -169,6 +169,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
               onChange={(e) => onMsPerPhotoChange(Number(e.target.value))}
               className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
               disabled={disabled}
+              aria-label="Durée par photo en millisecondes"
             />
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-[80px] sm:min-w-[100px]">
               <input
@@ -184,6 +185,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
                 }}
                 className="w-16 sm:w-20 bg-slate-900/50 border border-slate-800 rounded-lg px-1.5 sm:px-2 py-1.5 text-white text-xs sm:text-sm focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
                 disabled={disabled}
+                aria-label="Durée par photo en millisecondes (saisie numérique)"
               />
               <span className="text-[10px] sm:text-xs text-slate-400">ms</span>
             </div>
@@ -330,6 +332,8 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
           onClick={() => setShowTransitionsOptions(!showTransitionsOptions)}
           className="w-full flex items-center justify-between p-2 hover:bg-slate-900/50 rounded-lg transition-all"
           disabled={disabled}
+          aria-label={showTransitionsOptions ? "Masquer les options de transitions" : "Afficher les options de transitions"}
+          aria-expanded={showTransitionsOptions}
         >
           <div className="flex items-center gap-2">
             <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" />
@@ -366,6 +370,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
                   onChange={(e) => onTransitionTypeChange(e.target.value as TransitionType)}
                   className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-100 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 outline-none transition-all"
                   disabled={disabled}
+                  aria-label="Type de transition entre les photos"
                 >
                   <option value="none">Aucune</option>
                   <option value="fade">Fondu (Fade)</option>
@@ -397,6 +402,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
           onChange={(e) => onAudioFileChange(e.target.files?.[0] || null)}
           className="w-full text-[10px] sm:text-xs text-slate-300 file:mr-2 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:text-[10px] sm:file:text-xs file:font-medium file:bg-slate-800 file:text-white hover:file:bg-slate-700"
           disabled={disabled}
+          aria-label="Sélectionner un fichier audio pour l'aftermovie"
         />
         {audioFile && (
           <div className="mt-2 sm:mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
@@ -421,6 +427,7 @@ export const AftermovieOptions: React.FC<AftermovieOptionsProps> = ({
                 onChange={(e) => onAudioVolumeChange(Number(e.target.value))}
                 className="w-full"
                 disabled={disabled}
+                aria-label="Volume audio (0 à 100%)"
               />
             </div>
           </div>
