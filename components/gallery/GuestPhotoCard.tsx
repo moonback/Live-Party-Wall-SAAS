@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Photo, ReactionType } from '../../types';
 import { REACTIONS, REACTION_TYPES } from '../../constants';
-import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X } from 'lucide-react';
+import { Heart, Download, Video, Share2, MoreVertical, CheckCircle, Circle, Edit2, Trash2, X, Printer } from 'lucide-react';
 import { getPhotoBadge } from '../../services/gamificationService';
 import { getImageClasses } from '../../hooks/useImageOrientation';
 import type { ImageOrientation } from '../../hooks/useImageOrientation';
@@ -11,6 +11,8 @@ import { getUserAvatar, getCurrentUserName } from '../../utils/userAvatar';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
 import { sharePhotoOrVideo, copyToClipboard } from '../../services/socialShareService';
+import { createPrintRequest, hasPendingPrintRequest } from '../../services/printService';
+import { useEvent } from '../../context/EventContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface GuestPhotoCardProps {
@@ -58,6 +60,7 @@ export const GuestPhotoCard = React.memo(({
 }: GuestPhotoCardProps) => {
   const { settings } = useSettings();
   const { addToast } = useToast();
+  const { currentEvent } = useEvent();
   const [videoError, setVideoError] = useState(false);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showReactionsMenu, setShowReactionsMenu] = useState(false);
@@ -69,6 +72,8 @@ export const GuestPhotoCard = React.memo(({
   const [editingCaption, setEditingCaption] = useState('');
   const [isUpdatingCaption, setIsUpdatingCaption] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isRequestingPrint, setIsRequestingPrint] = useState(false);
+  const [hasPrintRequest, setHasPrintRequest] = useState(false);
   const likeButtonRef = useRef<HTMLButtonElement>(null);
   const reactionsMenuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -117,6 +122,30 @@ export const GuestPhotoCard = React.memo(({
       observer.disconnect();
     };
   }, []);
+
+  // Vérifier si une demande d'impression existe déjà
+  useEffect(() => {
+    const checkPrintRequest = async () => {
+      if (!currentEvent || photo.type !== 'photo') {
+        setHasPrintRequest(false);
+        return;
+      }
+
+      try {
+        const hasRequest = await hasPendingPrintRequest(
+          currentEvent.id,
+          photo.id,
+          currentUserName
+        );
+        setHasPrintRequest(hasRequest);
+      } catch (error) {
+        // Ignorer les erreurs silencieusement
+        setHasPrintRequest(false);
+      }
+    };
+
+    checkPrintRequest();
+  }, [currentEvent, photo.id, photo.type, currentUserName]);
   
   const lastClickTime = useRef<number>(0);
   const lastTapTime = useRef<number>(0);
@@ -316,6 +345,30 @@ export const GuestPhotoCard = React.memo(({
       addToast('Erreur lors du partage', 'error');
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  const handlePrintRequest = async () => {
+    if (selectionMode || photo.type !== 'photo' || !currentEvent) return;
+    
+    if (hasPrintRequest) {
+      addToast('Demande d\'impression déjà envoyée', 'info');
+      return;
+    }
+
+    setIsRequestingPrint(true);
+    try {
+      await createPrintRequest(
+        currentEvent.id,
+        photo.id,
+        currentUserName
+      );
+      setHasPrintRequest(true);
+      addToast('Demande d\'impression envoyée !', 'success');
+    } catch (error) {
+      addToast('Erreur lors de la demande d\'impression', 'error');
+    } finally {
+      setIsRequestingPrint(false);
     }
   };
 
@@ -666,6 +719,28 @@ export const GuestPhotoCard = React.memo(({
             >
               {isDownloading ? <div className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} border-2 border-blue-400 border-t-transparent rounded-full animate-spin`} /> : <Download className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'}`} />}
             </button>
+
+            {/* Print Request - Seulement pour les photos */}
+            {photo.type === 'photo' && (
+              <button
+                onClick={handlePrintRequest}
+                disabled={isRequestingPrint || selectionMode || hasPrintRequest}
+                className={`${isMobile ? 'p-2 min-w-[48px] min-h-[48px]' : 'p-1'} transition-all touch-manipulation flex items-center justify-center ${
+                  hasPrintRequest 
+                    ? 'text-green-400' 
+                    : isRequestingPrint 
+                      ? 'text-purple-400' 
+                      : 'text-slate-400 hover:text-purple-400'
+                } ${selectionMode || hasPrintRequest ? 'opacity-50' : 'active:scale-90'}`}
+                title={hasPrintRequest ? 'Demande d\'impression envoyée' : 'Demander l\'impression'}
+              >
+                {isRequestingPrint ? (
+                  <div className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} border-2 border-purple-400 border-t-transparent rounded-full animate-spin`} />
+                ) : (
+                  <Printer className={`${isMobile ? 'w-7 h-7' : 'w-6 h-6 sm:w-7 sm:h-7'} ${hasPrintRequest ? 'fill-green-400' : ''}`} />
+                )}
+              </button>
+            )}
           </div>
 
           {/* Social Stats */}
