@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Photo, PhotoBattle, GalleryViewMode } from '../../types';
 import { GuestPhotoCard } from './GuestPhotoCard';

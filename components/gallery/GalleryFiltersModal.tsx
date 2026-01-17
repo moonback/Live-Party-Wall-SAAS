@@ -113,6 +113,7 @@ export const GalleryFiltersModal: React.FC<GalleryFiltersModalProps> = ({
                 <button
                   onClick={onClose}
                   className={`${isMobile ? 'p-3 min-w-[44px] min-h-[44px] rounded-xl' : 'p-2 sm:p-3 rounded-xl sm:rounded-2xl'} bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all active:scale-95 touch-manipulation flex items-center justify-center`}
+                  aria-label="Fermer les filtres"
                 >
                   <X className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
                 </button>

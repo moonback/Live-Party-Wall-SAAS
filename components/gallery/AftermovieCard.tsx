@@ -25,7 +25,6 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     // Générer une vraie miniature depuis la vidéo
@@ -109,6 +108,11 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
         }
       }
     } catch (error) {
+      logger.error('Error sharing aftermovie', error, { 
+        component: 'AftermovieCard', 
+        action: 'handleShare', 
+        aftermovieId: aftermovie.id 
+      });
       addToast('Erreur lors du partage', 'error');
     } finally {
       setIsSharing(false);
@@ -253,6 +257,7 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
                 onClick={handleShare}
                 disabled={isSharing}
                 className={`${isMobile ? 'px-5 py-2.5 min-h-[48px] text-sm' : 'px-4 py-2 text-xs'} bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-full font-semibold flex items-center gap-2 transition-all disabled:opacity-50 shadow-xl border border-white/20 touch-manipulation relative overflow-hidden group`}
+                aria-label="Partager l'aftermovie"
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -292,6 +297,7 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
                 onClick={() => onDownload(aftermovie)}
                 disabled={isDownloading}
                 className={`${isMobile ? 'px-6 py-3 min-h-[48px] text-base' : 'px-5 py-2.5 text-sm'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-full font-semibold flex items-center gap-2 transition-all disabled:opacity-50 shadow-xl border border-white/20 touch-manipulation relative overflow-hidden group`}
+                aria-label="Télécharger l'aftermovie"
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -392,6 +398,7 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               onClick={handleShare}
               disabled={isSharing}
               className={`flex-1 ${isMobile ? 'px-4 py-3 min-h-[48px] rounded-xl text-sm' : 'px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs'} bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold flex items-center justify-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} transition-all disabled:opacity-50 touch-manipulation`}
+              aria-label="Partager l'aftermovie"
             >
               {isSharing ? (
                 <>
@@ -409,6 +416,7 @@ export const AftermovieCard: React.FC<AftermovieCardProps> = ({
               onClick={() => onDownload(aftermovie)}
               disabled={isDownloading}
               className={`flex-1 ${isMobile ? 'px-4 py-3 min-h-[48px] rounded-xl text-sm' : 'px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs'} bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-semibold flex items-center justify-center ${isMobile ? 'gap-2' : 'gap-1.5 sm:gap-2'} transition-all disabled:opacity-50 touch-manipulation`}
+              aria-label="Télécharger l'aftermovie"
             >
               {isDownloading ? (
                 <>
