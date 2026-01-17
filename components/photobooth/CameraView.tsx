@@ -5,6 +5,7 @@ import { CaptureButton } from './CaptureButton';
 import { CountdownOverlay } from './CountdownOverlay';
 import { VideoTimer } from './VideoTimer';
 import { CameraControls } from './CameraControls';
+import { useGreenScreenPreview } from '../../hooks/useGreenScreenPreview';
 
 interface CameraViewProps {
   mediaType: 'photo' | 'video';
@@ -24,6 +25,10 @@ interface CameraViewProps {
   burstMode?: boolean;
   onBurstModeToggle?: () => void;
   isCapturingBurst?: boolean;
+  greenScreenEnabled?: boolean;
+  greenScreenBackgroundUrl?: string | null;
+  greenScreenSensitivity?: number;
+  greenScreenSmoothness?: number;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({
@@ -43,10 +48,23 @@ export const CameraView: React.FC<CameraViewProps> = ({
   onTimerSettingsClick,
   burstMode = false,
   onBurstModeToggle,
-  isCapturingBurst = false
+  isCapturingBurst = false,
+  greenScreenEnabled = false,
+  greenScreenBackgroundUrl = null,
+  greenScreenSensitivity = 50,
+  greenScreenSmoothness = 30
 }) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const showSwitchCamera = videoDevices.length > 1 || videoDevices.length === 0;
+
+  // Prévisualisation du fond vert
+  const greenScreenPreview = useGreenScreenPreview({
+    enabled: greenScreenEnabled && !!greenScreenBackgroundUrl && !cameraError,
+    backgroundUrl: greenScreenBackgroundUrl || null,
+    sensitivity: greenScreenSensitivity,
+    smoothness: greenScreenSmoothness,
+    videoElement: videoRef.current
+  });
 
   return (
     <div className="absolute inset-0 w-full h-full bg-black z-10">
@@ -55,13 +73,22 @@ export const CameraView: React.FC<CameraViewProps> = ({
           ref={videoContainerRef}
           className="absolute inset-0 overflow-hidden"
         >
-          <video 
-            ref={videoRef}
-            autoPlay 
-            playsInline 
-            muted 
-            className="w-full h-full object-cover transition-all duration-300"
-          />
+          {/* Afficher la prévisualisation du fond vert si activée, sinon la vidéo normale */}
+          {greenScreenEnabled && greenScreenPreview ? (
+            <img
+              src={greenScreenPreview}
+              alt="Prévisualisation fond vert"
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+          ) : (
+            <video 
+              ref={videoRef}
+              autoPlay 
+              playsInline 
+              muted 
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+          )}
           {decorativeFrameEnabled && decorativeFrameUrl && (
             <img
               src={decorativeFrameUrl}

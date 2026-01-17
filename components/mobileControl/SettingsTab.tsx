@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import { useEvent } from '../../context/EventContext';
 import { useLicenseFeatures } from '../../hooks/useLicenseFeatures';
 import { logger } from '../../utils/logger';
-import { uploadBackgroundImage, uploadLogoImage } from '../../services/backgroundService';
+import { uploadBackgroundImage, uploadLogoImage, uploadGreenScreenBackground } from '../../services/backgroundService';
 
 interface SettingsTabProps {
   onBack: () => void;
@@ -21,9 +21,11 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingGreenScreen, setUploadingGreenScreen] = useState(false);
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const greenScreenInputRef = useRef<HTMLInputElement>(null);
 
   const allFeatureConfigs = [
     { key: 'gallery_enabled', label: 'Le Mur interactive', icon: Images, disabled: false, isPremium: false },
@@ -146,6 +148,48 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
     await updateSettings({ logo_url: null });
     addToast('Logo supprimé', 'success');
     logger.info('Logo cleared', { component: 'SettingsTab', action: 'clearLogo' });
+  };
+
+  const handleGreenScreenUpload = async (file: File) => {
+    if (!currentEvent) {
+      addToast('Aucun événement sélectionné', 'error');
+      return;
+    }
+
+    setUploadingGreenScreen(true);
+
+    try {
+      const { publicUrl } = await uploadGreenScreenBackground(currentEvent.id, file);
+      await updateSettings({ green_screen_background_url: publicUrl });
+      addToast('Image de fond vert uploadée avec succès', 'success');
+      logger.info('Green screen background uploaded', { component: 'SettingsTab', action: 'uploadGreenScreen', eventId: currentEvent.id });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('Error uploading green screen background', error, { component: 'SettingsTab', action: 'uploadGreenScreen' });
+      if (errorMsg.includes('row-level security') || errorMsg.includes('policy')) {
+        addToast('❌ Policies Supabase manquantes. Vérifiez la configuration du bucket party-backgrounds', 'error');
+      } else {
+        addToast(`Erreur: ${errorMsg}`, 'error');
+      }
+    } finally {
+      setUploadingGreenScreen(false);
+      if (greenScreenInputRef.current) {
+        greenScreenInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleGreenScreenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleGreenScreenUpload(file);
+    }
+  };
+
+  const clearGreenScreen = async () => {
+    await updateSettings({ green_screen_background_url: null });
+    addToast('Image de fond vert supprimée', 'success');
+    logger.info('Green screen background cleared', { component: 'SettingsTab', action: 'clearGreenScreen' });
   };
 
   return (
@@ -494,6 +538,168 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ onBack }) => {
                 Le logo apparaîtra en bas à gauche des photos dans la galerie et sur le mur
               </p>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Fond vert (Chroma Key) */}
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-3 md:p-4 border border-white/10 shadow-lg">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <div className="w-1 h-5 md:h-6 bg-gradient-to-b from-green-400 to-emerald-400 rounded-full" />
+          <div className="p-1.5 rounded-lg bg-green-500/10 border border-green-500/20">
+            <Video className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
+          </div>
+          <h2 className="text-base md:text-lg font-semibold text-white">Fond vert (Chroma Key)</h2>
+        </div>
+        <div className="space-y-3 md:space-y-4">
+          {/* Toggle activation */}
+          <label className="flex items-center justify-between cursor-pointer group p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+            <div className="flex items-center gap-2">
+              <Video className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
+              <span className="text-sm md:text-base font-medium text-white">Activer le fond vert</span>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={settings.green_screen_enabled ?? false}
+                onChange={(e) => updateSettings({ green_screen_enabled: e.target.checked })}
+                className="sr-only"
+              />
+              <div className={`w-11 h-6 md:w-12 md:h-7 rounded-full transition-colors duration-200 ${
+                settings.green_screen_enabled 
+                  ? 'bg-green-500' 
+                  : 'bg-white/20'
+              }`}>
+                <div className={`w-5 h-5 md:w-6 md:h-6 bg-white rounded-full shadow-md transform transition-transform duration-200 mt-0.5 ${
+                  settings.green_screen_enabled 
+                    ? 'translate-x-5 md:translate-x-6' 
+                    : 'translate-x-0.5'
+                }`} />
+              </div>
+            </div>
+          </label>
+
+          {settings.green_screen_enabled && (
+            <>
+              {/* Upload image de fond */}
+              <div>
+                <label className="block text-xs md:text-sm font-medium mb-2 text-white/80">
+                  Image de fond de remplacement
+                </label>
+                {settings.green_screen_background_url ? (
+                  <div className="relative group">
+                    <div className="overflow-hidden rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300">
+                      <img
+                        src={settings.green_screen_background_url}
+                        alt="Fond de remplacement"
+                        className="w-full h-48 md:h-64 object-contain bg-white/5 transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <button
+                      onClick={clearGreenScreen}
+                      className="absolute top-2 right-2 p-1.5 md:p-2 bg-red-500/90 hover:bg-red-500 rounded-lg text-white transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm border border-red-400/30"
+                      title="Supprimer"
+                    >
+                      <X className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-white/10 hover:border-white/20 rounded-xl p-4 md:p-6 text-center bg-white/5 transition-all duration-300 group">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
+                        <ImageIcon className="w-6 h-6 md:w-8 md:h-8 text-white/40" />
+                      </div>
+                      <p className="text-xs md:text-sm text-white/60 mb-2">Aucune image de fond</p>
+                      <button
+                        onClick={() => greenScreenInputRef.current?.click()}
+                        disabled={uploadingGreenScreen}
+                        className="flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 active:from-green-500/40 active:to-emerald-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-green-500/30 shadow-md hover:shadow-lg"
+                      >
+                        <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        {uploadingGreenScreen ? 'Upload...' : 'Uploader'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!settings.green_screen_background_url && (
+                  <input
+                    ref={greenScreenInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleGreenScreenChange}
+                    className="hidden"
+                  />
+                )}
+                {settings.green_screen_background_url && (
+                  <>
+                    <button
+                      onClick={() => greenScreenInputRef.current?.click()}
+                      disabled={uploadingGreenScreen}
+                      className="w-full mt-2 flex items-center justify-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 active:from-green-500/40 active:to-emerald-500/40 active:scale-95 transition-all duration-300 text-xs md:text-sm text-white touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed border border-green-500/30 shadow-md hover:shadow-lg"
+                    >
+                      <Upload className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      {uploadingGreenScreen ? 'Remplacement...' : 'Remplacer'}
+                    </button>
+                    <input
+                      ref={greenScreenInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleGreenScreenChange}
+                      className="hidden"
+                    />
+                  </>
+                )}
+                <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+                  Image qui remplacera le fond vert lors de la capture (JPEG, PNG ou WebP - max 10MB)
+                </p>
+              </div>
+
+              {/* Sensibilité */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs md:text-sm font-medium text-white/80">
+                    Sensibilité
+                  </label>
+                  <span className="text-xs md:text-sm font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                    {settings.green_screen_sensitivity ?? 50}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={settings.green_screen_sensitivity ?? 50}
+                  onChange={(e) => updateSettings({ green_screen_sensitivity: parseInt(e.target.value, 10) })}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+                <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+                  Ajuste la sensibilité de détection du vert (0 = très strict, 100 = très permissif)
+                </p>
+              </div>
+
+              {/* Lissage */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs md:text-sm font-medium text-white/80">
+                    Lissage des bords
+                  </label>
+                  <span className="text-xs md:text-sm font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+                    {settings.green_screen_smoothness ?? 30}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={settings.green_screen_smoothness ?? 30}
+                  onChange={(e) => updateSettings({ green_screen_smoothness: parseInt(e.target.value, 10) })}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-500"
+                />
+                <p className="text-[10px] md:text-xs text-white/50 mt-1.5">
+                  Ajuste le lissage des bords pour un rendu plus naturel (0 = net, 100 = très lisse)
+                </p>
+              </div>
+            </>
           )}
         </div>
       </div>
