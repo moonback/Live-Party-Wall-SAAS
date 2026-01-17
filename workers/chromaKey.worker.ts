@@ -26,13 +26,46 @@ interface ErrorResponse {
   error: string;
 }
 
+// Cache pour les images de fond (évite de recharger à chaque frame)
+const backgroundCache = new Map<string, ImageBitmap>();
+
 /**
  * Charge une image depuis une URL et retourne un ImageBitmap
+ * Utilise un cache pour éviter de recharger la même image plusieurs fois
  */
-const loadImageBitmapFromUrl = async (url: string): Promise<ImageBitmap> => {
+const loadImageBitmapFromUrl = async (url: string, useCache: boolean = true): Promise<ImageBitmap> => {
+  // Vérifier le cache
+  if (useCache && backgroundCache.has(url)) {
+    return backgroundCache.get(url)!;
+  }
+
   const response = await fetch(url);
   const blob = await response.blob();
-  return await createImageBitmap(blob);
+  const bitmap = await createImageBitmap(blob);
+  
+  // Mettre en cache (seulement pour les images de fond, pas pour les frames vidéo)
+  if (useCache) {
+    backgroundCache.set(url, bitmap);
+  }
+  
+  return bitmap;
+};
+
+/**
+ * Nettoie le cache (appelé quand l'URL change)
+ */
+const clearBackgroundCache = (url?: string) => {
+  if (url) {
+    const cached = backgroundCache.get(url);
+    if (cached) {
+      cached.close();
+      backgroundCache.delete(url);
+    }
+  } else {
+    // Nettoyer tout le cache
+    backgroundCache.forEach((bitmap) => bitmap.close());
+    backgroundCache.clear();
+  }
 };
 
 /**
@@ -135,18 +168,25 @@ function calculateFeatherAlpha(
 
 const DEFAULT_GREEN = { r: 0, g: 255, b: 0 };
 
-self.onmessage = async (e: MessageEvent<ApplyChromaKeyMessage>) => {
+self.onmessage = async (e: MessageEvent<ApplyChromaKeyMessage | { type: 'clear-cache'; url?: string }>) => {
+  // Gérer le nettoyage du cache
+  if (e.data.type === 'clear-cache') {
+    clearBackgroundCache((e.data as any).url);
+    return;
+  }
+
   if (e.data.type !== 'apply-chroma-key') {
     return;
   }
 
-  const { imageDataUrl, backgroundUrl, options } = e.data;
+  const { imageDataUrl, backgroundUrl, options } = e.data as ApplyChromaKeyMessage;
 
   try {
     // Charger les deux images
+    // L'image de fond est mise en cache, la frame vidéo ne l'est pas
     const [sourceBitmap, backgroundBitmap] = await Promise.all([
-      loadImageBitmapFromUrl(imageDataUrl),
-      loadImageBitmapFromUrl(backgroundUrl)
+      loadImageBitmapFromUrl(imageDataUrl, false), // Frame vidéo : pas de cache
+      loadImageBitmapFromUrl(backgroundUrl, true)  // Image de fond : avec cache
     ]);
 
     const width = sourceBitmap.width;
@@ -239,9 +279,9 @@ self.onmessage = async (e: MessageEvent<ApplyChromaKeyMessage>) => {
       dataUrl = `data:image/jpeg;base64,${btoa(binary)}`;
     }
 
-    // Nettoyer
+    // Nettoyer seulement la frame source (l'image de fond reste en cache)
     sourceBitmap.close();
-    backgroundBitmap.close();
+    // Ne pas fermer backgroundBitmap car il est en cache
 
     // Envoyer le résultat
     const response: ChromaKeyResponse = {

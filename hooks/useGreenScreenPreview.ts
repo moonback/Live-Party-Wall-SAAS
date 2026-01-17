@@ -26,6 +26,7 @@ export const useGreenScreenPreview = ({
   const animationFrameRef = useRef<number | null>(null);
   const lastProcessTimeRef = useRef<number>(0);
   const processingRef = useRef<boolean>(false);
+  const cachedBackgroundUrlRef = useRef<string | null>(null);
 
   // Créer le canvas si nécessaire
   useEffect(() => {
@@ -49,11 +50,23 @@ export const useGreenScreenPreview = ({
 
     return () => {
       if (workerRef.current) {
+        // Nettoyer le cache avant de terminer le worker
+        if (cachedBackgroundUrlRef.current) {
+          workerRef.current.postMessage({ type: 'clear-cache', url: cachedBackgroundUrlRef.current });
+        }
         workerRef.current.terminate();
         workerRef.current = null;
       }
     };
   }, []);
+
+  // Nettoyer le cache quand l'URL change
+  useEffect(() => {
+    if (workerRef.current && cachedBackgroundUrlRef.current && cachedBackgroundUrlRef.current !== backgroundUrl) {
+      workerRef.current.postMessage({ type: 'clear-cache', url: cachedBackgroundUrlRef.current });
+    }
+    cachedBackgroundUrlRef.current = backgroundUrl;
+  }, [backgroundUrl]);
 
   // Fonction pour traiter une frame
   const processFrame = useCallback(async () => {
@@ -146,7 +159,8 @@ export const useGreenScreenPreview = ({
       return;
     }
 
-    const targetFPS = 30;
+    // Réduire à 15fps pour la prévisualisation (suffisant et moins de charge)
+    const targetFPS = 15;
     const frameInterval = 1000 / targetFPS;
 
     const loop = () => {
