@@ -58,10 +58,10 @@ export const GENERATION_CONFIG = {
 
 export const DEFAULTS = {
   /** Légende par défaut en cas d'erreur */
-  caption: "Un moment de fête mémorable capturé ! 🎊",
+  caption: "",
 
   /** Contexte par défaut en cas d'erreur */
-  context: "Ambiance festive et conviviale",
+  context: "Ambiance festive, chaleureuse et accessible à tous, adaptée à une grande soirée grand public",
   /** Analyse par défaut en cas d'erreur */
   analysis: {
     hasFaces: false,
