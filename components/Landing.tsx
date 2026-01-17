@@ -990,12 +990,15 @@ const Landing: React.FC<LandingProps> = ({ onSelectMode, isAdminAuthenticated = 
             >
               <div className="relative flex items-center justify-center">
                 {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 via-purple-500/30 to-cyan-500/30 rounded-full blur-2xl scale-150" />
+                <div className="absolute inset-0  rounded-full blur-2xl scale-150" />
                 {/* Icon container - IMAGE icon.png */}
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
-                  <img
-                    src={getStaticAssetPath('icon.png')}
-                    alt="Partywall Icon"
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-5xl  flex items-center justify-center shadow-2xl">
+                  <video
+                    src={getStaticAssetPath('logo-video.mp4')}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                     className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain drop-shadow-lg"
                   />
                   {/* Sparkle effect */}

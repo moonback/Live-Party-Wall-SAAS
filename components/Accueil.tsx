@@ -13,7 +13,7 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
 
   // Redirection automatique vers le tableau de bord après 5 secondes avec barre de progression
   useEffect(() => {
-    const duration = 2000; // 5 secondes
+    const duration = 3000; // 5 secondes
     const interval = 50; // Mise à jour toutes les 50ms
     const increment = (100 / duration) * interval;
 
@@ -61,9 +61,12 @@ const Accueil: React.FC<AccueilProps> = ({ onAdminClick }) => {
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-white/20 rounded-full blur-[20px] scale-75"></div>
             <div className="relative flex items-center justify-center">
-              <img
-                src={getStaticAssetPath('logo-accueil.png')}
-                alt="Partywall Logo"
+              <video
+                src={getStaticAssetPath('logo-video.mp4')}
+                autoPlay
+                loop
+                muted
+                playsInline
                 className="relative w-20 h-20 drop-shadow-[0_4px_16px_rgba(0,0,0,0.5)] z-[2] object-contain"
               />
             </div>
