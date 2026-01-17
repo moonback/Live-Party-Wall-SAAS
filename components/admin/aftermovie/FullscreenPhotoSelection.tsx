@@ -63,78 +63,78 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
       className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold text-white">Sélection des photos</h2>
-          <div className="text-sm text-slate-400">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border-b border-slate-800 bg-slate-900/50">
+        <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <h2 className="text-lg sm:text-xl font-bold text-white">Sélection des photos</h2>
+          <div className="text-xs sm:text-sm text-slate-400">
             {selectedIds.size} / {photos.length} sélectionnée{selectedIds.size > 1 ? 's' : ''}
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Recherche */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 outline-none"
+              className="w-full sm:w-auto pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs sm:text-sm text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 outline-none"
             />
           </div>
           {/* Vue grille/liste */}
           <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded transition-colors ${
+              className={`p-1.5 sm:p-2 rounded transition-colors ${
                 viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Grid3x3 className="w-4 h-4" />
+              <Grid3x3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-colors ${
+              className={`p-1.5 sm:p-2 rounded transition-colors ${
                 viewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
-              <List className="w-4 h-4" />
+              <List className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white transition-colors flex-shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
 
       {/* Actions rapides */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/30">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4 p-3 sm:p-4 border-b border-slate-800 bg-slate-900/30">
         <div className="flex items-center gap-2">
           <button
             onClick={onSelectAll}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-medium transition-colors"
           >
             Tout sélectionner
           </button>
           <button
             onClick={onDeselectAll}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-sm font-medium transition-colors"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs sm:text-sm font-medium transition-colors"
           >
             Tout désélectionner
           </button>
         </div>
-        <div className="text-sm text-slate-400">
-          Cliquez sur une photo pour la sélectionner/désélectionner • <kbd className="px-2 py-1 bg-slate-800 rounded text-xs">Ctrl+A</kbd> Tout sélectionner • <kbd className="px-2 py-1 bg-slate-800 rounded text-xs">Esc</kbd> Fermer
+        <div className="text-[10px] sm:text-xs md:text-sm text-slate-400 hidden sm:block">
+          Cliquez sur une photo pour la sélectionner/désélectionner • <kbd className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-800 rounded text-[10px] sm:text-xs">Ctrl+A</kbd> Tout sélectionner • <kbd className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-800 rounded text-[10px] sm:text-xs">Esc</kbd> Fermer
         </div>
       </div>
 
       {/* Grille de photos */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
             {filteredPhotos.map((p) => {
               const selected = selectedIds.has(p.id);
               return (
@@ -213,14 +213,14 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => onToggleSelection(p.id)}
-                  className={`w-full flex items-center gap-4 p-3 rounded-lg border-2 transition-all ${
+                  className={`w-full flex items-center gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg border-2 transition-all ${
                     selected
                       ? 'border-indigo-500 bg-indigo-500/10'
                       : 'border-slate-700 hover:border-slate-600 bg-slate-800/50'
                   }`}
                   disabled={disabled}
                 >
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={p.url}
                       alt={p.caption || ''}
@@ -229,20 +229,20 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                     />
                     {selected && (
                       <div className="absolute inset-0 bg-indigo-500/30 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-black">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[10px] sm:text-xs font-black">
                           ✓
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <div className="space-y-1.5">
+                    <div className="space-y-1 sm:space-y-1.5">
                       {/* Auteur */}
-                      <div className="text-xs font-semibold text-indigo-300 truncate">
+                      <div className="text-[10px] sm:text-xs font-semibold text-indigo-300 truncate">
                         {p.author}
                       </div>
                       {/* Légende */}
-                      <div className="text-sm font-medium text-white line-clamp-2 leading-relaxed">
+                      <div className="text-xs sm:text-sm font-medium text-white line-clamp-2 leading-relaxed">
                         {p.caption || 'Sans légende'}
                       </div>
                       {/* Tags */}
@@ -251,20 +251,20 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                           {p.tags.slice(0, 4).map((tag, idx) => (
                             <span
                               key={idx}
-                              className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-pink-400/90 bg-pink-500/10 border border-pink-500/20 uppercase tracking-tight"
+                              className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold text-pink-400/90 bg-pink-500/10 border border-pink-500/20 uppercase tracking-tight"
                             >
                               #{tag.replace(/\s+/g, '')}
                             </span>
                           ))}
                           {p.tags.length > 4 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold text-slate-400 bg-slate-800/50">
+                            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-semibold text-slate-400 bg-slate-800/50">
                               +{p.tags.length - 4}
                             </span>
                           )}
                         </div>
                       )}
                       {/* Timestamp */}
-                      <div className="text-[10px] text-slate-500 flex items-center gap-1.5">
+                      <div className="text-[9px] sm:text-[10px] text-slate-500 flex items-center gap-1 sm:gap-1.5">
                         <span>{new Date(p.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                         <span>•</span>
                         <span>{new Date(p.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
@@ -273,7 +273,7 @@ export const FullscreenPhotoSelection: React.FC<FullscreenPhotoSelectionProps> =
                   </div>
                   {selected && (
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[10px] sm:text-xs font-black">
                         {Array.from(selectedIds).indexOf(p.id) + 1}
                       </div>
                     </div>

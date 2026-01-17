@@ -42,29 +42,30 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
   }
 
   return (
-    <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-4">
-      <div className="flex items-center justify-between gap-3 mb-3">
+    <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
         <div>
-          <div className="text-sm font-semibold text-slate-100">Photos dans la plage</div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs sm:text-sm font-semibold text-slate-100">Photos dans la plage</div>
+          <div className="text-[10px] sm:text-xs text-slate-400">
             Sélectionnées: <span className="font-semibold text-slate-100">{selectedIds.size}</span> / {photos.length}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={onOpenFullscreen}
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border border-indigo-500/50 text-white text-xs font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 border border-indigo-500/50 text-white text-[10px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={disabled || photos.length === 0}
             title="Ouvrir en plein écran pour sélectionner les photos"
           >
-            <Maximize2 className="w-4 h-4" />
-            <span>Plein écran</span>
+            <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Plein écran</span>
+            <span className="sm:hidden">Plein écran</span>
           </button>
           <button
             type="button"
             onClick={onSelectAll}
-            className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] sm:text-xs font-medium transition-colors"
             disabled={disabled || photos.length === 0}
           >
             Tout
@@ -72,7 +73,7 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
           <button
             type="button"
             onClick={onDeselectAll}
-            className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] sm:text-xs font-medium transition-colors"
             disabled={disabled || photos.length === 0}
           >
             Aucun
@@ -81,7 +82,7 @@ export const PhotoSelectionGrid: React.FC<PhotoSelectionGridProps> = ({
       </div>
 
       <div className="max-h-64 overflow-y-auto pr-1">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2">
           {filteredPhotos.map((p) => {
             const selected = selectedIds.has(p.id);
             return (

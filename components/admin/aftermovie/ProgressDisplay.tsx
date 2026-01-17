@@ -29,23 +29,23 @@ export const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress }) =>
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-slate-950/80 to-slate-900/80 border border-slate-800 rounded-lg p-4 shadow-lg"
+      className="bg-gradient-to-br from-slate-950/80 to-slate-900/80 border border-slate-800 rounded-lg p-3 sm:p-4 shadow-lg"
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
         {progress && getStageIcon(progress.stage)}
-        <h3 className="text-sm font-semibold text-slate-100">Progression</h3>
+        <h3 className="text-xs sm:text-sm font-semibold text-slate-100">Progression</h3>
       </div>
       {progress ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-slate-300">
+        <div className="space-y-2 sm:space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs sm:text-sm font-medium text-slate-300 truncate">
               {progress.message || progress.stage}
             </div>
-            <div className="text-xs font-semibold text-indigo-400">
+            <div className="text-[10px] sm:text-xs font-semibold text-indigo-400 flex-shrink-0">
               {percentage}%
             </div>
           </div>
-          <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden shadow-inner">
+          <div className="w-full h-2.5 sm:h-3 rounded-full bg-slate-800 overflow-hidden shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
@@ -59,17 +59,18 @@ export const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ progress }) =>
               />
             </motion.div>
           </div>
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>{progress.processed} / {progress.total} photos</span>
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 gap-2">
+            <span className="truncate">{progress.processed} / {progress.total} photos</span>
             {progress.stage === 'processing' && (
-              <span className="text-indigo-400">Génération en cours…</span>
+              <span className="text-indigo-400 flex-shrink-0 hidden sm:inline">Génération en cours…</span>
             )}
           </div>
         </div>
       ) : (
-        <div className="text-sm text-slate-500 flex items-center gap-2">
-          <Circle className="w-3 h-3" />
-          En attente de génération…
+        <div className="text-xs sm:text-sm text-slate-500 flex items-center gap-2">
+          <Circle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+          <span className="hidden sm:inline">En attente de génération…</span>
+          <span className="sm:hidden">En attente…</span>
         </div>
       )}
     </motion.div>

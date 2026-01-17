@@ -114,35 +114,35 @@ export const ExistingAftermoviesList: React.FC<ExistingAftermoviesListProps> = (
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.2 }}
                     whileHover={{ y: -2, scale: 1.01 }}
-                    className="bg-slate-900/50 border border-slate-800 rounded-lg p-3 sm:p-4 hover:border-slate-700 transition-all shadow-md hover:shadow-lg"
+                    className="bg-slate-900/50 border border-slate-800 rounded-lg p-2 sm:p-3 md:p-4 hover:border-slate-700 transition-all shadow-md hover:shadow-lg"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-slate-100 truncate mb-1">
+                        <h4 className="text-xs sm:text-sm font-semibold text-slate-100 truncate mb-1">
                           {aftermovie.title || aftermovie.filename}
                         </h4>
-                        <div className="space-y-1 text-xs text-slate-400">
+                        <div className="space-y-0.5 sm:space-y-1 text-[10px] sm:text-xs text-slate-400">
                           {aftermovie.duration_seconds && (
-                            <div className="flex items-center gap-1.5">
-                              <Video className="w-3 h-3" />
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                              <Video className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                               <span>{formatDuration(aftermovie.duration_seconds)}</span>
                             </div>
                           )}
                           {aftermovie.file_size && (
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1 sm:gap-1.5">
                               <span>{formatFileSize(aftermovie.file_size)}</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1 sm:gap-1.5">
                             <span>{formatDate(aftermovie.created_at)}</span>
                           </div>
                           {aftermovie.created_by && (
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1 sm:gap-1.5">
                               <span>Par {aftermovie.created_by}</span>
                             </div>
                           )}
                           {aftermovie.download_count !== undefined && aftermovie.download_count > 0 && (
-                            <div className="flex items-center gap-1.5 text-indigo-400">
+                            <div className="flex items-center gap-1 sm:gap-1.5 text-indigo-400">
                               <span>{aftermovie.download_count} téléchargement{aftermovie.download_count > 1 ? 's' : ''}</span>
                             </div>
                           )}
@@ -152,13 +152,13 @@ export const ExistingAftermoviesList: React.FC<ExistingAftermoviesListProps> = (
                         type="button"
                         onClick={() => onDelete(aftermovie)}
                         disabled={isDeleting}
-                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        className="p-1.5 sm:p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                         title="Supprimer l'aftermovie"
                       >
                         {isDeleting ? (
-                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                         ) : (
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         )}
                       </button>
                     </div>
@@ -166,7 +166,7 @@ export const ExistingAftermoviesList: React.FC<ExistingAftermoviesListProps> = (
                       href={aftermovie.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full px-3 py-2 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 text-xs font-medium transition-colors text-center"
+                      className="block w-full px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 text-[10px] sm:text-xs font-medium transition-colors text-center"
                     >
                       Voir / Télécharger
                     </a>

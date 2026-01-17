@@ -455,9 +455,9 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
   };
 
   return (
-    <div className="max-w-12xl mx-auto">
-      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-slate-800">
-        <div className="mb-6">
+    <div className="max-w-full sm:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-2 sm:px-4">
+      <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-slate-800">
+        <div className="mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-semibold text-slate-100 mb-2 flex items-center gap-2">
             <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
               <Video className="w-5 h-5 text-indigo-400" />
@@ -532,8 +532,8 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
           disabled={isGeneratingAftermovie}
         />
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-3 sm:space-y-4">
             <DateRangeSelector
               start={aftermovieStart}
               end={aftermovieEnd}
@@ -576,7 +576,7 @@ export const AftermovieTab: React.FC<AftermovieTabProps> = () => {
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Options principales */}
             <AftermovieOptions
               includeTitle={aftermovieIncludeTitle}

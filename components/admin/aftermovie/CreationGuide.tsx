@@ -32,27 +32,27 @@ export const CreationGuide: React.FC<CreationGuideProps> = ({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-6 bg-gradient-to-br from-indigo-950/50 to-purple-950/50 border border-indigo-500/30 rounded-xl p-4 shadow-lg"
+      className="mb-4 sm:mb-6 bg-gradient-to-br from-indigo-950/50 to-purple-950/50 border border-indigo-500/30 rounded-xl p-3 sm:p-4 shadow-lg"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/20 rounded-lg border border-indigo-500/30">
-            <HelpCircle className="w-5 h-5 text-indigo-400" />
+      <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="p-1.5 sm:p-2 bg-indigo-500/20 rounded-lg border border-indigo-500/30 flex-shrink-0">
+            <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400" />
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-100">Guide de création</h3>
-            <p className="text-xs text-slate-400">Suivez ces étapes pour créer votre aftermovie</p>
+          <div className="min-w-0">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-100">Guide de création</h3>
+            <p className="text-[10px] sm:text-xs text-slate-400">Suivez ces étapes pour créer votre aftermovie</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {allCompleted && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-lg"
+              className="px-2 sm:px-3 py-0.5 sm:py-1 bg-green-500/20 border border-green-500/30 rounded-lg hidden sm:flex"
             >
-              <span className="text-xs font-semibold text-green-300 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="text-[10px] sm:text-xs font-semibold text-green-300 flex items-center gap-1 sm:gap-1.5">
+                <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 Terminé
               </span>
             </motion.div>
@@ -63,7 +63,7 @@ export const CreationGuide: React.FC<CreationGuideProps> = ({
             className="p-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
             title={isCollapsed ? 'Développer' : 'Réduire'}
           >
-            <ChevronRight className={`w-4 h-4 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
+            <ChevronRight className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isCollapsed ? '' : 'rotate-90'}`} />
           </button>
           {onClose && (
             <button
@@ -72,7 +72,7 @@ export const CreationGuide: React.FC<CreationGuideProps> = ({
               className="p-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
               title="Fermer le guide"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           )}
         </div>
@@ -113,31 +113,31 @@ export const CreationGuide: React.FC<CreationGuideProps> = ({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-500 flex items-center justify-center"
                         >
-                          <CheckCircle2 className="w-4 h-4 text-white" />
+                          <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                         </motion.div>
                       ) : isActive ? (
                         <motion.div
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ repeat: Infinity, duration: 2 }}
-                          className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-indigo-500 flex items-center justify-center"
                         >
-                          <span className="text-xs font-bold text-white">{index + 1}</span>
+                          <span className="text-[10px] sm:text-xs font-bold text-white">{index + 1}</span>
                         </motion.div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center">
-                          <span className="text-xs font-semibold text-slate-400">{index + 1}</span>
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center">
+                          <span className="text-[10px] sm:text-xs font-semibold text-slate-400">{index + 1}</span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-semibold mb-1 ${
+                      <div className={`text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1 ${
                         isActive ? 'text-indigo-300' : isCompleted ? 'text-green-300' : 'text-slate-300'
                       }`}>
                         {step.title}
                       </div>
-                      <div className="text-xs text-slate-400 leading-relaxed">
+                      <div className="text-[10px] sm:text-xs text-slate-400 leading-relaxed">
                         {step.description}
                       </div>
                     </div>
