@@ -24,8 +24,11 @@ import { ProjectionControls } from './projection/ProjectionControls';
 import { ProjectionSettings } from './projection/ProjectionSettings';
 import { ProjectionStats } from './projection/ProjectionStats';
 import { MediaDisplay } from './projection/MediaDisplay';
+import { BattleOverlay } from './projection/BattleOverlay';
 import { useReactionFlow } from '../hooks/wall/useReactionFlow';
 import { FlyingReactions } from './wall/Overlays/FlyingReactions';
+import { getActiveBattles, subscribeToNewBattles } from '../services/battleService';
+import type { PhotoBattle } from '../types';
 
 interface ProjectionWallProps {
   photos: Photo[];
@@ -67,6 +70,7 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
   const [photosReactions, setPhotosReactions] = useState<Map<string, ReactionCounts>>(new Map());
   const { settings } = useSettings();
   const { currentEvent } = useEvent();
+  const [activeBattle, setActiveBattle] = useState<PhotoBattle | null>(null);
   
   // Hook pour gérer les animations de réactions volantes
   const { flyingReactions } = useReactionFlow();
@@ -297,6 +301,50 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
       loadReactions();
     }
   }, [displayedPhotos.length]);
+
+  // Charger et s'abonner aux battles actives si le mode battle est activé
+  useEffect(() => {
+    if (!currentEvent?.id || settings.battle_mode_enabled === false) {
+      setActiveBattle(null);
+      return;
+    }
+
+    const loadBattles = async () => {
+      try {
+        const activeBattles = await getActiveBattles(currentEvent.id);
+        // Prendre la première battle active (la plus récente)
+        if (activeBattles.length > 0) {
+          setActiveBattle(activeBattles[0]);
+        } else {
+          setActiveBattle(null);
+        }
+      } catch (error) {
+        logger.error('Error loading battles for projection', error, {
+          component: 'ProjectionWall',
+          action: 'loadBattles',
+        });
+      }
+    };
+
+    loadBattles();
+
+    // Vérifier périodiquement les battles expirées (toutes les 30 secondes)
+    const checkExpiredInterval = setInterval(() => {
+      loadBattles();
+    }, 30000);
+
+    // Abonnement aux nouvelles battles
+    const battlesSub = subscribeToNewBattles(currentEvent.id, (newBattle) => {
+      setActiveBattle(newBattle);
+    });
+
+    return () => {
+      if (battlesSub && typeof battlesSub.unsubscribe === 'function') {
+        battlesSub.unsubscribe();
+      }
+      clearInterval(checkExpiredInterval);
+    };
+  }, [currentEvent?.id, settings.battle_mode_enabled]);
 
   // Fonction pour changer vers une photo spécifique (utilisée pour les likes/réactions)
   const switchToPhoto = useCallback(
@@ -957,6 +1005,29 @@ export const ProjectionWall: React.FC<ProjectionWallProps> = ({
         reactions={currentPhotoReactions}
         isTransitioning={isTransitioning}
       />
+
+      {/* Battle Overlay */}
+      {settings.battle_mode_enabled !== false && (
+        <BattleOverlay
+          battle={activeBattle}
+          onBattleFinished={(battleId, winnerId, winnerPhoto) => {
+            // Mettre à jour l'état après la fin de la battle
+            setActiveBattle(null);
+            // Optionnel : recharger les battles pour voir s'il y en a une nouvelle
+            if (currentEvent?.id) {
+              getActiveBattles(currentEvent.id)
+                .then((battles) => {
+                  if (battles.length > 0) {
+                    setActiveBattle(battles[0]);
+                  }
+                })
+                .catch((error) => {
+                  logger.error('Error reloading battles after finish', error);
+                });
+            }
+          }}
+        />
+      )}
 
       {/* Logo en bas à gauche */}
       {showQrCodes && (
