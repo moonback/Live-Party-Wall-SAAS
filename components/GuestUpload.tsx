@@ -8,6 +8,7 @@ import { validateImageFile, validateAuthorName, validateVideoFile, validateVideo
 import { logger } from '../utils/logger';
 import { drawPngOverlay } from '../utils/imageOverlay';
 import { BURST_DEFAULT_PHOTOS, BURST_CAPTURE_INTERVAL } from '../constants';
+import { applyChromaKey } from '../utils/chromaKey';
 import { useImageProcessing } from '../hooks/useImageProcessing';
 import { useVideoRecording } from '../hooks/useVideoRecording';
 import { useCamera } from '../hooks/useCamera';
@@ -164,16 +165,48 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, width, height);
+        
+        // Utiliser la qualité maximale (1.0) sans compression
+        let dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        
+        // Appliquer le chroma key si activé (avant le cadre décoratif)
+        if (eventSettings.green_screen_enabled && eventSettings.green_screen_background_url) {
+          try {
+            dataUrl = await applyChromaKey(
+              dataUrl,
+              eventSettings.green_screen_background_url,
+              {
+                sensitivity: eventSettings.green_screen_sensitivity ?? 50,
+                smoothness: eventSettings.green_screen_smoothness ?? 30
+              }
+            );
+            // Redessiner l'image traitée sur le canvas pour le cadre décoratif
+            const processedImg = new Image();
+            await new Promise((resolve, reject) => {
+              processedImg.onload = () => {
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(processedImg, 0, 0, width, height);
+                resolve(null);
+              };
+              processedImg.onerror = reject;
+              processedImg.src = dataUrl;
+            });
+          } catch (e) {
+            logger.warn('Chroma key processing failed', { component: 'GuestUpload', action: 'capturePhoto' }, e);
+            // Continuer avec l'image originale si le chroma key échoue
+          }
+        }
+        
         // Overlay PNG (cadre décoratif) au moment de la capture
         if (eventSettings.decorative_frame_enabled && eventSettings.decorative_frame_url) {
           try {
             await drawPngOverlay(ctx, eventSettings.decorative_frame_url, width, height);
+            // Mettre à jour dataUrl avec le cadre
+            dataUrl = canvas.toDataURL('image/jpeg', 1.0);
           } catch (e) {
             logger.warn('Overlay frame draw failed', { component: 'GuestUpload', action: 'capturePhoto' }, e);
           }
         }
-        // Utiliser la qualité maximale (1.0) sans compression
-        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
         
         if (forBurst) {
           return dataUrl;
@@ -535,6 +568,10 @@ const GuestUpload: React.FC<GuestUploadProps> = ({ onPhotoUploaded, onBack, onCo
             videoDevices={videoDevices}
             decorativeFrameUrl={eventSettings.decorative_frame_url}
             decorativeFrameEnabled={eventSettings.decorative_frame_enabled}
+            greenScreenEnabled={eventSettings.green_screen_enabled}
+            greenScreenBackgroundUrl={eventSettings.green_screen_background_url}
+            greenScreenSensitivity={eventSettings.green_screen_sensitivity}
+            greenScreenSmoothness={eventSettings.green_screen_smoothness}
             videoRef={videoRef}
             cameraError={cameraError}
             timerMaxDuration={timerDuration}

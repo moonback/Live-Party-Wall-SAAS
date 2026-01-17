@@ -30,6 +30,10 @@ export interface EventSettings {
   aftermovies_enabled: boolean;
   caption_language: string; // Code langue ISO 639-1 (ex: 'fr', 'en', 'es', 'de', 'it', 'pt')
   gallery_enabled: boolean; // Active ou désactive la galerie interactive
+  green_screen_enabled: boolean; // Active ou désactive le fond vert (chroma key)
+  green_screen_background_url: string | null; // URL de l'image de fond de remplacement
+  green_screen_sensitivity: number; // Sensibilité du chroma key (0-100, défaut: 50)
+  green_screen_smoothness: number; // Lissage des bords (0-100, défaut: 30)
 }
 
 export const defaultSettings: EventSettings = {
@@ -59,7 +63,11 @@ export const defaultSettings: EventSettings = {
   auto_carousel_delay: 20, // 20 secondes par défaut
   aftermovies_enabled: false,
   caption_language: 'fr', // Français par défaut
-  gallery_enabled: true // Galerie activée par défaut
+  gallery_enabled: true, // Galerie activée par défaut
+  green_screen_enabled: false, // Fond vert désactivé par défaut
+  green_screen_background_url: null, // Pas de fond par défaut
+  green_screen_sensitivity: 50, // Sensibilité par défaut (50%)
+  green_screen_smoothness: 30 // Lissage par défaut (30%)
 };
 
 /**

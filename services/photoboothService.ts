@@ -37,6 +37,9 @@ export const submitPhoto = async ({
 }: SubmitPhotoParams): Promise<Photo> => {
   let imageForAnalysis = imageDataUrl;
   
+  // Note: Le chroma key (fond vert) est déjà appliqué dans capturePhoto() de GuestUpload.tsx
+  // avant que l'image n'arrive ici. L'image reçue a déjà le fond vert remplacé si activé.
+  
   // Incruster le cadre décoratif si activé
   if (eventSettings.decorative_frame_enabled && eventSettings.decorative_frame_url) {
     try {
