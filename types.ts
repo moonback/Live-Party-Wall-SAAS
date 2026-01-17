@@ -217,7 +217,7 @@ export interface AftermovieOptions {
   randomTransitions?: boolean; // Si true, utilise des transitions aléatoires
 }
 
-export type TransitionType = 'none' | 'fade' | 'slide-left' | 'slide-right' | 'slide-up' | 'slide-down' | 'zoom-in' | 'zoom-out' | 'cross-fade' | 'wipe-left' | 'wipe-right' | 'rotate' | 'blur' | 'pixelate';
+export type TransitionType = 'none' | 'fade' | 'slide-left' | 'slide-right' | 'slide-up' | 'slide-down' | 'zoom-in' | 'zoom-out' | 'cross-fade' | 'wipe-left' | 'wipe-right' | 'rotate' | 'blur' | 'pixelate' | 'circle-wipe' | 'diamond-wipe' | 'split-screen' | 'page-turn' | 'glitch' | 'wave' | 'mosaic' | 'radial-wipe';
 
 export interface AftermovieAudioOptions {
   file: File;

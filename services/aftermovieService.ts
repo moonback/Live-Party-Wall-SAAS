@@ -984,6 +984,233 @@ function drawTransition(
       break;
     }
 
+    case 'circle-wipe': {
+      // Circle wipe: révélation circulaire depuis le centre
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
+      const radius = eased * maxRadius;
+      
+      // Image suivante (partie révélée)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.clip();
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      
+      // Image actuelle (partie visible)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, maxRadius, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true); // Inverser le sens
+      ctx.clip();
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
+    case 'diamond-wipe': {
+      // Diamond wipe: révélation en forme de losange
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const maxSize = Math.max(width, height) * 0.8;
+      const size = eased * maxSize;
+      
+      // Image suivante (partie révélée)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - size);
+      ctx.lineTo(centerX + size, centerY);
+      ctx.lineTo(centerX, centerY + size);
+      ctx.lineTo(centerX - size, centerY);
+      ctx.closePath();
+      ctx.clip();
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      
+      // Image actuelle (partie visible)
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
+    case 'split-screen': {
+      // Split screen: division de l'écran en deux
+      const splitX = eased * width;
+      
+      // Image actuelle (côté gauche)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, splitX, height);
+      ctx.clip();
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      
+      // Image suivante (côté droit)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(splitX, 0, width - splitX, height);
+      ctx.clip();
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      break;
+    }
+
+    case 'page-turn': {
+      // Page turn: effet de page qui se tourne
+      const foldX = eased * width;
+      const angle = eased * Math.PI / 2; // 0 à 90 degrés
+      
+      // Image suivante (page qui se révèle)
+      ctx.save();
+      ctx.translate(foldX, 0);
+      ctx.rotate(-angle);
+      ctx.translate(-foldX, 0);
+      ctx.globalAlpha = eased;
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      
+      // Image actuelle (page qui se tourne)
+      ctx.save();
+      ctx.translate(foldX, 0);
+      ctx.rotate(angle);
+      ctx.translate(-foldX, 0);
+      ctx.globalAlpha = 1 - eased;
+      // Ajouter une ombre pour l'effet 3D
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 10;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
+    case 'glitch': {
+      // Glitch: effet de glitch numérique
+      const glitchIntensity = Math.sin(eased * Math.PI * 4) * 0.1; // Oscillations rapides
+      const offsetX = glitchIntensity * width * 0.05;
+      const offsetY = (Math.random() - 0.5) * height * 0.02 * (1 - eased);
+      
+      // Image actuelle avec glitch
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      // Effet de décalage RGB (glitch classique)
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = `rgba(255, 0, 0, ${Math.abs(glitchIntensity) * 0.3})`;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+      
+      ctx.translate(offsetX, offsetY);
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      
+      // Image suivante avec glitch
+      ctx.save();
+      ctx.globalAlpha = eased;
+      ctx.translate(-offsetX, -offsetY);
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      break;
+    }
+
+    case 'wave': {
+      // Wave: transition en vague
+      const waveAmplitude = 30;
+      const waveFrequency = 3;
+      const waveOffset = eased * width;
+      
+      // Dessiner l'image suivante avec effet de vague
+      ctx.save();
+      ctx.beginPath();
+      for (let y = 0; y <= height; y += 2) {
+        const x = waveOffset + Math.sin((y / height) * Math.PI * waveFrequency) * waveAmplitude * (1 - eased);
+        if (y === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.lineTo(width, height);
+      ctx.lineTo(width, 0);
+      ctx.closePath();
+      ctx.clip();
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      
+      // Image actuelle (partie restante)
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
+    case 'mosaic': {
+      // Mosaic: transition en mosaïque
+      const tileSize = Math.max(4, 40 * (1 - eased));
+      const tilesX = Math.ceil(width / tileSize);
+      const tilesY = Math.ceil(height / tileSize);
+      
+      // Dessiner l'image suivante en mosaïque
+      ctx.save();
+      for (let ty = 0; ty < tilesY; ty++) {
+        for (let tx = 0; tx < tilesX; tx++) {
+          const x = tx * tileSize;
+          const y = ty * tileSize;
+          const delay = (tx + ty) / (tilesX + tilesY);
+          const tileProgress = Math.max(0, Math.min(1, (eased - delay * 0.5) * 2));
+          
+          if (tileProgress > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(x, y, tileSize, tileSize);
+            ctx.clip();
+            ctx.globalAlpha = tileProgress;
+            drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+            ctx.restore();
+          }
+        }
+      }
+      ctx.restore();
+      
+      // Image actuelle (tiles non révélées)
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
+    case 'radial-wipe': {
+      // Radial wipe: balayage radial depuis un point
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const maxRadius = Math.max(width, height);
+      const angle = eased * Math.PI * 2; // 0 à 360 degrés
+      
+      // Image suivante (partie révélée)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      // Arc de 0 à l'angle actuel
+      ctx.arc(centerX, centerY, maxRadius, 0, angle);
+      ctx.closePath();
+      ctx.clip();
+      drawImageWithKenBurns(ctx, nextImage, width, height, 0, kenBurnsNext);
+      ctx.restore();
+      
+      // Image actuelle (partie restante)
+      ctx.save();
+      ctx.globalAlpha = 1 - eased;
+      drawImageWithKenBurns(ctx, currentImage, width, height, 0.5, kenBurnsCurrent);
+      ctx.restore();
+      break;
+    }
+
     default:
       // Fallback: fade
       ctx.save();
@@ -1013,7 +1240,15 @@ const AVAILABLE_TRANSITIONS: TransitionType[] = [
   'wipe-right',
   'rotate',
   'blur',
-  'pixelate'
+  'pixelate',
+  'circle-wipe',
+  'diamond-wipe',
+  'split-screen',
+  'page-turn',
+  'glitch',
+  'wave',
+  'mosaic',
+  'radial-wipe'
 ];
 
 // Sélectionne une transition aléatoire
